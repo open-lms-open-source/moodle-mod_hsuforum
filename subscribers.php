@@ -49,12 +49,12 @@ require_login($course->id, false, $cm);
 
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 if (!has_capability('mod/hsuforum:viewsubscribers', $context)) {
-    print_error('nopermissiontosubscribe', 'forum');
+    print_error('nopermissiontosubscribe', 'hsuforum');
 }
 
 unset($SESSION->fromdiscussion);
 
-add_to_log($course->id, "forum", "view subscribers", "subscribers.php?id=$forum->id", $forum->id, $cm->id);
+add_to_log($course->id, "hsuforum", "view subscribers", "subscribers.php?id=$forum->id", $forum->id, $cm->id);
 
 $forumoutput = $PAGE->get_renderer('mod_forum');
 $currentgroup = groups_get_activity_group($cm);
@@ -75,14 +75,14 @@ if (data_submitted()) {
         $users = $subscriberselector->get_selected_users();
         foreach ($users as $user) {
             if (!hsuforum_subscribe($user->id, $id)) {
-                print_error('cannotaddsubscriber', 'forum', '', $user->id);
+                print_error('cannotaddsubscriber', 'hsuforum', '', $user->id);
             }
         }
     } else if ($unsubscribe) {
         $users = $existingselector->get_selected_users();
         foreach ($users as $user) {
             if (!hsuforum_unsubscribe($user->id, $id)) {
-                print_error('cannotremovesubscriber', 'forum', '', $user->id);
+                print_error('cannotremovesubscriber', 'hsuforum', '', $user->id);
             }
         }
     }

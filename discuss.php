@@ -55,7 +55,7 @@
     require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
-    require_capability('mod/hsuforum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'forum');
+    require_capability('mod/hsuforum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'hsuforum');
 
     if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
@@ -68,7 +68,7 @@
         if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
             || $discussion->timestart <= time())
             && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
-            print_error('invaliddiscussionid', 'forum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
     }
 
@@ -79,23 +79,23 @@
         require_capability('mod/hsuforum:movediscussions', $modcontext);
 
         if ($forum->type == 'single') {
-            print_error('cannotmovefromsingleforum', 'forum', $return);
+            print_error('cannotmovefromsingleforum', 'hsuforum', $return);
         }
 
         if (!$forumto = $DB->get_record('hsuforum', array('id' => $move))) {
-            print_error('cannotmovetonotexist', 'forum', $return);
+            print_error('cannotmovetonotexist', 'hsuforum', $return);
         }
 
         if ($forumto->type == 'single') {
-            print_error('cannotmovetosingleforum', 'forum', $return);
+            print_error('cannotmovetosingleforum', 'hsuforum', $return);
         }
 
         if (!$cmto = get_coursemodule_from_instance('hsuforum', $forumto->id, $course->id)) {
-            print_error('cannotmovetonotfound', 'forum', $return);
+            print_error('cannotmovetonotfound', 'hsuforum', $return);
         }
 
         if (!coursemodule_visible_for_user($cmto)) {
-            print_error('cannotmovenotvisible', 'forum', $return);
+            print_error('cannotmovenotvisible', 'hsuforum', $return);
         }
 
         require_capability('mod/hsuforum:startdiscussion', get_context_instance(CONTEXT_MODULE,$cmto->id));
@@ -105,7 +105,7 @@
         }
         $DB->set_field('hsuforum_discussions', 'forum', $forumto->id, array('id' => $discussion->id));
         $DB->set_field('hsuforum_read', 'forumid', $forumto->id, array('discussionid' => $discussion->id));
-        add_to_log($course->id, 'forum', 'move discussion', "discuss.php?d=$discussion->id", $discussion->id, $cmto->id);
+        add_to_log($course->id, 'hsuforum', 'move discussion', "discuss.php?d=$discussion->id", $discussion->id, $cmto->id);
 
         require_once($CFG->libdir.'/rsslib.php');
         require_once($CFG->dirroot.'/mod/hsuforum/rsslib.php');
@@ -117,7 +117,7 @@
         redirect($return.'&moved=-1&sesskey='.sesskey());
     }
 
-    add_to_log($course->id, 'forum', 'view discussion', $PAGE->url->out(false), $discussion->id, $cm->id);
+    add_to_log($course->id, 'hsuforum', 'view discussion', $PAGE->url->out(false), $discussion->id, $cm->id);
 
     unset($SESSION->fromdiscussion);
 
@@ -137,12 +137,12 @@
     }
 
     if (! $post = hsuforum_get_post_full($parent)) {
-        print_error("notexists", 'forum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
     }
 
 
     if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
-        print_error('nopermissiontoview', 'forum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
+        print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
     }
 
     if ($mark == 'read' or $mark == 'unread') {
@@ -222,12 +222,12 @@
         // Popup menu to move discussions to other forums. The discussion in a
         // single discussion forum can't be moved.
         $modinfo = get_fast_modinfo($course);
-        if (isset($modinfo->instances['forum'])) {
+        if (isset($modinfo->instances['hsuforum'])) {
             $forummenu = array();
             $sections = get_all_sections($course->id);
             // Check forum types and eliminate simple discussions.
             $forumcheck = $DB->get_records('hsuforum', array('course' => $course->id),'', 'id, type');
-            foreach ($modinfo->instances['forum'] as $forumcm) {
+            foreach ($modinfo->instances['hsuforum'] as $forumcm) {
                 if (!$forumcm->uservisible || !has_capability('mod/hsuforum:startdiscussion',
                     get_context_instance(CONTEXT_MODULE,$forumcm->id))) {
                     continue;
@@ -262,7 +262,7 @@
         $a = new stdClass();
         $a->blockafter  = $forum->blockafter;
         $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
-        echo $OUTPUT->notification(get_string('thisforumisthrottled','forum',$a));
+        echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
     }
 
     if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
@@ -271,7 +271,7 @@
     }
 
     if ($move == -1 and confirm_sesskey()) {
-        echo $OUTPUT->notification(get_string('discussionmoved', 'forum', format_string($forum->name,true)));
+        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)));
     }
 
     $canrate = has_capability('mod/hsuforum:rate', $modcontext);

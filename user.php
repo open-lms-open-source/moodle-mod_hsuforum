@@ -62,7 +62,7 @@ if ($perpage != 5) {
     $url->param('perpage', $perpage);
 }
 
-add_to_log(($isspecificcourse)?$courseid:SITEID, "forum", "user report", 'user.php?'.$url->get_query_string(), $userid);
+add_to_log(($isspecificcourse)?$courseid:SITEID, "hsuforum", "user report", 'user.php?'.$url->get_query_string(), $userid);
 
 $user = $DB->get_record("user", array("id" => $userid), '*', MUST_EXIST);
 $usercontext = get_context_instance(CONTEXT_USER, $user->id, MUST_EXIST);
@@ -177,9 +177,9 @@ if (empty($result->posts)) {
         $PAGE->navigation->set_userid_for_parent_checks($user->id); // see MDL-25805 for reasons and for full commit reference for reversal when fixed.
         $fullname = fullname($user);
         if ($discussionsonly) {
-            $notification = get_string('nodiscussionsstartedby', 'forum', $fullname);
+            $notification = get_string('nodiscussionsstartedby', 'hsuforum', $fullname);
         } else {
-            $notification = get_string('nopostsmadebyuser', 'forum', $fullname);
+            $notification = get_string('nopostsmadebyuser', 'hsuforum', $fullname);
         }
     } else {
         // Don't extend the navigation it would be giving out information that
@@ -332,7 +332,7 @@ if (!empty($postoutput)) {
     }
     echo $OUTPUT->paging_bar($result->totalcount, $page, $perpage, $url);
 } else if ($discussionsonly) {
-    echo $OUTPUT->heading(get_string('nodiscussionsstartedby', 'forum', $userfullname));
+    echo $OUTPUT->heading(get_string('nodiscussionsstartedby', 'hsuforum', $userfullname));
 } else {
     echo $OUTPUT->heading(get_string('noposts', 'hsuforum'));
 }

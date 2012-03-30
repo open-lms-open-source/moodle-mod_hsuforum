@@ -71,7 +71,7 @@ class restore_hsuforum_activity_task extends restore_activity_task {
         $rules[] = new restore_decode_rule('HSUFORUMINDEX', '/mod/hsuforum/index.php?id=$1', 'course');
         // Forum by cm->id and forum->id
         $rules[] = new restore_decode_rule('HSUFORUMVIEWBYID', '/mod/hsuforum/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('HSUFORUMVIEWBYF', '/mod/hsuforum/view.php?f=$1', 'forum');
+        $rules[] = new restore_decode_rule('HSUFORUMVIEWBYF', '/mod/hsuforum/view.php?f=$1', 'hsuforum');
         // Link to forum discussion
         $rules[] = new restore_decode_rule('HSUFORUMDISCUSSIONVIEW', '/mod/hsuforum/discuss.php?d=$1', 'hsuforum_discussion');
         // Link to discussion with parent and with anchor posts

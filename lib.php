@@ -177,11 +177,11 @@ function hsuforum_update_instance($forum, $mform) {
             hsuforum_add_discussion($discussion, null, $message);
 
             if (! $discussion = $DB->get_record('hsuforum_discussions', array('forum'=>$forum->id))) {
-                print_error('cannotadd', 'forum');
+                print_error('cannotadd', 'hsuforum');
             }
         }
         if (! $post = $DB->get_record('hsuforum_posts', array('id'=>$discussion->firstpost))) {
-            print_error('cannotfindfirstpost', 'forum');
+            print_error('cannotfindfirstpost', 'hsuforum');
         }
 
         $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
@@ -639,7 +639,7 @@ function hsuforum_cron() {
                 $smallmessagestrings->forumname = "$shortname: ".format_string($forum->name,true).": ".$discussion->name;
                 $smallmessagestrings->message = $post->message;
                 //make sure strings are in message recipients language
-                $eventdata->smallmessage = get_string_manager()->get_string('smallmessage', 'forum', $smallmessagestrings, $userto->lang);
+                $eventdata->smallmessage = get_string_manager()->get_string('smallmessage', 'hsuforum', $smallmessagestrings, $userto->lang);
 
                 $eventdata->contexturl = "{$CFG->wwwroot}/mod/hsuforum/discuss.php?d={$discussion->id}#p{$post->id}";
                 $eventdata->contexturlname = $discussion->name;
@@ -648,7 +648,7 @@ function hsuforum_cron() {
                 if (!$mailresult){
                     mtrace("Error: mod/hsuforum/lib.php hsuforum_cron(): Could not send out mail for id $post->id to user $userto->id".
                          " ($userto->email) .. not trying again.");
-                    add_to_log($course->id, 'forum', 'mail error', "discuss.php?d=$discussion->id#p$post->id",
+                    add_to_log($course->id, 'hsuforum', 'mail error', "discuss.php?d=$discussion->id#p$post->id",
                                substr(format_string($post->subject,true),0,30), $cm->id, $userto->id);
                     $errorcount[$post->id]++;
                 } else {
@@ -781,7 +781,7 @@ function hsuforum_cron() {
 
                 cron_setup_user();
 
-                mtrace(get_string('processingdigest', 'forum', $userid), '... ');
+                mtrace(get_string('processingdigest', 'hsuforum', $userid), '... ');
 
                 // First of all delete all the queue entries for this user
                 $DB->delete_records_select('hsuforum_queue', "userid = ? AND timemodified < ?", array($userid, $digesttime));
@@ -796,13 +796,13 @@ function hsuforum_cron() {
                 $userto->canpost       = array();
                 $userto->markposts     = array();
 
-                $postsubject = get_string('digestmailsubject', 'forum', format_string($site->shortname, true));
+                $postsubject = get_string('digestmailsubject', 'hsuforum', format_string($site->shortname, true));
 
                 $headerdata = new stdClass();
                 $headerdata->sitename = format_string($site->fullname, true);
                 $headerdata->userprefs = $CFG->wwwroot.'/user/edit.php?id='.$userid.'&amp;course='.$site->id;
 
-                $posttext = get_string('digestmailheader', 'forum', $headerdata)."\n\n";
+                $posttext = get_string('digestmailheader', 'hsuforum', $headerdata)."\n\n";
                 $headerdata->userprefs = '<a target="_blank" href="'.$headerdata->userprefs.'">'.get_string('digestmailprefs', 'hsuforum').'</a>';
 
                 $posthtml = "<head>";
@@ -811,7 +811,7 @@ function hsuforum_cron() {
                     $posthtml .= '<link rel="stylesheet" type="text/css" href="'.$stylesheet.'" />'."\n";
                 }*/
                 $posthtml .= "</head>\n<body id=\"email\">\n";
-                $posthtml .= '<p>'.get_string('digestmailheader', 'forum', $headerdata).'</p><br /><hr size="1" noshade="noshade" />';
+                $posthtml .= '<p>'.get_string('digestmailheader', 'hsuforum', $headerdata).'</p><br /><hr size="1" noshade="noshade" />';
 
                 foreach ($thesediscussions as $discussionid) {
 
@@ -891,11 +891,11 @@ function hsuforum_cron() {
                             $by = new stdClass();
                             $by->name = fullname($userfrom);
                             $by->date = userdate($post->modified);
-                            $posttext .= "\n".format_string($post->subject,true).' '.get_string("bynameondate", "forum", $by);
+                            $posttext .= "\n".format_string($post->subject,true).' '.get_string("bynameondate", "hsuforum", $by);
                             $posttext .= "\n---------------------------------------------------------------------";
 
                             $by->name = "<a target=\"_blank\" href=\"$CFG->wwwroot/user/view.php?id=$userfrom->id&amp;course=$course->id\">$by->name</a>";
-                            $posthtml .= '<div><a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id.'#p'.$post->id.'">'.format_string($post->subject,true).'</a> '.get_string("bynameondate", "forum", $by).'</div>';
+                            $posthtml .= '<div><a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id.'#p'.$post->id.'">'.format_string($post->subject,true).'</a> '.get_string("bynameondate", "hsuforum", $by).'</div>';
 
                         } else {
                             // The full treatment
@@ -930,7 +930,7 @@ function hsuforum_cron() {
                 if (!$mailresult) {
                     mtrace("ERROR!");
                     echo "Error: mod/hsuforum/cron.php: Could not send out digest mail to user $userto->id ($userto->email)... not trying again.\n";
-                    add_to_log($course->id, 'forum', 'mail digest error', '', '', $cm->id, $userto->id);
+                    add_to_log($course->id, 'hsuforum', 'mail digest error', '', '', $cm->id, $userto->id);
                 } else {
                     mtrace("success.");
                     $usermailcount++;
@@ -947,7 +947,7 @@ function hsuforum_cron() {
     cron_setup_user();
 
     if (!empty($usermailcount)) {
-        mtrace(get_string('digestsentusers', 'forum', $usermailcount));
+        mtrace(get_string('digestsentusers', 'hsuforum', $usermailcount));
     }
 
     if (!empty($CFG->hsuforum_lastreadclean)) {
@@ -1002,7 +1002,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     $by->name = fullname($userfrom, $viewfullnames);
     $by->date = userdate($post->modified, "", $userto->timezone);
 
-    $strbynameondate = get_string('bynameondate', 'forum', $by);
+    $strbynameondate = get_string('bynameondate', 'hsuforum', $by);
 
     $strforums = get_string('forums', 'hsuforum');
 
@@ -1035,7 +1035,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
 
     if (!$bare && $canreply) {
         $posttext .= "---------------------------------------------------------------------\n";
-        $posttext .= get_string("postmailinfo", "forum", $shortname)."\n";
+        $posttext .= get_string("postmailinfo", "hsuforum", $shortname)."\n";
         $posttext .= "$CFG->wwwroot/mod/hsuforum/post.php?reply=$post->id\n";
     }
     if (!$bare && $canunsubscribe) {
@@ -1120,7 +1120,7 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
 function hsuforum_user_outline($course, $user, $mod, $forum) {
     global $CFG;
     require_once("$CFG->libdir/gradelib.php");
-    $grades = grade_get_grades($course->id, 'mod', 'forum', $forum->id, $user->id);
+    $grades = grade_get_grades($course->id, 'mod', 'hsuforum', $forum->id, $user->id);
     if (empty($grades->items[0]->grades)) {
         $grade = false;
     } else {
@@ -1131,7 +1131,7 @@ function hsuforum_user_outline($course, $user, $mod, $forum) {
 
     if ($count && $count->postcount > 0) {
         $result = new stdClass();
-        $result->info = get_string("numposts", "forum", $count->postcount);
+        $result->info = get_string("numposts", "hsuforum", $count->postcount);
         $result->time = $count->lastpost;
         if ($grade) {
             $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
@@ -1168,7 +1168,7 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
     global $CFG,$USER, $OUTPUT;
     require_once("$CFG->libdir/gradelib.php");
 
-    $grades = grade_get_grades($course->id, 'mod', 'forum', $forum->id, $user->id);
+    $grades = grade_get_grades($course->id, 'mod', 'hsuforum', $forum->id, $user->id);
     if (!empty($grades->items[0]->grades)) {
         $grade = reset($grades->items[0]->grades);
         echo $OUTPUT->container(get_string('grade').': '.$grade->str_long_grade);
@@ -1233,7 +1233,7 @@ function hsuforum_print_overview($courses,&$htmlarray) {
     }
     $sql = substr($sql,0,-3); // take off the last OR
 
-    $sql .= ") AND l.module = 'forum' AND action = 'add post' "
+    $sql .= ") AND l.module = 'hsuforum' AND action = 'add post' "
         ." AND userid != ? GROUP BY cmid,l.course,instance";
 
     $params[] = $USER->id;
@@ -1320,10 +1320,10 @@ function hsuforum_print_overview($courses,&$htmlarray) {
             if (!array_key_exists($forum->course,$htmlarray)) {
                 $htmlarray[$forum->course] = array();
             }
-            if (!array_key_exists('forum',$htmlarray[$forum->course])) {
-                $htmlarray[$forum->course]['forum'] = ''; // initialize, avoid warnings
+            if (!array_key_exists('hsuforum',$htmlarray[$forum->course])) {
+                $htmlarray[$forum->course]['hsuforum'] = ''; // initialize, avoid warnings
             }
-            $htmlarray[$forum->course]['forum'] .= $str;
+            $htmlarray[$forum->course]['hsuforum'] .= $str;
         }
     }
 }
@@ -1368,11 +1368,11 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
 
     $printposts = array();
     foreach ($posts as $post) {
-        if (!isset($modinfo->instances['forum'][$post->forum])) {
+        if (!isset($modinfo->instances['hsuforum'][$post->forum])) {
             // not visible
             continue;
         }
-        $cm = $modinfo->instances['forum'][$post->forum];
+        $cm = $modinfo->instances['hsuforum'][$post->forum];
         if (!$cm->uservisible) {
             continue;
         }
@@ -1464,7 +1464,7 @@ function hsuforum_get_user_grades($forum, $userid = 0) {
     $ratingoptions->ratingarea = 'post';
 
     //need these to work backwards to get a context id. Is there a better way to get contextid from a module instance?
-    $ratingoptions->modulename = 'forum';
+    $ratingoptions->modulename = 'hsuforum';
     $ratingoptions->moduleid   = $forum->id;
     $ratingoptions->userid = $userid;
     $ratingoptions->aggregationmethod = $forum->assessed;
@@ -1516,12 +1516,12 @@ function hsuforum_upgrade_grades() {
 
     $sql = "SELECT COUNT('x')
               FROM {hsuforum} f, {course_modules} cm, {modules} m
-             WHERE m.name='forum' AND m.id=cm.module AND cm.instance=f.id";
+             WHERE m.name='hsuforum' AND m.id=cm.module AND cm.instance=f.id";
     $count = $DB->count_records_sql($sql);
 
     $sql = "SELECT f.*, cm.idnumber AS cmidnumber, f.course AS courseid
               FROM {hsuforum} f, {course_modules} cm, {modules} m
-             WHERE m.name='forum' AND m.id=cm.module AND cm.instance=f.id";
+             WHERE m.name='hsuforum' AND m.id=cm.module AND cm.instance=f.id";
     $rs = $DB->get_recordset_sql($sql);
     if ($rs->valid()) {
         $pbar = new progress_bar('forumupgradegrades', 500, true);
@@ -1573,7 +1573,7 @@ function hsuforum_grade_item_update($forum, $grades=NULL) {
         $grades = NULL;
     }
 
-    return grade_update('mod/hsuforum', $forum->course, 'mod', 'forum', $forum->id, 0, $grades, $params);
+    return grade_update('mod/hsuforum', $forum->course, 'mod', 'hsuforum', $forum->id, 0, $grades, $params);
 }
 
 /**
@@ -1587,7 +1587,7 @@ function hsuforum_grade_item_delete($forum) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
-    return grade_update('mod/hsuforum', $forum->course, 'mod', 'forum', $forum->id, 0, NULL, array('deleted'=>1));
+    return grade_update('mod/hsuforum', $forum->course, 'mod', 'hsuforum', $forum->id, 0, NULL, array('deleted'=>1));
 }
 
 
@@ -1825,8 +1825,8 @@ function hsuforum_get_readable_forums($userid, $courseid=0) {
     global $CFG, $DB, $USER;
     require_once($CFG->dirroot.'/course/lib.php');
 
-    if (!$forummod = $DB->get_record('modules', array('name' => 'forum'))) {
-        print_error('notinstalled', 'forum');
+    if (!$forummod = $DB->get_record('modules', array('name' => 'hsuforum'))) {
+        print_error('notinstalled', 'hsuforum');
     }
 
     if ($courseid) {
@@ -1850,14 +1850,14 @@ function hsuforum_get_readable_forums($userid, $courseid=0) {
             $modinfo->groups = groups_get_user_groups($course->id, $userid);
         }
 
-        if (empty($modinfo->instances['forum'])) {
+        if (empty($modinfo->instances['hsuforum'])) {
             // hmm, no forums?
             continue;
         }
 
         $courseforums = $DB->get_records('hsuforum', array('course' => $course->id));
 
-        foreach ($modinfo->instances['forum'] as $forumid => $cm) {
+        foreach ($modinfo->instances['hsuforum'] as $forumid => $cm) {
             if (!$cm->uservisible or !isset($courseforums[$forumid])) {
                 continue;
             }
@@ -2956,8 +2956,8 @@ function hsuforum_get_course_forum($courseid, $type) {
     $forum->timemodified = time();
     $forum->id = $DB->insert_record("hsuforum", $forum);
 
-    if (! $module = $DB->get_record("modules", array("name" => "forum"))) {
-        echo $OUTPUT->notification("Could not find forum module!!");
+    if (! $module = $DB->get_record("modules", array("name" => "hsuforum"))) {
+        echo $OUTPUT->notification("Could not find hsuforum module!!");
         return false;
     }
     $mod = new stdClass();
@@ -3039,7 +3039,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
     $by = new stdClass();
     $by->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$userfrom->id.'&amp;course='.$course->id.'">'.$fullname.'</a>';
     $by->date = userdate($post->modified, '', $userto->timezone);
-    $output .= '<div class="author">'.get_string('bynameondate', 'forum', $by).'</div>';
+    $output .= '<div class="author">'.get_string('bynameondate', 'hsuforum', $by).'</div>';
 
     $output .= '</td></tr>';
 
@@ -3365,7 +3365,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     $by = new stdClass();
     $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
     $by->date = userdate($post->modified);
-    $output .= html_writer::tag('div', get_string('bynameondate', 'forum', $by), array('class'=>'author'));
+    $output .= html_writer::tag('div', get_string('bynameondate', 'hsuforum', $by), array('class'=>'author'));
 
     $output .= html_writer::end_tag('div'); //topic
     $output .= html_writer::end_tag('div'); //row
@@ -3437,9 +3437,9 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     // Output link to post if required
     if ($link) {
         if ($post->replies == 1) {
-            $replystring = get_string('repliesone', 'forum', $post->replies);
+            $replystring = get_string('repliesone', 'hsuforum', $post->replies);
         } else {
-            $replystring = get_string('repliesmany', 'forum', $post->replies);
+            $replystring = get_string('repliesmany', 'hsuforum', $post->replies);
         }
 
         $output .= html_writer::start_tag('div', array('class'=>'link'));
@@ -4638,10 +4638,10 @@ function hsuforum_post_subscription($post, $forum) {
     switch ($action) {
         case 'subscribe':
             hsuforum_subscribe($USER->id, $post->forum);
-            return "<p>".get_string("nowsubscribed", "forum", $info)."</p>";
+            return "<p>".get_string("nowsubscribed", "hsuforum", $info)."</p>";
         case 'unsubscribe':
             hsuforum_unsubscribe($USER->id, $post->forum);
-            return "<p>".get_string("nownotsubscribed", "forum", $info)."</p>";
+            return "<p>".get_string("nownotsubscribed", "hsuforum", $info)."</p>";
     }
 }
 
@@ -5669,7 +5669,7 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                 }
                 echo $style."<a name=\"$post->id\"></a>".
                      "<a href=\"discuss.php?d=$post->discussion&amp;parent=$post->id\">".format_string($post->subject,true)."</a> ";
-                print_string("bynameondate", "forum", $by);
+                print_string("bynameondate", "hsuforum", $by);
                 echo "</span>";
             }
 
@@ -5813,7 +5813,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
     foreach ($printposts as $post) {
         $tmpactivity = new stdClass();
 
-        $tmpactivity->type         = 'forum';
+        $tmpactivity->type         = 'hsuforum';
         $tmpactivity->cmid         = $cm->id;
         $tmpactivity->name         = $aname;
         $tmpactivity->sectionnum   = $cm->sectionnum;
@@ -6769,7 +6769,7 @@ function hsuforum_get_post_actions() {
 function hsuforum_get_separate_modules($courseid) {
 
     global $CFG,$DB;
-    $forummodule = $DB->get_record("modules", array("name" => "forum"));
+    $forummodule = $DB->get_record("modules", array("name" => "hsuforum"));
 
     $sql = 'SELECT f.id, f.id FROM {hsuforum} f, {course_modules} cm WHERE
            f.id = cm.instance AND cm.module =? AND cm.visible = 1 AND cm.course = ?
@@ -6834,7 +6834,7 @@ function hsuforum_check_throttling($forum, $cm=null) {
         print_error('forumblockingtoomanyposts', 'error', $CFG->wwwroot.'/mod/hsuforum/view.php?f='.$forum->id, $a);
     }
     if ($forum->warnafter <= $numposts) {
-        echo $OUTPUT->notification(get_string('forumblockingalmosttoomanyposts','forum',$a));
+        echo $OUTPUT->notification(get_string('forumblockingalmosttoomanyposts','hsuforum',$a));
     }
 
 
@@ -6861,7 +6861,7 @@ function hsuforum_reset_gradebook($courseid, $type='') {
 
     $sql = "SELECT f.*, cm.idnumber as cmidnumber, f.course as courseid
               FROM {hsuforum} f, {course_modules} cm, {modules} m
-             WHERE m.name='forum' AND m.id=cm.module AND cm.instance=f.id AND f.course=? $wheresql";
+             WHERE m.name='hsuforum' AND m.id=cm.module AND cm.instance=f.id AND f.course=? $wheresql";
 
     if ($forums = $DB->get_records_sql($sql, $params)) {
         foreach ($forums as $forum) {
@@ -7110,11 +7110,11 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
             $mod->groupmode = 0;
 
             if (!$cmid = add_course_module($mod)) {
-                print_error('cannotcreateinstanceforteacher', 'forum');
+                print_error('cannotcreateinstanceforteacher', 'hsuforum');
             } else {
                 $mod->coursemodule = $cmid;
                 if (!$sectionid = add_mod_to_section($mod)) {
-                    print_error('cannotaddteacherforumto', 'forum');
+                    print_error('cannotaddteacherforumto', 'hsuforum');
                 } else {
                     $DB->set_field('course_modules', 'section', $sectionid, array('id' => $cmid));
                 }
@@ -7753,7 +7753,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
             if ($unread == 1) {
                 $out .= $strunreadpostsone;
             } else {
-                $out .= get_string('unreadpostsnumber', 'forum', $unread);
+                $out .= get_string('unreadpostsnumber', 'hsuforum', $unread);
             }
             $out .= '</a></span>';
             $cm->set_after_link($out);
@@ -7769,9 +7769,9 @@ function hsuforum_cm_info_view(cm_info $cm) {
  */
 function hsuforum_page_type_list($pagetype, $parentcontext, $currentcontext) {
     $hsuforum_pagetype = array(
-        'mod-forum-*'=>get_string('page-mod-forum-x', 'forum'),
-        'mod-forum-view'=>get_string('page-mod-forum-view', 'forum'),
-        'mod-forum-discuss'=>get_string('page-mod-forum-discuss', 'forum')
+        'mod-forum-*'=>get_string('page-mod-forum-x', 'hsuforum'),
+        'mod-forum-view'=>get_string('page-mod-forum-view', 'hsuforum'),
+        'mod-forum-discuss'=>get_string('page-mod-forum-discuss', 'hsuforum')
     );
     return $hsuforum_pagetype;
 }
@@ -7842,7 +7842,7 @@ function hsuforum_get_courses_user_posted_in($user, $discussionsonly = false, $i
 function hsuforum_get_forums_user_posted_in($user, array $courseids = null, $discussionsonly = false, $limitfrom = null, $limitnum = null) {
     global $DB;
 
-    $where = array("m.name = 'forum'");
+    $where = array("m.name = 'hsuforum'");
     $params = array();
     if (!is_null($courseids)) {
         list($coursewhere, $params) = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED, 'courseid');
@@ -7941,7 +7941,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             if (!is_viewing($coursecontext, $user) && !is_enrolled($coursecontext, $user)) {
                 // Need to have full access to a course to see the rest of own info
                 if ($musthaveaccess) {
-                    print_error('errorenrolmentrequired', 'forum');
+                    print_error('errorenrolmentrequired', 'hsuforum');
                 }
                 continue;
             }
@@ -7950,7 +7950,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             // if they don't we immediately have a problem.
             if (!can_access_course($course)) {
                 if ($musthaveaccess) {
-                    print_error('errorenrolmentrequired', 'forum');
+                    print_error('errorenrolmentrequired', 'hsuforum');
                 }
                 continue;
             }
@@ -7959,7 +7959,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             // if they don't we immediately have a problem.
             if (!can_access_course($course, $user)) {
                 if ($musthaveaccess) {
-                    print_error('notenrolled', 'forum');
+                    print_error('notenrolled', 'hsuforum');
                 }
                 continue;
             }
@@ -8034,7 +8034,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
     foreach ($return->courses as $course) {
         // Now we need to get the forums
         $modinfo = get_fast_modinfo($course);
-        if (empty($modinfo->instances['forum'])) {
+        if (empty($modinfo->instances['hsuforum'])) {
             // hmmm, no forums? well at least its easy... skip!
             continue;
         }

@@ -51,7 +51,7 @@ $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
 
 unset($SESSION->fromdiscussion);
 
-add_to_log($course->id, 'forum', 'view forums', "index.php?id=$course->id");
+add_to_log($course->id, 'hsuforum', 'view forums', "index.php?id=$course->id");
 
 $strforums       = get_string('forums', 'hsuforum');
 $strforum        = get_string('forum', 'hsuforum');
@@ -118,11 +118,11 @@ $generalforums  = array();
 $learningforums = array();
 $modinfo =& get_fast_modinfo($course);
 
-if (!isset($modinfo->instances['forum'])) {
-    $modinfo->instances['forum'] = array();
+if (!isset($modinfo->instances['hsuforum'])) {
+    $modinfo->instances['hsuforum'] = array();
 }
 
-foreach ($modinfo->instances['forum'] as $forumid=>$cm) {
+foreach ($modinfo->instances['hsuforum'] as $forumid=>$cm) {
     if (!$cm->uservisible or !isset($forums[$forumid])) {
         continue;
     }
@@ -151,7 +151,7 @@ foreach ($modinfo->instances['forum'] as $forumid=>$cm) {
 
 /// Do course wide subscribe/unsubscribe
 if (!is_null($subscribe) and !isguestuser()) {
-    foreach ($modinfo->instances['forum'] as $forumid=>$cm) {
+    foreach ($modinfo->instances['hsuforum'] as $forumid=>$cm) {
         $forum = $forums[$forumid];
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
         $cansub = false;
@@ -176,11 +176,11 @@ if (!is_null($subscribe) and !isguestuser()) {
     $returnto = hsuforum_go_back_to("index.php?id=$course->id");
     $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
     if ($subscribe) {
-        add_to_log($course->id, 'forum', 'subscribeall', "index.php?id=$course->id", $course->id);
-        redirect($returnto, get_string('nowallsubscribed', 'forum', $shortname), 1);
+        add_to_log($course->id, 'hsuforum', 'subscribeall', "index.php?id=$course->id", $course->id);
+        redirect($returnto, get_string('nowallsubscribed', 'hsuforum', $shortname), 1);
     } else {
-        add_to_log($course->id, 'forum', 'unsubscribeall', "index.php?id=$course->id", $course->id);
-        redirect($returnto, get_string('nowallunsubscribed', 'forum', $shortname), 1);
+        add_to_log($course->id, 'hsuforum', 'unsubscribeall', "index.php?id=$course->id", $course->id);
+        redirect($returnto, get_string('nowallunsubscribed', 'hsuforum', $shortname), 1);
     }
 }
 
@@ -188,7 +188,7 @@ if (!is_null($subscribe) and !isguestuser()) {
 
 if ($generalforums) {
     foreach ($generalforums as $forum) {
-        $cm      = $modinfo->instances['forum'][$forum->id];
+        $cm      = $modinfo->instances['hsuforum'][$forum->id];
         $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
         $count = hsuforum_count_discussions($forum, $cm, $course);
@@ -315,7 +315,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
     if ($learningforums) {
         $currentsection = '';
             foreach ($learningforums as $forum) {
-            $cm      = $modinfo->instances['forum'][$forum->id];
+            $cm      = $modinfo->instances['hsuforum'][$forum->id];
             $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
             $count = hsuforum_count_discussions($forum, $cm, $course);

@@ -112,7 +112,7 @@ if (!$course = $DB->get_record('course', array('id'=>$id))) {
 
 require_course_login($course);
 
-add_to_log($course->id, "forum", "search", "search.php?id=$course->id&amp;search=".urlencode($search), $search);
+add_to_log($course->id, "hsuforum", "search", "search.php?id=$course->id&amp;search=".urlencode($search), $search);
 
 $strforums = get_string("modulenameplural", "hsuforum");
 $strsearch = get_string("search", "hsuforum");
@@ -146,7 +146,7 @@ if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string("nopostscontaining", "forum", $search));
+    echo $OUTPUT->heading(get_string("nopostscontaining", "hsuforum", $search));
 
     if (!$individualparams) {
         $words = $search;
@@ -214,10 +214,10 @@ foreach ($posts as $post) {
     // Replace the simple subject with the three items forum name -> thread name -> subject
     // (if all three are appropriate) each as a link.
     if (! $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion))) {
-        print_error('invaliddiscussionid', 'forum');
+        print_error('invaliddiscussionid', 'hsuforum');
     }
     if (! $forum = $DB->get_record('hsuforum', array('id' => "$discussion->forum"))) {
-        print_error('invalidforumid', 'forum');
+        print_error('invalidforumid', 'hsuforum');
     }
 
     if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id)) {
@@ -446,11 +446,11 @@ function hsuforum_menu_list($course)  {
 
     $modinfo = get_fast_modinfo($course);
 
-    if (empty($modinfo->instances['forum'])) {
+    if (empty($modinfo->instances['hsuforum'])) {
         return $menu;
     }
 
-    foreach ($modinfo->instances['forum'] as $cm) {
+    foreach ($modinfo->instances['hsuforum'] as $cm) {
         if (!$cm->uservisible) {
             continue;
         }

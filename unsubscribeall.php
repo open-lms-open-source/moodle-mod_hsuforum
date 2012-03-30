@@ -56,7 +56,7 @@ if (data_submitted() and $confirm and confirm_sesskey()) {
     $a = $DB->count_records('hsuforum_subscriptions', array('userid'=>$USER->id));
 
     if ($a) {
-        $msg = get_string('unsubscribeallconfirm', 'forum', $a);
+        $msg = get_string('unsubscribeallconfirm', 'hsuforum', $a);
         echo $OUTPUT->confirm($msg, new moodle_url('unsubscribeall.php', array('confirm'=>1)), $return);
         echo $OUTPUT->footer();
         die;

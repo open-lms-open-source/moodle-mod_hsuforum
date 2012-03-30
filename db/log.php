@@ -29,16 +29,16 @@ defined('MOODLE_INTERNAL') || die();
 global $DB; // TODO: this is a hack, we should really do something with the SQL in SQL tables
 
 $logs = array(
-    array('module'=>'forum', 'action'=>'add', 'mtable'=>'forum', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'update', 'mtable'=>'forum', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'add discussion', 'mtable'=>'hsuforum_discussions', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'add post', 'mtable'=>'hsuforum_posts', 'field'=>'subject'),
-    array('module'=>'forum', 'action'=>'update post', 'mtable'=>'hsuforum_posts', 'field'=>'subject'),
-    array('module'=>'forum', 'action'=>'user report', 'mtable'=>'user', 'field'=>$DB->sql_concat('firstname', "' '" , 'lastname')),
-    array('module'=>'forum', 'action'=>'move discussion', 'mtable'=>'hsuforum_discussions', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'view subscribers', 'mtable'=>'forum', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'view discussion', 'mtable'=>'hsuforum_discussions', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'view forum', 'mtable'=>'forum', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'subscribe', 'mtable'=>'forum', 'field'=>'name'),
-    array('module'=>'forum', 'action'=>'unsubscribe', 'mtable'=>'forum', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'add', 'mtable'=>'hsuforum', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'update', 'mtable'=>'hsuforum', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'add discussion', 'mtable'=>'hsuforum_discussions', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'add post', 'mtable'=>'hsuforum_posts', 'field'=>'subject'),
+    array('module'=>'hsuforum', 'action'=>'update post', 'mtable'=>'hsuforum_posts', 'field'=>'subject'),
+    array('module'=>'hsuforum', 'action'=>'user report', 'mtable'=>'user', 'field'=>$DB->sql_concat('firstname', "' '" , 'lastname')),
+    array('module'=>'hsuforum', 'action'=>'move discussion', 'mtable'=>'hsuforum_discussions', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'view subscribers', 'mtable'=>'hsuforum', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'view discussion', 'mtable'=>'hsuforum_discussions', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'view forum', 'mtable'=>'hsuforum', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'subscribe', 'mtable'=>'hsuforum', 'field'=>'name'),
+    array('module'=>'hsuforum', 'action'=>'unsubscribe', 'mtable'=>'hsuforum', 'field'=>'name'),
 );

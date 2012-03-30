@@ -86,7 +86,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (!$users || !is_array($users) || count($users)===0) {
             $output .= $this->output->heading(get_string("nosubscribers", "hsuforum"));
         } else {
-            $output .= $this->output->heading(get_string("subscribersto","forum", "'".format_string($forum->name)."'"));
+            $output .= $this->output->heading(get_string("subscribersto","hsuforum", "'".format_string($forum->name)."'"));
             $table = new html_table();
             $table->cellpadding = 5;
             $table->cellspacing = 5;

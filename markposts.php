@@ -41,7 +41,7 @@ if ($returnpage !== 'index.php') {
 $PAGE->set_url($url);
 
 if (! $forum = $DB->get_record("hsuforum", array("id" => $f))) {
-    print_error('invalidforumid', 'forum');
+    print_error('invalidforumid', 'hsuforum');
 }
 
 if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
@@ -78,7 +78,7 @@ $info->forum = format_string($forum->name);
 if ($mark == 'read') {
     if (!empty($d)) {
         if (! $discussion = $DB->get_record('hsuforum_discussions', array('id'=> $d, 'forum'=> $forum->id))) {
-            print_error('invaliddiscussionid', 'forum');
+            print_error('invaliddiscussionid', 'hsuforum');
         }
 
         if (hsuforum_tp_mark_discussion_read($user, $d)) {
@@ -93,15 +93,15 @@ if ($mark == 'read') {
             $currentgroup=false;
         }
         if (hsuforum_tp_mark_hsuforum_read($user, $forum->id,$currentgroup)) {
-            add_to_log($course->id, "forum", "mark read", "view.php?f=$forum->id", $forum->id, $cm->id);
+            add_to_log($course->id, "hsuforum", "mark read", "view.php?f=$forum->id", $forum->id, $cm->id);
         }
     }
 
 /// FUTURE - Add ability to mark them as unread.
 //    } else { // subscribe
 //        if (hsuforum_tp_start_tracking($forum->id, $user->id)) {
-//            add_to_log($course->id, "forum", "mark unread", "view.php?f=$forum->id", $forum->id, $cm->id);
-//            redirect($returnto, get_string("nowtracking", "forum", $info), 1);
+//            add_to_log($course->id, "hsuforum", "mark unread", "view.php?f=$forum->id", $forum->id, $cm->id);
+//            redirect($returnto, get_string("nowtracking", "hsuforum", $info), 1);
 //        } else {
 //            print_error("Could not start tracking that forum", $_SERVER["HTTP_REFERER"]);
 //        }

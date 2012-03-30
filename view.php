@@ -55,7 +55,7 @@
             print_error('coursemisconf');
         }
         if (! $forum = $DB->get_record("hsuforum", array("id" => $cm->instance))) {
-            print_error('invalidforumid', 'forum');
+            print_error('invalidforumid', 'hsuforum');
         }
         if ($forum->type == 'single') {
             $PAGE->set_pagetype('mod-forum-discuss');
@@ -68,7 +68,7 @@
     } else if ($f) {
 
         if (! $forum = $DB->get_record("hsuforum", array("id" => $f))) {
-            print_error('invalidforumid', 'forum');
+            print_error('invalidforumid', 'hsuforum');
         }
         if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
             print_error('coursemisconf');
@@ -128,9 +128,9 @@
 
 /// Okay, we can show the discussions. Log the forum view.
     if ($cm->id) {
-        add_to_log($course->id, "forum", "view forum", "view.php?id=$cm->id", "$forum->id", $cm->id);
+        add_to_log($course->id, "hsuforum", "view forum", "view.php?id=$cm->id", "$forum->id", $cm->id);
     } else {
-        add_to_log($course->id, "forum", "view forum", "view.php?f=$forum->id", "$forum->id");
+        add_to_log($course->id, "hsuforum", "view forum", "view.php?f=$forum->id", "$forum->id");
     }
 
     $SESSION->fromdiscussion = $FULLME;   // Return here if we post or set subscription etc
@@ -158,7 +158,7 @@
     if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
         $a->blockafter = $forum->blockafter;
         $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
-        echo $OUTPUT->notification(get_string('thisforumisthrottled','forum',$a));
+        echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
     }
 
     if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {
@@ -171,7 +171,7 @@
                 echo $OUTPUT->notification(get_string('warnformorepost', 'hsuforum'));
             }
             if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
-                print_error('cannotfindfirstpost', 'forum');
+                print_error('cannotfindfirstpost', 'hsuforum');
             }
             if ($mode) {
                 set_user_preference("hsuforum_displaymode", $mode);

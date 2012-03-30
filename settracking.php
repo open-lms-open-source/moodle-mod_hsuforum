@@ -36,7 +36,7 @@ if ($returnpage !== 'index.php') {
 $PAGE->set_url($url);
 
 if (! $forum = $DB->get_record("hsuforum", array("id" => $id))) {
-    print_error('invalidforumid', 'forum');
+    print_error('invalidforumid', 'hsuforum');
 }
 
 if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
@@ -60,16 +60,16 @@ $info->name  = fullname($USER);
 $info->forum = format_string($forum->name);
 if (hsuforum_tp_is_tracked($forum) ) {
     if (hsuforum_tp_stop_tracking($forum->id)) {
-        add_to_log($course->id, "forum", "stop tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
-        redirect($returnto, get_string("nownottracking", "forum", $info), 1);
+        add_to_log($course->id, "hsuforum", "stop tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
+        redirect($returnto, get_string("nownottracking", "hsuforum", $info), 1);
     } else {
         print_error('cannottrack', '', $_SERVER["HTTP_REFERER"]);
     }
 
 } else { // subscribe
     if (hsuforum_tp_start_tracking($forum->id)) {
-        add_to_log($course->id, "forum", "start tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
-        redirect($returnto, get_string("nowtracking", "forum", $info), 1);
+        add_to_log($course->id, "hsuforum", "start tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
+        redirect($returnto, get_string("nowtracking", "hsuforum", $info), 1);
     } else {
         print_error('cannottrack', '', $_SERVER["HTTP_REFERER"]);
     }

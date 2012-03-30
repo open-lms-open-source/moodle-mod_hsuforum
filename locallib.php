@@ -55,7 +55,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
     function __construct($callbackargs) {
         parent::__construct($callbackargs);
         if (!$this->postid && !$this->discussionid) {
-            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'forum');
+            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'hsuforum');
         }
     }
     /**
@@ -66,7 +66,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
 
         if ($this->postid) {
             if (!$this->post = $DB->get_record('hsuforum_posts', array('id' => $this->postid))) {
-                throw new portfolio_caller_exception('invalidpostid', 'forum');
+                throw new portfolio_caller_exception('invalidpostid', 'hsuforum');
             }
         }
 
@@ -76,15 +76,15 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
         } else if ($this->post) {
             $dbparams = array('id' => $this->post->discussion);
         } else {
-            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'forum');
+            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'hsuforum');
         }
 
         if (!$this->discussion = $DB->get_record('hsuforum_discussions', $dbparams)) {
-            throw new portfolio_caller_exception('invaliddiscussionid', 'forum');
+            throw new portfolio_caller_exception('invaliddiscussionid', 'hsuforum');
         }
 
         if (!$this->forum = $DB->get_record('hsuforum', array('id' => $this->discussion->forum))) {
-            throw new portfolio_caller_exception('invalidforumid', 'forum');
+            throw new portfolio_caller_exception('invalidforumid', 'hsuforum');
         }
 
         if (!$this->cm = get_coursemodule_from_instance('hsuforum', $this->forum->id)) {
@@ -314,7 +314,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
         $by = new stdClass();
         $by->name = $fullname;
         $by->date = userdate($post->modified, '', $this->user->timezone);
-        $output .= '<div class="author">'.get_string('bynameondate', 'forum', $by).'</div>';
+        $output .= '<div class="author">'.get_string('bynameondate', 'hsuforum', $by).'</div>';
 
         $output .= '</td></tr>';
 

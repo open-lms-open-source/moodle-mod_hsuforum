@@ -52,7 +52,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         //MDL-13866 - send forum ratins to gradebook again
         require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
         hsuforum_upgrade_grades();
-        upgrade_mod_savepoint(true, 2007101511, 'forum');
+        upgrade_mod_savepoint(true, 2007101511, 'hsuforum');
     }
 
     if ($oldversion < 2008072800) {
@@ -82,7 +82,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         if(!$dbman->field_exists($table,$field)) {
             $dbman->add_field($table, $field);
         }
-        upgrade_mod_savepoint(true, 2008072800, 'forum');
+        upgrade_mod_savepoint(true, 2008072800, 'hsuforum');
     }
 
     if ($oldversion < 2008081900) {
@@ -98,7 +98,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $sqlfrom = "FROM {hsuforum_posts} p
                     JOIN {hsuforum_discussions} d ON d.id = p.discussion
                     JOIN {hsuforum} f ON f.id = d.forum
-                    JOIN {modules} m ON m.name = 'forum'
+                    JOIN {modules} m ON m.name = 'hsuforum'
                     JOIN {course_modules} cm ON (cm.module = m.id AND cm.instance = f.id)
                    WHERE p.attachment <> '$empty' AND p.attachment <> '1'";
 
@@ -150,7 +150,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         }
         $rs->close();
 
-        upgrade_mod_savepoint(true, 2008081900, 'forum');
+        upgrade_mod_savepoint(true, 2008081900, 'hsuforum');
     }
 
     if ($oldversion < 2008090800) {
@@ -165,7 +165,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         }
 
     /// forum savepoint reached
-        upgrade_mod_savepoint(true, 2008090800, 'forum');
+        upgrade_mod_savepoint(true, 2008090800, 'hsuforum');
     }
 
     if ($oldversion < 2009042000) {
@@ -178,7 +178,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $dbman->rename_field($table, $field, 'messageformat');
 
     /// forum savepoint reached
-        upgrade_mod_savepoint(true, 2009042000, 'forum');
+        upgrade_mod_savepoint(true, 2009042000, 'hsuforum');
     }
 
     if ($oldversion < 2009042001) {
@@ -191,7 +191,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $dbman->add_field($table, $field);
 
     /// forum savepoint reached
-        upgrade_mod_savepoint(true, 2009042001, 'forum');
+        upgrade_mod_savepoint(true, 2009042001, 'hsuforum');
     }
 
     if ($oldversion < 2009042002) {
@@ -209,7 +209,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $rs->close();
 
     /// forum savepoint reached
-        upgrade_mod_savepoint(true, 2009042002, 'forum');
+        upgrade_mod_savepoint(true, 2009042002, 'hsuforum');
     }
 
     if ($oldversion < 2009042003) {
@@ -236,7 +236,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         }
 
     /// forum savepoint reached
-        upgrade_mod_savepoint(true, 2009042003, 'forum');
+        upgrade_mod_savepoint(true, 2009042003, 'hsuforum');
     }
 
     /// Dropping all enums/check contraints from core. MDL-18577
@@ -250,7 +250,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $dbman->drop_enum_from_field($table, $field);
 
     /// forum savepoint reached
-        upgrade_mod_savepoint(true, 2009042700, 'forum');
+        upgrade_mod_savepoint(true, 2009042700, 'hsuforum');
     }
 
     if ($oldversion < 2009050400) {
@@ -259,7 +259,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $DB->delete_records('hsuforum_ratings', array('post' => 0));
 
     /// forum savepoint reached
-        upgrade_mod_savepoint(true, 2009050400, 'forum');
+        upgrade_mod_savepoint(true, 2009050400, 'hsuforum');
     }
 
     if ($oldversion < 2010042800) {
@@ -278,7 +278,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
                       JOIN {context} cxt ON cxt.instanceid=cm.id
                       JOIN {modules} m ON m.id=cm.module
                      WHERE m.name = :modname AND cxt.contextlevel = :contextlevel";
-            $params['modname'] = 'forum';
+            $params['modname'] = 'hsuforum';
             $params['contextlevel'] = CONTEXT_MODULE;
 
             $DB->execute($sql, $params);
@@ -287,7 +287,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
             $dbman->drop_table($table);
         }
 
-        upgrade_mod_savepoint(true, 2010042800, 'forum');
+        upgrade_mod_savepoint(true, 2010042800, 'hsuforum');
     }
 
     if ($oldversion < 2010070800) {
@@ -296,7 +296,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $DB->delete_records('message_providers', array('name' => 'digests','component'=>'mod_forum'));
 
         // forum savepoint reached
-        upgrade_mod_savepoint(true, 2010070800, 'forum');
+        upgrade_mod_savepoint(true, 2010070800, 'hsuforum');
     }
 
     if ($oldversion < 2010091900) {
@@ -312,7 +312,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
             $file->delete();
         }
         $rs->close();
-        upgrade_mod_savepoint(true, 2010091900, 'forum');
+        upgrade_mod_savepoint(true, 2010091900, 'hsuforum');
     }
 
     if ($oldversion < 2011052300) {
@@ -331,11 +331,11 @@ function xmldb_hsuforum_upgrade($oldversion) {
                       JOIN {course_modules} cm ON cm.id = ctx.instanceid
                       JOIN {modules} m ON m.id = cm.module
                      WHERE ctx.contextlevel = 70 AND
-                           m.name = 'forum'
+                           m.name = 'hsuforum'
                 ) AND component = 'unknown'";
         $DB->execute($sql);
 
-        upgrade_mod_savepoint(true, 2011052300, 'forum');
+        upgrade_mod_savepoint(true, 2011052300, 'hsuforum');
     }
 
     // Moodle v2.1.0 release upgrade line

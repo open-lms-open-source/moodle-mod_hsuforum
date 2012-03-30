@@ -90,7 +90,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
         // start writing forum.xml
         $this->open_xml_writer("activities/hsuforum_{$this->moduleid}/forum.xml");
         $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
-            'modulename' => 'forum', 'contextid' => $contextid));
+            'modulename' => 'hsuforum', 'contextid' => $contextid));
         $this->xmlwriter->begin_tag('hsuforum', array('id' => $instanceid));
 
         foreach ($data as $field => $value) {
@@ -105,7 +105,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
     }
 
     /**
-     * This is executed when we reach the closing </MOD> tag of our 'forum' path
+     * This is executed when we reach the closing </MOD> tag of our 'hsuforum' path
      */
     public function on_hsuforum_end() {
         // finish writing forum.xml

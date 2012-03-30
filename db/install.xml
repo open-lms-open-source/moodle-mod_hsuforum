@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="forum" COMMENT="Forums contain and structure discussion" NEXT="hsuforum_discussions">
+    <TABLE NAME="hsuforum" COMMENT="Forums contain and structure discussion" NEXT="hsuforum_discussions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="type"/>
@@ -37,7 +37,7 @@
         <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="hsuforum_discussions" COMMENT="Forums are composed of discussions" PREVIOUS="forum" NEXT="hsuforum_posts">
+    <TABLE NAME="hsuforum_discussions" COMMENT="Forums are composed of discussions" PREVIOUS="hsuforum" NEXT="hsuforum_posts">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="forum"/>
