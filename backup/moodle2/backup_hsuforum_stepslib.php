@@ -126,7 +126,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             $track->set_source_table('hsuforum_track_prefs', array('forumid' => backup::VAR_PARENTID));
 
             $rating->set_source_table('rating', array('contextid'  => backup::VAR_CONTEXTID,
-                                                      'component'  => backup_helper::is_sqlparam('mod_forum'),
+                                                      'component'  => backup_helper::is_sqlparam('mod_hsuforum'),
                                                       'ratingarea' => backup_helper::is_sqlparam('post'),
                                                       'itemid'     => backup::VAR_PARENTID));
             $rating->set_source_alias('rating', 'value');
@@ -152,10 +152,10 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
 
         // Define file annotations
 
-        $forum->annotate_files('mod_forum', 'intro', null); // This file area hasn't itemid
+        $forum->annotate_files('mod_hsuforum', 'intro', null); // This file area hasn't itemid
 
-        $post->annotate_files('mod_forum', 'post', 'id');
-        $post->annotate_files('mod_forum', 'attachment', 'id');
+        $post->annotate_files('mod_hsuforum', 'post', 'id');
+        $post->annotate_files('mod_hsuforum', 'attachment', 'id');
 
         // Return the root element (forum), wrapped into standard activity structure
         return $this->prepare_activity_structure($forum);

@@ -18,7 +18,7 @@
 /**
 * This file adds support to rss feeds generation
 *
-* @package mod-forum
+* @package mod-hsuforum
 * @copyright 2001 Eloy Lafuente (stronk7) http://contiento.com
 * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
@@ -64,7 +64,7 @@ function hsuforum_rss_get_feed($context, $args) {
 
     //hash the sql to get the cache file name
     $filename = rss_get_file_name($forum, $sql);
-    $cachedfilepath = rss_get_file_full_name('mod_forum', $filename);
+    $cachedfilepath = rss_get_file_full_name('mod_hsuforum', $filename);
 
     //Is the cache out of date?
     $cachedfilelastmodified = 0;
@@ -77,7 +77,7 @@ function hsuforum_rss_get_feed($context, $args) {
         //need to regenerate the cached version
         $result = hsuforum_rss_feed_contents($forum, $sql);
         if (!empty($result)) {
-            $status = rss_save_file('mod_forum',$filename,$result);
+            $status = rss_save_file('mod_hsuforum',$filename,$result);
         }
     }
 
@@ -92,7 +92,7 @@ function hsuforum_rss_get_feed($context, $args) {
  * @return void
  */
 function hsuforum_rss_delete_file($forum) {
-    rss_delete_file('mod_forum', $forum);
+    rss_delete_file('mod_hsuforum', $forum);
 }
 
 ///////////////////////////////////////////////////////

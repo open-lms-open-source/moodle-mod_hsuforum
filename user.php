@@ -18,7 +18,7 @@
 /**
  * Display user activity reports for a course
  *
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -153,13 +153,13 @@ if (empty($result->posts)) {
     }
 
     // Prepare the page title
-    $pagetitle = get_string('noposts', 'mod_forum');
+    $pagetitle = get_string('noposts', 'mod_hsuforum');
 
     // Get the page heading
     if ($isspecificcourse) {
         $pageheading = format_string($course->shortname, true, array('context' => $coursecontext));
     } else {
-        $pageheading = get_string('pluginname', 'mod_forum');
+        $pageheading = get_string('pluginname', 'mod_hsuforum');
     }
 
     // Next we need to set up the loading of the navigation and choose a message
@@ -221,7 +221,7 @@ $discussions = $DB->get_records_list('hsuforum_discussions', 'id', array_unique(
 //retrieving the ratings then reassembling them all back into a single array sorted by post.modified (descending)
 $rm = new rating_manager();
 $ratingoptions = new stdClass;
-$ratingoptions->component = 'mod_forum';
+$ratingoptions->component = 'mod_hsuforum';
 $ratingoptions->ratingarea = 'post';
 foreach ($result->posts as $post) {
     if (!isset($result->forums[$post->forum]) || !isset($discussions[$post->discussion])) {
@@ -296,9 +296,9 @@ foreach ($result->posts as $post) {
 $userfullname = fullname($user);
 
 if ($discussionsonly) {
-    $inpageheading = get_string('discussionsstartedby', 'mod_forum', $userfullname);
+    $inpageheading = get_string('discussionsstartedby', 'mod_hsuforum', $userfullname);
 } else {
-    $inpageheading = get_string('postsmadebyuser', 'mod_forum', $userfullname);
+    $inpageheading = get_string('postsmadebyuser', 'mod_hsuforum', $userfullname);
 }
 if ($isspecificcourse) {
     $a = new stdClass;
@@ -306,9 +306,9 @@ if ($isspecificcourse) {
     $a->coursename = format_string($course->shortname, true, array('context' => $coursecontext));
     $pageheading = $a->coursename;
     if ($discussionsonly) {
-        $pagetitle = get_string('discussionsstartedbyuserincourse', 'mod_forum', $a);
+        $pagetitle = get_string('discussionsstartedbyuserincourse', 'mod_hsuforum', $a);
     } else {
-        $pagetitle = get_string('postsmadebyuserincourse', 'mod_forum', $a);
+        $pagetitle = get_string('postsmadebyuserincourse', 'mod_hsuforum', $a);
     }
 } else {
     $pagetitle = $inpageheading;

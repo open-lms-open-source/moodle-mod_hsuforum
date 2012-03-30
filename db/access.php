@@ -42,7 +42,7 @@
  *
  * The variable name for the capability definitions array is $capabilities
  *
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 2006 vyshane
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

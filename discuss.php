@@ -19,7 +19,7 @@
  * Displays a post, and all the posts below it.
  * If no post is given, displays all posts in a discussion
  *
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -61,7 +61,7 @@
         require_once("$CFG->libdir/rsslib.php");
 
         $rsstitle = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id))) . ': %fullname%';
-        rss_add_http_header($modcontext, 'mod_forum', $forum, $rsstitle);
+        rss_add_http_header($modcontext, 'mod_hsuforum', $forum, $rsstitle);
     }
 
     if ($forum->type == 'news') {
@@ -198,7 +198,7 @@
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), '/mod/hsuforum/locallib.php');
-        $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_forum'));
+        $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_hsuforum'));
         $buttonextraclass = '';
         if (empty($button)) {
             // no portfolio plugin available.

@@ -80,7 +80,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
         $contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
 
         // get a fresh new file manager for this instance
-        $this->fileman = $this->converter->get_file_manager($contextid, 'mod_forum');
+        $this->fileman = $this->converter->get_file_manager($contextid, 'mod_hsuforum');
 
         // convert course files embedded into the intro
         $this->fileman->filearea = 'intro';

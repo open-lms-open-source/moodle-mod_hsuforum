@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -266,7 +266,7 @@ if ($generalforums) {
                     $userid = $USER->id;
                 }
                 //Get html code for RSS link
-                $row[] = rss_get_link($context->id, $userid, 'mod_forum', $forum->id, $tooltiptext);
+                $row[] = rss_get_link($context->id, $userid, 'mod_hsuforum', $forum->id, $tooltiptext);
             } else {
                 $row[] = '&nbsp;';
             }
@@ -398,7 +398,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                         $tooltiptext = get_string('rsssubscriberssposts', 'hsuforum');
                     }
                     //Get html code for RSS link
-                    $row[] = rss_get_link($context->id, $USER->id, 'mod_forum', $forum->id, $tooltiptext);
+                    $row[] = rss_get_link($context->id, $USER->id, 'mod_hsuforum', $forum->id, $tooltiptext);
                 } else {
                     $row[] = '&nbsp;';
                 }

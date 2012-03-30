@@ -128,7 +128,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
 
         // We need to check that component and ratingarea are both set here.
         if (empty($data->component)) {
-            $data->component = 'mod_forum';
+            $data->component = 'mod_hsuforum';
         }
         if (empty($data->ratingarea)) {
             $data->ratingarea = 'post';
@@ -179,7 +179,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         global $DB;
 
         // Add forum related files, no need to match by itemname (just internally handled context)
-        $this->add_related_files('mod_forum', 'intro', null);
+        $this->add_related_files('mod_hsuforum', 'intro', null);
 
         // If the forum is of type 'single' and no discussion has been ignited
         // (non-userinfo backup/restore) create the discussion here, using forum
@@ -202,7 +202,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $DB->set_field ('hsuforum_posts','mailed', '1', array('discussion' => $sdid));
             // Copy all the files from mod_foum/intro to mod_hsuforum/post
             $fs = get_file_storage();
-            $files = $fs->get_area_files($this->task->get_contextid(), 'mod_forum', 'intro');
+            $files = $fs->get_area_files($this->task->get_contextid(), 'mod_hsuforum', 'intro');
             foreach ($files as $file) {
                 $newfilerecord = new stdclass();
                 $newfilerecord->filearea = 'post';
@@ -212,7 +212,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         }
 
         // Add post related files, matching by itemname = 'hsuforum_post'
-        $this->add_related_files('mod_forum', 'post', 'hsuforum_post');
-        $this->add_related_files('mod_forum', 'attachment', 'hsuforum_post');
+        $this->add_related_files('mod_hsuforum', 'post', 'hsuforum_post');
+        $this->add_related_files('mod_hsuforum', 'attachment', 'hsuforum_post');
     }
 }

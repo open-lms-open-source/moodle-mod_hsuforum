@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -58,7 +58,7 @@
             print_error('invalidforumid', 'hsuforum');
         }
         if ($forum->type == 'single') {
-            $PAGE->set_pagetype('mod-forum-discuss');
+            $PAGE->set_pagetype('mod-hsuforum-discuss');
         }
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
@@ -97,7 +97,7 @@
         require_once("$CFG->libdir/rsslib.php");
 
         $rsstitle = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id))) . ': %fullname%';
-        rss_add_http_header($context, 'mod_forum', $forum, $rsstitle);
+        rss_add_http_header($context, 'mod_hsuforum', $forum, $rsstitle);
     }
 
     // Mark viewed if required

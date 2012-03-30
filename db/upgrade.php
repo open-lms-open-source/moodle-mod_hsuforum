@@ -36,7 +36,7 @@
  * Please do not forget to use upgrade_set_timeout()
  * before any action that may take longer time to finish.
  *
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -133,8 +133,8 @@ function xmldb_hsuforum_upgrade($oldversion) {
                     $DB->update_record('hsuforum_posts', $post);
                     continue;
                 }
-                if (!$fs->file_exists($context->id, 'mod_forum', $filearea, $post->id, '/', $filename)) {
-                    $file_record = array('contextid'=>$context->id, 'component'=>'mod_forum', 'filearea'=>$filearea, 'itemid'=>$post->id, 'filepath'=>'/', 'filename'=>$filename, 'userid'=>$post->userid);
+                if (!$fs->file_exists($context->id, 'mod_hsuforum', $filearea, $post->id, '/', $filename)) {
+                    $file_record = array('contextid'=>$context->id, 'component'=>'mod_hsuforum', 'filearea'=>$filearea, 'itemid'=>$post->id, 'filepath'=>'/', 'filename'=>$filename, 'userid'=>$post->userid);
                     if ($fs->create_file_from_pathname($file_record, $filepath)) {
                         $post->attachment = '1';
                         $DB->update_record('hsuforum_posts', $post);
@@ -293,7 +293,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
     if ($oldversion < 2010070800) {
 
         // Remove the forum digests message provider MDL-23145
-        $DB->delete_records('message_providers', array('name' => 'digests','component'=>'mod_forum'));
+        $DB->delete_records('message_providers', array('name' => 'digests','component'=>'mod_hsuforum'));
 
         // forum savepoint reached
         upgrade_mod_savepoint(true, 2010070800, 'hsuforum');
@@ -305,8 +305,8 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $rs = $DB->get_recordset('files', array('component'=>'mod_form'));
         foreach ($rs as $oldrecord) {
             $file = $fs->get_file_instance($oldrecord);
-            $newrecord = array('component'=>'mod_forum');
-            if (!$fs->file_exists($oldrecord->contextid, 'mod_forum', $oldrecord->filearea, $oldrecord->itemid, $oldrecord->filepath, $oldrecord->filename)) {
+            $newrecord = array('component'=>'mod_hsuforum');
+            if (!$fs->file_exists($oldrecord->contextid, 'mod_hsuforum', $oldrecord->filearea, $oldrecord->itemid, $oldrecord->filepath, $oldrecord->filename)) {
                 $fs->create_file_from_storedfile($newrecord, $file);
             }
             $file->delete();
@@ -317,14 +317,14 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
     if ($oldversion < 2011052300) {
         // rating.component and rating.ratingarea have now been added as mandatory fields.
-        // Presently you can only rate forum posts so component = 'mod_forum' and ratingarea = 'post'
+        // Presently you can only rate forum posts so component = 'mod_hsuforum' and ratingarea = 'post'
         // for all ratings with a forum context.
         // We want to update all ratings that belong to a forum context and don't already have a
         // component set.
         // This could take a while reset upgrade timeout to 5 min
         upgrade_set_timeout(60 * 20);
         $sql = "UPDATE {rating}
-                SET component = 'mod_forum', ratingarea = 'post'
+                SET component = 'mod_hsuforum', ratingarea = 'post'
                 WHERE contextid IN (
                     SELECT ctx.id
                       FROM {context} ctx

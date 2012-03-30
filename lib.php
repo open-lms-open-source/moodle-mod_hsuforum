@@ -95,7 +95,7 @@ function hsuforum_add_instance($forum, $mform) {
             $discussion = $DB->get_record('hsuforum_discussions', array('id'=>$discussion->id), '*', MUST_EXIST);
             $post = $DB->get_record('hsuforum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
 
-            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_forum', 'post', $post->id, array('subdirs'=>true), $post->message);
+            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_hsuforum', 'post', $post->id, array('subdirs'=>true), $post->message);
             $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
         }
     }
@@ -192,7 +192,7 @@ function hsuforum_update_instance($forum, $mform) {
             $discussion = $DB->get_record('hsuforum_discussions', array('id'=>$discussion->id), '*', MUST_EXIST);
             $post = $DB->get_record('hsuforum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
 
-            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_forum', 'post', $post->id, array('subdirs'=>true), $post->message);
+            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_hsuforum', 'post', $post->id, array('subdirs'=>true), $post->message);
         }
 
         $post->subject       = $forum->name;
@@ -624,7 +624,7 @@ function hsuforum_cron() {
                 mtrace('Sending ', '');
 
                 $eventdata = new stdClass();
-                $eventdata->component        = 'mod_forum';
+                $eventdata->component        = 'mod_hsuforum';
                 $eventdata->name             = 'posts';
                 $eventdata->userfrom         = $userfrom;
                 $eventdata->userto           = $userto;
@@ -1020,7 +1020,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     }
 
     // add absolute file links
-    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_forum', 'post', $post->id);
+    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_hsuforum', 'post', $post->id);
 
     $posttext .= "\n---------------------------------------------------------------------\n";
     $posttext .= format_string($post->subject,true);
@@ -1460,7 +1460,7 @@ function hsuforum_get_user_grades($forum, $userid = 0) {
     require_once($CFG->dirroot.'/rating/lib.php');
 
     $ratingoptions = new stdClass;
-    $ratingoptions->component = 'mod_forum';
+    $ratingoptions->component = 'mod_hsuforum';
     $ratingoptions->ratingarea = 'post';
 
     //need these to work backwards to get a context id. Is there a better way to get contextid from a module instance?
@@ -1630,7 +1630,7 @@ function hsuforum_get_participants($forumid) {
               JOIN {hsuforum_posts} p ON p.discussion = d.id
               JOIN {rating} r on r.itemid = p.id
              WHERE d.forum = :forumid AND
-                   r.component = 'mod_forum' AND
+                   r.component = 'mod_hsuforum' AND
                    r.ratingarea = 'post'";
     $st_ratings = $DB->get_records_sql($sql, $params);
 
@@ -2074,7 +2074,7 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
 function hsuforum_get_ratings($context, $postid, $sort = "u.firstname ASC") {
     $options = new stdClass;
     $options->context = $context;
-    $options->component = 'mod_forum';
+    $options->component = 'mod_hsuforum';
     $options->ratingarea = 'post';
     $options->itemid = $postid;
     $options->sort = "ORDER BY $sort";
@@ -2492,7 +2492,7 @@ function hsuforum_count_unrated_posts($discussionid, $userid) {
                  WHERE p.discussion = :discussionid AND
                        p.id = r.itemid AND
                        r.userid = userid AND
-                       r.component = 'mod_forum' AND
+                       r.component = 'mod_hsuforum' AND
                        r.ratingarea = 'post'";
         $rated = $DB->get_record_sql($sql, $params);
         if ($rated) {
@@ -3015,7 +3015,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
     }
 
     // add absolute file links
-    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_forum', 'post', $post->id);
+    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_hsuforum', 'post', $post->id);
 
     // format the post body
     $options = new stdClass();
@@ -3145,7 +3145,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
 
     $post->course = $course->id;
     $post->forum  = $forum->id;
-    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_forum', 'post', $post->id);
+    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_hsuforum', 'post', $post->id);
 
     // caching
     if (!isset($cm->cache)) {
@@ -3478,7 +3478,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
  */
 function hsuforum_rating_permissions($contextid, $component, $ratingarea) {
     $context = get_context_instance_by_id($contextid, MUST_EXIST);
-    if ($component != 'mod_forum' || $ratingarea != 'post') {
+    if ($component != 'mod_hsuforum' || $ratingarea != 'post') {
         // We don't know about this component/ratingarea so just return null to get the
         // default restrictive permissions.
         return null;
@@ -3495,7 +3495,7 @@ function hsuforum_rating_permissions($contextid, $component, $ratingarea) {
  * Validates a submitted rating
  * @param array $params submitted data
  *            context => object the context in which the rated items exists [required]
- *            component => The component for this module - should always be mod_forum [required]
+ *            component => The component for this module - should always be mod_hsuforum [required]
  *            ratingarea => object the context in which the rated items exists [required]
  *            itemid => int the ID of the object being rated [required]
  *            scaleid => int the scale from which the user can select a rating. Used for bounds checking. [required]
@@ -3507,8 +3507,8 @@ function hsuforum_rating_permissions($contextid, $component, $ratingarea) {
 function hsuforum_rating_validate($params) {
     global $DB, $USER;
 
-    // Check the component is mod_forum
-    if ($params['component'] != 'mod_forum') {
+    // Check the component is mod_hsuforum
+    if ($params['component'] != 'mod_hsuforum') {
         throw new rating_exception('invalidcomponent');
     }
 
@@ -3891,9 +3891,9 @@ function hsuforum_move_attachments($discussion, $forumfrom, $forumto) {
     if ($posts = $DB->get_records('hsuforum_posts', array('discussion'=>$discussion->id), '', 'id, attachment')) {
         foreach ($posts as $post) {
             $fs->move_area_files_to_new_context($oldcontext->id,
-                    $newcontext->id, 'mod_forum', 'post', $post->id);
+                    $newcontext->id, 'mod_hsuforum', 'post', $post->id);
             $attachmentsmoved = $fs->move_area_files_to_new_context($oldcontext->id,
-                    $newcontext->id, 'mod_forum', 'attachment', $post->id);
+                    $newcontext->id, 'mod_hsuforum', 'attachment', $post->id);
             if ($attachmentsmoved > 0 && $post->attachment != '1') {
                 // Weird - let's fix it
                 $post->attachment = '1';
@@ -3947,7 +3947,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
         require_once($CFG->libdir.'/portfoliolib.php');
     }
 
-    $files = $fs->get_area_files($context->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
+    $files = $fs->get_area_files($context->id, 'mod_hsuforum', 'attachment', $post->id, "timemodified", false);
     if ($files) {
         if ($canexport) {
             $button = new portfolio_add_button();
@@ -4056,7 +4056,7 @@ function hsuforum_get_file_info($browser, $areas, $course, $cm, $context, $filea
     $fs = get_file_storage();
     $filepath = is_null($filepath) ? '/' : $filepath;
     $filename = is_null($filename) ? '.' : $filename;
-    if (!($storedfile = $fs->get_file($context->id, 'mod_forum', $filearea, $itemid, $filepath, $filename))) {
+    if (!($storedfile = $fs->get_file($context->id, 'mod_hsuforum', $filearea, $itemid, $filepath, $filename))) {
         return null;
     }
 
@@ -4175,7 +4175,7 @@ function hsuforum_add_attachment($post, $forum, $cm, $mform=null, &$message=null
 
     $info = file_get_draft_area_info($post->attachments);
     $present = ($info['filecount']>0) ? '1' : '';
-    file_save_draft_area_files($post->attachments, $context->id, 'mod_forum', 'attachment', $post->id);
+    file_save_draft_area_files($post->attachments, $context->id, 'mod_hsuforum', 'attachment', $post->id);
 
     $DB->set_field('hsuforum_posts', 'attachment', $present, array('id'=>$post->id));
 
@@ -4207,7 +4207,7 @@ function hsuforum_add_new_post($post, $mform, &$message) {
     $post->attachment = "";
 
     $post->id = $DB->insert_record("hsuforum_posts", $post);
-    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_forum', 'post', $post->id, array('subdirs'=>true), $post->message);
+    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_hsuforum', 'post', $post->id, array('subdirs'=>true), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
     hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
 
@@ -4253,7 +4253,7 @@ function hsuforum_update_post($post, $mform, &$message) {
         $discussion->timestart = $post->timestart;
         $discussion->timeend   = $post->timeend;
     }
-    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_forum', 'post', $post->id, array('subdirs'=>true), $post->message);
+    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_hsuforum', 'post', $post->id, array('subdirs'=>true), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
 
     $DB->update_record('hsuforum_discussions', $discussion);
@@ -4316,7 +4316,7 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
     // TODO: Fix the calling code so that there always is a $cm when this function is called
     if (!empty($cm->id) && !empty($discussion->itemid)) {   // In "single simple discussions" this may not exist yet
         $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-        $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_forum', 'post', $post->id, array('subdirs'=>true), $post->message);
+        $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_hsuforum', 'post', $post->id, array('subdirs'=>true), $post->message);
         $DB->set_field('hsuforum_posts', 'message', $text, array('id'=>$post->id));
     }
 
@@ -4428,7 +4428,7 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
     require_once($CFG->dirroot.'/rating/lib.php');
     $delopt = new stdClass;
     $delopt->contextid = $context->id;
-    $delopt->component = 'mod_forum';
+    $delopt->component = 'mod_hsuforum';
     $delopt->ratingarea = 'post';
     $delopt->itemid = $post->id;
     $rm = new rating_manager();
@@ -4436,8 +4436,8 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
 
     //delete attachments
     $fs = get_file_storage();
-    $fs->delete_area_files($context->id, 'mod_forum', 'attachment', $post->id);
-    $fs->delete_area_files($context->id, 'mod_forum', 'post', $post->id);
+    $fs->delete_area_files($context->id, 'mod_hsuforum', 'attachment', $post->id);
+    $fs->delete_area_files($context->id, 'mod_hsuforum', 'post', $post->id);
 
     if ($DB->delete_records("hsuforum_posts", array("id" => $post->id))) {
 
@@ -5532,7 +5532,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
     if ($forum->assessed != RATING_AGGREGATE_NONE) {
         $ratingoptions = new stdClass;
         $ratingoptions->context = $modcontext;
-        $ratingoptions->component = 'mod_forum';
+        $ratingoptions->component = 'mod_hsuforum';
         $ratingoptions->ratingarea = 'post';
         $ratingoptions->items = $posts;
         $ratingoptions->aggregate = $forum->assessed;//the aggregation method
@@ -6929,7 +6929,7 @@ function hsuforum_reset_userdata($data) {
         $forums = $forums = $DB->get_records_sql($forumssql, $params);
         $rm = new rating_manager();;
         $ratingdeloptions = new stdClass;
-        $ratingdeloptions->component = 'mod_forum';
+        $ratingdeloptions->component = 'mod_hsuforum';
         $ratingdeloptions->ratingarea = 'post';
     }
 
@@ -6945,8 +6945,8 @@ function hsuforum_reset_userdata($data) {
                     continue;
                 }
                 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-                $fs->delete_area_files($context->id, 'mod_forum', 'attachment');
-                $fs->delete_area_files($context->id, 'mod_forum', 'post');
+                $fs->delete_area_files($context->id, 'mod_hsuforum', 'attachment');
+                $fs->delete_area_files($context->id, 'mod_hsuforum', 'post');
 
                 //remove ratings
                 $ratingdeloptions->contextid = $context->id;
@@ -7525,14 +7525,14 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
             $string = get_string('rsssubscriberssposts','hsuforum');
         }
 
-        $url = new moodle_url(rss_get_url($PAGE->cm->context->id, $userid, "mod_forum", $forumobject->id));
+        $url = new moodle_url(rss_get_url($PAGE->cm->context->id, $userid, "mod_hsuforum", $forumobject->id));
         $forumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('i/rss', ''));
     }
 }
 
 /**
  * Abstract class used by forum subscriber selection controls
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -7592,7 +7592,7 @@ abstract class hsuforum_subscriber_selector_base extends user_selector_base {
 
 /**
  * A user selector control for potential subscribers to the selected forum
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -7694,7 +7694,7 @@ class hsuforum_potential_subscriber_selector extends hsuforum_subscriber_selecto
 
 /**
  * User selector control for removing subscribed users
- * @package mod-forum
+ * @package mod-hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -7769,9 +7769,9 @@ function hsuforum_cm_info_view(cm_info $cm) {
  */
 function hsuforum_page_type_list($pagetype, $parentcontext, $currentcontext) {
     $hsuforum_pagetype = array(
-        'mod-forum-*'=>get_string('page-mod-forum-x', 'hsuforum'),
-        'mod-forum-view'=>get_string('page-mod-forum-view', 'hsuforum'),
-        'mod-forum-discuss'=>get_string('page-mod-forum-discuss', 'hsuforum')
+        'mod-hsuforum-*'=>get_string('page-mod-hsuforum-x', 'hsuforum'),
+        'mod-hsuforum-view'=>get_string('page-mod-hsuforum-view', 'hsuforum'),
+        'mod-hsuforum-discuss'=>get_string('page-mod-hsuforum-discuss', 'hsuforum')
     );
     return $hsuforum_pagetype;
 }
