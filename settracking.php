@@ -35,7 +35,7 @@ if ($returnpage !== 'index.php') {
 }
 $PAGE->set_url($url);
 
-if (! $forum = $DB->get_record("forum", array("id" => $id))) {
+if (! $forum = $DB->get_record("hsuforum", array("id" => $id))) {
     print_error('invalidforumid', 'forum');
 }
 

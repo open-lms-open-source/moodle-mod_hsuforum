@@ -39,7 +39,7 @@ if ($edit !== 0) {
 }
 $PAGE->set_url($url);
 
-$forum = $DB->get_record('forum', array('id'=>$id), '*', MUST_EXIST);
+$forum = $DB->get_record('hsuforum', array('id'=>$id), '*', MUST_EXIST);
 $course = $DB->get_record('course', array('id'=>$forum->course), '*', MUST_EXIST);
 if (! $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) {
     $cm->id = 0;

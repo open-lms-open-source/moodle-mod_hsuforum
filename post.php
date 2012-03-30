@@ -59,7 +59,7 @@ if (!isloggedin() or isguestuser()) {
     }
 
     if (!empty($forum)) {      // User is starting a new discussion in a forum
-        if (! $forum = $DB->get_record('forum', array('id' => $forum))) {
+        if (! $forum = $DB->get_record('hsuforum', array('id' => $forum))) {
             print_error('invalidforumid', 'forum');
         }
     } else if (!empty($reply)) {      // User is writing a new reply
@@ -69,7 +69,7 @@ if (!isloggedin() or isguestuser()) {
         if (! $discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion))) {
             print_error('notpartofdiscussion', 'forum');
         }
-        if (! $forum = $DB->get_record('forum', array('id' => $discussion->forum))) {
+        if (! $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum))) {
             print_error('invalidforumid');
         }
     }
@@ -97,7 +97,7 @@ if (!isloggedin() or isguestuser()) {
 require_login(0, false);   // Script is useless unless they're logged in
 
 if (!empty($forum)) {      // User is starting a new discussion in a forum
-    if (! $forum = $DB->get_record("forum", array("id" => $forum))) {
+    if (! $forum = $DB->get_record("hsuforum", array("id" => $forum))) {
         print_error('invalidforumid', 'forum');
     }
     if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
@@ -162,7 +162,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! $discussion = $DB->get_record("hsuforum_discussions", array("id" => $parent->discussion))) {
         print_error('notpartofdiscussion', 'forum');
     }
-    if (! $forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
+    if (! $forum = $DB->get_record("hsuforum", array("id" => $discussion->forum))) {
         print_error('invalidforumid', 'forum');
     }
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
@@ -243,7 +243,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! $discussion = $DB->get_record("hsuforum_discussions", array("id" => $post->discussion))) {
         print_error('notpartofdiscussion', 'forum');
     }
-    if (! $forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
+    if (! $forum = $DB->get_record("hsuforum", array("id" => $discussion->forum))) {
         print_error('invalidforumid', 'forum');
     }
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
@@ -288,7 +288,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! $discussion = $DB->get_record("hsuforum_discussions", array("id" => $post->discussion))) {
         print_error('notpartofdiscussion', 'forum');
     }
-    if (! $forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
+    if (! $forum = $DB->get_record("hsuforum", array("id" => $discussion->forum))) {
         print_error('invalidforumid', 'forum');
     }
     if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $forum->course)) {
@@ -404,7 +404,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (!$discussion = $DB->get_record("hsuforum_discussions", array("id" => $post->discussion))) {
         print_error('notpartofdiscussion', 'forum');
     }
-    if (!$forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
+    if (!$forum = $DB->get_record("hsuforum", array("id" => $discussion->forum))) {
         print_error('invalidforumid', 'forum');
     }
     if ($forum->type == 'single') {
@@ -638,7 +638,7 @@ if ($fromform = $mform_post->get_data()) {
         if (($forum->type == 'single') && ($updatepost->parent == '0')){ // updating first post of single discussion type -> updating forum intro
             $forum->intro = $updatepost->message;
             $forum->timemodified = time();
-            $DB->update_record("forum", $forum);
+            $DB->update_record("hsuforum", $forum);
         }
 
         $timemessage = 2;

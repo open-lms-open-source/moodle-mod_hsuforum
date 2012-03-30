@@ -63,7 +63,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $data->scale = -($this->get_mappingid('scale', abs($data->scale)));
         }
 
-        $newitemid = $DB->insert_record('forum', $data);
+        $newitemid = $DB->insert_record('hsuforum', $data);
         $this->apply_activity_instance($newitemid);
     }
 
@@ -185,7 +185,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         // (non-userinfo backup/restore) create the discussion here, using forum
         // information as base for the initial post.
         $forumid = $this->task->get_activityid();
-        $forumrec = $DB->get_record('forum', array('id' => $forumid));
+        $forumrec = $DB->get_record('hsuforum', array('id' => $forumid));
         if ($forumrec->type == 'single' && !$DB->record_exists('hsuforum_discussions', array('forum' => $forumid))) {
             // Create single discussion/lead post from forum data
             $sd = new stdclass();

@@ -54,7 +54,7 @@ function hsuforum_rss_get_feed($context, $args) {
         }
     }
 
-    $forum = $DB->get_record('forum', array('id' => $forumid), '*', MUST_EXIST);
+    $forum = $DB->get_record('hsuforum', array('id' => $forumid), '*', MUST_EXIST);
     if (!rss_enabled_for_mod('forum', $forum)) {
         return null;
     }

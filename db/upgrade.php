@@ -97,7 +97,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
         $sqlfrom = "FROM {hsuforum_posts} p
                     JOIN {hsuforum_discussions} d ON d.id = p.discussion
-                    JOIN {forum} f ON f.id = d.forum
+                    JOIN {hsuforum} f ON f.id = d.forum
                     JOIN {modules} m ON m.name = 'forum'
                     JOIN {course_modules} cm ON (cm.module = m.id AND cm.instance = f.id)
                    WHERE p.attachment <> '$empty' AND p.attachment <> '1'";
@@ -225,11 +225,11 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
         // conditionally migrate to html format in intro
         if ($CFG->texteditors !== 'textarea') {
-            $rs = $DB->get_recordset('forum', array('introformat'=>FORMAT_MOODLE), '', 'id,intro,introformat');
+            $rs = $DB->get_recordset('hsuforum', array('introformat'=>FORMAT_MOODLE), '', 'id,intro,introformat');
             foreach ($rs as $f) {
                 $f->intro       = text_to_html($f->intro, false, false, true);
                 $f->introformat = FORMAT_HTML;
-                $DB->update_record('forum', $f);
+                $DB->update_record('hsuforum', $f);
                 upgrade_set_timeout();
             }
             $rs->close();
@@ -273,7 +273,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
                       FROM {hsuforum_ratings} r
                       JOIN {hsuforum_posts} p ON p.id=r.post
                       JOIN {hsuforum_discussions} d ON d.id=p.discussion
-                      JOIN {forum} f ON f.id=d.forum
+                      JOIN {hsuforum} f ON f.id=d.forum
                       JOIN {course_modules} cm ON cm.instance=f.id
                       JOIN {context} cxt ON cxt.instanceid=cm.id
                       JOIN {modules} m ON m.id=cm.module

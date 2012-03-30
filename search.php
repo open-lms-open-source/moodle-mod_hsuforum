@@ -216,7 +216,7 @@ foreach ($posts as $post) {
     if (! $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion))) {
         print_error('invaliddiscussionid', 'forum');
     }
-    if (! $forum = $DB->get_record('forum', array('id' => "$discussion->forum"))) {
+    if (! $forum = $DB->get_record('hsuforum', array('id' => "$discussion->forum"))) {
         print_error('invalidforumid', 'forum');
     }
 

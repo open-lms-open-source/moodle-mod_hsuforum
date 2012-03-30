@@ -71,7 +71,7 @@ function hsuforum_add_instance($forum, $mform) {
         $forum->assesstimefinish = 0;
     }
 
-    $forum->id = $DB->insert_record('forum', $forum);
+    $forum->id = $DB->insert_record('hsuforum', $forum);
     $modcontext = get_context_instance(CONTEXT_MODULE, $forum->coursemodule);
 
     if ($forum->type == 'single') {  // Create related discussion.
@@ -143,7 +143,7 @@ function hsuforum_update_instance($forum, $mform) {
         $forum->assesstimefinish = 0;
     }
 
-    $oldforum = $DB->get_record('forum', array('id'=>$forum->id));
+    $oldforum = $DB->get_record('hsuforum', array('id'=>$forum->id));
 
     // MDL-3942 - if the aggregation type or scale (i.e. max grade) changes then recalculate the grades for the entire forum
     // if  scale changes - do we need to recheck the ratings, if ratings higher than scale how do we want to respond?
@@ -207,7 +207,7 @@ function hsuforum_update_instance($forum, $mform) {
         $DB->update_record('hsuforum_discussions', $discussion);
     }
 
-    $DB->update_record('forum', $forum);
+    $DB->update_record('hsuforum', $forum);
 
     hsuforum_grade_item_update($forum);
 
@@ -227,7 +227,7 @@ function hsuforum_update_instance($forum, $mform) {
 function hsuforum_delete_instance($id) {
     global $DB;
 
-    if (!$forum = $DB->get_record('forum', array('id'=>$id))) {
+    if (!$forum = $DB->get_record('hsuforum', array('id'=>$id))) {
         return false;
     }
     if (!$cm = get_coursemodule_from_instance('forum', $forum->id)) {
@@ -259,7 +259,7 @@ function hsuforum_delete_instance($id) {
 
     hsuforum_tp_delete_read_records(-1, -1, -1, $forum->id);
 
-    if (!$DB->delete_records('forum', array('id'=>$forum->id))) {
+    if (!$DB->delete_records('hsuforum', array('id'=>$forum->id))) {
         $result = false;
     }
 
@@ -319,7 +319,7 @@ function hsuforum_get_completion_state($course,$cm,$userid,$type) {
     global $CFG,$DB;
 
     // Get forum details
-    if (!($forum=$DB->get_record('forum',array('id'=>$cm->instance)))) {
+    if (!($forum=$DB->get_record('hsuforum',array('id'=>$cm->instance)))) {
         throw new Exception("Can't find forum {$cm->instance}");
     }
 
@@ -433,7 +433,7 @@ function hsuforum_cron() {
             }
             $forumid = $discussions[$discussionid]->forum;
             if (!isset($forums[$forumid])) {
-                if ($forum = $DB->get_record('forum', array('id' => $forumid))) {
+                if ($forum = $DB->get_record('hsuforum', array('id' => $forumid))) {
                     $forums[$forumid] = $forum;
                 } else {
                     mtrace('Could not find forum '.$forumid);
@@ -746,7 +746,7 @@ function hsuforum_cron() {
                 }
                 $forumid = $discussions[$discussionid]->forum;
                 if (!isset($forums[$forumid])) {
-                    if ($forum = $DB->get_record('forum', array('id' => $forumid))) {
+                    if ($forum = $DB->get_record('hsuforum', array('id' => $forumid))) {
                         $forums[$forumid] = $forum;
                     } else {
                         continue;
@@ -1352,7 +1352,7 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
                                               u.firstname, u.lastname, u.email, u.picture
                                          FROM {hsuforum_posts} p
                                               JOIN {hsuforum_discussions} d ON d.id = p.discussion
-                                              JOIN {forum} f             ON f.id = d.forum
+                                              JOIN {hsuforum} f             ON f.id = d.forum
                                               JOIN {user} u              ON u.id = p.userid
                                         WHERE p.created > ? AND f.course = ?
                                      ORDER BY p.id ASC", array($timestart, $course->id))) { // order by initial posting date
@@ -1515,12 +1515,12 @@ function hsuforum_upgrade_grades() {
     global $DB;
 
     $sql = "SELECT COUNT('x')
-              FROM {forum} f, {course_modules} cm, {modules} m
+              FROM {hsuforum} f, {course_modules} cm, {modules} m
              WHERE m.name='forum' AND m.id=cm.module AND cm.instance=f.id";
     $count = $DB->count_records_sql($sql);
 
     $sql = "SELECT f.*, cm.idnumber AS cmidnumber, f.course AS courseid
-              FROM {forum} f, {course_modules} cm, {modules} m
+              FROM {hsuforum} f, {course_modules} cm, {modules} m
              WHERE m.name='forum' AND m.id=cm.module AND cm.instance=f.id";
     $rs = $DB->get_recordset_sql($sql);
     if ($rs->valid()) {
@@ -1662,7 +1662,7 @@ function hsuforum_scale_used ($forumid,$scaleid) {
     global $DB;
     $return = false;
 
-    $rec = $DB->get_record("forum",array("id" => "$forumid","scale" => "-$scaleid"));
+    $rec = $DB->get_record("hsuforum",array("id" => "$forumid","scale" => "-$scaleid"));
 
     if (!empty($rec) && !empty($scaleid)) {
         $return = true;
@@ -1682,7 +1682,7 @@ function hsuforum_scale_used ($forumid,$scaleid) {
  */
 function hsuforum_scale_used_anywhere($scaleid) {
     global $DB;
-    if ($scaleid and $DB->record_exists('forum', array('scale' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('hsuforum', array('scale' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -1855,7 +1855,7 @@ function hsuforum_get_readable_forums($userid, $courseid=0) {
             continue;
         }
 
-        $courseforums = $DB->get_records('forum', array('course' => $course->id));
+        $courseforums = $DB->get_records('hsuforum', array('course' => $course->id));
 
         foreach ($modinfo->instances['forum'] as $forumid => $cm) {
             if (!$cm->uservisible or !isset($courseforums[$forumid])) {
@@ -2173,7 +2173,7 @@ function hsuforum_get_user_posts($forumid, $userid) {
     }
 
     return $DB->get_records_sql("SELECT p.*, d.forum, u.firstname, u.lastname, u.email, u.picture, u.imagealt
-                              FROM {forum} f
+                              FROM {hsuforum} f
                                    JOIN {hsuforum_discussions} d ON d.forum = f.id
                                    JOIN {hsuforum_posts} p       ON p.discussion = d.id
                                    JOIN {user} u              ON u.id = p.userid
@@ -2209,7 +2209,7 @@ function hsuforum_get_user_involved_discussions($forumid, $userid) {
     }
 
     return $DB->get_records_sql("SELECT DISTINCT d.*
-                              FROM {forum} f
+                              FROM {hsuforum} f
                                    JOIN {hsuforum_discussions} d ON d.forum = f.id
                                    JOIN {hsuforum_posts} p       ON p.discussion = d.id
                              WHERE f.id = ?
@@ -2242,7 +2242,7 @@ function hsuforum_count_user_posts($forumid, $userid) {
     }
 
     return $DB->get_record_sql("SELECT COUNT(p.id) AS postcount, MAX(p.modified) AS lastpost
-                             FROM {forum} f
+                             FROM {hsuforum} f
                                   JOIN {hsuforum_discussions} d ON d.forum = f.id
                                   JOIN {hsuforum_posts} p       ON p.discussion = d.id
                                   JOIN {user} u              ON u.id = p.userid
@@ -2268,7 +2268,7 @@ function hsuforum_get_post_from_log($log) {
                                            u.firstname, u.lastname, u.email, u.picture
                                  FROM {hsuforum_discussions} d,
                                       {hsuforum_posts} p,
-                                      {forum} f,
+                                      {hsuforum} f,
                                       {user} u
                                 WHERE p.id = ?
                                   AND d.id = p.discussion
@@ -2283,7 +2283,7 @@ function hsuforum_get_post_from_log($log) {
                                            u.firstname, u.lastname, u.email, u.picture
                                  FROM {hsuforum_discussions} d,
                                       {hsuforum_posts} p,
-                                      {forum} f,
+                                      {hsuforum} f,
                                       {user} u
                                 WHERE d.id = ?
                                   AND d.firstpost = p.id
@@ -2397,7 +2397,7 @@ function hsuforum_count_discussions($forum, $cm, $course) {
         }
 
         $sql = "SELECT f.id, COUNT(d.id) as dcount
-                  FROM {forum} f
+                  FROM {hsuforum} f
                        JOIN {hsuforum_discussions} d ON d.forum = f.id
                  WHERE f.course = ?
                        $timedsql
@@ -2796,7 +2796,7 @@ function hsuforum_get_user_discussions($courseid, $userid, $groupid=0) {
                               FROM {hsuforum_discussions} d,
                                    {hsuforum_posts} p,
                                    {user} u,
-                                   {forum} f
+                                   {hsuforum} f
                              WHERE d.course = ?
                                AND p.discussion = d.id
                                AND p.parent = 0
@@ -2912,7 +2912,7 @@ function hsuforum_get_course_forum($courseid, $type) {
 // How to set up special 1-per-course forums
     global $CFG, $DB, $OUTPUT;
 
-    if ($forums = $DB->get_records_select("forum", "course = ? AND type = ?", array($courseid, $type), "id ASC")) {
+    if ($forums = $DB->get_records_select("hsuforum", "course = ? AND type = ?", array($courseid, $type), "id ASC")) {
         // There should always only be ONE, but with the right combination of
         // errors there might be more.  In this case, just return the oldest one (lowest ID).
         foreach ($forums as $forum) {
@@ -2954,7 +2954,7 @@ function hsuforum_get_course_forum($courseid, $type) {
     }
 
     $forum->timemodified = time();
-    $forum->id = $DB->insert_record("forum", $forum);
+    $forum->id = $DB->insert_record("hsuforum", $forum);
 
     if (! $module = $DB->get_record("modules", array("name" => "forum"))) {
         echo $OUTPUT->notification("Could not find forum module!!");
@@ -2978,7 +2978,7 @@ function hsuforum_get_course_forum($courseid, $type) {
     include_once("$CFG->dirroot/course/lib.php");
     rebuild_course_cache($courseid);
 
-    return $DB->get_record("forum", array("id" => "$forum->id"));
+    return $DB->get_record("hsuforum", array("id" => "$forum->id"));
 }
 
 
@@ -3525,7 +3525,7 @@ function hsuforum_rating_validate($params) {
     // Fetch all the related records ... we need to do this anyway to call hsuforum_user_can_see_post
     $post = $DB->get_record('hsuforum_posts', array('id' => $params['itemid'], 'userid' => $params['rateduserid']), '*', MUST_EXIST);
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
-    $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
+    $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id , false, MUST_EXIST);
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -4049,7 +4049,7 @@ function hsuforum_get_file_info($browser, $areas, $course, $cm, $context, $filea
         return null;
     }
 
-    if (!$forum = $DB->get_record('forum', array('id' => $cm->instance))) {
+    if (!$forum = $DB->get_record('hsuforum', array('id' => $cm->instance))) {
         return null;
     }
 
@@ -4116,7 +4116,7 @@ function hsuforum_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
         return false;
     }
 
-    if (!$forum = $DB->get_record('forum', array('id'=>$cm->instance))) {
+    if (!$forum = $DB->get_record('hsuforum', array('id'=>$cm->instance))) {
         return false;
     }
 
@@ -4197,7 +4197,7 @@ function hsuforum_add_new_post($post, $mform, &$message) {
     global $USER, $CFG, $DB;
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
-    $forum      = $DB->get_record('forum', array('id' => $discussion->forum));
+    $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum));
     $cm         = get_coursemodule_from_instance('forum', $forum->id);
     $context    = get_context_instance(CONTEXT_MODULE, $cm->id);
 
@@ -4237,7 +4237,7 @@ function hsuforum_update_post($post, $mform, &$message) {
     global $USER, $CFG, $DB;
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
-    $forum      = $DB->get_record('forum', array('id' => $discussion->forum));
+    $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum));
     $cm         = get_coursemodule_from_instance('forum', $forum->id);
     $context    = get_context_instance(CONTEXT_MODULE, $cm->id);
 
@@ -4292,7 +4292,7 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
     // The first post is stored as a real post, and linked
     // to from the discuss entry.
 
-    $forum = $DB->get_record('forum', array('id'=>$discussion->forum));
+    $forum = $DB->get_record('hsuforum', array('id'=>$discussion->forum));
     $cm    = get_coursemodule_from_instance('forum', $forum->id);
 
     $post = new stdClass();
@@ -4495,7 +4495,7 @@ function hsuforum_count_replies($post, $children=true) {
  */
 function hsuforum_forcesubscribe($forumid, $value=1) {
     global $DB;
-    return $DB->set_field("forum", "forcesubscribe", $value, array("id" => $forumid));
+    return $DB->set_field("hsuforum", "forcesubscribe", $value, array("id" => $forumid));
 }
 
 /**
@@ -4508,7 +4508,7 @@ function hsuforum_is_forcesubscribed($forum) {
     if (isset($forum->forcesubscribe)) {    // then we use that
         return ($forum->forcesubscribe == HSUFORUM_FORCESUBSCRIBE);
     } else {   // Check the database
-       return ($DB->get_field('forum', 'forcesubscribe', array('id' => $forum)) == HSUFORUM_FORCESUBSCRIBE);
+       return ($DB->get_field('hsuforum', 'forcesubscribe', array('id' => $forum)) == HSUFORUM_FORCESUBSCRIBE);
     }
 }
 
@@ -4517,7 +4517,7 @@ function hsuforum_get_forcesubscribed($forum) {
     if (isset($forum->forcesubscribe)) {    // then we use that
         return $forum->forcesubscribe;
     } else {   // Check the database
-        return $DB->get_field('forum', 'forcesubscribe', array('id' => $forum));
+        return $DB->get_field('hsuforum', 'forcesubscribe', array('id' => $forum));
     }
 }
 
@@ -4530,7 +4530,7 @@ function hsuforum_get_forcesubscribed($forum) {
 function hsuforum_is_subscribed($userid, $forum) {
     global $DB;
     if (is_numeric($forum)) {
-        $forum = $DB->get_record('forum', array('id' => $forum));
+        $forum = $DB->get_record('hsuforum', array('id' => $forum));
     }
     if (hsuforum_is_forcesubscribed($forum)) {
         return true;
@@ -4541,7 +4541,7 @@ function hsuforum_is_subscribed($userid, $forum) {
 function hsuforum_get_subscribed_forums($course) {
     global $USER, $CFG, $DB;
     $sql = "SELECT f.id
-              FROM {forum} f
+              FROM {hsuforum} f
                    LEFT JOIN {hsuforum_subscriptions} fs ON (fs.forum = f.id AND fs.userid = ?)
              WHERE f.course = ?
                    AND f.forcesubscribe <> ".HSUFORUM_DISALLOWSUBSCRIBE."
@@ -5077,7 +5077,7 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
     // retrieve objects (yuk)
     if (is_numeric($forum)) {
         debugging('missing full forum', DEBUG_DEVELOPER);
-        if (!$forum = $DB->get_record('forum',array('id'=>$forum))) {
+        if (!$forum = $DB->get_record('hsuforum',array('id'=>$forum))) {
             return false;
         }
     }
@@ -5117,7 +5117,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
     // retrieve objects (yuk)
     if (is_numeric($forum)) {
         debugging('missing full forum', DEBUG_DEVELOPER);
-        if (!$forum = $DB->get_record('forum',array('id'=>$forum))) {
+        if (!$forum = $DB->get_record('hsuforum',array('id'=>$forum))) {
             return false;
         }
     }
@@ -5757,7 +5757,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
                                               u.firstname, u.lastname, u.email, u.picture, u.imagealt, u.email
                                          FROM {hsuforum_posts} p
                                               JOIN {hsuforum_discussions} d ON d.id = p.discussion
-                                              JOIN {forum} f             ON f.id = d.forum
+                                              JOIN {hsuforum} f             ON f.id = d.forum
                                               JOIN {user} u              ON u.id = p.userid
                                               $groupjoin
                                         WHERE p.created > ? AND f.id = ?
@@ -5938,7 +5938,7 @@ function hsuforum_user_enrolled($cp) {
     //       introduced because we did not have enrolment information in earlier versions...
 
     $sql = "SELECT f.id
-              FROM {forum} f
+              FROM {hsuforum} f
          LEFT JOIN {hsuforum_subscriptions} fs ON (fs.forum = f.id AND fs.userid = :userid)
              WHERE f.course = :courseid AND f.forcesubscribe = :initial AND fs.id IS NULL";
     $params = array('courseid'=>$cp->courseid, 'userid'=>$cp->userid, 'initial'=>HSUFORUM_INITIALSUBSCRIBE);
@@ -5962,7 +5962,7 @@ function hsuforum_user_unenrolled($cp) {
 
     if ($cp->lastenrol) {
         $params = array('userid'=>$cp->userid, 'courseid'=>$cp->courseid);
-        $forumselect = "IN (SELECT f.id FROM {forum} f WHERE f.course = :courseid)";
+        $forumselect = "IN (SELECT f.id FROM {hsuforum} f WHERE f.course = :courseid)";
 
         $DB->delete_records_select('hsuforum_subscriptions', "userid = :userid AND forum $forumselect", $params);
         $DB->delete_records_select('hsuforum_track_prefs',   "userid = :userid AND forumid $forumselect", $params);
@@ -6028,7 +6028,7 @@ function hsuforum_tp_mark_posts_read($user, $postids) {
                 SELECT ?, p.id, p.discussion, d.forum, ?, ?
                   FROM {hsuforum_posts} p
                        JOIN {hsuforum_discussions} d       ON d.id = p.discussion
-                       JOIN {forum} f                   ON f.id = d.forum
+                       JOIN {hsuforum} f                   ON f.id = d.forum
                        LEFT JOIN {hsuforum_track_prefs} tf ON (tf.userid = ? AND tf.forumid = f.id)
                  WHERE p.id $usql
                        AND p.modified >= ?
@@ -6371,7 +6371,7 @@ function hsuforum_tp_get_course_unread_posts($userid, $courseid) {
     $sql = "SELECT f.id, COUNT(p.id) AS unread
               FROM {hsuforum_posts} p
                    JOIN {hsuforum_discussions} d       ON d.id = p.discussion
-                   JOIN {forum} f                   ON f.id = d.forum
+                   JOIN {hsuforum} f                   ON f.id = d.forum
                    JOIN {course} c                  ON c.id = f.course
                    LEFT JOIN {hsuforum_read} r         ON (r.postid = p.id AND r.userid = ?)
                    LEFT JOIN {hsuforum_track_prefs} tf ON (tf.userid = ? AND tf.forumid = f.id)
@@ -6529,7 +6529,7 @@ function hsuforum_tp_get_untracked_forums($userid, $courseid) {
     global $CFG, $DB;
 
     $sql = "SELECT f.id
-              FROM {forum} f
+              FROM {hsuforum} f
                    LEFT JOIN {hsuforum_track_prefs} ft ON (ft.forumid = f.id AND ft.userid = ?)
              WHERE f.course = ?
                    AND (f.trackingtype = ".HSUFORUM_TRACKING_OFF."
@@ -6584,7 +6584,7 @@ function hsuforum_tp_can_track_forums($forum=false, $user=false) {
     // Work toward always passing an object...
     if (is_numeric($forum)) {
         debugging('Better use proper forum object.', DEBUG_DEVELOPER);
-        $forum = $DB->get_record('forum', array('id' => $forum), '', 'id,trackingtype');
+        $forum = $DB->get_record('hsuforum', array('id' => $forum), '', 'id,trackingtype');
     }
 
     $forumallows = ($forum->trackingtype == HSUFORUM_TRACKING_OPTIONAL);
@@ -6618,7 +6618,7 @@ function hsuforum_tp_is_tracked($forum, $user=false) {
     // Work toward always passing an object...
     if (is_numeric($forum)) {
         debugging('Better use proper forum object.', DEBUG_DEVELOPER);
-        $forum = $DB->get_record('forum', array('id' => $forum));
+        $forum = $DB->get_record('hsuforum', array('id' => $forum));
     }
 
     if (!hsuforum_tp_can_track_forums($forum, $user)) {
@@ -6771,7 +6771,7 @@ function hsuforum_get_separate_modules($courseid) {
     global $CFG,$DB;
     $forummodule = $DB->get_record("modules", array("name" => "forum"));
 
-    $sql = 'SELECT f.id, f.id FROM {forum} f, {course_modules} cm WHERE
+    $sql = 'SELECT f.id, f.id FROM {hsuforum} f, {course_modules} cm WHERE
            f.id = cm.instance AND cm.module =? AND cm.visible = 1 AND cm.course = ?
            AND cm.groupmode ='.SEPARATEGROUPS;
 
@@ -6791,7 +6791,7 @@ function hsuforum_check_throttling($forum, $cm=null) {
     global $USER, $CFG, $DB, $OUTPUT;
 
     if (is_numeric($forum)) {
-        $forum = $DB->get_record('forum',array('id'=>$forum));
+        $forum = $DB->get_record('hsuforum',array('id'=>$forum));
     }
     if (!is_object($forum)) {
         return false;  // this is broken.
@@ -6860,7 +6860,7 @@ function hsuforum_reset_gradebook($courseid, $type='') {
     }
 
     $sql = "SELECT f.*, cm.idnumber as cmidnumber, f.course as courseid
-              FROM {forum} f, {course_modules} cm, {modules} m
+              FROM {hsuforum} f, {course_modules} cm, {modules} m
              WHERE m.name='forum' AND m.id=cm.module AND cm.instance=f.id AND f.course=? $wheresql";
 
     if ($forums = $DB->get_records_sql($sql, $params)) {
@@ -6911,15 +6911,15 @@ function hsuforum_reset_userdata($data) {
         $typesstr = get_string('resetforums', 'hsuforum').': '.implode(', ', $types);
     }
     $alldiscussionssql = "SELECT fd.id
-                            FROM {hsuforum_discussions} fd, {forum} f
+                            FROM {hsuforum_discussions} fd, {hsuforum} f
                            WHERE f.course=? AND f.id=fd.forum";
 
     $allforumssql      = "SELECT f.id
-                            FROM {forum} f
+                            FROM {hsuforum} f
                            WHERE f.course=?";
 
     $allpostssql       = "SELECT fp.id
-                            FROM {hsuforum_posts} fp, {hsuforum_discussions} fd, {forum} f
+                            FROM {hsuforum_posts} fp, {hsuforum_discussions} fd, {hsuforum} f
                            WHERE f.course=? AND f.id=fd.forum AND fd.id=fp.discussion";
 
     $forumssql = $forums = $rm = null;
@@ -7096,7 +7096,7 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
 
         if ($DB->count_records('hsuforum_discussions', array('forum' => $forum->id)) == 0) {
             // Delete empty teacher forums.
-            $DB->delete_records('forum', array('id' => $forum->id));
+            $DB->delete_records('hsuforum', array('id' => $forum->id));
         } else {
             // Create a course module for the forum and assign it to
             // section 0 in the course.
@@ -7122,7 +7122,7 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
 
             // Change the forum type to general.
             $forum->type = 'general';
-            $DB->update_record('forum', $forum);
+            $DB->update_record('hsuforum', $forum);
 
             $context = get_context_instance(CONTEXT_MODULE, $cmid);
 
@@ -7416,7 +7416,7 @@ function hsuforum_extend_navigation($navref, $course, $module, $cm) {
 function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $forumnode) {
     global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 
-    $forumobject = $DB->get_record("forum", array("id" => $PAGE->cm->instance));
+    $forumobject = $DB->get_record("hsuforum", array("id" => $PAGE->cm->instance));
     if (empty($PAGE->cm->context)) {
         $PAGE->cm->context = get_context_instance(CONTEXT_MODULE, $PAGE->cm->instance);
     }
@@ -7860,7 +7860,7 @@ function hsuforum_get_forums_user_posted_in($user, array $courseids = null, $dis
     $wheresql = join(' AND ', $where);
 
     $sql = "SELECT DISTINCT f.*, cm.id AS cmid
-            FROM {forum} f
+            FROM {hsuforum} f
             JOIN {course_modules} cm ON cm.instance = f.id
             JOIN {modules} m ON m.id = cm.module
             $joinsql

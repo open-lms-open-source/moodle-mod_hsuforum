@@ -83,7 +83,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
             throw new portfolio_caller_exception('invaliddiscussionid', 'forum');
         }
 
-        if (!$this->forum = $DB->get_record('forum', array('id' => $this->discussion->forum))) {
+        if (!$this->forum = $DB->get_record('hsuforum', array('id' => $this->discussion->forum))) {
             throw new portfolio_caller_exception('invalidforumid', 'forum');
         }
 

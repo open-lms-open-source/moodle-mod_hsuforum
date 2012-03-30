@@ -112,7 +112,7 @@ $table = new html_table();
 // some special ones are not.  These get placed in the general forums
 // category with the forums in section 0.
 
-$forums = $DB->get_records('forum', array('course' => $course->id));
+$forums = $DB->get_records('hsuforum', array('course' => $course->id));
 
 $generalforums  = array();
 $learningforums = array();

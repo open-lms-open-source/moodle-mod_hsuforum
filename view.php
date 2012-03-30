@@ -54,7 +54,7 @@
         if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
             print_error('coursemisconf');
         }
-        if (! $forum = $DB->get_record("forum", array("id" => $cm->instance))) {
+        if (! $forum = $DB->get_record("hsuforum", array("id" => $cm->instance))) {
             print_error('invalidforumid', 'forum');
         }
         if ($forum->type == 'single') {
@@ -67,7 +67,7 @@
         $strforum = get_string("modulename", "hsuforum");
     } else if ($f) {
 
-        if (! $forum = $DB->get_record("forum", array("id" => $f))) {
+        if (! $forum = $DB->get_record("hsuforum", array("id" => $f))) {
             print_error('invalidforumid', 'forum');
         }
         if (! $course = $DB->get_record("course", array("id" => $forum->course))) {

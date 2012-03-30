@@ -41,7 +41,7 @@
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $d), '*', MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
-    $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
+    $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
 
     require_course_login($course, true, $cm);
@@ -82,7 +82,7 @@
             print_error('cannotmovefromsingleforum', 'forum', $return);
         }
 
-        if (!$forumto = $DB->get_record('forum', array('id' => $move))) {
+        if (!$forumto = $DB->get_record('hsuforum', array('id' => $move))) {
             print_error('cannotmovetonotexist', 'forum', $return);
         }
 
@@ -226,7 +226,7 @@
             $forummenu = array();
             $sections = get_all_sections($course->id);
             // Check forum types and eliminate simple discussions.
-            $forumcheck = $DB->get_records('forum', array('course' => $course->id),'', 'id, type');
+            $forumcheck = $DB->get_records('hsuforum', array('course' => $course->id),'', 'id, type');
             foreach ($modinfo->instances['forum'] as $forumcm) {
                 if (!$forumcm->uservisible || !has_capability('mod/hsuforum:startdiscussion',
                     get_context_instance(CONTEXT_MODULE,$forumcm->id))) {

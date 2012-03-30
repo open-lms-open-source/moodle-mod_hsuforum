@@ -92,24 +92,24 @@ class restore_hsuforum_activity_task extends restore_activity_task {
     static public function define_restore_log_rules() {
         $rules = array();
 
-        $rules[] = new restore_log_rule('forum', 'add', 'view.php?id={course_module}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'update', 'view.php?id={course_module}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'view', 'view.php?id={course_module}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'view forum', 'view.php?id={course_module}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'mark read', 'view.php?f={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'start tracking', 'view.php?f={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'stop tracking', 'view.php?f={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'subscribe', 'view.php?f={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'unsubscribe', 'view.php?f={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'subscriber', 'subscribers.php?id={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'subscribers', 'subscribers.php?id={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'view subscribers', 'subscribers.php?id={forum}', '{forum}');
+        $rules[] = new restore_log_rule('forum', 'add', 'view.php?id={course_module}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'update', 'view.php?id={course_module}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'view', 'view.php?id={course_module}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'view forum', 'view.php?id={course_module}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'mark read', 'view.php?f={hsuforum}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'start tracking', 'view.php?f={hsuforum}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'stop tracking', 'view.php?f={hsuforum}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'subscribe', 'view.php?f={hsuforum}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'unsubscribe', 'view.php?f={hsuforum}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'subscriber', 'subscribers.php?id={hsuforum}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'subscribers', 'subscribers.php?id={hsuforum}', '{hsuforum}');
+        $rules[] = new restore_log_rule('forum', 'view subscribers', 'subscribers.php?id={hsuforum}', '{hsuforum}');
         $rules[] = new restore_log_rule('forum', 'add discussion', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_discussion}');
         $rules[] = new restore_log_rule('forum', 'view discussion', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_discussion}');
         $rules[] = new restore_log_rule('forum', 'move discussion', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_discussion}');
-        $rules[] = new restore_log_rule('forum', 'delete discussi', 'view.php?id={course_module}', '{forum}',
+        $rules[] = new restore_log_rule('forum', 'delete discussi', 'view.php?id={course_module}', '{hsuforum}',
                                         null, 'delete discussion');
-        $rules[] = new restore_log_rule('forum', 'delete discussion', 'view.php?id={course_module}', '{forum}');
+        $rules[] = new restore_log_rule('forum', 'delete discussion', 'view.php?id={course_module}', '{hsuforum}');
         $rules[] = new restore_log_rule('forum', 'add post', 'discuss.php?d={hsuforum_discussion}&parent={hsuforum_post}', '{hsuforum_post}');
         $rules[] = new restore_log_rule('forum', 'update post', 'discuss.php?d={hsuforum_discussion}&parent={hsuforum_post}', '{hsuforum_post}');
         $rules[] = new restore_log_rule('forum', 'prune post', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_post}');
