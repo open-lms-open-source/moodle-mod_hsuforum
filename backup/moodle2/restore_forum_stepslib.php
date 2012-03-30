@@ -23,13 +23,13 @@
  */
 
 /**
- * Define all the restore steps that will be used by the restore_forum_activity_task
+ * Define all the restore steps that will be used by the restore_hsuforum_activity_task
  */
 
 /**
  * Structure step to restore one forum activity
  */
-class restore_forum_activity_structure_step extends restore_activity_structure_step {
+class restore_hsuforum_activity_structure_step extends restore_activity_structure_step {
 
     protected function define_structure() {
 
@@ -38,12 +38,12 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
 
         $paths[] = new restore_path_element('forum', '/activity/forum');
         if ($userinfo) {
-            $paths[] = new restore_path_element('forum_discussion', '/activity/forum/discussions/discussion');
-            $paths[] = new restore_path_element('forum_post', '/activity/forum/discussions/discussion/posts/post');
-            $paths[] = new restore_path_element('forum_rating', '/activity/forum/discussions/discussion/posts/post/ratings/rating');
-            $paths[] = new restore_path_element('forum_subscription', '/activity/forum/subscriptions/subscription');
-            $paths[] = new restore_path_element('forum_read', '/activity/forum/readposts/read');
-            $paths[] = new restore_path_element('forum_track', '/activity/forum/trackedprefs/track');
+            $paths[] = new restore_path_element('hsuforum_discussion', '/activity/forum/discussions/discussion');
+            $paths[] = new restore_path_element('hsuforum_post', '/activity/forum/discussions/discussion/posts/post');
+            $paths[] = new restore_path_element('hsuforum_rating', '/activity/forum/discussions/discussion/posts/post/ratings/rating');
+            $paths[] = new restore_path_element('hsuforum_subscription', '/activity/forum/subscriptions/subscription');
+            $paths[] = new restore_path_element('hsuforum_read', '/activity/forum/readposts/read');
+            $paths[] = new restore_path_element('hsuforum_track', '/activity/forum/trackedprefs/track');
         }
 
         // Return the paths wrapped into standard activity structure
@@ -67,7 +67,7 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
         $this->apply_activity_instance($newitemid);
     }
 
-    protected function process_forum_discussion($data) {
+    protected function process_hsuforum_discussion($data) {
         global $DB;
 
         $data = (object)$data;
@@ -82,42 +82,42 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
         $data->groupid = $this->get_mappingid('group', $data->groupid);
         $data->usermodified = $this->get_mappingid('user', $data->usermodified);
 
-        $newitemid = $DB->insert_record('forum_discussions', $data);
-        $this->set_mapping('forum_discussion', $oldid, $newitemid);
+        $newitemid = $DB->insert_record('hsuforum_discussions', $data);
+        $this->set_mapping('hsuforum_discussion', $oldid, $newitemid);
     }
 
-    protected function process_forum_post($data) {
+    protected function process_hsuforum_post($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
 
-        $data->discussion = $this->get_new_parentid('forum_discussion');
+        $data->discussion = $this->get_new_parentid('hsuforum_discussion');
         $data->created = $this->apply_date_offset($data->created);
         $data->modified = $this->apply_date_offset($data->modified);
         $data->userid = $this->get_mappingid('user', $data->userid);
         // If post has parent, map it (it has been already restored)
         if (!empty($data->parent)) {
-            $data->parent = $this->get_mappingid('forum_post', $data->parent);
+            $data->parent = $this->get_mappingid('hsuforum_post', $data->parent);
         }
 
-        $newitemid = $DB->insert_record('forum_posts', $data);
-        $this->set_mapping('forum_post', $oldid, $newitemid, true);
+        $newitemid = $DB->insert_record('hsuforum_posts', $data);
+        $this->set_mapping('hsuforum_post', $oldid, $newitemid, true);
 
         // If !post->parent, it's the 1st post. Set it in discussion
         if (empty($data->parent)) {
-            $DB->set_field('forum_discussions', 'firstpost', $newitemid, array('id' => $data->discussion));
+            $DB->set_field('hsuforum_discussions', 'firstpost', $newitemid, array('id' => $data->discussion));
         }
     }
 
-    protected function process_forum_rating($data) {
+    protected function process_hsuforum_rating($data) {
         global $DB;
 
         $data = (object)$data;
 
         // Cannot use ratings API, cause, it's missing the ability to specify times (modified/created)
         $data->contextid = $this->task->get_contextid();
-        $data->itemid    = $this->get_new_parentid('forum_post');
+        $data->itemid    = $this->get_new_parentid('hsuforum_post');
         if ($data->scaleid < 0) { // scale found, get mapping
             $data->scaleid = -($this->get_mappingid('scale', abs($data->scaleid)));
         }
@@ -137,7 +137,7 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
         $newitemid = $DB->insert_record('rating', $data);
     }
 
-    protected function process_forum_subscription($data) {
+    protected function process_hsuforum_subscription($data) {
         global $DB;
 
         $data = (object)$data;
@@ -146,24 +146,24 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
         $data->forum = $this->get_new_parentid('forum');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        $newitemid = $DB->insert_record('forum_subscriptions', $data);
+        $newitemid = $DB->insert_record('hsuforum_subscriptions', $data);
     }
 
-    protected function process_forum_read($data) {
+    protected function process_hsuforum_read($data) {
         global $DB;
 
         $data = (object)$data;
         $oldid = $data->id;
 
         $data->forumid = $this->get_new_parentid('forum');
-        $data->discussionid = $this->get_mappingid('forum_discussion', $data->discussionid);
-        $data->postid = $this->get_mappingid('forum_post', $data->postid);
+        $data->discussionid = $this->get_mappingid('hsuforum_discussion', $data->discussionid);
+        $data->postid = $this->get_mappingid('hsuforum_post', $data->postid);
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        $newitemid = $DB->insert_record('forum_read', $data);
+        $newitemid = $DB->insert_record('hsuforum_read', $data);
     }
 
-    protected function process_forum_track($data) {
+    protected function process_hsuforum_track($data) {
         global $DB;
 
         $data = (object)$data;
@@ -172,7 +172,7 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
         $data->forumid = $this->get_new_parentid('forum');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        $newitemid = $DB->insert_record('forum_track_prefs', $data);
+        $newitemid = $DB->insert_record('hsuforum_track_prefs', $data);
     }
 
     protected function after_execute() {
@@ -186,7 +186,7 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
         // information as base for the initial post.
         $forumid = $this->task->get_activityid();
         $forumrec = $DB->get_record('forum', array('id' => $forumid));
-        if ($forumrec->type == 'single' && !$DB->record_exists('forum_discussions', array('forum' => $forumid))) {
+        if ($forumrec->type == 'single' && !$DB->record_exists('hsuforum_discussions', array('forum' => $forumid))) {
             // Create single discussion/lead post from forum data
             $sd = new stdclass();
             $sd->course   = $forumrec->course;
@@ -197,22 +197,22 @@ class restore_forum_activity_structure_step extends restore_activity_structure_s
             $sd->messageformat = $forumrec->introformat;
             $sd->messagetrust  = true;
             $sd->mailnow  = false;
-            $sdid = forum_add_discussion($sd, null, $sillybyrefvar, $this->task->get_userid());
+            $sdid = hsuforum_add_discussion($sd, null, $sillybyrefvar, $this->task->get_userid());
             // Mark the post as mailed
-            $DB->set_field ('forum_posts','mailed', '1', array('discussion' => $sdid));
+            $DB->set_field ('hsuforum_posts','mailed', '1', array('discussion' => $sdid));
             // Copy all the files from mod_foum/intro to mod_forum/post
             $fs = get_file_storage();
             $files = $fs->get_area_files($this->task->get_contextid(), 'mod_forum', 'intro');
             foreach ($files as $file) {
                 $newfilerecord = new stdclass();
                 $newfilerecord->filearea = 'post';
-                $newfilerecord->itemid   = $DB->get_field('forum_discussions', 'firstpost', array('id' => $sdid));
+                $newfilerecord->itemid   = $DB->get_field('hsuforum_discussions', 'firstpost', array('id' => $sdid));
                 $fs->create_file_from_storedfile($newfilerecord, $file);
             }
         }
 
-        // Add post related files, matching by itemname = 'forum_post'
-        $this->add_related_files('mod_forum', 'post', 'forum_post');
-        $this->add_related_files('mod_forum', 'attachment', 'forum_post');
+        // Add post related files, matching by itemname = 'hsuforum_post'
+        $this->add_related_files('mod_forum', 'post', 'hsuforum_post');
+        $this->add_related_files('mod_forum', 'attachment', 'hsuforum_post');
     }
 }

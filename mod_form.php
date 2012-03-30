@@ -27,7 +27,7 @@ if (!defined('MOODLE_INTERNAL')) {
 
 require_once ($CFG->dirroot.'/course/moodleform_mod.php');
 
-class mod_forum_mod_form extends moodleform_mod {
+class mod_hsuforum_mod_form extends moodleform_mod {
 
     function definition() {
         global $CFG, $COURSE, $DB;
@@ -46,10 +46,10 @@ class mod_forum_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $forum_types = forum_get_forum_types();
+        $hsuforum_types = hsuforum_get_hsuforum_types();
 
-        asort($forum_types);
-        $mform->addElement('select', 'type', get_string('forumtype', 'forum'), $forum_types);
+        asort($hsuforum_types);
+        $mform->addElement('select', 'type', get_string('forumtype', 'forum'), $hsuforum_types);
         $mform->addHelpButton('type', 'forumtype', 'forum');
         $mform->setDefault('type', 'general');
 
@@ -75,14 +75,14 @@ class mod_forum_mod_form extends moodleform_mod {
         $choices[0] = get_string('courseuploadlimit') . ' ('.display_size($COURSE->maxbytes).')';
         $mform->addElement('select', 'maxbytes', get_string('maxattachmentsize', 'forum'), $choices);
         $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'forum');
-        $mform->setDefault('maxbytes', $CFG->forum_maxbytes);
+        $mform->setDefault('maxbytes', $CFG->hsuforum_maxbytes);
 
         $choices = array(0,1,2,3,4,5,6,7,8,9,10,20,50,100);
         $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'forum'), $choices);
         $mform->addHelpButton('maxattachments', 'maxattachments', 'forum');
-        $mform->setDefault('maxattachments', $CFG->forum_maxattachments);
+        $mform->setDefault('maxattachments', $CFG->hsuforum_maxattachments);
 
-        if ($CFG->enablerssfeeds && isset($CFG->forum_enablerssfeeds) && $CFG->forum_enablerssfeeds) {
+        if ($CFG->enablerssfeeds && isset($CFG->hsuforum_enablerssfeeds) && $CFG->hsuforum_enablerssfeeds) {
 //-------------------------------------------------------------------------------
             $mform->addElement('header', '', get_string('rss'));
             $choices = array();

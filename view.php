@@ -87,13 +87,13 @@
     }
 
     if (!$PAGE->button) {
-        $PAGE->set_button(forum_search_form($course, $search));
+        $PAGE->set_button(hsuforum_search_form($course, $search));
     }
 
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     $PAGE->set_context($context);
 
-    if (!empty($CFG->enablerssfeeds) && !empty($CFG->forum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
+    if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
 
         $rsstitle = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id))) . ': %fullname%';
@@ -142,16 +142,16 @@
     // mode control.
     if ($forum->type == 'single') {
         $discussion = NULL;
-        $discussions = $DB->get_records('forum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
+        $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
         if (!empty($discussions)) {
             $discussion = array_pop($discussions);
         }
         if ($discussion) {
             if ($mode) {
-                set_user_preference("forum_displaymode", $mode);
+                set_user_preference("hsuforum_displaymode", $mode);
             }
-            $displaymode = get_user_preferences("forum_displaymode", $CFG->forum_displaymode);
-            forum_print_mode_form($forum->id, $displaymode, $forum->type);
+            $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
+            hsuforum_print_mode_form($forum->id, $displaymode, $forum->type);
         }
     }
 
@@ -170,19 +170,19 @@
             if (!empty($discussions) && count($discussions) > 1) {
                 echo $OUTPUT->notification(get_string('warnformorepost', 'forum'));
             }
-            if (! $post = forum_get_post_full($discussion->firstpost)) {
+            if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
                 print_error('cannotfindfirstpost', 'forum');
             }
             if ($mode) {
-                set_user_preference("forum_displaymode", $mode);
+                set_user_preference("hsuforum_displaymode", $mode);
             }
 
-            $canreply    = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
+            $canreply    = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
             $canrate     = has_capability('mod/forum:rate', $context);
-            $displaymode = get_user_preferences("forum_displaymode", $CFG->forum_displaymode);
+            $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
 
             echo '&nbsp;'; // this should fix the floating in FF
-            forum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
+            hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
             break;
 
         case 'eachuser':
@@ -190,24 +190,24 @@
                 echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
             }
             echo '<p class="mdl-align">';
-            if (forum_user_can_post_discussion($forum, null, -1, $cm)) {
+            if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
                 print_string("allowsdiscussions", "forum");
             } else {
                 echo '&nbsp;';
             }
             echo '</p>';
             if (!empty($showall)) {
-                forum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
             } else {
-                forum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->forum_manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
             }
             break;
 
         case 'teacher':
             if (!empty($showall)) {
-                forum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
             } else {
-                forum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->forum_manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
             }
             break;
 
@@ -217,9 +217,9 @@
             }
             echo '<br />';
             if (!empty($showall)) {
-                forum_print_latest_discussions($course, $forum, 0, 'plain', '', -1, -1, -1, 0, $cm);
+                hsuforum_print_latest_discussions($course, $forum, 0, 'plain', '', -1, -1, -1, 0, $cm);
             } else {
-                forum_print_latest_discussions($course, $forum, -1, 'plain', '', -1, -1, $page, $CFG->forum_manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, 'plain', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
             }
             break;
 
@@ -229,9 +229,9 @@
             }
             echo '<br />';
             if (!empty($showall)) {
-                forum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
             } else {
-                forum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->forum_manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
             }
 
 

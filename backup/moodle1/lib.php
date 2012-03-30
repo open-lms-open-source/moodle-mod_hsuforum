@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Forum conversion handler
  */
-class moodle1_mod_forum_handler extends moodle1_mod_handler {
+class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
 
     /** @var moodle1_file_manager */
     protected $fileman = null;
@@ -88,7 +88,7 @@ class moodle1_mod_forum_handler extends moodle1_mod_handler {
         $data['intro'] = moodle1_converter::migrate_referenced_files($data['intro'], $this->fileman);
 
         // start writing forum.xml
-        $this->open_xml_writer("activities/forum_{$this->moduleid}/forum.xml");
+        $this->open_xml_writer("activities/hsuforum_{$this->moduleid}/forum.xml");
         $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
             'modulename' => 'forum', 'contextid' => $contextid));
         $this->xmlwriter->begin_tag('forum', array('id' => $instanceid));
@@ -107,7 +107,7 @@ class moodle1_mod_forum_handler extends moodle1_mod_handler {
     /**
      * This is executed when we reach the closing </MOD> tag of our 'forum' path
      */
-    public function on_forum_end() {
+    public function on_hsuforum_end() {
         // finish writing forum.xml
         $this->xmlwriter->end_tag('discussions');
         $this->xmlwriter->end_tag('forum');
@@ -115,7 +115,7 @@ class moodle1_mod_forum_handler extends moodle1_mod_handler {
         $this->close_xml_writer();
 
         // write inforef.xml
-        $this->open_xml_writer("activities/forum_{$this->moduleid}/inforef.xml");
+        $this->open_xml_writer("activities/hsuforum_{$this->moduleid}/inforef.xml");
         $this->xmlwriter->begin_tag('inforef');
         $this->xmlwriter->begin_tag('fileref');
         foreach ($this->fileman->get_fileids() as $fileid) {

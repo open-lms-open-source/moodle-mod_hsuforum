@@ -1,7 +1,7 @@
 var timefromitems = ['fromday','frommonth','fromyear','fromhour', 'fromminute'];
 var timetoitems = ['today','tomonth','toyear','tohour','tominute'];
 
-function forum_produce_subscribe_link(forumid, backtoindex, ltext, ltitle) {
+function hsuforum_produce_subscribe_link(forumid, backtoindex, ltext, ltitle) {
     var elementid = "subscriptionlink";
     var subs_link = document.getElementById(elementid);
     if(subs_link){
@@ -9,7 +9,7 @@ function forum_produce_subscribe_link(forumid, backtoindex, ltext, ltitle) {
     }
 }
 
-function forum_produce_tracking_link(forumid, ltext, ltitle) {
+function hsuforum_produce_tracking_link(forumid, ltext, ltitle) {
     var elementid = "trackinglink";
     var subs_link = document.getElementById(elementid);
     if(subs_link){

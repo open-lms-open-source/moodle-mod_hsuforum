@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="forum" COMMENT="Forums contain and structure discussion" NEXT="forum_discussions">
+    <TABLE NAME="forum" COMMENT="Forums contain and structure discussion" NEXT="hsuforum_discussions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="type"/>
@@ -37,7 +37,7 @@
         <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="forum_discussions" COMMENT="Forums are composed of discussions" PREVIOUS="forum" NEXT="forum_posts">
+    <TABLE NAME="hsuforum_discussions" COMMENT="Forums are composed of discussions" PREVIOUS="forum" NEXT="hsuforum_posts">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="course"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="forum"/>
@@ -60,7 +60,7 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="forum_posts" COMMENT="All posts are stored in this table" PREVIOUS="forum_discussions" NEXT="forum_queue">
+    <TABLE NAME="hsuforum_posts" COMMENT="All posts are stored in this table" PREVIOUS="hsuforum_discussions" NEXT="hsuforum_queue">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="discussion"/>
         <FIELD NAME="discussion" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="parent"/>
@@ -79,8 +79,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="discussion"/>
-        <KEY NAME="discussion" TYPE="foreign" FIELDS="discussion" REFTABLE="forum_discussions" REFFIELDS="id" PREVIOUS="primary" NEXT="parent"/>
-        <KEY NAME="parent" TYPE="foreign" FIELDS="parent" REFTABLE="forum_posts" REFFIELDS="id" COMMENT="note that to make this recursive FK working someday, the parent field must be decalred NULL" PREVIOUS="discussion"/>
+        <KEY NAME="discussion" TYPE="foreign" FIELDS="discussion" REFTABLE="hsuforum_discussions" REFFIELDS="id" PREVIOUS="primary" NEXT="parent"/>
+        <KEY NAME="parent" TYPE="foreign" FIELDS="parent" REFTABLE="hsuforum_posts" REFFIELDS="id" COMMENT="note that to make this recursive FK working someday, the parent field must be decalred NULL" PREVIOUS="discussion"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" NEXT="created"/>
@@ -88,7 +88,7 @@
         <INDEX NAME="mailed" UNIQUE="false" FIELDS="mailed" PREVIOUS="created"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="forum_queue" COMMENT="For keeping track of posts that will be mailed in digest form" PREVIOUS="forum_posts" NEXT="forum_subscriptions">
+    <TABLE NAME="hsuforum_queue" COMMENT="For keeping track of posts that will be mailed in digest form" PREVIOUS="hsuforum_posts" NEXT="hsuforum_subscriptions">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="discussionid"/>
@@ -98,14 +98,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="discussionid"/>
-        <KEY NAME="discussionid" TYPE="foreign" FIELDS="discussionid" REFTABLE="forum_discussions" REFFIELDS="id" PREVIOUS="primary" NEXT="postid"/>
-        <KEY NAME="postid" TYPE="foreign" FIELDS="postid" REFTABLE="forum_posts" REFFIELDS="id" PREVIOUS="discussionid"/>
+        <KEY NAME="discussionid" TYPE="foreign" FIELDS="discussionid" REFTABLE="hsuforum_discussions" REFFIELDS="id" PREVIOUS="primary" NEXT="postid"/>
+        <KEY NAME="postid" TYPE="foreign" FIELDS="postid" REFTABLE="hsuforum_posts" REFFIELDS="id" PREVIOUS="discussionid"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="user" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="forum_subscriptions" COMMENT="Keeps track of who is subscribed to what forum" PREVIOUS="forum_queue" NEXT="forum_read">
+    <TABLE NAME="hsuforum_subscriptions" COMMENT="Keeps track of who is subscribed to what forum" PREVIOUS="hsuforum_queue" NEXT="hsuforum_read">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="forum"/>
@@ -119,7 +119,7 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="forum_read" COMMENT="Tracks each users read posts" PREVIOUS="forum_subscriptions" NEXT="forum_track_prefs">
+    <TABLE NAME="hsuforum_read" COMMENT="Tracks each users read posts" PREVIOUS="hsuforum_subscriptions" NEXT="hsuforum_track_prefs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="forumid"/>
@@ -138,7 +138,7 @@
         <INDEX NAME="userid-postid" UNIQUE="false" FIELDS="userid, postid" PREVIOUS="userid-discussionid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="forum_track_prefs" COMMENT="Tracks each users untracked forums" PREVIOUS="forum_read">
+    <TABLE NAME="hsuforum_track_prefs" COMMENT="Tracks each users untracked forums" PREVIOUS="hsuforum_read">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="forumid"/>

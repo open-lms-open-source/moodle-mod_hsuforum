@@ -49,17 +49,17 @@ if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
 
 require_course_login($course, false, $cm);
 
-$returnto = forum_go_back_to($returnpage.'?id='.$course->id.'&f='.$forum->id);
+$returnto = hsuforum_go_back_to($returnpage.'?id='.$course->id.'&f='.$forum->id);
 
-if (!forum_tp_can_track_forums($forum)) {
+if (!hsuforum_tp_can_track_forums($forum)) {
     redirect($returnto);
 }
 
 $info = new stdClass();
 $info->name  = fullname($USER);
 $info->forum = format_string($forum->name);
-if (forum_tp_is_tracked($forum) ) {
-    if (forum_tp_stop_tracking($forum->id)) {
+if (hsuforum_tp_is_tracked($forum) ) {
+    if (hsuforum_tp_stop_tracking($forum->id)) {
         add_to_log($course->id, "forum", "stop tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
         redirect($returnto, get_string("nownottracking", "forum", $info), 1);
     } else {
@@ -67,7 +67,7 @@ if (forum_tp_is_tracked($forum) ) {
     }
 
 } else { // subscribe
-    if (forum_tp_start_tracking($forum->id)) {
+    if (hsuforum_tp_start_tracking($forum->id)) {
         add_to_log($course->id, "forum", "start tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
         redirect($returnto, get_string("nowtracking", "forum", $info), 1);
     } else {

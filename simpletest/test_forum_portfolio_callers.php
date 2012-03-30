@@ -40,7 +40,7 @@ require_once("$CFG->dirroot/mod/forum/lib.php");
  * This might be left until Moodle 2.1 when the test case framework
  * is due to change.
  */
-Mock::generate('forum_portfolio_caller', 'mock_caller');
+Mock::generate('hsuforum_portfolio_caller', 'mock_caller');
 Mock::generate('portfolio_exporter', 'mock_exporter');
 
 class testForumPortfolioCallers extends portfoliolib_test {
@@ -77,17 +77,17 @@ class testForumPortfolioCallers extends portfoliolib_test {
         $first_module = reset($this->modules);
         $cm = get_coursemodule_from_instance($this->module_type, $first_module->id);
 
-        $discussions = $DB->get_records('forum_discussions', array('forum' => $first_module->id));
+        $discussions = $DB->get_records('hsuforum_discussions', array('forum' => $first_module->id));
         $first_discussion = reset($discussions);
 
-        $posts = $DB->get_records('forum_posts', array('discussion' => $first_discussion->id));
+        $posts = $DB->get_records('hsuforum_posts', array('discussion' => $first_discussion->id));
         $first_post = reset($posts);
 
         $callbackargs = array('postid' => $first_post->id, 'discussionid' => $first_discussion->id);
-        $this->postcaller = parent::setup_caller('forum_portfolio_caller', $callbackargs, $first_post->userid);
+        $this->postcaller = parent::setup_caller('hsuforum_portfolio_caller', $callbackargs, $first_post->userid);
 
         unset($callbackargs['postid']);
-        $this->discussioncaller = parent::setup_caller('forum_portfolio_caller', $callbackargs, $first_post->userid);
+        $this->discussioncaller = parent::setup_caller('hsuforum_portfolio_caller', $callbackargs, $first_post->userid);
 
     }
 

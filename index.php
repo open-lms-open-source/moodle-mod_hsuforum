@@ -69,7 +69,7 @@ $stryes          = get_string('yes');
 $strno           = get_string('no');
 $strrss          = get_string('rss');
 
-$searchform = forum_search_form($course);
+$searchform = hsuforum_search_form($course);
 
 
 // Start of the table for General Forums
@@ -78,8 +78,8 @@ $generaltable = new html_table();
 $generaltable->head  = array ($strforum, $strdescription, $strdiscussions);
 $generaltable->align = array ('left', 'left', 'center');
 
-if ($usetracking = forum_tp_can_track_forums()) {
-    $untracked = forum_tp_get_untracked_forums($USER->id, $course->id);
+if ($usetracking = hsuforum_tp_can_track_forums()) {
+    $untracked = hsuforum_tp_get_untracked_forums($USER->id, $course->id);
 
     $generaltable->head[] = $strunreadposts;
     $generaltable->align[] = 'center';
@@ -88,7 +88,7 @@ if ($usetracking = forum_tp_can_track_forums()) {
     $generaltable->align[] = 'center';
 }
 
-$subscribed_forums = forum_get_subscribed_forums($course);
+$subscribed_forums = hsuforum_get_subscribed_forums($course);
 
 $can_subscribe = is_enrolled($coursecontext);
 if ($can_subscribe) {
@@ -97,8 +97,8 @@ if ($can_subscribe) {
 }
 
 if ($show_rss = (($can_subscribe || $course->id == SITEID) &&
-                 isset($CFG->enablerssfeeds) && isset($CFG->forum_enablerssfeeds) &&
-                 $CFG->enablerssfeeds && $CFG->forum_enablerssfeeds)) {
+                 isset($CFG->enablerssfeeds) && isset($CFG->hsuforum_enablerssfeeds) &&
+                 $CFG->enablerssfeeds && $CFG->hsuforum_enablerssfeeds)) {
     $generaltable->head[] = $strrss;
     $generaltable->align[] = 'center';
 }
@@ -164,16 +164,16 @@ if (!is_null($subscribe) and !isguestuser()) {
         {
             $cansub = false;
         }
-        if (!forum_is_forcesubscribed($forum)) {
-            $subscribed = forum_is_subscribed($USER->id, $forum);
+        if (!hsuforum_is_forcesubscribed($forum)) {
+            $subscribed = hsuforum_is_subscribed($USER->id, $forum);
             if ((has_capability('moodle/course:manageactivities', $coursecontext, $USER->id) || $forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) && $subscribe && !$subscribed && $cansub) {
-                forum_subscribe($USER->id, $forumid);
+                hsuforum_subscribe($USER->id, $forumid);
             } else if (!$subscribe && $subscribed) {
-                forum_unsubscribe($USER->id, $forumid);
+                hsuforum_unsubscribe($USER->id, $forumid);
             }
         }
     }
-    $returnto = forum_go_back_to("index.php?id=$course->id");
+    $returnto = hsuforum_go_back_to("index.php?id=$course->id");
     $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
     if ($subscribe) {
         add_to_log($course->id, 'forum', 'subscribeall', "index.php?id=$course->id", $course->id);
@@ -191,7 +191,7 @@ if ($generalforums) {
         $cm      = $modinfo->instances['forum'][$forum->id];
         $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-        $count = forum_count_discussions($forum, $cm, $course);
+        $count = hsuforum_count_discussions($forum, $cm, $course);
 
         if ($usetracking) {
             if ($forum->trackingtype == FORUM_TRACKING_OFF) {
@@ -201,7 +201,7 @@ if ($generalforums) {
             } else {
                 if (isset($untracked[$forum->id])) {
                         $unreadlink  = '-';
-                } else if ($unread = forum_tp_count_forum_unread_posts($cm, $course)) {
+                } else if ($unread = hsuforum_tp_count_hsuforum_unread_posts($cm, $course)) {
                         $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
                     $unreadlink .= '<a title="'.$strmarkallread.'" href="markposts.php?f='.
                                    $forum->id.'&amp;mark=read"><img src="'.$OUTPUT->pix_url('t/clear') . '" alt="'.$strmarkallread.'" /></a></span>';
@@ -223,7 +223,7 @@ if ($generalforums) {
             }
         }
 
-        $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->forum_shortpost);
+        $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->hsuforum_shortpost);
         $forumname = format_string($forum->name, true);;
 
         if ($cm->visible) {
@@ -242,7 +242,7 @@ if ($generalforums) {
 
         if ($can_subscribe) {
             if ($forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) {
-                $row[] = forum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
+                $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
                         'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
                         'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
             } else {
@@ -296,8 +296,8 @@ if ($can_subscribe) {
 }
 
 if ($show_rss = (($can_subscribe || $course->id == SITEID) &&
-                 isset($CFG->enablerssfeeds) && isset($CFG->forum_enablerssfeeds) &&
-                 $CFG->enablerssfeeds && $CFG->forum_enablerssfeeds)) {
+                 isset($CFG->enablerssfeeds) && isset($CFG->hsuforum_enablerssfeeds) &&
+                 $CFG->enablerssfeeds && $CFG->hsuforum_enablerssfeeds)) {
     $learningtable->head[] = $strrss;
     $learningtable->align[] = 'center';
 }
@@ -318,7 +318,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
             $cm      = $modinfo->instances['forum'][$forum->id];
             $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-            $count = forum_count_discussions($forum, $cm, $course);
+            $count = hsuforum_count_discussions($forum, $cm, $course);
 
             if ($usetracking) {
                 if ($forum->trackingtype == FORUM_TRACKING_OFF) {
@@ -328,7 +328,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                 } else {
                     if (isset($untracked[$forum->id])) {
                         $unreadlink  = '-';
-                    } else if ($unread = forum_tp_count_forum_unread_posts($cm, $course)) {
+                    } else if ($unread = hsuforum_tp_count_hsuforum_unread_posts($cm, $course)) {
                         $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
                         $unreadlink .= '<a title="'.$strmarkallread.'" href="markposts.php?f='.
                                        $forum->id.'&amp;mark=read"><img src="'.$OUTPUT->pix_url('t/clear') . '" alt="'.$strmarkallread.'" /></a></span>';
@@ -350,7 +350,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                 }
             }
 
-            $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->forum_shortpost);
+            $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->hsuforum_shortpost);
 
             if ($cm->sectionnum != $currentsection) {
                 $printsection = get_section_name($course, $sections[$cm->sectionnum]);
@@ -380,7 +380,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
 
             if ($can_subscribe) {
                 if ($forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) {
-                    $row[] = forum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
+                    $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
                         'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
                         'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
                 } else {

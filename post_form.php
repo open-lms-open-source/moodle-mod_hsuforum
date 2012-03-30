@@ -27,7 +27,7 @@ if (!defined('MOODLE_INTERNAL')) {
 
 require_once($CFG->libdir.'/formslib.php');
 
-class mod_forum_post_form extends moodleform {
+class mod_hsuforum_post_form extends moodleform {
 
     function definition() {
 
@@ -57,7 +57,7 @@ class mod_forum_post_form extends moodleform {
         $mform->setType('message', PARAM_RAW);
         $mform->addRule('message', get_string('required'), 'required', null, 'client');
 
-        if (isset($forum->id) && forum_is_forcesubscribed($forum)) {
+        if (isset($forum->id) && hsuforum_is_forcesubscribed($forum)) {
 
             $mform->addElement('static', 'subscribemessage', get_string('subscription', 'forum'), get_string('everyoneissubscribed', 'forum'));
             $mform->addElement('hidden', 'subscribe');
@@ -94,7 +94,7 @@ class mod_forum_post_form extends moodleform {
             $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'forum'));
         }
 
-        if (!empty($CFG->forum_enabletimedposts) && !$post->parent && has_capability('mod/forum:viewhiddentimedposts', $coursecontext)) { // hack alert
+        if (!empty($CFG->hsuforum_enabletimedposts) && !$post->parent && has_capability('mod/forum:viewhiddentimedposts', $coursecontext)) { // hack alert
             $mform->addElement('header', '', get_string('displayperiod', 'forum'));
 
             $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'forum'), array('optional'=>true));

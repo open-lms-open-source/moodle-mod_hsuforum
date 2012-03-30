@@ -23,13 +23,13 @@
  */
 
 /**
- * Define all the backup steps that will be used by the backup_forum_activity_task
+ * Define all the backup steps that will be used by the backup_hsuforum_activity_task
  */
 
 /**
  * Define the complete forum structure for backup, with file and id annotations
  */
-class backup_forum_activity_structure_step extends backup_activity_structure_step {
+class backup_hsuforum_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
 
@@ -109,21 +109,21 @@ class backup_forum_activity_structure_step extends backup_activity_structure_ste
         if ($userinfo) {
             $discussion->set_source_sql('
                 SELECT *
-                  FROM {forum_discussions}
+                  FROM {hsuforum_discussions}
                  WHERE forum = ?',
                 array(backup::VAR_PARENTID));
 
             // Need posts ordered by id so parents are always before childs on restore
             $post->set_source_sql("SELECT *
-                                     FROM {forum_posts}
+                                     FROM {hsuforum_posts}
                                     WHERE discussion = :discussion
                                  ORDER BY id", array('discussion' => backup::VAR_PARENTID));
 
-            $subscription->set_source_table('forum_subscriptions', array('forum' => backup::VAR_PARENTID));
+            $subscription->set_source_table('hsuforum_subscriptions', array('forum' => backup::VAR_PARENTID));
 
-            $read->set_source_table('forum_read', array('forumid' => backup::VAR_PARENTID));
+            $read->set_source_table('hsuforum_read', array('forumid' => backup::VAR_PARENTID));
 
-            $track->set_source_table('forum_track_prefs', array('forumid' => backup::VAR_PARENTID));
+            $track->set_source_table('hsuforum_track_prefs', array('forumid' => backup::VAR_PARENTID));
 
             $rating->set_source_table('rating', array('contextid'  => backup::VAR_CONTEXTID,
                                                       'component'  => backup_helper::is_sqlparam('mod_forum'),

@@ -22,14 +22,14 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot . '/mod/forum/backup/moodle2/backup_forum_stepslib.php'); // Because it exists (must)
-require_once($CFG->dirroot . '/mod/forum/backup/moodle2/backup_forum_settingslib.php'); // Because it exists (optional)
+require_once($CFG->dirroot . '/mod/forum/backup/moodle2/backup_hsuforum_stepslib.php'); // Because it exists (must)
+require_once($CFG->dirroot . '/mod/forum/backup/moodle2/backup_hsuforum_settingslib.php'); // Because it exists (optional)
 
 /**
  * forum backup task that provides all the settings and steps to perform one
  * complete backup of the activity
  */
-class backup_forum_activity_task extends backup_activity_task {
+class backup_hsuforum_activity_task extends backup_activity_task {
 
     /**
      * Define (add) particular settings this activity can have
@@ -43,7 +43,7 @@ class backup_forum_activity_task extends backup_activity_task {
      */
     protected function define_my_steps() {
         // Forum only has one structure step
-        $this->add_step(new backup_forum_activity_structure_step('forum structure', 'forum.xml'));
+        $this->add_step(new backup_hsuforum_activity_structure_step('forum structure', 'forum.xml'));
     }
 
     /**

@@ -72,7 +72,7 @@ if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
 } else {
     $groupmode = $course->groupmode;
 }
-if ($groupmode && !forum_is_subscribed($user->id, $forum) && !has_capability('moodle/site:accessallgroups', $context)) {
+if ($groupmode && !hsuforum_is_subscribed($user->id, $forum) && !has_capability('moodle/site:accessallgroups', $context)) {
     if (!groups_get_all_groups($course->id, $USER->id)) {
         print_error('cannotsubscribe', 'forum');
     }
@@ -103,19 +103,19 @@ if (!is_null($mode) and has_capability('mod/forum:managesubscriptions', $context
     require_sesskey();
     switch ($mode) {
         case FORUM_CHOOSESUBSCRIBE : // 0
-            forum_forcesubscribe($forum->id, 0);
+            hsuforum_forcesubscribe($forum->id, 0);
             redirect($returnto, get_string("everyonecannowchoose", "forum"), 1);
             break;
         case FORUM_FORCESUBSCRIBE : // 1
-            forum_forcesubscribe($forum->id, 1);
+            hsuforum_forcesubscribe($forum->id, 1);
             redirect($returnto, get_string("everyoneisnowsubscribed", "forum"), 1);
             break;
         case FORUM_INITIALSUBSCRIBE : // 2
-            forum_forcesubscribe($forum->id, 2);
+            hsuforum_forcesubscribe($forum->id, 2);
             redirect($returnto, get_string("everyoneisnowsubscribed", "forum"), 1);
             break;
         case FORUM_DISALLOWSUBSCRIBE : // 3
-            forum_forcesubscribe($forum->id, 3);
+            hsuforum_forcesubscribe($forum->id, 3);
             redirect($returnto, get_string("noonecansubscribenow", "forum"), 1);
             break;
         default:
@@ -123,14 +123,14 @@ if (!is_null($mode) and has_capability('mod/forum:managesubscriptions', $context
     }
 }
 
-if (forum_is_forcesubscribed($forum)) {
+if (hsuforum_is_forcesubscribed($forum)) {
     redirect($returnto, get_string("everyoneisnowsubscribed", "forum"), 1);
 }
 
 $info->name  = fullname($user);
 $info->forum = format_string($forum->name);
 
-if (forum_is_subscribed($user->id, $forum->id)) {
+if (hsuforum_is_subscribed($user->id, $forum->id)) {
     if (is_null($sesskey)) {    // we came here via link in email
         $PAGE->set_title($course->shortname);
         $PAGE->set_heading($course->fullname);
@@ -141,7 +141,7 @@ if (forum_is_subscribed($user->id, $forum->id)) {
         exit;
     }
     require_sesskey();
-    if (forum_unsubscribe($user->id, $forum->id)) {
+    if (hsuforum_unsubscribe($user->id, $forum->id)) {
         add_to_log($course->id, "forum", "unsubscribe", "view.php?f=$forum->id", $forum->id, $cm->id);
         redirect($returnto, get_string("nownotsubscribed", "forum", $info), 1);
     } else {
@@ -166,7 +166,7 @@ if (forum_is_subscribed($user->id, $forum->id)) {
         exit;
     }
     require_sesskey();
-    forum_subscribe($user->id, $forum->id);
+    hsuforum_subscribe($user->id, $forum->id);
     add_to_log($course->id, "forum", "subscribe", "view.php?f=$forum->id", $forum->id, $cm->id);
     redirect($returnto, get_string("nowsubscribed", "forum", $info), 1);
 }

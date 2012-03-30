@@ -32,13 +32,13 @@
  * @param array $args the arguments received in the url
  * @return string the full path to the cached RSS feed directory. Null if there is a problem.
  */
-function forum_rss_get_feed($context, $args) {
+function hsuforum_rss_get_feed($context, $args) {
     global $CFG, $DB;
 
     $status = true;
 
     //are RSS feeds enabled?
-    if (empty($CFG->forum_enablerssfeeds)) {
+    if (empty($CFG->hsuforum_enablerssfeeds)) {
         debugging('DISABLED (module configuration)');
         return null;
     }
@@ -60,7 +60,7 @@ function forum_rss_get_feed($context, $args) {
     }
 
     //the sql that will retreive the data for the feed and be hashed to get the cache filename
-    $sql = forum_rss_get_sql($forum, $cm);
+    $sql = hsuforum_rss_get_sql($forum, $cm);
 
     //hash the sql to get the cache file name
     $filename = rss_get_file_name($forum, $sql);
@@ -73,9 +73,9 @@ function forum_rss_get_feed($context, $args) {
     }
     //if the cache is more than 60 seconds old and there's new stuff
     $dontrecheckcutoff = time()-60;
-    if ( $dontrecheckcutoff > $cachedfilelastmodified && forum_rss_newstuff($forum, $cm, $cachedfilelastmodified)) {
+    if ( $dontrecheckcutoff > $cachedfilelastmodified && hsuforum_rss_newstuff($forum, $cm, $cachedfilelastmodified)) {
         //need to regenerate the cached version
-        $result = forum_rss_feed_contents($forum, $sql);
+        $result = hsuforum_rss_feed_contents($forum, $sql);
         if (!empty($result)) {
             $status = rss_save_file('mod_forum',$filename,$result);
         }
@@ -91,7 +91,7 @@ function forum_rss_get_feed($context, $args) {
  * @param object $forum
  * @return void
  */
-function forum_rss_delete_file($forum) {
+function hsuforum_rss_delete_file($forum) {
     rss_delete_file('mod_forum', $forum);
 }
 
@@ -107,30 +107,30 @@ function forum_rss_delete_file($forum) {
  * @param int $time timestamp
  * @return bool
  */
-function forum_rss_newstuff($forum, $cm, $time) {
+function hsuforum_rss_newstuff($forum, $cm, $time) {
     global $DB;
 
-    $sql = forum_rss_get_sql($forum, $cm, $time);
+    $sql = hsuforum_rss_get_sql($forum, $cm, $time);
 
     $recs = $DB->get_records_sql($sql, null, 0, 1);//limit of 1. If we get even 1 back we have new stuff
     return ($recs && !empty($recs));
 }
 
-function forum_rss_get_sql($forum, $cm, $time=0) {
+function hsuforum_rss_get_sql($forum, $cm, $time=0) {
     $sql = null;
 
     if (!empty($forum->rsstype)) {
         if ($forum->rsstype == 1) {    //Discussion RSS
-            $sql = forum_rss_feed_discussions_sql($forum, $cm, $time);
+            $sql = hsuforum_rss_feed_discussions_sql($forum, $cm, $time);
         } else {                //Post RSS
-            $sql = forum_rss_feed_posts_sql($forum, $cm, $time);
+            $sql = hsuforum_rss_feed_posts_sql($forum, $cm, $time);
         }
     }
 
     return $sql;
 }
 
-function forum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
+function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
     global $CFG, $DB, $USER;
 
     $timelimit = '';
@@ -142,7 +142,7 @@ function forum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-    if (!empty($CFG->forum_enabletimedposts)) { /// Users must fulfill timed posts
+    if (!empty($CFG->hsuforum_enabletimedposts)) { /// Users must fulfill timed posts
         if (!has_capability('mod/forum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= :now1 AND (d.timeend = 0 OR d.timeend > :now2))";
             $params['now1'] = $now;
@@ -165,7 +165,7 @@ function forum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
     //get group enforcing SQL
     $groupmode    = groups_get_activity_groupmode($cm);
     $currentgroup = groups_get_activity_group($cm);
-    $groupselect = forum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
+    $groupselect = hsuforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
 
     if ($groupmode && $currentgroup) {
         $params['groupid'] = $currentgroup;
@@ -176,8 +176,8 @@ function forum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 
     $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend,
                    u.firstname as userfirstname, u.lastname as userlastname, u.email, u.picture, u.imagealt
-              FROM {forum_discussions} d
-                   JOIN {forum_posts} p ON p.discussion = d.id
+              FROM {hsuforum_discussions} d
+                   JOIN {hsuforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
              WHERE d.forum = {$forum->id} AND p.parent = 0
                    $timelimit $groupselect $newsince
@@ -185,14 +185,14 @@ function forum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
     return $sql;
 }
 
-function forum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
+function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     //get group enforcement SQL
     $groupmode    = groups_get_activity_groupmode($cm);
     $currentgroup = groups_get_activity_group($cm);
 
-    $groupselect = forum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
+    $groupselect = hsuforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
 
     if ($groupmode && $currentgroup) {
         $params['groupid'] = $currentgroup;
@@ -216,8 +216,8 @@ function forum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                  p.created AS postcreated,
                  p.messageformat AS postformat,
                  p.messagetrust AS posttrust
-            FROM {forum_discussions} d,
-               {forum_posts} p,
+            FROM {hsuforum_discussions} d,
+               {hsuforum_posts} p,
                {user} u
             WHERE d.forum = {$forum->id} AND
                 p.discussion = d.id AND
@@ -228,7 +228,7 @@ function forum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
     return $sql;
 }
 
-function forum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext=null) {
+function hsuforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext=null) {
     $groupselect = '';
 
     if ($groupmode) {
@@ -261,7 +261,7 @@ function forum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext=nul
  * @param object $forum
  * @param bool
  */
-function forum_rss_feed_contents($forum, $sql) {
+function hsuforum_rss_feed_contents($forum, $sql) {
     global $CFG, $DB;
 
     $status = true;

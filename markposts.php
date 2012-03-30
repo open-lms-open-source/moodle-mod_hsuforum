@@ -57,9 +57,9 @@ $user = $USER;
 require_login($course, false, $cm);
 
 if ($returnpage == 'index.php') {
-    $returnto = forum_go_back_to($returnpage.'?id='.$course->id);
+    $returnto = hsuforum_go_back_to($returnpage.'?id='.$course->id);
 } else {
-    $returnto = forum_go_back_to($returnpage.'?f='.$forum->id);
+    $returnto = hsuforum_go_back_to($returnpage.'?f='.$forum->id);
 }
 
 if (isguestuser()) {   // Guests can't change forum
@@ -77,29 +77,29 @@ $info->forum = format_string($forum->name);
 
 if ($mark == 'read') {
     if (!empty($d)) {
-        if (! $discussion = $DB->get_record('forum_discussions', array('id'=> $d, 'forum'=> $forum->id))) {
+        if (! $discussion = $DB->get_record('hsuforum_discussions', array('id'=> $d, 'forum'=> $forum->id))) {
             print_error('invaliddiscussionid', 'forum');
         }
 
-        if (forum_tp_mark_discussion_read($user, $d)) {
+        if (hsuforum_tp_mark_discussion_read($user, $d)) {
             add_to_log($course->id, "discussion", "mark read", "view.php?f=$forum->id", $d, $cm->id);
         }
     } else {
         // Mark all messages read in current group
         $currentgroup = groups_get_activity_group($cm);
         if(!$currentgroup) {
-            // mark_forum_read requires ===false, while get_activity_group
+            // mark_hsuforum_read requires ===false, while get_activity_group
             // may return 0
             $currentgroup=false;
         }
-        if (forum_tp_mark_forum_read($user, $forum->id,$currentgroup)) {
+        if (hsuforum_tp_mark_hsuforum_read($user, $forum->id,$currentgroup)) {
             add_to_log($course->id, "forum", "mark read", "view.php?f=$forum->id", $forum->id, $cm->id);
         }
     }
 
 /// FUTURE - Add ability to mark them as unread.
 //    } else { // subscribe
-//        if (forum_tp_start_tracking($forum->id, $user->id)) {
+//        if (hsuforum_tp_start_tracking($forum->id, $user->id)) {
 //            add_to_log($course->id, "forum", "mark unread", "view.php?f=$forum->id", $forum->id, $cm->id);
 //            redirect($returnto, get_string("nowtracking", "forum", $info), 1);
 //        } else {

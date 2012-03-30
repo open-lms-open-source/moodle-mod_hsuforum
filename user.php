@@ -114,11 +114,11 @@ if ($isspecificcourse) {
 
     // Now we need to get all of the courses to search.
     // All courses where the user has posted within a forum will be returned.
-    $courses = forum_get_courses_user_posted_in($user, $discussionsonly);
+    $courses = hsuforum_get_courses_user_posted_in($user, $discussionsonly);
 }
 
 // Get the posts by the requested user that the current user can access.
-$result = forum_get_posts_by_user($user, $courses, $isspecificcourse, $discussionsonly, ($page * $perpage), $perpage);
+$result = hsuforum_get_posts_by_user($user, $courses, $isspecificcourse, $discussionsonly, ($page * $perpage), $perpage);
 
 // Check whether there are not posts to display.
 if (empty($result->posts)) {
@@ -214,7 +214,7 @@ $discussions = array();
 foreach ($result->posts as $post) {
     $discussions[] = $post->discussion;
 }
-$discussions = $DB->get_records_list('forum_discussions', 'id', array_unique($discussions));
+$discussions = $DB->get_records_list('hsuforum_discussions', 'id', array_unique($discussions));
 
 //todo Rather than retrieving the ratings for each post individually it would be nice to do them in groups
 //however this requires creating arrays of posts with each array containing all of the posts from a particular forum,
@@ -290,7 +290,7 @@ foreach ($result->posts as $post) {
     $discussionurl->set_anchor('p'.$post->id);
     $fulllink = html_writer::link($discussionurl, get_string("postincontext", "forum"));
 
-    $postoutput[] = forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false, $fulllink, '', null, true, null, true);
+    $postoutput[] = hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false, $fulllink, '', null, true, null, true);
 }
 
 $userfullname = fullname($user);

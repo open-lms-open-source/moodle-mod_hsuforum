@@ -41,7 +41,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function xmldb_forum_upgrade($oldversion) {
+function xmldb_hsuforum_upgrade($oldversion) {
     global $CFG, $DB, $OUTPUT;
 
     $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
@@ -51,7 +51,7 @@ function xmldb_forum_upgrade($oldversion) {
     if ($oldversion < 2007101511) {
         //MDL-13866 - send forum ratins to gradebook again
         require_once($CFG->dirroot.'/mod/forum/lib.php');
-        forum_upgrade_grades();
+        hsuforum_upgrade_grades();
         upgrade_mod_savepoint(true, 2007101511, 'forum');
     }
 
@@ -95,8 +95,8 @@ function xmldb_forum_upgrade($oldversion) {
 
         $empty = $DB->sql_empty(); // silly oracle empty string handling workaround
 
-        $sqlfrom = "FROM {forum_posts} p
-                    JOIN {forum_discussions} d ON d.id = p.discussion
+        $sqlfrom = "FROM {hsuforum_posts} p
+                    JOIN {hsuforum_discussions} d ON d.id = p.discussion
                     JOIN {forum} f ON f.id = d.forum
                     JOIN {modules} m ON m.name = 'forum'
                     JOIN {course_modules} cm ON (cm.module = m.id AND cm.instance = f.id)
@@ -120,7 +120,7 @@ function xmldb_forum_upgrade($oldversion) {
                     //file missing??
                     echo $OUTPUT->notification("File not readable, skipping: ".$filepath);
                     $post->attachment = '';
-                    $DB->update_record('forum_posts', $post);
+                    $DB->update_record('hsuforum_posts', $post);
                     continue;
                 }
                 $context = get_context_instance(CONTEXT_MODULE, $post->cmid);
@@ -130,14 +130,14 @@ function xmldb_forum_upgrade($oldversion) {
                 if ($filename === '') {
                     echo $OUTPUT->notification("Unsupported post filename, skipping: ".$filepath);
                     $post->attachment = '';
-                    $DB->update_record('forum_posts', $post);
+                    $DB->update_record('hsuforum_posts', $post);
                     continue;
                 }
                 if (!$fs->file_exists($context->id, 'mod_forum', $filearea, $post->id, '/', $filename)) {
                     $file_record = array('contextid'=>$context->id, 'component'=>'mod_forum', 'filearea'=>$filearea, 'itemid'=>$post->id, 'filepath'=>'/', 'filename'=>$filename, 'userid'=>$post->userid);
                     if ($fs->create_file_from_pathname($file_record, $filepath)) {
                         $post->attachment = '1';
-                        $DB->update_record('forum_posts', $post);
+                        $DB->update_record('hsuforum_posts', $post);
                         unlink($filepath);
                     }
                 }
@@ -170,8 +170,8 @@ function xmldb_forum_upgrade($oldversion) {
 
     if ($oldversion < 2009042000) {
 
-    /// Rename field format on table forum_posts to messageformat
-        $table = new xmldb_table('forum_posts');
+    /// Rename field format on table hsuforum_posts to messageformat
+        $table = new xmldb_table('hsuforum_posts');
         $field = new xmldb_field('format', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'message');
 
     /// Launch rename field format
@@ -183,8 +183,8 @@ function xmldb_forum_upgrade($oldversion) {
 
     if ($oldversion < 2009042001) {
 
-    /// Define field messagetrust to be added to forum_posts
-        $table = new xmldb_table('forum_posts');
+    /// Define field messagetrust to be added to hsuforum_posts
+        $table = new xmldb_table('hsuforum_posts');
         $field = new xmldb_field('messagetrust', XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'messageformat');
 
     /// Launch add field messagetrust
@@ -196,7 +196,7 @@ function xmldb_forum_upgrade($oldversion) {
 
     if ($oldversion < 2009042002) {
         $trustmark = '#####TRUSTTEXT#####';
-        $rs = $DB->get_recordset_sql("SELECT * FROM {forum_posts} WHERE message LIKE ?", array($trustmark.'%'));
+        $rs = $DB->get_recordset_sql("SELECT * FROM {hsuforum_posts} WHERE message LIKE ?", array($trustmark.'%'));
         foreach ($rs as $post) {
             if (strpos($post->message, $trustmark) !== 0) {
                 // probably lowercase in some DBs?
@@ -204,7 +204,7 @@ function xmldb_forum_upgrade($oldversion) {
             }
             $post->message      = str_replace($trustmark, '', $post->message);
             $post->messagetrust = 1;
-            $DB->update_record('forum_posts', $post);
+            $DB->update_record('hsuforum_posts', $post);
         }
         $rs->close();
 
@@ -256,7 +256,7 @@ function xmldb_forum_upgrade($oldversion) {
     if ($oldversion < 2009050400) {
 
     /// Clean existing wrong rates. MDL-18227
-        $DB->delete_records('forum_ratings', array('post' => 0));
+        $DB->delete_records('hsuforum_ratings', array('post' => 0));
 
     /// forum savepoint reached
         upgrade_mod_savepoint(true, 2009050400, 'forum');
@@ -264,15 +264,15 @@ function xmldb_forum_upgrade($oldversion) {
 
     if ($oldversion < 2010042800) {
         //migrate forumratings to the central rating table
-        $table = new xmldb_table('forum_ratings');
+        $table = new xmldb_table('hsuforum_ratings');
         if ($dbman->table_exists($table)) {
             //forum ratings only have a single time column so use it for both time created and modified
             $sql = "INSERT INTO {rating} (contextid, scaleid, itemid, rating, userid, timecreated, timemodified)
 
                     SELECT cxt.id, f.scale, r.post AS itemid, r.rating, r.userid, r.time AS timecreated, r.time AS timemodified
-                      FROM {forum_ratings} r
-                      JOIN {forum_posts} p ON p.id=r.post
-                      JOIN {forum_discussions} d ON d.id=p.discussion
+                      FROM {hsuforum_ratings} r
+                      JOIN {hsuforum_posts} p ON p.id=r.post
+                      JOIN {hsuforum_discussions} d ON d.id=p.discussion
                       JOIN {forum} f ON f.id=d.forum
                       JOIN {course_modules} cm ON cm.instance=f.id
                       JOIN {context} cxt ON cxt.instanceid=cm.id
@@ -283,7 +283,7 @@ function xmldb_forum_upgrade($oldversion) {
 
             $DB->execute($sql, $params);
 
-            //now drop forum_ratings
+            //now drop hsuforum_ratings
             $dbman->drop_table($table);
         }
 

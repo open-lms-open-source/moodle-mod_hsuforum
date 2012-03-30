@@ -24,13 +24,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/forum/backup/moodle2/restore_forum_stepslib.php'); // Because it exists (must)
+require_once($CFG->dirroot . '/mod/forum/backup/moodle2/restore_hsuforum_stepslib.php'); // Because it exists (must)
 
 /**
  * forum restore task that provides all the settings and steps to perform one
  * complete restore of the activity
  */
-class restore_forum_activity_task extends restore_activity_task {
+class restore_hsuforum_activity_task extends restore_activity_task {
 
     /**
      * Define (add) particular settings this activity can have
@@ -44,7 +44,7 @@ class restore_forum_activity_task extends restore_activity_task {
      */
     protected function define_my_steps() {
         // Choice only has one structure step
-        $this->add_step(new restore_forum_activity_structure_step('forum_structure', 'forum.xml'));
+        $this->add_step(new restore_hsuforum_activity_structure_step('hsuforum_structure', 'forum.xml'));
     }
 
     /**
@@ -55,7 +55,7 @@ class restore_forum_activity_task extends restore_activity_task {
         $contents = array();
 
         $contents[] = new restore_decode_content('forum', array('intro'), 'forum');
-        $contents[] = new restore_decode_content('forum_posts', array('message'), 'forum_post');
+        $contents[] = new restore_decode_content('hsuforum_posts', array('message'), 'hsuforum_post');
 
         return $contents;
     }
@@ -73,12 +73,12 @@ class restore_forum_activity_task extends restore_activity_task {
         $rules[] = new restore_decode_rule('FORUMVIEWBYID', '/mod/forum/view.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('FORUMVIEWBYF', '/mod/forum/view.php?f=$1', 'forum');
         // Link to forum discussion
-        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEW', '/mod/forum/discuss.php?d=$1', 'forum_discussion');
+        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEW', '/mod/forum/discuss.php?d=$1', 'hsuforum_discussion');
         // Link to discussion with parent and with anchor posts
         $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWPARENT', '/mod/forum/discuss.php?d=$1&parent=$2',
-                                           array('forum_discussion', 'forum_post'));
+                                           array('hsuforum_discussion', 'hsuforum_post'));
         $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWINSIDE', '/mod/forum/discuss.php?d=$1#$2',
-                                           array('forum_discussion', 'forum_post'));
+                                           array('hsuforum_discussion', 'hsuforum_post'));
 
         return $rules;
     }
@@ -104,16 +104,16 @@ class restore_forum_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('forum', 'subscriber', 'subscribers.php?id={forum}', '{forum}');
         $rules[] = new restore_log_rule('forum', 'subscribers', 'subscribers.php?id={forum}', '{forum}');
         $rules[] = new restore_log_rule('forum', 'view subscribers', 'subscribers.php?id={forum}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'add discussion', 'discuss.php?d={forum_discussion}', '{forum_discussion}');
-        $rules[] = new restore_log_rule('forum', 'view discussion', 'discuss.php?d={forum_discussion}', '{forum_discussion}');
-        $rules[] = new restore_log_rule('forum', 'move discussion', 'discuss.php?d={forum_discussion}', '{forum_discussion}');
+        $rules[] = new restore_log_rule('forum', 'add discussion', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_discussion}');
+        $rules[] = new restore_log_rule('forum', 'view discussion', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_discussion}');
+        $rules[] = new restore_log_rule('forum', 'move discussion', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_discussion}');
         $rules[] = new restore_log_rule('forum', 'delete discussi', 'view.php?id={course_module}', '{forum}',
                                         null, 'delete discussion');
         $rules[] = new restore_log_rule('forum', 'delete discussion', 'view.php?id={course_module}', '{forum}');
-        $rules[] = new restore_log_rule('forum', 'add post', 'discuss.php?d={forum_discussion}&parent={forum_post}', '{forum_post}');
-        $rules[] = new restore_log_rule('forum', 'update post', 'discuss.php?d={forum_discussion}&parent={forum_post}', '{forum_post}');
-        $rules[] = new restore_log_rule('forum', 'prune post', 'discuss.php?d={forum_discussion}', '{forum_post}');
-        $rules[] = new restore_log_rule('forum', 'delete post', 'discuss.php?d={forum_discussion}', '[post]');
+        $rules[] = new restore_log_rule('forum', 'add post', 'discuss.php?d={hsuforum_discussion}&parent={hsuforum_post}', '{hsuforum_post}');
+        $rules[] = new restore_log_rule('forum', 'update post', 'discuss.php?d={hsuforum_discussion}&parent={hsuforum_post}', '{hsuforum_post}');
+        $rules[] = new restore_log_rule('forum', 'prune post', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_post}');
+        $rules[] = new restore_log_rule('forum', 'delete post', 'discuss.php?d={hsuforum_discussion}', '[post]');
 
         return $rules;
     }

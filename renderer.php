@@ -31,7 +31,7 @@
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
-class mod_forum_renderer extends plugin_renderer_base {
+class mod_hsuforum_renderer extends plugin_renderer_base {
     /**
      * This method is used to generate HTML for a subscriber selection form that
      * uses two user_selector controls

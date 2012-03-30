@@ -48,12 +48,12 @@ class modforumlib_test extends UnitTestCase {
     function tearDown() {
     }
 
-    function test_forum_cron() {
-        // watch out: forum_cron() should not be called from here,
+    function test_hsuforum_cron() {
+        // watch out: hsuforum_cron() should not be called from here,
         // it relies on special environment setup used in admin/cron.php,
         // mainly special cookieless session and $USER object
         /*
-        forum_cron();
+        hsuforum_cron();
         $this->assertTrue(false);
         */
     }

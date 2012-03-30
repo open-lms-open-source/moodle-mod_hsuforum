@@ -59,8 +59,8 @@ add_to_log($course->id, "forum", "view subscribers", "subscribers.php?id=$forum-
 $forumoutput = $PAGE->get_renderer('mod_forum');
 $currentgroup = groups_get_activity_group($cm);
 $options = array('forumid'=>$forum->id, 'currentgroup'=>$currentgroup, 'context'=>$context);
-$existingselector = new forum_existing_subscriber_selector('existingsubscribers', $options);
-$subscriberselector = new forum_potential_subscriber_selector('potentialsubscribers', $options);
+$existingselector = new hsuforum_existing_subscriber_selector('existingsubscribers', $options);
+$subscriberselector = new hsuforum_potential_subscriber_selector('potentialsubscribers', $options);
 $subscriberselector->set_existing_subscribers($existingselector->find_users(''));
 
 if (data_submitted()) {
@@ -74,14 +74,14 @@ if (data_submitted()) {
     if ($subscribe) {
         $users = $subscriberselector->get_selected_users();
         foreach ($users as $user) {
-            if (!forum_subscribe($user->id, $id)) {
+            if (!hsuforum_subscribe($user->id, $id)) {
                 print_error('cannotaddsubscriber', 'forum', '', $user->id);
             }
         }
     } else if ($unsubscribe) {
         $users = $existingselector->get_selected_users();
         foreach ($users as $user) {
-            if (!forum_unsubscribe($user->id, $id)) {
+            if (!hsuforum_unsubscribe($user->id, $id)) {
                 print_error('cannotremovesubscriber', 'forum', '', $user->id);
             }
         }
@@ -96,7 +96,7 @@ $PAGE->navbar->add($strsubscribers);
 $PAGE->set_title($strsubscribers);
 $PAGE->set_heading($COURSE->fullname);
 if (has_capability('mod/forum:managesubscriptions', $context)) {
-    $PAGE->set_button(forum_update_subscriptions_button($course->id, $id));
+    $PAGE->set_button(hsuforum_update_subscriptions_button($course->id, $id));
     if ($edit != -1) {
         $USER->subscriptionsediting = $edit;
     }
@@ -106,8 +106,8 @@ if (has_capability('mod/forum:managesubscriptions', $context)) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('forum', 'forum').' '.$strsubscribers);
 if (empty($USER->subscriptionsediting)) {
-    echo $forumoutput->subscriber_overview(forum_subscribed_users($course, $forum, $currentgroup, $context), $forum, $course);
-} else if (forum_is_forcesubscribed($forum)) {
+    echo $forumoutput->subscriber_overview(hsuforum_subscribed_users($course, $forum, $currentgroup, $context), $forum, $course);
+} else if (hsuforum_is_forcesubscribed($forum)) {
     $subscriberselector->set_force_subscribed(true);
     echo $forumoutput->subscribed_users($subscriberselector);
 } else {

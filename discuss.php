@@ -39,7 +39,7 @@
     }
     $PAGE->set_url($url);
 
-    $discussion = $DB->get_record('forum_discussions', array('id' => $d), '*', MUST_EXIST);
+    $discussion = $DB->get_record('hsuforum_discussions', array('id' => $d), '*', MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
     $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
@@ -57,7 +57,7 @@
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
     require_capability('mod/forum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'forum');
 
-    if (!empty($CFG->enablerssfeeds) && !empty($CFG->forum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
+    if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
 
         $rsstitle = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id))) . ': %fullname%';
@@ -100,19 +100,19 @@
 
         require_capability('mod/forum:startdiscussion', get_context_instance(CONTEXT_MODULE,$cmto->id));
 
-        if (!forum_move_attachments($discussion, $forum->id, $forumto->id)) {
+        if (!hsuforum_move_attachments($discussion, $forum->id, $forumto->id)) {
             echo $OUTPUT->notification("Errors occurred while moving attachment directories - check your file permissions");
         }
-        $DB->set_field('forum_discussions', 'forum', $forumto->id, array('id' => $discussion->id));
-        $DB->set_field('forum_read', 'forumid', $forumto->id, array('discussionid' => $discussion->id));
+        $DB->set_field('hsuforum_discussions', 'forum', $forumto->id, array('id' => $discussion->id));
+        $DB->set_field('hsuforum_read', 'forumid', $forumto->id, array('discussionid' => $discussion->id));
         add_to_log($course->id, 'forum', 'move discussion', "discuss.php?d=$discussion->id", $discussion->id, $cmto->id);
 
         require_once($CFG->libdir.'/rsslib.php');
         require_once($CFG->dirroot.'/mod/forum/rsslib.php');
 
         // Delete the RSS files for the 2 forums to force regeneration of the feeds
-        forum_rss_delete_file($forum);
-        forum_rss_delete_file($forumto);
+        hsuforum_rss_delete_file($forum);
+        hsuforum_rss_delete_file($forumto);
 
         redirect($return.'&moved=-1&sesskey='.sesskey());
     }
@@ -122,10 +122,10 @@
     unset($SESSION->fromdiscussion);
 
     if ($mode) {
-        set_user_preference('forum_displaymode', $mode);
+        set_user_preference('hsuforum_displaymode', $mode);
     }
 
-    $displaymode = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
+    $displaymode = get_user_preferences('hsuforum_displaymode', $CFG->hsuforum_displaymode);
 
     if ($parent) {
         // If flat AND parent, then force nested display this time
@@ -136,27 +136,27 @@
         $parent = $discussion->firstpost;
     }
 
-    if (! $post = forum_get_post_full($parent)) {
+    if (! $post = hsuforum_get_post_full($parent)) {
         print_error("notexists", 'forum', "$CFG->wwwroot/mod/forum/view.php?f=$forum->id");
     }
 
 
-    if (!forum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+    if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
         print_error('nopermissiontoview', 'forum', "$CFG->wwwroot/mod/forum/view.php?id=$forum->id");
     }
 
     if ($mark == 'read' or $mark == 'unread') {
-        if ($CFG->forum_usermarksread && forum_tp_can_track_forums($forum) && forum_tp_is_tracked($forum)) {
+        if ($CFG->hsuforum_usermarksread && hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
             if ($mark == 'read') {
-                forum_tp_add_read_record($USER->id, $postid);
+                hsuforum_tp_add_read_record($USER->id, $postid);
             } else {
                 // unread
-                forum_tp_delete_read_records($USER->id, $postid);
+                hsuforum_tp_delete_read_records($USER->id, $postid);
             }
         }
     }
 
-    $searchform = forum_search_form($course);
+    $searchform = hsuforum_search_form($course);
 
     $forumnode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
     if (empty($forumnode)) {
@@ -179,7 +179,7 @@
 /// If so, make sure the current person is allowed to see this discussion
 /// Also, if we know they should be able to reply, then explicitly set $canreply for performance reasons
 
-    $canreply = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
+    $canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
     if (!$canreply and $forum->type !== 'news') {
         if (isguestuser() or !isloggedin()) {
             $canreply = true;
@@ -197,7 +197,7 @@
     if (!empty($CFG->enableportfolios) && has_capability('mod/forum:exportdiscussion', $modcontext)) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
-        $button->set_callback_options('forum_portfolio_caller', array('discussionid' => $discussion->id), '/mod/forum/locallib.php');
+        $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), '/mod/forum/locallib.php');
         $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_forum'));
         $buttonextraclass = '';
         if (empty($button)) {
@@ -212,7 +212,7 @@
 
     // groups selector not needed here
     echo '<div class="discussioncontrol displaymode">';
-    forum_print_mode_form($discussion->id, $displaymode);
+    hsuforum_print_mode_form($discussion->id, $displaymode);
     echo "</div>";
 
     if ($forum->type != 'single'
@@ -266,7 +266,7 @@
     }
 
     if ($forum->type == 'qanda' && !has_capability('mod/forum:viewqandawithoutposting', $modcontext) &&
-                !forum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
+                !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
         echo $OUTPUT->notification(get_string('qandanotify','forum'));
     }
 
@@ -275,7 +275,7 @@
     }
 
     $canrate = has_capability('mod/forum:rate', $modcontext);
-    forum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
+    hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
 
     echo $OUTPUT->footer();
 

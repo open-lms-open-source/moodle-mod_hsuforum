@@ -77,16 +77,16 @@ if (empty($search)) {   // Check the other parameters instead
         $search .= ' forumid:'.$forumid;
     }
     if (!empty($user)) {
-        $search .= ' '.forum_clean_search_terms($user, 'user:');
+        $search .= ' '.hsuforum_clean_search_terms($user, 'user:');
     }
     if (!empty($subject)) {
-        $search .= ' '.forum_clean_search_terms($subject, 'subject:');
+        $search .= ' '.hsuforum_clean_search_terms($subject, 'subject:');
     }
     if (!empty($fullwords)) {
-        $search .= ' '.forum_clean_search_terms($fullwords, '+');
+        $search .= ' '.hsuforum_clean_search_terms($fullwords, '+');
     }
     if (!empty($notwords)) {
-        $search .= ' '.forum_clean_search_terms($notwords, '-');
+        $search .= ' '.hsuforum_clean_search_terms($notwords, '-');
     }
     if (!empty($phrase)) {
         $search .= ' "'.$phrase.'"';
@@ -103,7 +103,7 @@ if (empty($search)) {   // Check the other parameters instead
 }
 
 if ($search) {
-    $search = forum_clean_search_terms($search);
+    $search = hsuforum_clean_search_terms($search);
 }
 
 if (!$course = $DB->get_record('course', array('id'=>$id))) {
@@ -128,7 +128,7 @@ if (!$search || $showform) {
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-    forum_print_big_search_form($course);
+    hsuforum_print_big_search_form($course);
     echo $OUTPUT->footer();
     exit;
 }
@@ -138,11 +138,11 @@ if (!$search || $showform) {
 $searchterms = str_replace('forumid:', 'instance:', $search);
 $searchterms = explode(' ', $searchterms);
 
-$searchform = forum_search_form($course, $search);
+$searchform = hsuforum_search_form($course, $search);
 
 $PAGE->navbar->add($strsearch, new moodle_url('/mod/forum/search.php', array('id'=>$course->id)));
 $PAGE->navbar->add(s($search, true));
-if (!$posts = forum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
+if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
@@ -152,7 +152,7 @@ if (!$posts = forum_search_posts($searchterms, $course->id, $page*$perpage, $per
         $words = $search;
     }
 
-    forum_print_big_search_form($course);
+    hsuforum_print_big_search_form($course);
 
     echo $OUTPUT->footer();
     exit;
@@ -213,7 +213,7 @@ foreach ($posts as $post) {
 
     // Replace the simple subject with the three items forum name -> thread name -> subject
     // (if all three are appropriate) each as a link.
-    if (! $discussion = $DB->get_record('forum_discussions', array('id' => $post->discussion))) {
+    if (! $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion))) {
         print_error('invaliddiscussionid', 'forum');
     }
     if (! $forum = $DB->get_record('forum', array('id' => "$discussion->forum"))) {
@@ -256,7 +256,7 @@ foreach ($posts as $post) {
     }
 
     // Identify search terms only found in HTML markup, and add a warning about them to
-    // the start of the message text. However, do not do the highlighting here. forum_print_post
+    // the start of the message text. However, do not do the highlighting here. hsuforum_print_post
     // will do it for us later.
     $missing_terms = "";
 
@@ -284,7 +284,7 @@ foreach ($posts as $post) {
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "forum")."</a>";
 
     // Now pring the post.
-    forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false,
+    hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false,
             $fulllink, '', -99, false);
 }
 
@@ -297,7 +297,7 @@ echo $OUTPUT->footer();
 /**
  * @todo Document this function
  */
-function forum_print_big_search_form($course) {
+function hsuforum_print_big_search_form($course) {
     global $CFG, $DB, $words, $subject, $phrase, $user, $userid, $fullwords, $notwords, $datefrom, $dateto, $PAGE, $OUTPUT;
 
     echo $OUTPUT->box(get_string('searchforumintro', 'forum'), 'searchbox boxaligncenter', 'intro');
@@ -388,7 +388,7 @@ function forum_print_big_search_form($course) {
     echo '<tr>';
     echo '<td class="c0"><label for="menuforumid">'.get_string('searchwhichforums', 'forum').'</label></td>';
     echo '<td class="c1">';
-    echo html_writer::select(forum_menu_list($course), 'forumid', '', array(''=>get_string('allforums', 'forum')));
+    echo html_writer::select(hsuforum_menu_list($course), 'forumid', '', array(''=>get_string('allforums', 'forum')));
     echo '</td>';
     echo '</tr>';
 
@@ -425,7 +425,7 @@ function forum_print_big_search_form($course) {
  * @returns array
  * @todo Take the hardcoded limit out of this function and put it into a user-specified parameter
  */
-function forum_clean_search_terms($words, $prefix='') {
+function hsuforum_clean_search_terms($words, $prefix='') {
     $searchterms = explode(' ', $words);
     foreach ($searchterms as $key => $searchterm) {
         if (strlen($searchterm) < 2) {
@@ -440,7 +440,7 @@ function forum_clean_search_terms($words, $prefix='') {
 /**
  * @todo Document this function
  */
-function forum_menu_list($course)  {
+function hsuforum_menu_list($course)  {
 
     $menu = array();
 

@@ -27,7 +27,7 @@ require_once($CFG->libdir . '/portfolio/caller.php');
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class forum_portfolio_caller extends portfolio_module_caller_base {
+class hsuforum_portfolio_caller extends portfolio_module_caller_base {
 
     protected $postid;
     protected $discussionid;
@@ -65,7 +65,7 @@ class forum_portfolio_caller extends portfolio_module_caller_base {
         global $DB;
 
         if ($this->postid) {
-            if (!$this->post = $DB->get_record('forum_posts', array('id' => $this->postid))) {
+            if (!$this->post = $DB->get_record('hsuforum_posts', array('id' => $this->postid))) {
                 throw new portfolio_caller_exception('invalidpostid', 'forum');
             }
         }
@@ -79,7 +79,7 @@ class forum_portfolio_caller extends portfolio_module_caller_base {
             throw new portfolio_caller_exception('mustprovidediscussionorpost', 'forum');
         }
 
-        if (!$this->discussion = $DB->get_record('forum_discussions', $dbparams)) {
+        if (!$this->discussion = $DB->get_record('hsuforum_discussions', $dbparams)) {
             throw new portfolio_caller_exception('invaliddiscussionid', 'forum');
         }
 
@@ -109,7 +109,7 @@ class forum_portfolio_caller extends portfolio_module_caller_base {
             }
         } else { // whole thread
             $fs = get_file_storage();
-            $this->posts = forum_get_all_discussion_posts($this->discussion->id, 'p.created ASC');
+            $this->posts = hsuforum_get_all_discussion_posts($this->discussion->id, 'p.created ASC');
             $this->multifiles = array();
             foreach ($this->posts as $post) {
                 $attach = $fs->get_area_files($this->modcontext->id, 'mod_forum', 'attachment', $post->id, 'timemodified', false);
@@ -274,7 +274,7 @@ class forum_portfolio_caller extends portfolio_module_caller_base {
         }
     }
     /**
-     * this is a very cut down version of what is in forum_make_mail_post
+     * this is a very cut down version of what is in hsuforum_make_mail_post
      *
      * @global object
      * @param int $post
