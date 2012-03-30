@@ -66,7 +66,7 @@ if (isguestuser()) {   // Guests can't change forum
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->confirm(get_string('noguesttracking', 'forum').'<br /><br />'.get_string('liketologin'), get_login_url(), $returnto);
+    echo $OUTPUT->confirm(get_string('noguesttracking', 'hsuforum').'<br /><br />'.get_string('liketologin'), get_login_url(), $returnto);
     echo $OUTPUT->footer();
     exit;
 }

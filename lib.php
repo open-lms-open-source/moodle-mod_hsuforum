@@ -156,7 +156,7 @@ function hsuforum_update_instance($forum, $mform) {
         $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
         if (!empty($discussions)) {
             if (count($discussions) > 1) {
-                echo $OUTPUT->notification(get_string('warnformorepost', 'forum'));
+                echo $OUTPUT->notification(get_string('warnformorepost', 'hsuforum'));
             }
             $discussion = array_pop($discussions);
         } else {
@@ -803,7 +803,7 @@ function hsuforum_cron() {
                 $headerdata->userprefs = $CFG->wwwroot.'/user/edit.php?id='.$userid.'&amp;course='.$site->id;
 
                 $posttext = get_string('digestmailheader', 'forum', $headerdata)."\n\n";
-                $headerdata->userprefs = '<a target="_blank" href="'.$headerdata->userprefs.'">'.get_string('digestmailprefs', 'forum').'</a>';
+                $headerdata->userprefs = '<a target="_blank" href="'.$headerdata->userprefs.'">'.get_string('digestmailprefs', 'hsuforum').'</a>';
 
                 $posthtml = "<head>";
 /*                foreach ($CFG->stylesheets as $stylesheet) {
@@ -835,7 +835,7 @@ function hsuforum_cron() {
                         $userto->canpost[$discussion->id] = hsuforum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
                     }
 
-                    $strforums      = get_string('forums', 'forum');
+                    $strforums      = get_string('forums', 'hsuforum');
                     $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
                     $canreply       = $userto->canpost[$discussion->id];
                     $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
@@ -909,9 +909,9 @@ function hsuforum_cron() {
                         }
                     }
                     if ($canunsubscribe) {
-                        $posthtml .= "\n<div class='mdl-right'><font size=\"1\"><a href=\"$CFG->wwwroot/mod/forum/subscribe.php?id=$forum->id\">".get_string("unsubscribe", "forum")."</a></font></div>";
+                        $posthtml .= "\n<div class='mdl-right'><font size=\"1\"><a href=\"$CFG->wwwroot/mod/forum/subscribe.php?id=$forum->id\">".get_string("unsubscribe", "hsuforum")."</a></font></div>";
                     } else {
-                        $posthtml .= "\n<div class='mdl-right'><font size=\"1\">".get_string("everyoneissubscribed", "forum")."</font></div>";
+                        $posthtml .= "\n<div class='mdl-right'><font size=\"1\">".get_string("everyoneissubscribed", "hsuforum")."</font></div>";
                     }
                     $posthtml .= '<hr size="1" noshade="noshade" /></p>';
                 }
@@ -1004,7 +1004,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
 
     $strbynameondate = get_string('bynameondate', 'forum', $by);
 
-    $strforums = get_string('forums', 'forum');
+    $strforums = get_string('forums', 'hsuforum');
 
     $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
 
@@ -1040,7 +1040,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     }
     if (!$bare && $canunsubscribe) {
         $posttext .= "\n---------------------------------------------------------------------\n";
-        $posttext .= get_string("unsubscribe", "forum");
+        $posttext .= get_string("unsubscribe", "hsuforum");
         $posttext .= ": $CFG->wwwroot/mod/forum/subscribe.php?id=$forum->id\n";
     }
 
@@ -1073,7 +1073,7 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
         $canreply = $userto->canpost[$discussion->id];
     }
 
-    $strforums = get_string('forums', 'forum');
+    $strforums = get_string('forums', 'hsuforum');
     $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
     $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
 
@@ -1099,8 +1099,8 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
 
     if ($canunsubscribe) {
         $posthtml .= '<hr /><div class="mdl-align unsubscribelink">
-                      <a href="'.$CFG->wwwroot.'/mod/forum/subscribe.php?id='.$forum->id.'">'.get_string('unsubscribe', 'forum').'</a>&nbsp;
-                      <a href="'.$CFG->wwwroot.'/mod/forum/unsubscribeall.php">'.get_string('unsubscribeall', 'forum').'</a></div>';
+                      <a href="'.$CFG->wwwroot.'/mod/forum/subscribe.php?id='.$forum->id.'">'.get_string('unsubscribe', 'hsuforum').'</a>&nbsp;
+                      <a href="'.$CFG->wwwroot.'/mod/forum/unsubscribeall.php">'.get_string('unsubscribeall', 'hsuforum').'</a></div>';
     }
 
     $posthtml .= '</body>';
@@ -1193,7 +1193,7 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
             hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
         }
     } else {
-        echo "<p>".get_string("noposts", "forum")."</p>";
+        echo "<p>".get_string("noposts", "hsuforum")."</p>";
     }
 }
 
@@ -1289,9 +1289,9 @@ function hsuforum_print_overview($courses,&$htmlarray) {
         return;
     }
 
-    $strforum = get_string('modulename','forum');
-    $strnumunread = get_string('overviewnumunread','forum');
-    $strnumpostssince = get_string('overviewnumpostssince','forum');
+    $strforum = get_string('modulename','hsuforum');
+    $strnumunread = get_string('overviewnumunread','hsuforum');
+    $strnumpostssince = get_string('overviewnumpostssince','hsuforum');
 
     foreach ($forums as $forum) {
         $str = '';
@@ -1419,7 +1419,7 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
         return false;
     }
 
-    echo $OUTPUT->heading(get_string('newforumposts', 'forum').':', 3);
+    echo $OUTPUT->heading(get_string('newforumposts', 'hsuforum').':', 3);
     echo "\n<ul class='unlist'>\n";
 
     foreach ($printposts as $post) {
@@ -2926,8 +2926,8 @@ function hsuforum_get_course_forum($courseid, $type) {
     $forum->type = "$type";
     switch ($forum->type) {
         case "news":
-            $forum->name  = get_string("namenews", "forum");
-            $forum->intro = get_string("intronews", "forum");
+            $forum->name  = get_string("namenews", "hsuforum");
+            $forum->intro = get_string("intronews", "hsuforum");
             $forum->forcesubscribe = FORUM_FORCESUBSCRIBE;
             $forum->assessed = 0;
             if ($courseid == SITEID) {
@@ -2936,14 +2936,14 @@ function hsuforum_get_course_forum($courseid, $type) {
             }
             break;
         case "social":
-            $forum->name  = get_string("namesocial", "forum");
-            $forum->intro = get_string("introsocial", "forum");
+            $forum->name  = get_string("namesocial", "hsuforum");
+            $forum->intro = get_string("introsocial", "hsuforum");
             $forum->assessed = 0;
             $forum->forcesubscribe = 0;
             break;
         case "blog":
-            $forum->name = get_string('blogforum', 'forum');
-            $forum->intro = get_string('introblog', 'forum');
+            $forum->name = get_string('blogforum', 'hsuforum');
+            $forum->intro = get_string('introblog', 'hsuforum');
             $forum->assessed = 0;
             $forum->forcesubscribe = 0;
             break;
@@ -3073,12 +3073,12 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
 
     if ($post->parent) {
         $commands[] = '<a target="_blank" href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.
-                      $post->discussion.'&amp;parent='.$post->parent.'">'.get_string('parent', 'forum').'</a>';
+                      $post->discussion.'&amp;parent='.$post->parent.'">'.get_string('parent', 'hsuforum').'</a>';
     }
 
     if ($reply) {
         $commands[] = '<a target="_blank" href="'.$CFG->wwwroot.'/mod/forum/post.php?reply='.$post->id.'">'.
-                      get_string('reply', 'forum').'</a>';
+                      get_string('reply', 'hsuforum').'</a>';
     }
 
     $output .= '<div class="commands">';
@@ -3089,7 +3089,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
     if ($link) {
         $output .= '<div class="link">';
         $output .= '<a target="_blank" href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#p'.$post->id.'">'.
-                     get_string('postincontext', 'forum').'</a>';
+                     get_string('postincontext', 'hsuforum').'</a>';
         $output .= '</div>';
     }
 
@@ -3191,13 +3191,13 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         } else {
             $output .= html_writer::start_tag('div', array('class'=>'topic starter'));
         }
-        $output .= html_writer::tag('div', get_string('forumsubjecthidden','forum'), array('class'=>'subject')); // Subject
-        $output .= html_writer::tag('div', get_string('forumauthorhidden','forum'), array('class'=>'author')); // author
+        $output .= html_writer::tag('div', get_string('forumsubjecthidden','hsuforum'), array('class'=>'subject')); // Subject
+        $output .= html_writer::tag('div', get_string('forumauthorhidden','hsuforum'), array('class'=>'author')); // author
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div'); // row
         $output .= html_writer::start_tag('div', array('class'=>'row'));
         $output .= html_writer::tag('div', '&nbsp;', array('class'=>'left side')); // Groups
-        $output .= html_writer::tag('div', get_string('forumbodyhidden','forum'), array('class'=>'content')); // Content
+        $output .= html_writer::tag('div', get_string('forumbodyhidden','hsuforum'), array('class'=>'content')); // Content
         $output .= html_writer::end_tag('div'); // row
         $output .= html_writer::end_tag('div'); // forumpost
 
@@ -3210,15 +3210,15 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
 
     if (empty($str)) {
         $str = new stdClass;
-        $str->edit         = get_string('edit', 'forum');
-        $str->delete       = get_string('delete', 'forum');
-        $str->reply        = get_string('reply', 'forum');
-        $str->parent       = get_string('parent', 'forum');
-        $str->pruneheading = get_string('pruneheading', 'forum');
-        $str->prune        = get_string('prune', 'forum');
+        $str->edit         = get_string('edit', 'hsuforum');
+        $str->delete       = get_string('delete', 'hsuforum');
+        $str->reply        = get_string('reply', 'hsuforum');
+        $str->parent       = get_string('parent', 'hsuforum');
+        $str->pruneheading = get_string('pruneheading', 'hsuforum');
+        $str->prune        = get_string('prune', 'hsuforum');
         $str->displaymode     = get_user_preferences('hsuforum_displaymode', $CFG->hsuforum_displaymode);
-        $str->markread     = get_string('markread', 'forum');
-        $str->markunread   = get_string('markunread', 'forum');
+        $str->markread     = get_string('markread', 'hsuforum');
+        $str->markunread   = get_string('markunread', 'hsuforum');
     }
 
     $discussionlink = new moodle_url('/mod/forum/discuss.php', array('d'=>$post->discussion));
@@ -3397,7 +3397,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         // Prepare shortened version
         $postclass    = 'shortenedpost';
         $postcontent  = format_text(hsuforum_shorten_post($post->message), $post->messageformat, $options, $course->id);
-        $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'forum'));
+        $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'hsuforum'));
         $postcontent .= html_writer::tag('span', '('.get_string('numwords', 'moodle', count_words(strip_tags($post->message))).')...', array('class'=>'post-word-count'));
     } else {
         // Prepare whole post
@@ -3443,7 +3443,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         }
 
         $output .= html_writer::start_tag('div', array('class'=>'link'));
-        $output .= html_writer::link($discussionlink, get_string('discussthistopic', 'forum'));
+        $output .= html_writer::link($discussionlink, get_string('discussthistopic', 'hsuforum'));
         $output .= '&nbsp;('.$replystring.')';
         $output .= html_writer::end_tag('div'); // link
     }
@@ -3625,7 +3625,7 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
 
     if (!isset($rowcount)) {
         $rowcount = 0;
-        $strmarkalldread = get_string('markalldread', 'forum');
+        $strmarkalldread = get_string('markalldread', 'hsuforum');
     } else {
         $rowcount = ($rowcount + 1) % 2;
     }
@@ -3813,10 +3813,10 @@ function hsuforum_search_form($course, $search='') {
     $output .= '<form action="'.$CFG->wwwroot.'/mod/forum/search.php" style="display:inline">';
     $output .= '<fieldset class="invisiblefieldset">';
     $output .= $OUTPUT->help_icon('search');
-    $output .= '<label class="accesshide" for="search" >'.get_string('search', 'forum').'</label>';
+    $output .= '<label class="accesshide" for="search" >'.get_string('search', 'hsuforum').'</label>';
     $output .= '<input id="search" name="search" type="text" size="18" value="'.s($search, true).'" alt="search" />';
-    $output .= '<label class="accesshide" for="searchforums" >'.get_string('searchforums', 'forum').'</label>';
-    $output .= '<input id="searchforums" value="'.get_string('searchforums', 'forum').'" type="submit" />';
+    $output .= '<label class="accesshide" for="searchforums" >'.get_string('searchforums', 'hsuforum').'</label>';
+    $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
     $output .= '</fieldset>';
     $output .= '</form>';
@@ -3934,7 +3934,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
     if (!$context = get_context_instance(CONTEXT_MODULE, $cm->id)) {
         return $type !== 'separateimages' ? '' : array('', '');
     }
-    $strattachment = get_string('attachment', 'forum');
+    $strattachment = get_string('attachment', 'hsuforum');
 
     $fs = get_file_storage();
 
@@ -4663,11 +4663,11 @@ function hsuforum_post_subscription($post, $forum) {
 function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $cantaccessagroup = false, $fakelink=true, $backtoindex=false, $subscribed_forums=null) {
     global $CFG, $USER, $PAGE, $OUTPUT;
     $defaultmessages = array(
-        'subscribed' => get_string('unsubscribe', 'forum'),
-        'unsubscribed' => get_string('subscribe', 'forum'),
+        'subscribed' => get_string('unsubscribe', 'hsuforum'),
+        'unsubscribed' => get_string('subscribe', 'hsuforum'),
         'cantaccessgroup' => get_string('no'),
-        'forcesubscribed' => get_string('everyoneissubscribed', 'forum'),
-        'cantsubscribe' => get_string('disallowsubscribe','forum')
+        'forcesubscribed' => get_string('everyoneissubscribed', 'hsuforum'),
+        'cantsubscribe' => get_string('disallowsubscribe','hsuforum')
     );
     $messages = $messages + $defaultmessages;
 
@@ -4688,10 +4688,10 @@ function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $can
         }
         if ($subscribed) {
             $linktext = $messages['subscribed'];
-            $linktitle = get_string('subscribestop', 'forum');
+            $linktitle = get_string('subscribestop', 'hsuforum');
         } else {
             $linktext = $messages['unsubscribed'];
-            $linktitle = get_string('subscribestart', 'forum');
+            $linktitle = get_string('subscribestart', 'hsuforum');
         }
 
         $options = array();
@@ -4744,10 +4744,10 @@ function hsuforum_get_tracking_link($forum, $messages=array(), $fakelink=true) {
          $strnotrackforum = $messages['notrackforum'];
     }
     if (empty($strtrackforum)) {
-        $strtrackforum = get_string('trackforum', 'forum');
+        $strtrackforum = get_string('trackforum', 'hsuforum');
     }
     if (empty($strnotrackforum)) {
-        $strnotrackforum = get_string('notrackforum', 'forum');
+        $strnotrackforum = get_string('notrackforum', 'hsuforum');
     }
 
     if (hsuforum_tp_is_tracked($forum)) {
@@ -5270,13 +5270,13 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         switch ($forum->type) {
             case 'news':
             case 'blog':
-                $buttonadd = get_string('addanewtopic', 'forum');
+                $buttonadd = get_string('addanewtopic', 'hsuforum');
                 break;
             case 'qanda':
-                $buttonadd = get_string('addanewquestion', 'forum');
+                $buttonadd = get_string('addanewquestion', 'hsuforum');
                 break;
             default:
-                $buttonadd = get_string('addanewdiscussion', 'forum');
+                $buttonadd = get_string('addanewdiscussion', 'hsuforum');
                 break;
         }
         echo '<input type="submit" value="'.$buttonadd.'" />';
@@ -5290,9 +5290,9 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     } else if ($groupmode and has_capability('mod/forum:startdiscussion', $context)) {
         // inform users why they can not post new discussion
         if ($currentgroup) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'forum'));
+            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'));
         } else {
-            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'forum'));
+            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'));
         }
     }
 
@@ -5303,11 +5303,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     if (! $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage) ) {
         echo '<div class="forumnodiscuss">';
         if ($forum->type == 'news') {
-            echo '('.get_string('nonews', 'forum').')';
+            echo '('.get_string('nonews', 'hsuforum').')';
         } else if ($forum->type == 'qanda') {
-            echo '('.get_string('noquestions','forum').')';
+            echo '('.get_string('noquestions','hsuforum').')';
         } else {
-            echo '('.get_string('nodiscussions', 'forum').')';
+            echo '('.get_string('nodiscussions', 'hsuforum').')';
         }
         echo "</div>\n";
         return;
@@ -5356,26 +5356,26 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo '<table cellspacing="0" class="forumheaderlist">';
         echo '<thead>';
         echo '<tr>';
-        echo '<th class="header topic" scope="col">'.get_string('discussion', 'forum').'</th>';
-        echo '<th class="header author" colspan="2" scope="col">'.get_string('startedby', 'forum').'</th>';
+        echo '<th class="header topic" scope="col">'.get_string('discussion', 'hsuforum').'</th>';
+        echo '<th class="header author" colspan="2" scope="col">'.get_string('startedby', 'hsuforum').'</th>';
         if ($groupmode > 0) {
             echo '<th class="header group" scope="col">'.get_string('group').'</th>';
         }
         if (has_capability('mod/forum:viewdiscussion', $context)) {
-            echo '<th class="header replies" scope="col">'.get_string('replies', 'forum').'</th>';
+            echo '<th class="header replies" scope="col">'.get_string('replies', 'hsuforum').'</th>';
             // If the forum can be tracked, display the unread column.
             if ($cantrack) {
-                echo '<th class="header replies" scope="col">'.get_string('unread', 'forum');
+                echo '<th class="header replies" scope="col">'.get_string('unread', 'hsuforum');
                 if ($forumtracked) {
-                    echo '&nbsp;<a title="'.get_string('markallread', 'forum').
+                    echo '&nbsp;<a title="'.get_string('markallread', 'hsuforum').
                          '" href="'.$CFG->wwwroot.'/mod/forum/markposts.php?f='.
                          $forum->id.'&amp;mark=read&amp;returnpage=view.php">'.
-                         '<img src="'.$OUTPUT->pix_url('t/clear') . '" class="iconsmall" alt="'.get_string('markallread', 'forum').'" /></a>';
+                         '<img src="'.$OUTPUT->pix_url('t/clear') . '" class="iconsmall" alt="'.get_string('markallread', 'hsuforum').'" /></a>';
                 }
                 echo '</th>';
             }
         }
-        echo '<th class="header lastpost" scope="col">'.get_string('lastpost', 'forum').'</th>';
+        echo '<th class="header lastpost" scope="col">'.get_string('lastpost', 'hsuforum').'</th>';
         echo '</tr>';
         echo '</thead>';
         echo '<tbody>';
@@ -5449,9 +5449,9 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     if ($olddiscussionlink) {
         if ($forum->type == 'news') {
-            $strolder = get_string('oldertopics', 'forum');
+            $strolder = get_string('oldertopics', 'hsuforum');
         } else {
-            $strolder = get_string('olderdiscussions', 'forum');
+            $strolder = get_string('olderdiscussions', 'hsuforum');
         }
         echo '<div class="forumolddiscuss">';
         echo '<a href="'.$CFG->wwwroot.'/mod/forum/view.php?f='.$forum->id.'&amp;showall=1">';
@@ -6884,7 +6884,7 @@ function hsuforum_reset_userdata($data) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/rating/lib.php');
 
-    $componentstr = get_string('modulenameplural', 'forum');
+    $componentstr = get_string('modulenameplural', 'hsuforum');
     $status = array();
 
     $params = array($data->courseid);
@@ -6893,7 +6893,7 @@ function hsuforum_reset_userdata($data) {
     $typesql     = "";
     if (!empty($data->reset_hsuforum_all)) {
         $removeposts = true;
-        $typesstr    = get_string('resetforumsall', 'forum');
+        $typesstr    = get_string('resetforumsall', 'hsuforum');
         $types       = array();
     } else if (!empty($data->reset_hsuforum_types)){
         $removeposts = true;
@@ -6908,7 +6908,7 @@ function hsuforum_reset_userdata($data) {
             $types[] = $hsuforum_types_all[$type];
             $params[] = $type;
         }
-        $typesstr = get_string('resetforums', 'forum').': '.implode(', ', $types);
+        $typesstr = get_string('resetforums', 'hsuforum').': '.implode(', ', $types);
     }
     $alldiscussionssql = "SELECT fd.id
                             FROM {hsuforum_discussions} fd, {forum} f
@@ -7008,13 +7008,13 @@ function hsuforum_reset_userdata($data) {
     // remove all subscriptions unconditionally - even for users still enrolled in course
     if (!empty($data->reset_hsuforum_subscriptions)) {
         $DB->delete_records_select('hsuforum_subscriptions', "forum IN ($allforumssql)", $params);
-        $status[] = array('component'=>$componentstr, 'item'=>get_string('resetsubscriptions','forum'), 'error'=>false);
+        $status[] = array('component'=>$componentstr, 'item'=>get_string('resetsubscriptions','hsuforum'), 'error'=>false);
     }
 
     // remove all tracking prefs unconditionally - even for users still enrolled in course
     if (!empty($data->reset_hsuforum_track_prefs)) {
         $DB->delete_records_select('hsuforum_track_prefs', "forumid IN ($allforumssql)", $params);
-        $status[] = array('component'=>$componentstr, 'item'=>get_string('resettrackprefs','forum'), 'error'=>false);
+        $status[] = array('component'=>$componentstr, 'item'=>get_string('resettrackprefs','hsuforum'), 'error'=>false);
     }
 
     /// updating dates - shift may be negative too
@@ -7032,18 +7032,18 @@ function hsuforum_reset_userdata($data) {
  * @param $mform form passed by reference
  */
 function hsuforum_reset_course_form_definition(&$mform) {
-    $mform->addElement('header', 'forumheader', get_string('modulenameplural', 'forum'));
+    $mform->addElement('header', 'forumheader', get_string('modulenameplural', 'hsuforum'));
 
-    $mform->addElement('checkbox', 'reset_hsuforum_all', get_string('resetforumsall','forum'));
+    $mform->addElement('checkbox', 'reset_hsuforum_all', get_string('resetforumsall','hsuforum'));
 
-    $mform->addElement('select', 'reset_hsuforum_types', get_string('resetforums', 'forum'), hsuforum_get_hsuforum_types_all(), array('multiple' => 'multiple'));
+    $mform->addElement('select', 'reset_hsuforum_types', get_string('resetforums', 'hsuforum'), hsuforum_get_hsuforum_types_all(), array('multiple' => 'multiple'));
     $mform->setAdvanced('reset_hsuforum_types');
     $mform->disabledIf('reset_hsuforum_types', 'reset_hsuforum_all', 'checked');
 
-    $mform->addElement('checkbox', 'reset_hsuforum_subscriptions', get_string('resetsubscriptions','forum'));
+    $mform->addElement('checkbox', 'reset_hsuforum_subscriptions', get_string('resetsubscriptions','hsuforum'));
     $mform->setAdvanced('reset_hsuforum_subscriptions');
 
-    $mform->addElement('checkbox', 'reset_hsuforum_track_prefs', get_string('resettrackprefs','forum'));
+    $mform->addElement('checkbox', 'reset_hsuforum_track_prefs', get_string('resettrackprefs','hsuforum'));
     $mform->setAdvanced('reset_hsuforum_track_prefs');
     $mform->disabledIf('reset_hsuforum_track_prefs', 'reset_hsuforum_all', 'checked');
 
@@ -7289,10 +7289,10 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
  * @return array
  */
 function hsuforum_get_layout_modes() {
-    return array (FORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'forum'),
-                  FORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'forum'),
-                  FORUM_MODE_THREADED   => get_string('modethreaded', 'forum'),
-                  FORUM_MODE_NESTED     => get_string('modenested', 'forum'));
+    return array (FORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'hsuforum'),
+                  FORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'hsuforum'),
+                  FORUM_MODE_THREADED   => get_string('modethreaded', 'hsuforum'),
+                  FORUM_MODE_NESTED     => get_string('modenested', 'hsuforum'));
 }
 
 /**
@@ -7301,11 +7301,11 @@ function hsuforum_get_layout_modes() {
  * @return array
  */
 function hsuforum_get_hsuforum_types() {
-    return array ('general'  => get_string('generalforum', 'forum'),
-                  'eachuser' => get_string('eachuserforum', 'forum'),
-                  'single'   => get_string('singleforum', 'forum'),
-                  'qanda'    => get_string('qandaforum', 'forum'),
-                  'blog'     => get_string('blogforum', 'forum'));
+    return array ('general'  => get_string('generalforum', 'hsuforum'),
+                  'eachuser' => get_string('eachuserforum', 'hsuforum'),
+                  'single'   => get_string('singleforum', 'hsuforum'),
+                  'qanda'    => get_string('qandaforum', 'hsuforum'),
+                  'blog'     => get_string('blogforum', 'hsuforum'));
 }
 
 /**
@@ -7314,13 +7314,13 @@ function hsuforum_get_hsuforum_types() {
  * @return array
  */
 function hsuforum_get_hsuforum_types_all() {
-    return array ('news'     => get_string('namenews','forum'),
-                  'social'   => get_string('namesocial','forum'),
-                  'general'  => get_string('generalforum', 'forum'),
-                  'eachuser' => get_string('eachuserforum', 'forum'),
-                  'single'   => get_string('singleforum', 'forum'),
-                  'qanda'    => get_string('qandaforum', 'forum'),
-                  'blog'     => get_string('blogforum', 'forum'));
+    return array ('news'     => get_string('namenews','hsuforum'),
+                  'social'   => get_string('namesocial','hsuforum'),
+                  'general'  => get_string('generalforum', 'hsuforum'),
+                  'eachuser' => get_string('eachuserforum', 'hsuforum'),
+                  'single'   => get_string('singleforum', 'hsuforum'),
+                  'qanda'    => get_string('qandaforum', 'hsuforum'),
+                  'blog'     => get_string('blogforum', 'hsuforum'));
 }
 
 /**
@@ -7329,9 +7329,9 @@ function hsuforum_get_hsuforum_types_all() {
  * @return array
  */
 function hsuforum_get_open_modes() {
-    return array ('2' => get_string('openmode2', 'forum'),
-                  '1' => get_string('openmode1', 'forum'),
-                  '0' => get_string('openmode0', 'forum') );
+    return array ('2' => get_string('openmode2', 'hsuforum'),
+                  '1' => get_string('openmode1', 'hsuforum'),
+                  '0' => get_string('openmode0', 'hsuforum') );
 }
 
 /**
@@ -7364,7 +7364,7 @@ function hsuforum_extend_navigation($navref, $course, $module, $cm) {
     if (!is_array($discussions) || count($discussions)==0) {
         return;
     }
-    $discussionnode = $navref->add(get_string('discussions', 'forum').' ('.$discussioncount.')');
+    $discussionnode = $navref->add(get_string('discussions', 'hsuforum').' ('.$discussioncount.')');
     $discussionnode->mainnavonly = true;
     $discussionnode->display = false; // Do not display on navigation (only on navbar)
 
@@ -7380,7 +7380,7 @@ function hsuforum_extend_navigation($navref, $course, $module, $cm) {
         } else {
             $url = new moodle_url('/mod/forum/view.php', array('id'=>$cm->id));
         }
-        $discussionnode->add(get_string('viewalldiscussions', 'forum'), $url, navigation_node::TYPE_SETTING, null, null, $icon);
+        $discussionnode->add(get_string('viewalldiscussions', 'hsuforum'), $url, navigation_node::TYPE_SETTING, null, null, $icon);
     }
 
     $index = 0;
@@ -7430,12 +7430,12 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $cansubscribe = ($activeenrolled && $subscriptionmode != FORUM_FORCESUBSCRIBE && ($subscriptionmode != FORUM_DISALLOWSUBSCRIBE || $canmanage));
 
     if ($canmanage) {
-        $mode = $forumnode->add(get_string('subscriptionmode', 'forum'), null, navigation_node::TYPE_CONTAINER);
+        $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
 
-        $allowchoice = $mode->add(get_string('subscriptionoptional', 'forum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceforever = $mode->add(get_string("subscriptionforced", "forum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceinitially = $mode->add(get_string("subscriptionauto", "forum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'forum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $allowchoice = $mode->add(get_string('subscriptionoptional', 'hsuforum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceforever = $mode->add(get_string("subscriptionforced", "hsuforum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceinitially = $mode->add(get_string("subscriptionauto", "hsuforum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'hsuforum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
 
         switch ($subscriptionmode) {
             case FORUM_CHOOSESUBSCRIBE : // 0
@@ -7460,25 +7460,25 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
 
         switch ($subscriptionmode) {
             case FORUM_CHOOSESUBSCRIBE : // 0
-                $notenode = $forumnode->add(get_string('subscriptionoptional', 'forum'));
+                $notenode = $forumnode->add(get_string('subscriptionoptional', 'hsuforum'));
                 break;
             case FORUM_FORCESUBSCRIBE : // 1
-                $notenode = $forumnode->add(get_string('subscriptionforced', 'forum'));
+                $notenode = $forumnode->add(get_string('subscriptionforced', 'hsuforum'));
                 break;
             case FORUM_INITIALSUBSCRIBE : // 2
-                $notenode = $forumnode->add(get_string('subscriptionauto', 'forum'));
+                $notenode = $forumnode->add(get_string('subscriptionauto', 'hsuforum'));
                 break;
             case FORUM_DISALLOWSUBSCRIBE : // 3
-                $notenode = $forumnode->add(get_string('subscriptiondisabled', 'forum'));
+                $notenode = $forumnode->add(get_string('subscriptiondisabled', 'hsuforum'));
                 break;
         }
     }
 
     if ($cansubscribe) {
         if (hsuforum_is_subscribed($USER->id, $forumobject)) {
-            $linktext = get_string('unsubscribe', 'forum');
+            $linktext = get_string('unsubscribe', 'hsuforum');
         } else {
-            $linktext = get_string('subscribe', 'forum');
+            $linktext = get_string('subscribe', 'hsuforum');
         }
         $url = new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'sesskey'=>sesskey()));
         $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
@@ -7486,7 +7486,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
 
     if (has_capability('mod/forum:viewsubscribers', $PAGE->cm->context)){
         $url = new moodle_url('/mod/forum/subscribers.php', array('id'=>$forumobject->id));
-        $forumnode->add(get_string('showsubscribers', 'forum'), $url, navigation_node::TYPE_SETTING);
+        $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
     }
 
     if ($enrolled && hsuforum_tp_can_track_forums($forumobject)) { // keep tracking info for users with suspended enrolments
@@ -7495,9 +7495,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
             //could add unclickable text like for forced subscription but not sure this justifies adding another menu item
         } else {
             if (hsuforum_tp_is_tracked($forumobject)) {
-                $linktext = get_string('notrackforum', 'forum');
+                $linktext = get_string('notrackforum', 'hsuforum');
             } else {
-                $linktext = get_string('trackforum', 'forum');
+                $linktext = get_string('trackforum', 'hsuforum');
             }
             $url = new moodle_url('/mod/forum/settracking.php', array('id'=>$forumobject->id));
             $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
@@ -7520,9 +7520,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         }
 
         if ($forumobject->rsstype == 1) {
-            $string = get_string('rsssubscriberssdiscussions','forum');
+            $string = get_string('rsssubscriberssdiscussions','hsuforum');
         } else {
-            $string = get_string('rsssubscriberssposts','forum');
+            $string = get_string('rsssubscriberssposts','hsuforum');
         }
 
         $url = new moodle_url(rss_get_url($PAGE->cm->context->id, $userid, "mod_forum", $forumobject->id));
@@ -7670,9 +7670,9 @@ class hsuforum_potential_subscriber_selector extends hsuforum_subscriber_selecto
         }
 
         if ($this->forcesubscribed) {
-            return array(get_string("existingsubscribers", 'forum') => $availableusers);
+            return array(get_string("existingsubscribers", 'hsuforum') => $availableusers);
         } else {
-            return array(get_string("potentialsubscribers", 'forum') => $availableusers);
+            return array(get_string("potentialsubscribers", 'hsuforum') => $availableusers);
         }
     }
 
@@ -7724,7 +7724,7 @@ class hsuforum_existing_subscriber_selector extends hsuforum_subscriber_selector
                                               WHERE $wherecondition AND s.forum = :forumid
                                            ORDER BY u.lastname ASC, u.firstname ASC", $params);
 
-        return array(get_string("existingsubscribers", 'forum') => $subscribers);
+        return array(get_string("existingsubscribers", 'hsuforum') => $subscribers);
     }
 
 }
@@ -7742,7 +7742,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
     static $usetracking, $strunreadpostsone;
     if (!isset($initialised)) {
         if ($usetracking = hsuforum_tp_can_track_forums()) {
-            $strunreadpostsone = get_string('unreadpostsone', 'forum');
+            $strunreadpostsone = get_string('unreadpostsone', 'hsuforum');
         }
         $initialised = true;
     }

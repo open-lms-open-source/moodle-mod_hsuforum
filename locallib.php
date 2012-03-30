@@ -203,7 +203,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
             if ($writingleap) {
                 // add on an extra 'selection' entry
                 $selection = new portfolio_format_leap2a_entry('forumdiscussion' . $this->discussionid,
-                    get_string('discussion', 'forum') . ': ' . $this->discussion->name, 'selection');
+                    get_string('discussion', 'hsuforum') . ': ' . $this->discussion->name, 'selection');
                 $leapwriter->add_entry($selection);
                 $leapwriter->make_selection($selection, $ids, 'Grouping');
                 $content = $leapwriter->to_xml();
@@ -326,7 +326,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
 
         if (is_array($this->keyedfiles) && array_key_exists($post->id, $this->keyedfiles) && is_array($this->keyedfiles[$post->id]) && count($this->keyedfiles[$post->id]) > 0) {
             $output .= '<div class="attachments">';
-            $output .= '<br /><b>' .  get_string('attachments', 'forum') . '</b>:<br /><br />';
+            $output .= '<br /><b>' .  get_string('attachments', 'hsuforum') . '</b>:<br /><br />';
             foreach ($this->keyedfiles[$post->id] as $file) {
                 $output .= $format->file_output($file)  . '<br/ >';
             }
@@ -384,7 +384,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
      * @return string
      */
     public static function display_name() {
-        return get_string('modulename', 'forum');
+        return get_string('modulename', 'hsuforum');
     }
 
     public static function base_supported_formats() {

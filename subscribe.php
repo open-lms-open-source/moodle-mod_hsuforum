@@ -85,13 +85,13 @@ if (is_null($mode) and !is_enrolled($context, $USER, '', true)) {   // Guests an
     $PAGE->set_heading($course->fullname);
     if (isguestuser()) {
         echo $OUTPUT->header();
-        echo $OUTPUT->confirm(get_string('subscribeenrolledonly', 'forum').'<br /><br />'.get_string('liketologin'),
+        echo $OUTPUT->confirm(get_string('subscribeenrolledonly', 'hsuforum').'<br /><br />'.get_string('liketologin'),
                      get_login_url(), new moodle_url('/mod/forum/view.php', array('f'=>$id)));
         echo $OUTPUT->footer();
         exit;
     } else {
         // there should not be any links leading to this place, just redirect
-        redirect(new moodle_url('/mod/forum/view.php', array('f'=>$id)), get_string('subscribeenrolledonly', 'forum'));
+        redirect(new moodle_url('/mod/forum/view.php', array('f'=>$id)), get_string('subscribeenrolledonly', 'hsuforum'));
     }
 }
 
@@ -104,27 +104,27 @@ if (!is_null($mode) and has_capability('mod/forum:managesubscriptions', $context
     switch ($mode) {
         case FORUM_CHOOSESUBSCRIBE : // 0
             hsuforum_forcesubscribe($forum->id, 0);
-            redirect($returnto, get_string("everyonecannowchoose", "forum"), 1);
+            redirect($returnto, get_string("everyonecannowchoose", "hsuforum"), 1);
             break;
         case FORUM_FORCESUBSCRIBE : // 1
             hsuforum_forcesubscribe($forum->id, 1);
-            redirect($returnto, get_string("everyoneisnowsubscribed", "forum"), 1);
+            redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;
         case FORUM_INITIALSUBSCRIBE : // 2
             hsuforum_forcesubscribe($forum->id, 2);
-            redirect($returnto, get_string("everyoneisnowsubscribed", "forum"), 1);
+            redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;
         case FORUM_DISALLOWSUBSCRIBE : // 3
             hsuforum_forcesubscribe($forum->id, 3);
-            redirect($returnto, get_string("noonecansubscribenow", "forum"), 1);
+            redirect($returnto, get_string("noonecansubscribenow", "hsuforum"), 1);
             break;
         default:
-            print_error(get_string('invalidforcesubscribe', 'forum'));
+            print_error(get_string('invalidforcesubscribe', 'hsuforum'));
     }
 }
 
 if (hsuforum_is_forcesubscribed($forum)) {
-    redirect($returnto, get_string("everyoneisnowsubscribed", "forum"), 1);
+    redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
 }
 
 $info->name  = fullname($user);

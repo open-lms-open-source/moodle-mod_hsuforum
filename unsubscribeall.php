@@ -36,8 +36,8 @@ if (isguestuser()) {
     redirect($return);
 }
 
-$strunsubscribeall = get_string('unsubscribeall', 'forum');
-$PAGE->navbar->add(get_string('modulename', 'forum'));
+$strunsubscribeall = get_string('unsubscribeall', 'hsuforum');
+$PAGE->navbar->add(get_string('modulename', 'hsuforum'));
 $PAGE->navbar->add($strunsubscribeall);
 $PAGE->set_title($strunsubscribeall);
 $PAGE->set_heading(format_string($COURSE->fullname));
@@ -47,7 +47,7 @@ echo $OUTPUT->heading($strunsubscribeall);
 if (data_submitted() and $confirm and confirm_sesskey()) {
     $DB->delete_records('hsuforum_subscriptions', array('userid'=>$USER->id));
     $DB->set_field('user', 'autosubscribe', 0, array('id'=>$USER->id));
-    echo $OUTPUT->box(get_string('unsubscribealldone', 'forum'));
+    echo $OUTPUT->box(get_string('unsubscribealldone', 'hsuforum'));
     echo $OUTPUT->continue_button($return);
     echo $OUTPUT->footer();
     die;
@@ -62,7 +62,7 @@ if (data_submitted() and $confirm and confirm_sesskey()) {
         die;
 
     } else {
-        echo $OUTPUT->box(get_string('unsubscribeallempty', 'forum'));
+        echo $OUTPUT->box(get_string('unsubscribeallempty', 'hsuforum'));
         echo $OUTPUT->continue_button($return);
         echo $OUTPUT->footer();
         die;

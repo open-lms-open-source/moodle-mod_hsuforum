@@ -89,7 +89,7 @@ if (!isloggedin() or isguestuser()) {
     $PAGE->set_heading($course->fullname);
 
     echo $OUTPUT->header();
-    echo $OUTPUT->confirm(get_string('noguestpost', 'forum').'<br /><br />'.get_string('liketologin'), get_login_url(), get_referer(false));
+    echo $OUTPUT->confirm(get_string('noguestpost', 'hsuforum').'<br /><br />'.get_string('liketologin'), get_login_url(), get_referer(false));
     echo $OUTPUT->footer();
     exit;
 }
@@ -222,7 +222,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
 
-    $strre = get_string('re', 'forum');
+    $strre = get_string('re', 'hsuforum');
     if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
         $post->subject = $strre.' '.$post->subject;
     }
@@ -362,7 +362,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     } else { // User just asked to delete something
 
         hsuforum_set_return();
-        $PAGE->navbar->add(get_string('delete', 'forum'));
+        $PAGE->navbar->add(get_string('delete', 'hsuforum'));
         $PAGE->set_title($course->shortname);
         $PAGE->set_heading($course->fullname);
 
@@ -463,11 +463,11 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_cm($cm);
         $PAGE->set_context($modcontext);
         $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/forum/discuss.php', array('d'=>$discussion->id)));
-        $PAGE->navbar->add(get_string("prune", "forum"));
+        $PAGE->navbar->add(get_string("prune", "hsuforum"));
         $PAGE->set_title(format_string($discussion->name).": ".format_string($post->subject));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('pruneheading', 'forum'));
+        echo $OUTPUT->heading(get_string('pruneheading', 'hsuforum'));
         echo '<center>';
 
         include('prune.html');
@@ -527,12 +527,12 @@ if ($USER->id != $post->userid) {   // Not the original author, so add a message
 }
 
 if (!empty($parent)) {
-    $heading = get_string("yourreply", "forum");
+    $heading = get_string("yourreply", "hsuforum");
 } else {
     if ($forum->type == 'qanda') {
-        $heading = get_string('yournewquestion', 'forum');
+        $heading = get_string('yournewquestion', 'hsuforum');
     } else {
-        $heading = get_string('yournewtopic', 'forum');
+        $heading = get_string('yournewtopic', 'hsuforum');
     }
 }
 
@@ -645,7 +645,7 @@ if ($fromform = $mform_post->get_data()) {
         if (!empty($message)) { // if we're printing stuff about the file upload
             $timemessage = 4;
         }
-        $message .= '<br />'.get_string("postupdated", "forum");
+        $message .= '<br />'.get_string("postupdated", "hsuforum");
 
         if ($subscribemessage = hsuforum_post_subscription($fromform, $forum)) {
             $timemessage = 4;
@@ -683,10 +683,10 @@ if ($fromform = $mform_post->get_data()) {
             }
 
             if (!empty($fromform->mailnow)) {
-                $message .= get_string("postmailnow", "forum");
+                $message .= get_string("postmailnow", "hsuforum");
                 $timemessage = 4;
             } else {
-                $message .= '<p>'.get_string("postaddedsuccess", "forum") . '</p>';
+                $message .= '<p>'.get_string("postaddedsuccess", "hsuforum") . '</p>';
                 $message .= '<p>'.get_string("postaddedtimeleft", "forum", format_time($CFG->maxeditingtime)) . '</p>';
             }
 
@@ -751,10 +751,10 @@ if ($fromform = $mform_post->get_data()) {
             }
 
             if ($fromform->mailnow) {
-                $message .= get_string("postmailnow", "forum");
+                $message .= get_string("postmailnow", "hsuforum");
                 $timemessage = 4;
             } else {
-                $message .= '<p>'.get_string("postaddedsuccess", "forum") . '</p>';
+                $message .= '<p>'.get_string("postaddedsuccess", "hsuforum") . '</p>';
                 $message .= '<p>'.get_string("postaddedtimeleft", "forum", format_time($CFG->maxeditingtime)) . '</p>';
             }
 
@@ -793,8 +793,8 @@ if ($post->discussion) {
     }
 } else {
     $toppost = new stdClass();
-    $toppost->subject = ($forum->type == "news") ? get_string("addanewtopic", "forum") :
-                                                   get_string("addanewdiscussion", "forum");
+    $toppost->subject = ($forum->type == "news") ? get_string("addanewtopic", "hsuforum") :
+                                                   get_string("addanewdiscussion", "hsuforum");
 }
 
 if (empty($post->edit)) {
@@ -824,11 +824,11 @@ if (!empty($discussion->id)) {
 }
 
 if ($post->parent) {
-    $PAGE->navbar->add(get_string('reply', 'forum'));
+    $PAGE->navbar->add(get_string('reply', 'hsuforum'));
 }
 
 if ($edit) {
-    $PAGE->navbar->add(get_string('edit', 'forum'));
+    $PAGE->navbar->add(get_string('edit', 'hsuforum'));
 }
 
 $PAGE->set_title("$course->shortname: $strdiscussionname ".format_string($toppost->subject));
@@ -848,7 +848,7 @@ if ($forum->type == 'qanda'
             && !has_capability('mod/forum:viewqandawithoutposting', $modcontext)
             && !empty($discussion->id)
             && !hsuforum_user_has_posted($forum->id, $discussion->id, $USER->id)) {
-    echo $OUTPUT->notification(get_string('qandanotify','forum'));
+    echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
 }
 
 hsuforum_check_throttling($forum, $cm);

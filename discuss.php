@@ -247,7 +247,7 @@
             if (!empty($forummenu)) {
                 echo '<div class="movediscussionoption">';
                 $select = new url_select($forummenu, '',
-                        array(''=>get_string("movethisdiscussionto", "forum")),
+                        array(''=>get_string("movethisdiscussionto", "hsuforum")),
                         'forummenu', get_string('move'));
                 echo $OUTPUT->render($select);
                 echo "</div>";
@@ -267,7 +267,7 @@
 
     if ($forum->type == 'qanda' && !has_capability('mod/forum:viewqandawithoutposting', $modcontext) &&
                 !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
-        echo $OUTPUT->notification(get_string('qandanotify','forum'));
+        echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
     }
 
     if ($move == -1 and confirm_sesskey()) {

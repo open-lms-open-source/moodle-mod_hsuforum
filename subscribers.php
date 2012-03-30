@@ -91,7 +91,7 @@ if (data_submitted()) {
     $subscriberselector->set_existing_subscribers($existingselector->find_users(''));
 }
 
-$strsubscribers = get_string("subscribers", "forum");
+$strsubscribers = get_string("subscribers", "hsuforum");
 $PAGE->navbar->add($strsubscribers);
 $PAGE->set_title($strsubscribers);
 $PAGE->set_heading($COURSE->fullname);
@@ -104,7 +104,7 @@ if (has_capability('mod/forum:managesubscriptions', $context)) {
     unset($USER->subscriptionsediting);
 }
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('forum', 'forum').' '.$strsubscribers);
+echo $OUTPUT->heading(get_string('forum', 'hsuforum').' '.$strsubscribers);
 if (empty($USER->subscriptionsediting)) {
     echo $forumoutput->subscriber_overview(hsuforum_subscribed_users($course, $forum, $currentgroup, $context), $forum, $course);
 } else if (hsuforum_is_forcesubscribed($forum)) {

@@ -53,18 +53,18 @@ unset($SESSION->fromdiscussion);
 
 add_to_log($course->id, 'forum', 'view forums', "index.php?id=$course->id");
 
-$strforums       = get_string('forums', 'forum');
-$strforum        = get_string('forum', 'forum');
+$strforums       = get_string('forums', 'hsuforum');
+$strforum        = get_string('forum', 'hsuforum');
 $strdescription  = get_string('description');
-$strdiscussions  = get_string('discussions', 'forum');
-$strsubscribed   = get_string('subscribed', 'forum');
-$strunreadposts  = get_string('unreadposts', 'forum');
-$strtracking     = get_string('tracking', 'forum');
-$strmarkallread  = get_string('markallread', 'forum');
-$strtrackforum   = get_string('trackforum', 'forum');
-$strnotrackforum = get_string('notrackforum', 'forum');
-$strsubscribe    = get_string('subscribe', 'forum');
-$strunsubscribe  = get_string('unsubscribe', 'forum');
+$strdiscussions  = get_string('discussions', 'hsuforum');
+$strsubscribed   = get_string('subscribed', 'hsuforum');
+$strunreadposts  = get_string('unreadposts', 'hsuforum');
+$strtracking     = get_string('tracking', 'hsuforum');
+$strmarkallread  = get_string('markallread', 'hsuforum');
+$strtrackforum   = get_string('trackforum', 'hsuforum');
+$strnotrackforum = get_string('notrackforum', 'hsuforum');
+$strsubscribe    = get_string('subscribe', 'hsuforum');
+$strunsubscribe  = get_string('unsubscribe', 'hsuforum');
 $stryes          = get_string('yes');
 $strno           = get_string('no');
 $strrss          = get_string('rss');
@@ -255,9 +255,9 @@ if ($generalforums) {
             if ($forum->rsstype and $forum->rssarticles) {
                 //Calculate the tooltip text
                 if ($forum->rsstype == 1) {
-                    $tooltiptext = get_string('rsssubscriberssdiscussions', 'forum');
+                    $tooltiptext = get_string('rsssubscriberssdiscussions', 'hsuforum');
                 } else {
-                    $tooltiptext = get_string('rsssubscriberssposts', 'forum');
+                    $tooltiptext = get_string('rsssubscriberssposts', 'hsuforum');
                 }
 
                 if (!isloggedin() && $course->id == SITEID) {
@@ -393,9 +393,9 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                 if ($forum->rsstype and $forum->rssarticles) {
                     //Calculate the tolltip text
                     if ($forum->rsstype == 1) {
-                        $tooltiptext = get_string('rsssubscriberssdiscussions', 'forum');
+                        $tooltiptext = get_string('rsssubscriberssdiscussions', 'hsuforum');
                     } else {
-                        $tooltiptext = get_string('rsssubscriberssposts', 'forum');
+                        $tooltiptext = get_string('rsssubscriberssposts', 'hsuforum');
                     }
                     //Get html code for RSS link
                     $row[] = rss_get_link($context->id, $USER->id, 'mod_forum', $forum->id, $tooltiptext);
@@ -421,23 +421,23 @@ if (!isguestuser() && isloggedin()) {
     echo $OUTPUT->box_start('subscription');
     echo html_writer::tag('div',
         html_writer::link(new moodle_url('/mod/forum/index.php', array('id'=>$course->id, 'subscribe'=>1, 'sesskey'=>sesskey())),
-            get_string('allsubscribe', 'forum')),
+            get_string('allsubscribe', 'hsuforum')),
         array('class'=>'helplink'));
     echo html_writer::tag('div',
         html_writer::link(new moodle_url('/mod/forum/index.php', array('id'=>$course->id, 'subscribe'=>0, 'sesskey'=>sesskey())),
-            get_string('allunsubscribe', 'forum')),
+            get_string('allunsubscribe', 'hsuforum')),
         array('class'=>'helplink'));
     echo $OUTPUT->box_end();
     echo $OUTPUT->box('&nbsp;', 'clearer');
 }
 
 if ($generalforums) {
-    echo $OUTPUT->heading(get_string('generalforums', 'forum'));
+    echo $OUTPUT->heading(get_string('generalforums', 'hsuforum'));
     echo html_writer::table($generaltable);
 }
 
 if ($learningforums) {
-    echo $OUTPUT->heading(get_string('learningforums', 'forum'));
+    echo $OUTPUT->heading(get_string('learningforums', 'hsuforum'));
     echo html_writer::table($learningtable);
 }
 

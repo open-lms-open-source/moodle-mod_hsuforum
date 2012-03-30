@@ -168,9 +168,9 @@ if (empty($result->posts)) {
         // No need to extend the navigation it happens automatically for the
         // current user.
         if ($discussionsonly) {
-            $notification = get_string('nodiscussionsstartedbyyou', 'forum');
+            $notification = get_string('nodiscussionsstartedbyyou', 'hsuforum');
         } else {
-            $notification = get_string('nopostsmadebyyou', 'forum');
+            $notification = get_string('nopostsmadebyyou', 'hsuforum');
         }
     } else if ($canviewuser) {
         $PAGE->navigation->extend_for_user($user);
@@ -184,7 +184,7 @@ if (empty($result->posts)) {
     } else {
         // Don't extend the navigation it would be giving out information that
         // the current uesr doesn't have access to.
-        $notification = get_string('cannotviewusersposts', 'forum');
+        $notification = get_string('cannotviewusersposts', 'hsuforum');
         if ($isspecificcourse) {
             $url = new moodle_url('/course/view.php', array('id' => $courseid));
         } else {
@@ -288,7 +288,7 @@ foreach ($result->posts as $post) {
     // we've added will be lost.
     $post->subjectnoformat = true;
     $discussionurl->set_anchor('p'.$post->id);
-    $fulllink = html_writer::link($discussionurl, get_string("postincontext", "forum"));
+    $fulllink = html_writer::link($discussionurl, get_string("postincontext", "hsuforum"));
 
     $postoutput[] = hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false, $fulllink, '', null, true, null, true);
 }
@@ -334,7 +334,7 @@ if (!empty($postoutput)) {
 } else if ($discussionsonly) {
     echo $OUTPUT->heading(get_string('nodiscussionsstartedby', 'forum', $userfullname));
 } else {
-    echo $OUTPUT->heading(get_string('noposts', 'forum'));
+    echo $OUTPUT->heading(get_string('noposts', 'hsuforum'));
 }
 
 echo html_writer::end_tag('div');

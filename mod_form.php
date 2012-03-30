@@ -37,7 +37,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 //-------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('forumname', 'forum'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('forumname', 'hsuforum'), array('size'=>'64'));
         if (!empty($CFG->formatstringstriptags)) {
         $mform->setType('name', PARAM_TEXT);
         } else {
@@ -49,36 +49,36 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $hsuforum_types = hsuforum_get_hsuforum_types();
 
         asort($hsuforum_types);
-        $mform->addElement('select', 'type', get_string('forumtype', 'forum'), $hsuforum_types);
+        $mform->addElement('select', 'type', get_string('forumtype', 'hsuforum'), $hsuforum_types);
         $mform->addHelpButton('type', 'forumtype', 'forum');
         $mform->setDefault('type', 'general');
 
-        $this->add_intro_editor(true, get_string('forumintro', 'forum'));
+        $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
 
         $options = array();
-        $options[FORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'forum');
-        $options[FORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'forum');
-        $options[FORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'forum');
-        $options[FORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled','forum');
-        $mform->addElement('select', 'forcesubscribe', get_string('subscriptionmode', 'forum'), $options);
+        $options[FORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'hsuforum');
+        $options[FORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'hsuforum');
+        $options[FORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'hsuforum');
+        $options[FORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled','hsuforum');
+        $mform->addElement('select', 'forcesubscribe', get_string('subscriptionmode', 'hsuforum'), $options);
         $mform->addHelpButton('forcesubscribe', 'subscriptionmode', 'forum');
 
         $options = array();
-        $options[FORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'forum');
-        $options[FORUM_TRACKING_OFF] = get_string('trackingoff', 'forum');
-        $options[FORUM_TRACKING_ON] = get_string('trackingon', 'forum');
-        $mform->addElement('select', 'trackingtype', get_string('trackingtype', 'forum'), $options);
+        $options[FORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'hsuforum');
+        $options[FORUM_TRACKING_OFF] = get_string('trackingoff', 'hsuforum');
+        $options[FORUM_TRACKING_ON] = get_string('trackingon', 'hsuforum');
+        $mform->addElement('select', 'trackingtype', get_string('trackingtype', 'hsuforum'), $options);
         $mform->addHelpButton('trackingtype', 'trackingtype', 'forum');
 
         $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
         $choices[1] = get_string('uploadnotallowed');
         $choices[0] = get_string('courseuploadlimit') . ' ('.display_size($COURSE->maxbytes).')';
-        $mform->addElement('select', 'maxbytes', get_string('maxattachmentsize', 'forum'), $choices);
+        $mform->addElement('select', 'maxbytes', get_string('maxattachmentsize', 'hsuforum'), $choices);
         $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'forum');
         $mform->setDefault('maxbytes', $CFG->hsuforum_maxbytes);
 
         $choices = array(0,1,2,3,4,5,6,7,8,9,10,20,50,100);
-        $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'forum'), $choices);
+        $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'hsuforum'), $choices);
         $mform->addHelpButton('maxattachments', 'maxattachments', 'forum');
         $mform->setDefault('maxattachments', $CFG->hsuforum_maxattachments);
 
@@ -87,8 +87,8 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $mform->addElement('header', '', get_string('rss'));
             $choices = array();
             $choices[0] = get_string('none');
-            $choices[1] = get_string('discussions', 'forum');
-            $choices[2] = get_string('posts', 'forum');
+            $choices[1] = get_string('discussions', 'hsuforum');
+            $choices[2] = get_string('posts', 'hsuforum');
             $mform->addElement('select', 'rsstype', get_string('rsstype'), $choices);
             $mform->addHelpButton('rsstype', 'rsstype', 'forum');
 
@@ -111,9 +111,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         }
 
 //-------------------------------------------------------------------------------
-        $mform->addElement('header', '', get_string('blockafter', 'forum'));
+        $mform->addElement('header', '', get_string('blockafter', 'hsuforum'));
         $options = array();
-        $options[0] = get_string('blockperioddisabled','forum');
+        $options[0] = get_string('blockperioddisabled','hsuforum');
         $options[60*60*24]   = '1 '.get_string('day');
         $options[60*60*24*2] = '2 '.get_string('days');
         $options[60*60*24*3] = '3 '.get_string('days');
@@ -121,10 +121,10 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $options[60*60*24*5] = '5 '.get_string('days');
         $options[60*60*24*6] = '6 '.get_string('days');
         $options[60*60*24*7] = '1 '.get_string('week');
-        $mform->addElement('select', 'blockperiod', get_string('blockperiod', 'forum'), $options);
+        $mform->addElement('select', 'blockperiod', get_string('blockperiod', 'hsuforum'), $options);
         $mform->addHelpButton('blockperiod', 'blockperiod', 'forum');
 
-        $mform->addElement('text', 'blockafter', get_string('blockafter', 'forum'));
+        $mform->addElement('text', 'blockafter', get_string('blockafter', 'hsuforum'));
         $mform->setType('blockafter', PARAM_INT);
         $mform->setDefault('blockafter', '0');
         $mform->addRule('blockafter', null, 'numeric', null, 'client');
@@ -132,7 +132,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->disabledIf('blockafter', 'blockperiod', 'eq', 0);
 
 
-        $mform->addElement('text', 'warnafter', get_string('warnafter', 'forum'));
+        $mform->addElement('text', 'warnafter', get_string('warnafter', 'hsuforum'));
         $mform->setType('warnafter', PARAM_INT);
         $mform->setDefault('warnafter', '0');
         $mform->addRule('warnafter', null, 'numeric', null, 'client');
@@ -159,13 +159,13 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         //we don't want to have these appear as possible selections in the form but
         //we want the form to display them if they are set.
         if ($typevalue[0]=='news') {
-            $type->addOption(get_string('namenews', 'forum'), 'news');
+            $type->addOption(get_string('namenews', 'hsuforum'), 'news');
             $mform->addHelpButton('type', 'namenews', 'forum');
             $type->freeze();
             $type->setPersistantFreeze(true);
         }
         if ($typevalue[0]=='social') {
-            $type->addOption(get_string('namesocial', 'forum'), 'social');
+            $type->addOption(get_string('namesocial', 'hsuforum'), 'social');
             $type->freeze();
             $type->setPersistantFreeze(true);
         }
@@ -199,24 +199,24 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform =& $this->_form;
 
         $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled', '', get_string('completionposts','forum'));
+        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled', '', get_string('completionposts','hsuforum'));
         $group[] =& $mform->createElement('text', 'completionposts', '', array('size'=>3));
         $mform->setType('completionposts',PARAM_INT);
-        $mform->addGroup($group, 'completionpostsgroup', get_string('completionpostsgroup','forum'), array(' '), false);
+        $mform->addGroup($group, 'completionpostsgroup', get_string('completionpostsgroup','hsuforum'), array(' '), false);
         $mform->disabledIf('completionposts','completionpostsenabled','notchecked');
 
         $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completiondiscussionsenabled', '', get_string('completiondiscussions','forum'));
+        $group[] =& $mform->createElement('checkbox', 'completiondiscussionsenabled', '', get_string('completiondiscussions','hsuforum'));
         $group[] =& $mform->createElement('text', 'completiondiscussions', '', array('size'=>3));
         $mform->setType('completiondiscussions',PARAM_INT);
-        $mform->addGroup($group, 'completiondiscussionsgroup', get_string('completiondiscussionsgroup','forum'), array(' '), false);
+        $mform->addGroup($group, 'completiondiscussionsgroup', get_string('completiondiscussionsgroup','hsuforum'), array(' '), false);
         $mform->disabledIf('completiondiscussions','completiondiscussionsenabled','notchecked');
 
         $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionrepliesenabled', '', get_string('completionreplies','forum'));
+        $group[] =& $mform->createElement('checkbox', 'completionrepliesenabled', '', get_string('completionreplies','hsuforum'));
         $group[] =& $mform->createElement('text', 'completionreplies', '', array('size'=>3));
         $mform->setType('completionreplies',PARAM_INT);
-        $mform->addGroup($group, 'completionrepliesgroup', get_string('completionrepliesgroup','forum'), array(' '), false);
+        $mform->addGroup($group, 'completionrepliesgroup', get_string('completionrepliesgroup','hsuforum'), array(' '), false);
         $mform->disabledIf('completionreplies','completionrepliesenabled','notchecked');
 
         return array('completiondiscussionsgroup','completionrepliesgroup','completionpostsgroup');

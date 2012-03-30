@@ -63,8 +63,8 @@
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
         require_course_login($course, true, $cm);
-        $strforums = get_string("modulenameplural", "forum");
-        $strforum = get_string("modulename", "forum");
+        $strforums = get_string("modulenameplural", "hsuforum");
+        $strforum = get_string("modulename", "hsuforum");
     } else if ($f) {
 
         if (! $forum = $DB->get_record("forum", array("id" => $f))) {
@@ -80,8 +80,8 @@
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
         require_course_login($course, true, $cm);
-        $strforums = get_string("modulenameplural", "forum");
-        $strforum = get_string("modulename", "forum");
+        $strforums = get_string("modulenameplural", "hsuforum");
+        $strforum = get_string("modulename", "hsuforum");
     } else {
         print_error('missingparameter');
     }
@@ -118,7 +118,7 @@
     }
 
     if (!has_capability('mod/forum:viewdiscussion', $context)) {
-        notice(get_string('noviewdiscussionspermission', 'forum'));
+        notice(get_string('noviewdiscussionspermission', 'hsuforum'));
     }
 
 /// find out current groups mode
@@ -162,13 +162,13 @@
     }
 
     if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {
-        echo $OUTPUT->notification(get_string('qandanotify','forum'));
+        echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
     }
 
     switch ($forum->type) {
         case 'single':
             if (!empty($discussions) && count($discussions) > 1) {
-                echo $OUTPUT->notification(get_string('warnformorepost', 'forum'));
+                echo $OUTPUT->notification(get_string('warnformorepost', 'hsuforum'));
             }
             if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
                 print_error('cannotfindfirstpost', 'forum');
@@ -191,7 +191,7 @@
             }
             echo '<p class="mdl-align">';
             if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
-                print_string("allowsdiscussions", "forum");
+                print_string("allowsdiscussions", "hsuforum");
             } else {
                 echo '&nbsp;';
             }

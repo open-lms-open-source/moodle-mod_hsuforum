@@ -84,7 +84,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     public function subscriber_overview($users, $forum , $course) {
         $output = '';
         if (!$users || !is_array($users) || count($users)===0) {
-            $output .= $this->output->heading(get_string("nosubscribers", "forum"));
+            $output .= $this->output->heading(get_string("nosubscribers", "hsuforum"));
         } else {
             $output .= $this->output->heading(get_string("subscribersto","forum", "'".format_string($forum->name)."'"));
             $table = new html_table();
@@ -109,7 +109,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      */
     public function subscribed_users(user_selector_base $existingusers) {
         $output  = $this->output->box_start('subscriberdiv boxaligncenter');
-        $output .= html_writer::tag('p', get_string('forcessubscribe', 'forum'));
+        $output .= html_writer::tag('p', get_string('forcessubscribe', 'hsuforum'));
         $output .= $existingusers->display(true);
         $output .= $this->output->box_end();
         return $output;

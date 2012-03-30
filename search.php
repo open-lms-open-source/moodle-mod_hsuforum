@@ -114,15 +114,15 @@ require_course_login($course);
 
 add_to_log($course->id, "forum", "search", "search.php?id=$course->id&amp;search=".urlencode($search), $search);
 
-$strforums = get_string("modulenameplural", "forum");
-$strsearch = get_string("search", "forum");
-$strsearchresults = get_string("searchresults", "forum");
+$strforums = get_string("modulenameplural", "hsuforum");
+$strsearch = get_string("search", "hsuforum");
+$strsearchresults = get_string("searchresults", "hsuforum");
 $strpage = get_string("page");
 
 if (!$search || $showform) {
 
     $PAGE->navbar->add($strforums, new moodle_url('/mod/forum/index.php', array('id'=>$course->id)));
-    $PAGE->navbar->add(get_string('advancedsearch', 'forum'));
+    $PAGE->navbar->add(get_string('advancedsearch', 'hsuforum'));
 
     $PAGE->set_title($strsearch);
     $PAGE->set_heading($course->fullname);
@@ -186,7 +186,7 @@ echo '<a href="search.php?id='.$course->id.
                          '&amp;dateto='.$dateto.
                          '&amp;datefrom='.$datefrom.
                          '&amp;showform=1'.
-                         '">'.get_string('advancedsearch','forum').'...</a>';
+                         '">'.get_string('advancedsearch','hsuforum').'...</a>';
 echo '</div>';
 
 echo $OUTPUT->heading("$strsearchresults: $totalcount");
@@ -276,12 +276,12 @@ foreach ($posts as $post) {
     $post->message = str_replace('</fgw9sdpq4>', '</span>', $post->message);
 
     if ($missing_terms) {
-        $strmissingsearchterms = get_string('missingsearchterms','forum');
+        $strmissingsearchterms = get_string('missingsearchterms','hsuforum');
         $post->message = '<p class="highlight2">'.$strmissingsearchterms.' '.$missing_terms.'</p>'.$post->message;
     }
 
     // Prepare a link to the post in context, to be displayed after the forum post.
-    $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "forum")."</a>";
+    $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
     // Now pring the post.
     hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false,
@@ -300,7 +300,7 @@ echo $OUTPUT->footer();
 function hsuforum_print_big_search_form($course) {
     global $CFG, $DB, $words, $subject, $phrase, $user, $userid, $fullwords, $notwords, $datefrom, $dateto, $PAGE, $OUTPUT;
 
-    echo $OUTPUT->box(get_string('searchforumintro', 'forum'), 'searchbox boxaligncenter', 'intro');
+    echo $OUTPUT->box(get_string('searchforumintro', 'hsuforum'), 'searchbox boxaligncenter', 'intro');
 
     echo $OUTPUT->box_start('generalbox boxaligncenter');
 
@@ -310,30 +310,30 @@ function hsuforum_print_big_search_form($course) {
     echo '<table cellpadding="10" class="searchbox" id="form">';
 
     echo '<tr>';
-    echo '<td class="c0"><label for="words">'.get_string('searchwords', 'forum').'</label>';
+    echo '<td class="c0"><label for="words">'.get_string('searchwords', 'hsuforum').'</label>';
     echo '<input type="hidden" value="'.$course->id.'" name="id" alt="" /></td>';
     echo '<td class="c1"><input type="text" size="35" name="words" id="words"value="'.s($words, true).'" alt="" /></td>';
     echo '</tr>';
 
     echo '<tr>';
-    echo '<td class="c0"><label for="phrase">'.get_string('searchphrase', 'forum').'</label></td>';
+    echo '<td class="c0"><label for="phrase">'.get_string('searchphrase', 'hsuforum').'</label></td>';
     echo '<td class="c1"><input type="text" size="35" name="phrase" id="phrase" value="'.s($phrase, true).'" alt="" /></td>';
     echo '</tr>';
 
     echo '<tr>';
-    echo '<td class="c0"><label for="notwords">'.get_string('searchnotwords', 'forum').'</label></td>';
+    echo '<td class="c0"><label for="notwords">'.get_string('searchnotwords', 'hsuforum').'</label></td>';
     echo '<td class="c1"><input type="text" size="35" name="notwords" id="notwords" value="'.s($notwords, true).'" alt="" /></td>';
     echo '</tr>';
 
     if ($DB->get_dbfamily() == 'mysql' || $DB->get_dbfamily() == 'postgres') {
         echo '<tr>';
-        echo '<td class="c0"><label for="fullwords">'.get_string('searchfullwords', 'forum').'</label></td>';
+        echo '<td class="c0"><label for="fullwords">'.get_string('searchfullwords', 'hsuforum').'</label></td>';
         echo '<td class="c1"><input type="text" size="35" name="fullwords" id="fullwords" value="'.s($fullwords, true).'" alt="" /></td>';
         echo '</tr>';
     }
 
     echo '<tr>';
-    echo '<td class="c0">'.get_string('searchdatefrom', 'forum').'</td>';
+    echo '<td class="c0">'.get_string('searchdatefrom', 'hsuforum').'</td>';
     echo '<td class="c1">';
     if (empty($datefrom)) {
         $datefromchecked = '';
@@ -342,7 +342,7 @@ function hsuforum_print_big_search_form($course) {
         $datefromchecked = 'checked="checked"';
     }
 
-    echo '<input name="timefromrestrict" type="checkbox" value="1" alt="'.get_string('searchdatefrom', 'forum').'" onclick="return lockoptions(\'searchform\', \'timefromrestrict\', timefromitems)" '.  $datefromchecked . ' /> ';
+    echo '<input name="timefromrestrict" type="checkbox" value="1" alt="'.get_string('searchdatefrom', 'hsuforum').'" onclick="return lockoptions(\'searchform\', \'timefromrestrict\', timefromitems)" '.  $datefromchecked . ' /> ';
     $selectors = html_writer::select_time('days', 'fromday', $datefrom)
                . html_writer::select_time('months', 'frommonth', $datefrom)
                . html_writer::select_time('years', 'fromyear', $datefrom)
@@ -359,7 +359,7 @@ function hsuforum_print_big_search_form($course) {
     echo '</tr>';
 
     echo '<tr>';
-    echo '<td class="c0">'.get_string('searchdateto', 'forum').'</td>';
+    echo '<td class="c0">'.get_string('searchdateto', 'hsuforum').'</td>';
     echo '<td class="c1">';
     if (empty($dateto)) {
         $datetochecked = '';
@@ -368,7 +368,7 @@ function hsuforum_print_big_search_form($course) {
         $datetochecked = 'checked="checked"';
     }
 
-    echo '<input name="timetorestrict" type="checkbox" value="1" alt="'.get_string('searchdateto', 'forum').'" onclick="return lockoptions(\'searchform\', \'timetorestrict\', timetoitems)" ' .$datetochecked. ' /> ';
+    echo '<input name="timetorestrict" type="checkbox" value="1" alt="'.get_string('searchdateto', 'hsuforum').'" onclick="return lockoptions(\'searchform\', \'timetorestrict\', timetoitems)" ' .$datetochecked. ' /> ';
     $selectors = html_writer::select_time('days', 'fromday', $dateto)
                . html_writer::select_time('months', 'frommonth', $dateto)
                . html_writer::select_time('years', 'fromyear', $dateto)
@@ -386,25 +386,25 @@ function hsuforum_print_big_search_form($course) {
     echo '</tr>';
 
     echo '<tr>';
-    echo '<td class="c0"><label for="menuforumid">'.get_string('searchwhichforums', 'forum').'</label></td>';
+    echo '<td class="c0"><label for="menuforumid">'.get_string('searchwhichforums', 'hsuforum').'</label></td>';
     echo '<td class="c1">';
-    echo html_writer::select(hsuforum_menu_list($course), 'forumid', '', array(''=>get_string('allforums', 'forum')));
+    echo html_writer::select(hsuforum_menu_list($course), 'forumid', '', array(''=>get_string('allforums', 'hsuforum')));
     echo '</td>';
     echo '</tr>';
 
     echo '<tr>';
-    echo '<td class="c0"><label for="subject">'.get_string('searchsubject', 'forum').'</label></td>';
+    echo '<td class="c0"><label for="subject">'.get_string('searchsubject', 'hsuforum').'</label></td>';
     echo '<td class="c1"><input type="text" size="35" name="subject" id="subject" value="'.s($subject, true).'" alt="" /></td>';
     echo '</tr>';
 
     echo '<tr>';
-    echo '<td class="c0"><label for="user">'.get_string('searchuser', 'forum').'</label></td>';
+    echo '<td class="c0"><label for="user">'.get_string('searchuser', 'hsuforum').'</label></td>';
     echo '<td class="c1"><input type="text" size="35" name="user" id="user" value="'.s($user, true).'" alt="" /></td>';
     echo '</tr>';
 
     echo '<tr>';
     echo '<td class="submit" colspan="2" align="center">';
-    echo '<input type="submit" value="'.get_string('searchforums', 'forum').'" alt="" /></td>';
+    echo '<input type="submit" value="'.get_string('searchforums', 'hsuforum').'" alt="" /></td>';
     echo '</tr>';
 
     echo '</table>';

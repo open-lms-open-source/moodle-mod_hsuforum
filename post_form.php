@@ -48,18 +48,18 @@ class mod_hsuforum_post_form extends moodleform {
         $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'trusttext'=>true, 'context'=>$modcontext);
 
         $mform->addElement('header', 'general', '');//fill in the data depending on page params later using set_data
-        $mform->addElement('text', 'subject', get_string('subject', 'forum'), 'size="48"');
+        $mform->addElement('text', 'subject', get_string('subject', 'hsuforum'), 'size="48"');
         $mform->setType('subject', PARAM_TEXT);
         $mform->addRule('subject', get_string('required'), 'required', null, 'client');
         $mform->addRule('subject', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('editor', 'message', get_string('message', 'forum'), null, $editoroptions);
+        $mform->addElement('editor', 'message', get_string('message', 'hsuforum'), null, $editoroptions);
         $mform->setType('message', PARAM_RAW);
         $mform->addRule('message', get_string('required'), 'required', null, 'client');
 
         if (isset($forum->id) && hsuforum_is_forcesubscribed($forum)) {
 
-            $mform->addElement('static', 'subscribemessage', get_string('subscription', 'forum'), get_string('everyoneissubscribed', 'forum'));
+            $mform->addElement('static', 'subscribemessage', get_string('subscription', 'hsuforum'), get_string('everyoneissubscribed', 'hsuforum'));
             $mform->addElement('hidden', 'subscribe');
             $mform->setType('subscribe', PARAM_INT);
             $mform->addHelpButton('subscribemessage', 'subscription', 'forum');
@@ -68,20 +68,20 @@ class mod_hsuforum_post_form extends moodleform {
                    has_capability('moodle/course:manageactivities', $coursecontext)) {
 
                 $options = array();
-                $options[0] = get_string('subscribestop', 'forum');
-                $options[1] = get_string('subscribestart', 'forum');
+                $options[0] = get_string('subscribestop', 'hsuforum');
+                $options[1] = get_string('subscribestart', 'hsuforum');
 
-                $mform->addElement('select', 'subscribe', get_string('subscription', 'forum'), $options);
+                $mform->addElement('select', 'subscribe', get_string('subscription', 'hsuforum'), $options);
                 $mform->addHelpButton('subscribe', 'subscription', 'forum');
             } else if ($forum->forcesubscribe == FORUM_DISALLOWSUBSCRIBE) {
-                $mform->addElement('static', 'subscribemessage', get_string('subscription', 'forum'), get_string('disallowsubscribe', 'forum'));
+                $mform->addElement('static', 'subscribemessage', get_string('subscription', 'hsuforum'), get_string('disallowsubscribe', 'hsuforum'));
                 $mform->addElement('hidden', 'subscribe');
                 $mform->setType('subscribe', PARAM_INT);
                 $mform->addHelpButton('subscribemessage', 'subscription', 'forum');
             }
 
         if (!empty($forum->maxattachments) && $forum->maxbytes != 1 && has_capability('mod/forum:createattachment', $modcontext))  {  //  1 = No attachments at all
-            $mform->addElement('filemanager', 'attachments', get_string('attachment', 'forum'), null,
+            $mform->addElement('filemanager', 'attachments', get_string('attachment', 'hsuforum'), null,
                 array('subdirs'=>0,
                       'maxbytes'=>$forum->maxbytes,
                       'maxfiles'=>$forum->maxattachments,
@@ -91,16 +91,16 @@ class mod_hsuforum_post_form extends moodleform {
         }
 
         if (empty($post->id) && has_capability('moodle/course:manageactivities', $coursecontext)) { // hack alert
-            $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'forum'));
+            $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'hsuforum'));
         }
 
         if (!empty($CFG->hsuforum_enabletimedposts) && !$post->parent && has_capability('mod/forum:viewhiddentimedposts', $coursecontext)) { // hack alert
-            $mform->addElement('header', '', get_string('displayperiod', 'forum'));
+            $mform->addElement('header', '', get_string('displayperiod', 'hsuforum'));
 
-            $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'forum'), array('optional'=>true));
+            $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional'=>true));
             $mform->addHelpButton('timestart', 'displaystart', 'forum');
 
-            $mform->addElement('date_selector', 'timeend', get_string('displayend', 'forum'), array('optional'=>true));
+            $mform->addElement('date_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional'=>true));
             $mform->addHelpButton('timeend', 'displayend', 'forum');
 
         } else {
@@ -137,7 +137,7 @@ class mod_hsuforum_post_form extends moodleform {
         if (isset($post->edit)) { // hack alert
             $submit_string = get_string('savechanges');
         } else {
-            $submit_string = get_string('posttoforum', 'forum');
+            $submit_string = get_string('posttoforum', 'hsuforum');
         }
         $this->add_action_buttons(false, $submit_string);
 
@@ -169,13 +169,13 @@ class mod_hsuforum_post_form extends moodleform {
     function validation($data, $files) {
         $errors = parent::validation($data, $files);
         if (($data['timeend']!=0) && ($data['timestart']!=0) && $data['timeend'] <= $data['timestart']) {
-            $errors['timeend'] = get_string('timestartenderror', 'forum');
+            $errors['timeend'] = get_string('timestartenderror', 'hsuforum');
         }
         if (empty($data['message']['text'])) {
-            $errors['message'] = get_string('erroremptymessage', 'forum');
+            $errors['message'] = get_string('erroremptymessage', 'hsuforum');
         }
         if (empty($data['subject'])) {
-            $errors['subject'] = get_string('erroremptysubject', 'forum');
+            $errors['subject'] = get_string('erroremptysubject', 'hsuforum');
         }
         return $errors;
     }
