@@ -50,7 +50,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
     if ($oldversion < 2007101511) {
         //MDL-13866 - send forum ratins to gradebook again
-        require_once($CFG->dirroot.'/mod/forum/lib.php');
+        require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
         hsuforum_upgrade_grades();
         upgrade_mod_savepoint(true, 2007101511, 'forum');
     }
@@ -115,7 +115,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
                 upgrade_set_timeout(60); // set up timeout, may also abort execution
                 $pbar->update($i, $count, "Migrating forum posts - $i/$count.");
 
-                $filepath = "$CFG->dataroot/$post->course/$CFG->moddata/forum/$post->forum/$post->id/$post->attachment";
+                $filepath = "$CFG->dataroot/$post->course/$CFG->moddata/hsuforum/$post->forum/$post->id/$post->attachment";
                 if (!is_readable($filepath)) {
                     //file missing??
                     echo $OUTPUT->notification("File not readable, skipping: ".$filepath);
@@ -143,8 +143,8 @@ function xmldb_hsuforum_upgrade($oldversion) {
                 }
 
                 // remove dirs if empty
-                @rmdir("$CFG->dataroot/$post->course/$CFG->moddata/forum/$post->forum/$post->id");
-                @rmdir("$CFG->dataroot/$post->course/$CFG->moddata/forum/$post->forum");
+                @rmdir("$CFG->dataroot/$post->course/$CFG->moddata/hsuforum/$post->forum/$post->id");
+                @rmdir("$CFG->dataroot/$post->course/$CFG->moddata/hsuforum/$post->forum");
                 @rmdir("$CFG->dataroot/$post->course/$CFG->moddata/forum");
             }
         }

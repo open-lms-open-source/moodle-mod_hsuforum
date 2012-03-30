@@ -121,7 +121,7 @@ $strpage = get_string("page");
 
 if (!$search || $showform) {
 
-    $PAGE->navbar->add($strforums, new moodle_url('/mod/forum/index.php', array('id'=>$course->id)));
+    $PAGE->navbar->add($strforums, new moodle_url('/mod/hsuforum/index.php', array('id'=>$course->id)));
     $PAGE->navbar->add(get_string('advancedsearch', 'hsuforum'));
 
     $PAGE->set_title($strsearch);
@@ -140,7 +140,7 @@ $searchterms = explode(' ', $searchterms);
 
 $searchform = hsuforum_search_form($course, $search);
 
-$PAGE->navbar->add($strsearch, new moodle_url('/mod/forum/search.php', array('id'=>$course->id)));
+$PAGE->navbar->add($strsearch, new moodle_url('/mod/hsuforum/search.php', array('id'=>$course->id)));
 $PAGE->navbar->add(s($search, true));
 if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
     $PAGE->set_title($strsearchresults);
@@ -304,7 +304,7 @@ function hsuforum_print_big_search_form($course) {
 
     echo $OUTPUT->box_start('generalbox boxaligncenter');
 
-    echo html_writer::script('', $CFG->wwwroot.'/mod/forum/forum.js');
+    echo html_writer::script('', $CFG->wwwroot.'/mod/hsuforum/forum.js');
 
     echo '<form id="searchform" action="search.php" method="get">';
     echo '<table cellpadding="10" class="searchbox" id="form">';

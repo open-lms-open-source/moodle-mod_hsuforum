@@ -19,7 +19,7 @@
  * Library of functions for forum outside of the core api
  */
 
-require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
 
 /**
@@ -142,7 +142,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
      */
     function get_return_url() {
         global $CFG;
-        return $CFG->wwwroot . '/mod/forum/discuss.php?d=' . $this->discussion->id;
+        return $CFG->wwwroot . '/mod/hsuforum/discuss.php?d=' . $this->discussion->id;
     }
     /**
      * @global object
@@ -154,7 +154,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
         $navlinks = array();
         $navlinks[] = array(
             'name' => format_string($this->discussion->name),
-            'link' => $CFG->wwwroot . '/mod/forum/discuss.php?d=' . $this->discussion->id,
+            'link' => $CFG->wwwroot . '/mod/hsuforum/discuss.php?d=' . $this->discussion->id,
             'type' => 'title'
         );
         return array($navlinks, $this->cm);

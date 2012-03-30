@@ -45,7 +45,7 @@
     if ($search) {
         $params['search'] = $search;
     }
-    $PAGE->set_url('/mod/forum/view.php', $params);
+    $PAGE->set_url('/mod/hsuforum/view.php', $params);
 
     if ($id) {
         if (! $cm = get_coursemodule_from_id('forum', $id)) {
@@ -122,7 +122,7 @@
     }
 
 /// find out current groups mode
-    groups_print_activity_menu($cm, $CFG->wwwroot . '/mod/forum/view.php?id=' . $cm->id);
+    groups_print_activity_menu($cm, $CFG->wwwroot . '/mod/hsuforum/view.php?id=' . $cm->id);
     $currentgroup = groups_get_activity_group($cm);
     $groupmode = groups_get_activity_groupmode($cm);
 

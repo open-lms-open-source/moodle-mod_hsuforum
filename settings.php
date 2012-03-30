@@ -24,7 +24,7 @@
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    require_once($CFG->dirroot.'/mod/forum/lib.php');
+    require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
     $settings->add(new admin_setting_configselect('hsuforum_displaymode', get_string('displaymode', 'hsuforum'),
                        get_string('configdisplaymode', 'hsuforum'), HSUFORUM_MODE_NESTED, hsuforum_get_layout_modes()));

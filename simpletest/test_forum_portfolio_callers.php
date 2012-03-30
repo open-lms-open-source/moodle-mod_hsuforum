@@ -25,7 +25,7 @@
  */
 
 require_once("$CFG->libdir/simpletest/portfolio_testclass.php");
-require_once("$CFG->dirroot/mod/forum/lib.php");
+require_once("$CFG->dirroot/mod/hsuforum/lib.php");
 
 /*
  * TODO: The portfolio unit tests were obselete and did not work.
@@ -45,7 +45,7 @@ Mock::generate('portfolio_exporter', 'mock_exporter');
 
 class testForumPortfolioCallers extends portfoliolib_test {
 /*
-    public static $includecoverage = array('lib/portfoliolib.php', 'mod/forum/lib.php');
+    public static $includecoverage = array('lib/portfoliolib.php', 'mod/hsuforum/lib.php');
     public $module_type = 'forum';
     public $modules = array();
     public $entries = array();

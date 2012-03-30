@@ -33,14 +33,14 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once($CFG->dirroot.'/mod/forum/lib.php');
+require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
 $id      = required_param('id', PARAM_INT);             // the forum to subscribe or unsubscribe to
 $mode    = optional_param('mode', null, PARAM_INT);     // the forum's subscription mode
 $user    = optional_param('user', 0, PARAM_INT);        // userid of the user to subscribe, defaults to $USER
 $sesskey = optional_param('sesskey', null, PARAM_RAW);  // sesskey
 
-$url = new moodle_url('/mod/forum/subscribe.php', array('id'=>$id));
+$url = new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$id));
 if (!is_null($mode)) {
     $url->param('mode', $mode);
 }
@@ -86,12 +86,12 @@ if (is_null($mode) and !is_enrolled($context, $USER, '', true)) {   // Guests an
     if (isguestuser()) {
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(get_string('subscribeenrolledonly', 'hsuforum').'<br /><br />'.get_string('liketologin'),
-                     get_login_url(), new moodle_url('/mod/forum/view.php', array('f'=>$id)));
+                     get_login_url(), new moodle_url('/mod/hsuforum/view.php', array('f'=>$id)));
         echo $OUTPUT->footer();
         exit;
     } else {
         // there should not be any links leading to this place, just redirect
-        redirect(new moodle_url('/mod/forum/view.php', array('f'=>$id)), get_string('subscribeenrolledonly', 'hsuforum'));
+        redirect(new moodle_url('/mod/hsuforum/view.php', array('f'=>$id)), get_string('subscribeenrolledonly', 'hsuforum'));
     }
 }
 
@@ -136,7 +136,7 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(get_string('confirmunsubscribe', 'forum', format_string($forum->name)),
-                new moodle_url($PAGE->url, array('sesskey' => sesskey())), new moodle_url('/mod/forum/view.php', array('f' => $id)));
+                new moodle_url($PAGE->url, array('sesskey' => sesskey())), new moodle_url('/mod/hsuforum/view.php', array('f' => $id)));
         echo $OUTPUT->footer();
         exit;
     }
@@ -161,7 +161,7 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(get_string('confirmsubscribe', 'forum', format_string($forum->name)),
-                new moodle_url($PAGE->url, array('sesskey' => sesskey())), new moodle_url('/mod/forum/view.php', array('f' => $id)));
+                new moodle_url($PAGE->url, array('sesskey' => sesskey())), new moodle_url('/mod/hsuforum/view.php', array('f' => $id)));
         echo $OUTPUT->footer();
         exit;
     }

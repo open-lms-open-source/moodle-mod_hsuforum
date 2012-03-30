@@ -294,9 +294,9 @@ function hsuforum_rss_feed_contents($forum, $sql) {
             $item->author = fullname($user);
             $item->pubdate = $rec->postcreated;
             if ($isdiscussion) {
-                $item->link = $CFG->wwwroot."/mod/forum/discuss.php?d=".$rec->discussionid;
+                $item->link = $CFG->wwwroot."/mod/hsuforum/discuss.php?d=".$rec->discussionid;
             } else {
-                $item->link = $CFG->wwwroot."/mod/forum/discuss.php?d=".$rec->discussionid."&parent=".$rec->postid;
+                $item->link = $CFG->wwwroot."/mod/hsuforum/discuss.php?d=".$rec->discussionid."&parent=".$rec->postid;
             }
 
             $formatoptions->trusted = $rec->posttrust;
@@ -304,7 +304,7 @@ function hsuforum_rss_feed_contents($forum, $sql) {
 
             //TODO: implement post attachment handling
             /*if (!$isdiscussion) {
-                $post_file_area_name = str_replace('//', '/', "$forum->course/$CFG->moddata/forum/$forum->id/$rec->postid");
+                $post_file_area_name = str_replace('//', '/', "$forum->course/$CFG->moddata/hsuforum/$forum->id/$rec->postid");
                 $post_files = get_directory_list("$CFG->dataroot/$post_file_area_name");
 
                 if (!empty($post_files)) {
@@ -320,7 +320,7 @@ function hsuforum_rss_feed_contents($forum, $sql) {
     if (!empty($items)) {
         //First the RSS header
         $header = rss_standard_header(strip_tags(format_string($forum->name,true)),
-                                      $CFG->wwwroot."/mod/forum/view.php?f=".$forum->id,
+                                      $CFG->wwwroot."/mod/hsuforum/view.php?f=".$forum->id,
                                       format_string($forum->intro,true)); // TODO: fix format
         //Now all the rss items
         if (!empty($header)) {

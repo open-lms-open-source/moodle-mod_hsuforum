@@ -33,7 +33,7 @@
     $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
     $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 
-    $url = new moodle_url('/mod/forum/discuss.php', array('d'=>$d));
+    $url = new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$d));
     if ($parent !== 0) {
         $url->param('parent', $parent);
     }
@@ -52,7 +52,7 @@
     $PAGE->requires->yui2_lib('json');
 
     // move this down fix for MDL-6926
-    require_once($CFG->dirroot.'/mod/forum/lib.php');
+    require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
     require_capability('mod/forum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'forum');
@@ -68,13 +68,13 @@
         if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
             || $discussion->timestart <= time())
             && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
-            print_error('invaliddiscussionid', 'forum', "$CFG->wwwroot/mod/forum/view.php?f=$forum->id");
+            print_error('invaliddiscussionid', 'forum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
     }
 
 /// move discussion if requested
     if ($move > 0 and confirm_sesskey()) {
-        $return = $CFG->wwwroot.'/mod/forum/discuss.php?d='.$discussion->id;
+        $return = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id;
 
         require_capability('mod/forum:movediscussions', $modcontext);
 
@@ -108,7 +108,7 @@
         add_to_log($course->id, 'forum', 'move discussion', "discuss.php?d=$discussion->id", $discussion->id, $cmto->id);
 
         require_once($CFG->libdir.'/rsslib.php');
-        require_once($CFG->dirroot.'/mod/forum/rsslib.php');
+        require_once($CFG->dirroot.'/mod/hsuforum/rsslib.php');
 
         // Delete the RSS files for the 2 forums to force regeneration of the feeds
         hsuforum_rss_delete_file($forum);
@@ -137,12 +137,12 @@
     }
 
     if (! $post = hsuforum_get_post_full($parent)) {
-        print_error("notexists", 'forum', "$CFG->wwwroot/mod/forum/view.php?f=$forum->id");
+        print_error("notexists", 'forum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
     }
 
 
     if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
-        print_error('nopermissiontoview', 'forum', "$CFG->wwwroot/mod/forum/view.php?id=$forum->id");
+        print_error('nopermissiontoview', 'forum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
     }
 
     if ($mark == 'read' or $mark == 'unread') {
@@ -164,7 +164,7 @@
     } else {
         $forumnode->make_active();
     }
-    $node = $forumnode->add(format_string($discussion->name), new moodle_url('/mod/forum/discuss.php', array('d'=>$discussion->id)));
+    $node = $forumnode->add(format_string($discussion->name), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
     $node->display = false;
     if ($node && $post->id != $discussion->firstpost) {
         $node->add(format_string($post->subject), $PAGE->url);
@@ -197,7 +197,7 @@
     if (!empty($CFG->enableportfolios) && has_capability('mod/forum:exportdiscussion', $modcontext)) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
-        $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), '/mod/forum/locallib.php');
+        $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), '/mod/hsuforum/locallib.php');
         $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_forum'));
         $buttonextraclass = '';
         if (empty($button)) {
@@ -240,7 +240,7 @@
                 $forumidcompare = $forumcm->instance != $forum->id;
                 $forumtypecheck = $forumcheck[$forumcm->instance]->type !== 'single';
                 if ($forumidcompare and $forumtypecheck) {
-                    $url = "/mod/forum/discuss.php?d=$discussion->id&move=$forumcm->instance&sesskey=".sesskey();
+                    $url = "/mod/hsuforum/discuss.php?d=$discussion->id&move=$forumcm->instance&sesskey=".sesskey();
                     $forummenu[$section][$sectionname][$url] = format_string($forumcm->name);
                 }
             }

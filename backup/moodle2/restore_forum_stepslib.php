@@ -38,12 +38,12 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
 
         $paths[] = new restore_path_element('forum', '/activity/forum');
         if ($userinfo) {
-            $paths[] = new restore_path_element('hsuforum_discussion', '/activity/forum/discussions/discussion');
-            $paths[] = new restore_path_element('hsuforum_post', '/activity/forum/discussions/discussion/posts/post');
-            $paths[] = new restore_path_element('hsuforum_rating', '/activity/forum/discussions/discussion/posts/post/ratings/rating');
-            $paths[] = new restore_path_element('hsuforum_subscription', '/activity/forum/subscriptions/subscription');
-            $paths[] = new restore_path_element('hsuforum_read', '/activity/forum/readposts/read');
-            $paths[] = new restore_path_element('hsuforum_track', '/activity/forum/trackedprefs/track');
+            $paths[] = new restore_path_element('hsuforum_discussion', '/activity/hsuforum/discussions/discussion');
+            $paths[] = new restore_path_element('hsuforum_post', '/activity/hsuforum/discussions/discussion/posts/post');
+            $paths[] = new restore_path_element('hsuforum_rating', '/activity/hsuforum/discussions/discussion/posts/post/ratings/rating');
+            $paths[] = new restore_path_element('hsuforum_subscription', '/activity/hsuforum/subscriptions/subscription');
+            $paths[] = new restore_path_element('hsuforum_read', '/activity/hsuforum/readposts/read');
+            $paths[] = new restore_path_element('hsuforum_track', '/activity/hsuforum/trackedprefs/track');
         }
 
         // Return the paths wrapped into standard activity structure
@@ -200,7 +200,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $sdid = hsuforum_add_discussion($sd, null, $sillybyrefvar, $this->task->get_userid());
             // Mark the post as mailed
             $DB->set_field ('hsuforum_posts','mailed', '1', array('discussion' => $sdid));
-            // Copy all the files from mod_foum/intro to mod_forum/post
+            // Copy all the files from mod_foum/intro to mod_hsuforum/post
             $fs = get_file_storage();
             $files = $fs->get_area_files($this->task->get_contextid(), 'mod_forum', 'intro');
             foreach ($files as $file) {

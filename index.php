@@ -23,13 +23,13 @@
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/course/lib.php');
-require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 require_once($CFG->libdir . '/rsslib.php');
 
 $id = optional_param('id', 0, PARAM_INT);                   // Course id
 $subscribe = optional_param('subscribe', null, PARAM_INT);  // Subscribe/Unsubscribe all forums
 
-$url = new moodle_url('/mod/forum/index.php', array('id'=>$id));
+$url = new moodle_url('/mod/hsuforum/index.php', array('id'=>$id));
 if ($subscribe !== null) {
     require_sesskey();
     $url->param('subscribe', $subscribe);
@@ -213,7 +213,7 @@ if ($generalforums) {
                     $trackedlink = $stryes;
 
                 } else {
-                    $aurl = new moodle_url('/mod/forum/settracking.php', array('id'=>$forum->id));
+                    $aurl = new moodle_url('/mod/hsuforum/settracking.php', array('id'=>$forum->id));
                     if (!isset($untracked[$forum->id])) {
                         $trackedlink = $OUTPUT->single_button($aurl, $stryes, 'post', array('title'=>$strnotrackforum));
                     } else {
@@ -340,7 +340,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                         $trackedlink = $stryes;
 
                     } else {
-                        $aurl = new moodle_url('/mod/forum/settracking.php', array('id'=>$forum->id));
+                        $aurl = new moodle_url('/mod/hsuforum/settracking.php', array('id'=>$forum->id));
                         if (!isset($untracked[$forum->id])) {
                             $trackedlink = $OUTPUT->single_button($aurl, $stryes, 'post', array('title'=>$strnotrackforum));
                         } else {
@@ -420,11 +420,11 @@ echo $OUTPUT->header();
 if (!isguestuser() && isloggedin()) {
     echo $OUTPUT->box_start('subscription');
     echo html_writer::tag('div',
-        html_writer::link(new moodle_url('/mod/forum/index.php', array('id'=>$course->id, 'subscribe'=>1, 'sesskey'=>sesskey())),
+        html_writer::link(new moodle_url('/mod/hsuforum/index.php', array('id'=>$course->id, 'subscribe'=>1, 'sesskey'=>sesskey())),
             get_string('allsubscribe', 'hsuforum')),
         array('class'=>'helplink'));
     echo html_writer::tag('div',
-        html_writer::link(new moodle_url('/mod/forum/index.php', array('id'=>$course->id, 'subscribe'=>0, 'sesskey'=>sesskey())),
+        html_writer::link(new moodle_url('/mod/hsuforum/index.php', array('id'=>$course->id, 'subscribe'=>0, 'sesskey'=>sesskey())),
             get_string('allunsubscribe', 'hsuforum')),
         array('class'=>'helplink'));
     echo $OUTPUT->box_end();

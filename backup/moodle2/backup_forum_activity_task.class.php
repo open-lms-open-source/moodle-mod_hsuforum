@@ -22,8 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot . '/mod/forum/backup/moodle2/backup_hsuforum_stepslib.php'); // Because it exists (must)
-require_once($CFG->dirroot . '/mod/forum/backup/moodle2/backup_hsuforum_settingslib.php'); // Because it exists (optional)
+require_once($CFG->dirroot . '/mod/hsuforum/backup/moodle2/backup_hsuforum_stepslib.php'); // Because it exists (must)
+require_once($CFG->dirroot . '/mod/hsuforum/backup/moodle2/backup_hsuforum_settingslib.php'); // Because it exists (optional)
 
 /**
  * forum backup task that provides all the settings and steps to perform one

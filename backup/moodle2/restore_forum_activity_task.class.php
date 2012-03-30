@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/forum/backup/moodle2/restore_hsuforum_stepslib.php'); // Because it exists (must)
+require_once($CFG->dirroot . '/mod/hsuforum/backup/moodle2/restore_hsuforum_stepslib.php'); // Because it exists (must)
 
 /**
  * forum restore task that provides all the settings and steps to perform one
@@ -68,16 +68,16 @@ class restore_hsuforum_activity_task extends restore_activity_task {
         $rules = array();
 
         // List of forums in course
-        $rules[] = new restore_decode_rule('FORUMINDEX', '/mod/forum/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('FORUMINDEX', '/mod/hsuforum/index.php?id=$1', 'course');
         // Forum by cm->id and forum->id
-        $rules[] = new restore_decode_rule('FORUMVIEWBYID', '/mod/forum/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('FORUMVIEWBYF', '/mod/forum/view.php?f=$1', 'forum');
+        $rules[] = new restore_decode_rule('FORUMVIEWBYID', '/mod/hsuforum/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('FORUMVIEWBYF', '/mod/hsuforum/view.php?f=$1', 'forum');
         // Link to forum discussion
-        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEW', '/mod/forum/discuss.php?d=$1', 'hsuforum_discussion');
+        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEW', '/mod/hsuforum/discuss.php?d=$1', 'hsuforum_discussion');
         // Link to discussion with parent and with anchor posts
-        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWPARENT', '/mod/forum/discuss.php?d=$1&parent=$2',
+        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWPARENT', '/mod/hsuforum/discuss.php?d=$1&parent=$2',
                                            array('hsuforum_discussion', 'hsuforum_post'));
-        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWINSIDE', '/mod/forum/discuss.php?d=$1#$2',
+        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWINSIDE', '/mod/hsuforum/discuss.php?d=$1#$2',
                                            array('hsuforum_discussion', 'hsuforum_post'));
 
         return $rules;

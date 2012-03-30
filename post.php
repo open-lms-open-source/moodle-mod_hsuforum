@@ -36,7 +36,7 @@ $name    = optional_param('name', '', PARAM_CLEAN);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $groupid = optional_param('groupid', null, PARAM_INT);
 
-$PAGE->set_url('/mod/forum/post.php', array(
+$PAGE->set_url('/mod/hsuforum/post.php', array(
         'reply' => $reply,
         'forum' => $forum,
         'edit'  => $edit,
@@ -374,7 +374,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             echo $OUTPUT->header();
             echo $OUTPUT->confirm(get_string("deletesureplural", "forum", $replycount+1),
                          "post.php?delete=$delete&confirm=$delete",
-                         $CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#p'.$post->id);
+                         $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
 
             hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
 
@@ -387,7 +387,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             echo $OUTPUT->header();
             echo $OUTPUT->confirm(get_string("deletesure", "forum", $replycount),
                          "post.php?delete=$delete&confirm=$delete",
-                         $CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#p'.$post->id);
+                         $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
             hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
         }
 
@@ -462,7 +462,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         $PAGE->set_cm($cm);
         $PAGE->set_context($modcontext);
-        $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/forum/discuss.php', array('d'=>$discussion->id)));
+        $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
         $PAGE->set_title(format_string($discussion->name).": ".format_string($post->subject));
         $PAGE->set_heading($course->fullname);
@@ -588,7 +588,7 @@ $mform_post->set_data(array(        'attachments'=>$draftitemid,
 if ($fromform = $mform_post->get_data()) {
 
     if (empty($SESSION->fromurl)) {
-        $errordestination = "$CFG->wwwroot/mod/forum/view.php?f=$forum->id";
+        $errordestination = "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id";
     } else {
         $errordestination = $SESSION->fromurl;
     }

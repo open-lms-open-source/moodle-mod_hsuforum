@@ -24,7 +24,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 /**
- * Unit tests for (some of) ../mod/forum/lib.php.
+ * Unit tests for (some of) ../mod/hsuforum/lib.php.
  *
  * @copyright &copy; 2006 The Open University
  * @author T.J.Hunt@open.ac.uk
@@ -37,10 +37,10 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
 
-require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 
 class modforumlib_test extends UnitTestCase {
-    public static $includecoverage = array('mod/forum/lib.php');
+    public static $includecoverage = array('mod/hsuforum/lib.php');
 
     function setUp() {
     }
