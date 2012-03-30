@@ -102,19 +102,19 @@ $returnto = optional_param('backtoindex',0,PARAM_INT)
 if (!is_null($mode) and has_capability('mod/forum:managesubscriptions', $context)) {
     require_sesskey();
     switch ($mode) {
-        case FORUM_CHOOSESUBSCRIBE : // 0
+        case HSUFORUM_CHOOSESUBSCRIBE : // 0
             hsuforum_forcesubscribe($forum->id, 0);
             redirect($returnto, get_string("everyonecannowchoose", "hsuforum"), 1);
             break;
-        case FORUM_FORCESUBSCRIBE : // 1
+        case HSUFORUM_FORCESUBSCRIBE : // 1
             hsuforum_forcesubscribe($forum->id, 1);
             redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;
-        case FORUM_INITIALSUBSCRIBE : // 2
+        case HSUFORUM_INITIALSUBSCRIBE : // 2
             hsuforum_forcesubscribe($forum->id, 2);
             redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;
-        case FORUM_DISALLOWSUBSCRIBE : // 3
+        case HSUFORUM_DISALLOWSUBSCRIBE : // 3
             hsuforum_forcesubscribe($forum->id, 3);
             redirect($returnto, get_string("noonecansubscribenow", "hsuforum"), 1);
             break;
@@ -149,7 +149,7 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
     }
 
 } else {  // subscribe
-    if ($forum->forcesubscribe == FORUM_DISALLOWSUBSCRIBE &&
+    if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE &&
                 !has_capability('mod/forum:managesubscriptions', $context)) {
         print_error('disallowsubscribe', 'forum', $_SERVER["HTTP_REFERER"]);
     }

@@ -30,19 +30,19 @@ require_once($CFG->dirroot.'/user/selector/lib.php');
 
 /// CONSTANTS ///////////////////////////////////////////////////////////
 
-define('FORUM_MODE_FLATOLDEST', 1);
-define('FORUM_MODE_FLATNEWEST', -1);
-define('FORUM_MODE_THREADED', 2);
-define('FORUM_MODE_NESTED', 3);
+define('HSUFORUM_MODE_FLATOLDEST', 1);
+define('HSUFORUM_MODE_FLATNEWEST', -1);
+define('HSUFORUM_MODE_THREADED', 2);
+define('HSUFORUM_MODE_NESTED', 3);
 
-define('FORUM_CHOOSESUBSCRIBE', 0);
-define('FORUM_FORCESUBSCRIBE', 1);
-define('FORUM_INITIALSUBSCRIBE', 2);
-define('FORUM_DISALLOWSUBSCRIBE',3);
+define('HSUFORUM_CHOOSESUBSCRIBE', 0);
+define('HSUFORUM_FORCESUBSCRIBE', 1);
+define('HSUFORUM_INITIALSUBSCRIBE', 2);
+define('HSUFORUM_DISALLOWSUBSCRIBE',3);
 
-define('FORUM_TRACKING_OFF', 0);
-define('FORUM_TRACKING_OPTIONAL', 1);
-define('FORUM_TRACKING_ON', 2);
+define('HSUFORUM_TRACKING_OFF', 0);
+define('HSUFORUM_TRACKING_OPTIONAL', 1);
+define('HSUFORUM_TRACKING_ON', 2);
 
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 
@@ -100,7 +100,7 @@ function hsuforum_add_instance($forum, $mform) {
         }
     }
 
-    if ($forum->forcesubscribe == FORUM_INITIALSUBSCRIBE) {
+    if ($forum->forcesubscribe == HSUFORUM_INITIALSUBSCRIBE) {
     /// all users should be subscribed initially
     /// Note: hsuforum_get_potential_subscribers should take the forum context,
     /// but that does not exist yet, becuase the forum is only half build at this
@@ -2928,7 +2928,7 @@ function hsuforum_get_course_forum($courseid, $type) {
         case "news":
             $forum->name  = get_string("namenews", "hsuforum");
             $forum->intro = get_string("intronews", "hsuforum");
-            $forum->forcesubscribe = FORUM_FORCESUBSCRIBE;
+            $forum->forcesubscribe = HSUFORUM_FORCESUBSCRIBE;
             $forum->assessed = 0;
             if ($courseid == SITEID) {
                 $forum->name  = get_string("sitenews");
@@ -3106,7 +3106,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
  *
  * @global object
  * @global object
- * @uses FORUM_MODE_THREADED
+ * @uses HSUFORUM_MODE_THREADED
  * @uses PORTFOLIO_FORMAT_PLAINHTML
  * @uses PORTFOLIO_FORMAT_FILE
  * @uses PORTFOLIO_FORMAT_RICHHTML
@@ -3266,7 +3266,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
             $url->param('mark', 'read');
             $text = $str->markread;
         }
-        if ($str->displaymode == FORUM_MODE_THREADED) {
+        if ($str->displaymode == HSUFORUM_MODE_THREADED) {
             $url->param('parent', $post->parent);
         } else {
             $url->set_anchor('p'.$post->id);
@@ -3277,7 +3277,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     // Zoom in to the parent specifically
     if ($post->parent) {
         $url = new moodle_url($discussionlink);
-        if ($str->displaymode == FORUM_MODE_THREADED) {
+        if ($str->displaymode == HSUFORUM_MODE_THREADED) {
             $url->param('parent', $post->parent);
         } else {
             $url->set_anchor('p'.$post->parent);
@@ -4506,9 +4506,9 @@ function hsuforum_forcesubscribe($forumid, $value=1) {
 function hsuforum_is_forcesubscribed($forum) {
     global $DB;
     if (isset($forum->forcesubscribe)) {    // then we use that
-        return ($forum->forcesubscribe == FORUM_FORCESUBSCRIBE);
+        return ($forum->forcesubscribe == HSUFORUM_FORCESUBSCRIBE);
     } else {   // Check the database
-       return ($DB->get_field('forum', 'forcesubscribe', array('id' => $forum)) == FORUM_FORCESUBSCRIBE);
+       return ($DB->get_field('forum', 'forcesubscribe', array('id' => $forum)) == HSUFORUM_FORCESUBSCRIBE);
     }
 }
 
@@ -4544,8 +4544,8 @@ function hsuforum_get_subscribed_forums($course) {
               FROM {forum} f
                    LEFT JOIN {hsuforum_subscriptions} fs ON (fs.forum = f.id AND fs.userid = ?)
              WHERE f.course = ?
-                   AND f.forcesubscribe <> ".FORUM_DISALLOWSUBSCRIBE."
-                   AND (f.forcesubscribe = ".FORUM_FORCESUBSCRIBE." OR fs.id IS NOT NULL)";
+                   AND f.forcesubscribe <> ".HSUFORUM_DISALLOWSUBSCRIBE."
+                   AND (f.forcesubscribe = ".HSUFORUM_FORCESUBSCRIBE." OR fs.id IS NOT NULL)";
     if ($subscribed = $DB->get_records_sql($sql, array($USER->id, $course->id))) {
         foreach ($subscribed as $s) {
             $subscribed[$s->id] = $s->id;
@@ -4604,10 +4604,10 @@ function hsuforum_post_subscription($post, $forum) {
     $action = '';
     $subscribed = hsuforum_is_subscribed($USER->id, $forum);
 
-    if ($forum->forcesubscribe == FORUM_FORCESUBSCRIBE) { // database ignored
+    if ($forum->forcesubscribe == HSUFORUM_FORCESUBSCRIBE) { // database ignored
         return "";
 
-    } elseif (($forum->forcesubscribe == FORUM_DISALLOWSUBSCRIBE)
+    } elseif (($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE)
         && !has_capability('moodle/course:manageactivities', get_context_instance(CONTEXT_COURSE, $forum->course), $USER->id)) {
         if ($subscribed) {
             $action = 'unsubscribe'; // sanity check, following MDL-14558
@@ -4673,7 +4673,7 @@ function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $can
 
     if (hsuforum_is_forcesubscribed($forum)) {
         return $messages['forcesubscribed'];
-    } else if ($forum->forcesubscribe == FORUM_DISALLOWSUBSCRIBE && !has_capability('mod/forum:managesubscriptions', $context)) {
+    } else if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE && !has_capability('mod/forum:managesubscriptions', $context)) {
         return $messages['cantsubscribe'];
     } else if ($cantaccessagroup) {
         return $messages['cantaccessgroup'];
@@ -5468,10 +5468,10 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
  * Prints a forum discussion
  *
  * @uses CONTEXT_MODULE
- * @uses FORUM_MODE_FLATNEWEST
- * @uses FORUM_MODE_FLATOLDEST
- * @uses FORUM_MODE_THREADED
- * @uses FORUM_MODE_NESTED
+ * @uses HSUFORUM_MODE_FLATNEWEST
+ * @uses HSUFORUM_MODE_FLATOLDEST
+ * @uses HSUFORUM_MODE_THREADED
+ * @uses HSUFORUM_MODE_NESTED
  * @param stdClass $course
  * @param stdClass $cm
  * @param stdClass $forum
@@ -5503,7 +5503,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
     $posters = array();
 
     // preload all posts - TODO: improve...
-    if ($mode == FORUM_MODE_FLATNEWEST) {
+    if ($mode == HSUFORUM_MODE_FLATNEWEST) {
         $sort = "p.created DESC";
     } else {
         $sort = "p.created ASC";
@@ -5562,17 +5562,17 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
                          '', '', $postread, true, $forumtracked);
 
     switch ($mode) {
-        case FORUM_MODE_FLATOLDEST :
-        case FORUM_MODE_FLATNEWEST :
+        case HSUFORUM_MODE_FLATOLDEST :
+        case HSUFORUM_MODE_FLATNEWEST :
         default:
             hsuforum_print_posts_flat($course, $cm, $forum, $discussion, $post, $mode, $reply, $forumtracked, $posts);
             break;
 
-        case FORUM_MODE_THREADED :
+        case HSUFORUM_MODE_THREADED :
             hsuforum_print_posts_threaded($course, $cm, $forum, $discussion, $post, 0, $reply, $forumtracked, $posts);
             break;
 
-        case FORUM_MODE_NESTED :
+        case HSUFORUM_MODE_NESTED :
             hsuforum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
             break;
     }
@@ -5582,7 +5582,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
 /**
  * @global object
  * @global object
- * @uses FORUM_MODE_FLATNEWEST
+ * @uses HSUFORUM_MODE_FLATNEWEST
  * @param object $course
  * @param object $cm
  * @param object $forum
@@ -5599,7 +5599,7 @@ function hsuforum_print_posts_flat($course, &$cm, $forum, $discussion, $post, $m
 
     $link  = false;
 
-    if ($mode == FORUM_MODE_FLATNEWEST) {
+    if ($mode == HSUFORUM_MODE_FLATNEWEST) {
         $sort = "ORDER BY created DESC";
     } else {
         $sort = "ORDER BY created ASC";
@@ -5941,7 +5941,7 @@ function hsuforum_user_enrolled($cp) {
               FROM {forum} f
          LEFT JOIN {hsuforum_subscriptions} fs ON (fs.forum = f.id AND fs.userid = :userid)
              WHERE f.course = :courseid AND f.forcesubscribe = :initial AND fs.id IS NULL";
-    $params = array('courseid'=>$cp->courseid, 'userid'=>$cp->userid, 'initial'=>FORUM_INITIALSUBSCRIBE);
+    $params = array('courseid'=>$cp->courseid, 'userid'=>$cp->userid, 'initial'=>HSUFORUM_INITIALSUBSCRIBE);
 
     $forums = $DB->get_records_sql($sql, $params);
     foreach ($forums as $forum) {
@@ -6032,8 +6032,8 @@ function hsuforum_tp_mark_posts_read($user, $postids) {
                        LEFT JOIN {hsuforum_track_prefs} tf ON (tf.userid = ? AND tf.forumid = f.id)
                  WHERE p.id $usql
                        AND p.modified >= ?
-                       AND (f.trackingtype = ".FORUM_TRACKING_ON."
-                            OR (f.trackingtype = ".FORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))";
+                       AND (f.trackingtype = ".HSUFORUM_TRACKING_ON."
+                            OR (f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))";
         $status = $DB->execute($sql, $params) && $status;
     }
 
@@ -6377,8 +6377,8 @@ function hsuforum_tp_get_course_unread_posts($userid, $courseid) {
                    LEFT JOIN {hsuforum_track_prefs} tf ON (tf.userid = ? AND tf.forumid = f.id)
              WHERE f.course = ?
                    AND p.modified >= ? AND r.id is NULL
-                   AND (f.trackingtype = ".FORUM_TRACKING_ON."
-                        OR (f.trackingtype = ".FORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))
+                   AND (f.trackingtype = ".HSUFORUM_TRACKING_ON."
+                        OR (f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))
                    $timedsql
           GROUP BY f.id";
 
@@ -6532,8 +6532,8 @@ function hsuforum_tp_get_untracked_forums($userid, $courseid) {
               FROM {forum} f
                    LEFT JOIN {hsuforum_track_prefs} ft ON (ft.forumid = f.id AND ft.userid = ?)
              WHERE f.course = ?
-                   AND (f.trackingtype = ".FORUM_TRACKING_OFF."
-                        OR (f.trackingtype = ".FORUM_TRACKING_OPTIONAL." AND ft.id IS NOT NULL))";
+                   AND (f.trackingtype = ".HSUFORUM_TRACKING_OFF."
+                        OR (f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL." AND ft.id IS NOT NULL))";
 
     if ($forums = $DB->get_records_sql($sql, array($userid, $courseid))) {
         foreach ($forums as $forum) {
@@ -6587,8 +6587,8 @@ function hsuforum_tp_can_track_forums($forum=false, $user=false) {
         $forum = $DB->get_record('forum', array('id' => $forum), '', 'id,trackingtype');
     }
 
-    $forumallows = ($forum->trackingtype == FORUM_TRACKING_OPTIONAL);
-    $forumforced = ($forum->trackingtype == FORUM_TRACKING_ON);
+    $forumallows = ($forum->trackingtype == HSUFORUM_TRACKING_OPTIONAL);
+    $forumforced = ($forum->trackingtype == HSUFORUM_TRACKING_ON);
 
     return ($forumforced || $forumallows)  && !empty($user->trackforums);
 }
@@ -6625,8 +6625,8 @@ function hsuforum_tp_is_tracked($forum, $user=false) {
         return false;
     }
 
-    $forumallows = ($forum->trackingtype == FORUM_TRACKING_OPTIONAL);
-    $forumforced = ($forum->trackingtype == FORUM_TRACKING_ON);
+    $forumallows = ($forum->trackingtype == HSUFORUM_TRACKING_OPTIONAL);
+    $forumforced = ($forum->trackingtype == HSUFORUM_TRACKING_ON);
 
     return $forumforced ||
            ($forumallows && $DB->get_record('hsuforum_track_prefs', array('userid' => $user->id, 'forumid' => $forum->id)) === false);
@@ -7289,10 +7289,10 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
  * @return array
  */
 function hsuforum_get_layout_modes() {
-    return array (FORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'hsuforum'),
-                  FORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'hsuforum'),
-                  FORUM_MODE_THREADED   => get_string('modethreaded', 'hsuforum'),
-                  FORUM_MODE_NESTED     => get_string('modenested', 'hsuforum'));
+    return array (HSUFORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'hsuforum'),
+                  HSUFORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'hsuforum'),
+                  HSUFORUM_MODE_THREADED   => get_string('modethreaded', 'hsuforum'),
+                  HSUFORUM_MODE_NESTED     => get_string('modenested', 'hsuforum'));
 }
 
 /**
@@ -7427,30 +7427,30 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
 
     $canmanage  = has_capability('mod/forum:managesubscriptions', $PAGE->cm->context);
     $subscriptionmode = hsuforum_get_forcesubscribed($forumobject);
-    $cansubscribe = ($activeenrolled && $subscriptionmode != FORUM_FORCESUBSCRIBE && ($subscriptionmode != FORUM_DISALLOWSUBSCRIBE || $canmanage));
+    $cansubscribe = ($activeenrolled && $subscriptionmode != HSUFORUM_FORCESUBSCRIBE && ($subscriptionmode != HSUFORUM_DISALLOWSUBSCRIBE || $canmanage));
 
     if ($canmanage) {
         $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
 
-        $allowchoice = $mode->add(get_string('subscriptionoptional', 'hsuforum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceforever = $mode->add(get_string("subscriptionforced", "hsuforum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceinitially = $mode->add(get_string("subscriptionauto", "hsuforum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'hsuforum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $allowchoice = $mode->add(get_string('subscriptionoptional', 'hsuforum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceforever = $mode->add(get_string("subscriptionforced", "hsuforum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceinitially = $mode->add(get_string("subscriptionauto", "hsuforum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'hsuforum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
 
         switch ($subscriptionmode) {
-            case FORUM_CHOOSESUBSCRIBE : // 0
+            case HSUFORUM_CHOOSESUBSCRIBE : // 0
                 $allowchoice->action = null;
                 $allowchoice->add_class('activesetting');
                 break;
-            case FORUM_FORCESUBSCRIBE : // 1
+            case HSUFORUM_FORCESUBSCRIBE : // 1
                 $forceforever->action = null;
                 $forceforever->add_class('activesetting');
                 break;
-            case FORUM_INITIALSUBSCRIBE : // 2
+            case HSUFORUM_INITIALSUBSCRIBE : // 2
                 $forceinitially->action = null;
                 $forceinitially->add_class('activesetting');
                 break;
-            case FORUM_DISALLOWSUBSCRIBE : // 3
+            case HSUFORUM_DISALLOWSUBSCRIBE : // 3
                 $disallowchoice->action = null;
                 $disallowchoice->add_class('activesetting');
                 break;
@@ -7459,16 +7459,16 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     } else if ($activeenrolled) {
 
         switch ($subscriptionmode) {
-            case FORUM_CHOOSESUBSCRIBE : // 0
+            case HSUFORUM_CHOOSESUBSCRIBE : // 0
                 $notenode = $forumnode->add(get_string('subscriptionoptional', 'hsuforum'));
                 break;
-            case FORUM_FORCESUBSCRIBE : // 1
+            case HSUFORUM_FORCESUBSCRIBE : // 1
                 $notenode = $forumnode->add(get_string('subscriptionforced', 'hsuforum'));
                 break;
-            case FORUM_INITIALSUBSCRIBE : // 2
+            case HSUFORUM_INITIALSUBSCRIBE : // 2
                 $notenode = $forumnode->add(get_string('subscriptionauto', 'hsuforum'));
                 break;
-            case FORUM_DISALLOWSUBSCRIBE : // 3
+            case HSUFORUM_DISALLOWSUBSCRIBE : // 3
                 $notenode = $forumnode->add(get_string('subscriptiondisabled', 'hsuforum'));
                 break;
         }
@@ -7490,7 +7490,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     }
 
     if ($enrolled && hsuforum_tp_can_track_forums($forumobject)) { // keep tracking info for users with suspended enrolments
-        if ($forumobject->trackingtype != FORUM_TRACKING_OPTIONAL) {
+        if ($forumobject->trackingtype != HSUFORUM_TRACKING_OPTIONAL) {
             //tracking forced on or off in forum settings so dont provide a link here to change it
             //could add unclickable text like for forced subscription but not sure this justifies adding another menu item
         } else {

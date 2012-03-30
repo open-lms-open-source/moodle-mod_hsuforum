@@ -56,17 +56,17 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
 
         $options = array();
-        $options[FORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'hsuforum');
-        $options[FORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'hsuforum');
-        $options[FORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'hsuforum');
-        $options[FORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled','hsuforum');
+        $options[HSUFORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'hsuforum');
+        $options[HSUFORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'hsuforum');
+        $options[HSUFORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'hsuforum');
+        $options[HSUFORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled','hsuforum');
         $mform->addElement('select', 'forcesubscribe', get_string('subscriptionmode', 'hsuforum'), $options);
         $mform->addHelpButton('forcesubscribe', 'subscriptionmode', 'forum');
 
         $options = array();
-        $options[FORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'hsuforum');
-        $options[FORUM_TRACKING_OFF] = get_string('trackingoff', 'hsuforum');
-        $options[FORUM_TRACKING_ON] = get_string('trackingon', 'hsuforum');
+        $options[HSUFORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'hsuforum');
+        $options[HSUFORUM_TRACKING_OFF] = get_string('trackingoff', 'hsuforum');
+        $options[HSUFORUM_TRACKING_ON] = get_string('trackingon', 'hsuforum');
         $mform->addElement('select', 'trackingtype', get_string('trackingtype', 'hsuforum'), $options);
         $mform->addHelpButton('trackingtype', 'trackingtype', 'forum');
 

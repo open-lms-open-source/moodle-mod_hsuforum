@@ -27,7 +27,7 @@ if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/forum/lib.php');
 
     $settings->add(new admin_setting_configselect('hsuforum_displaymode', get_string('displaymode', 'hsuforum'),
-                       get_string('configdisplaymode', 'hsuforum'), FORUM_MODE_NESTED, hsuforum_get_layout_modes()));
+                       get_string('configdisplaymode', 'hsuforum'), HSUFORUM_MODE_NESTED, hsuforum_get_layout_modes()));
 
     $settings->add(new admin_setting_configcheckbox('hsuforum_replytouser', get_string('replytouser', 'hsuforum'),
                        get_string('configreplytouser', 'hsuforum'), 1));

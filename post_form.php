@@ -64,7 +64,7 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->setType('subscribe', PARAM_INT);
             $mform->addHelpButton('subscribemessage', 'subscription', 'forum');
 
-        } else if (isset($forum->forcesubscribe)&& $forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE ||
+        } else if (isset($forum->forcesubscribe)&& $forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE ||
                    has_capability('moodle/course:manageactivities', $coursecontext)) {
 
                 $options = array();
@@ -73,7 +73,7 @@ class mod_hsuforum_post_form extends moodleform {
 
                 $mform->addElement('select', 'subscribe', get_string('subscription', 'hsuforum'), $options);
                 $mform->addHelpButton('subscribe', 'subscription', 'forum');
-            } else if ($forum->forcesubscribe == FORUM_DISALLOWSUBSCRIBE) {
+            } else if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE) {
                 $mform->addElement('static', 'subscribemessage', get_string('subscription', 'hsuforum'), get_string('disallowsubscribe', 'hsuforum'));
                 $mform->addElement('hidden', 'subscribe');
                 $mform->setType('subscribe', PARAM_INT);

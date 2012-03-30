@@ -166,7 +166,7 @@ if (!is_null($subscribe) and !isguestuser()) {
         }
         if (!hsuforum_is_forcesubscribed($forum)) {
             $subscribed = hsuforum_is_subscribed($USER->id, $forum);
-            if ((has_capability('moodle/course:manageactivities', $coursecontext, $USER->id) || $forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) && $subscribe && !$subscribed && $cansub) {
+            if ((has_capability('moodle/course:manageactivities', $coursecontext, $USER->id) || $forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) && $subscribe && !$subscribed && $cansub) {
                 hsuforum_subscribe($USER->id, $forumid);
             } else if (!$subscribe && $subscribed) {
                 hsuforum_unsubscribe($USER->id, $forumid);
@@ -194,7 +194,7 @@ if ($generalforums) {
         $count = hsuforum_count_discussions($forum, $cm, $course);
 
         if ($usetracking) {
-            if ($forum->trackingtype == FORUM_TRACKING_OFF) {
+            if ($forum->trackingtype == HSUFORUM_TRACKING_OFF) {
                 $unreadlink  = '-';
                 $trackedlink = '-';
 
@@ -209,7 +209,7 @@ if ($generalforums) {
                     $unreadlink = '<span class="read">0</span>';
                 }
 
-                if ($forum->trackingtype == FORUM_TRACKING_ON) {
+                if ($forum->trackingtype == HSUFORUM_TRACKING_ON) {
                     $trackedlink = $stryes;
 
                 } else {
@@ -241,7 +241,7 @@ if ($generalforums) {
         }
 
         if ($can_subscribe) {
-            if ($forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) {
+            if ($forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) {
                 $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
                         'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
                         'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
@@ -321,7 +321,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
             $count = hsuforum_count_discussions($forum, $cm, $course);
 
             if ($usetracking) {
-                if ($forum->trackingtype == FORUM_TRACKING_OFF) {
+                if ($forum->trackingtype == HSUFORUM_TRACKING_OFF) {
                     $unreadlink  = '-';
                     $trackedlink = '-';
 
@@ -336,7 +336,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                         $unreadlink = '<span class="read">0</span>';
                     }
 
-                    if ($forum->trackingtype == FORUM_TRACKING_ON) {
+                    if ($forum->trackingtype == HSUFORUM_TRACKING_ON) {
                         $trackedlink = $stryes;
 
                     } else {
@@ -379,7 +379,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
             }
 
             if ($can_subscribe) {
-                if ($forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) {
+                if ($forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) {
                     $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
                         'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
                         'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
