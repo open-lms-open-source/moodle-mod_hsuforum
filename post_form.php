@@ -80,7 +80,7 @@ class mod_hsuforum_post_form extends moodleform {
                 $mform->addHelpButton('subscribemessage', 'subscription', 'forum');
             }
 
-        if (!empty($forum->maxattachments) && $forum->maxbytes != 1 && has_capability('mod/forum:createattachment', $modcontext))  {  //  1 = No attachments at all
+        if (!empty($forum->maxattachments) && $forum->maxbytes != 1 && has_capability('mod/hsuforum:createattachment', $modcontext))  {  //  1 = No attachments at all
             $mform->addElement('filemanager', 'attachments', get_string('attachment', 'hsuforum'), null,
                 array('subdirs'=>0,
                       'maxbytes'=>$forum->maxbytes,
@@ -94,7 +94,7 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'hsuforum'));
         }
 
-        if (!empty($CFG->hsuforum_enabletimedposts) && !$post->parent && has_capability('mod/forum:viewhiddentimedposts', $coursecontext)) { // hack alert
+        if (!empty($CFG->hsuforum_enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $coursecontext)) { // hack alert
             $mform->addElement('header', '', get_string('displayperiod', 'hsuforum'));
 
             $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional'=>true));
@@ -115,7 +115,7 @@ class mod_hsuforum_post_form extends moodleform {
             $groupdata = groups_get_activity_allowed_groups($cm);
             $groupcount = count($groupdata);
             $modulecontext = get_context_instance(CONTEXT_MODULE, $cm->id);
-            $contextcheck = has_capability('mod/forum:movediscussions', $modulecontext) && empty($post->parent) && $groupcount > 1;
+            $contextcheck = has_capability('mod/hsuforum:movediscussions', $modulecontext) && empty($post->parent) && $groupcount > 1;
             if ($contextcheck) {
                 $groupinfo = array('0' => get_string('allparticipants'));
                 foreach ($groupdata as $grouptemp) {

@@ -117,7 +117,7 @@
         notice(get_string("activityiscurrentlyhidden"));
     }
 
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
         notice(get_string('noviewdiscussionspermission', 'hsuforum'));
     }
 
@@ -178,7 +178,7 @@
             }
 
             $canreply    = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
-            $canrate     = has_capability('mod/forum:rate', $context);
+            $canrate     = has_capability('mod/hsuforum:rate', $context);
             $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
 
             echo '&nbsp;'; // this should fix the floating in FF

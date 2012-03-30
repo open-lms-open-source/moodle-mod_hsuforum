@@ -133,7 +133,7 @@ foreach ($modinfo->instances['forum'] as $forumid=>$cm) {
         continue;   // Shouldn't happen
     }
 
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
         continue;
     }
 
@@ -156,11 +156,11 @@ if (!is_null($subscribe) and !isguestuser()) {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
         $cansub = false;
 
-        if (has_capability('mod/forum:viewdiscussion', $modcontext)) {
+        if (has_capability('mod/hsuforum:viewdiscussion', $modcontext)) {
             $cansub = true;
         }
         if ($cansub && $cm->visible == 0 &&
-            !has_capability('mod/forum:managesubscriptions', $modcontext))
+            !has_capability('mod/hsuforum:managesubscriptions', $modcontext))
         {
             $cansub = false;
         }

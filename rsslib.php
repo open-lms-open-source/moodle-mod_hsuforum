@@ -49,7 +49,7 @@ function hsuforum_rss_get_feed($context, $args) {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
         //context id from db should match the submitted one
-        if ($context->id != $modcontext->id || !has_capability('mod/forum:viewdiscussion', $modcontext)) {
+        if ($context->id != $modcontext->id || !has_capability('mod/hsuforum:viewdiscussion', $modcontext)) {
             return null;
         }
     }
@@ -143,7 +143,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     if (!empty($CFG->hsuforum_enabletimedposts)) { /// Users must fulfill timed posts
-        if (!has_capability('mod/forum:viewhiddentimedposts', $modcontext)) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= :now1 AND (d.timeend = 0 OR d.timeend > :now2))";
             $params['now1'] = $now;
             $params['now2'] = $now;

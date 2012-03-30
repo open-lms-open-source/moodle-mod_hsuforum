@@ -1378,13 +1378,13 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
         }
         $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-        if (!has_capability('mod/forum:viewdiscussion', $context)) {
+        if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
             continue;
         }
 
         if (!empty($CFG->hsuforum_enabletimedposts) and $USER->id != $post->duserid
           and (($post->timestart > 0 and $post->timestart > time()) or ($post->timeend > 0 and $post->timeend < time()))) {
-            if (!has_capability('mod/forum:viewhiddentimedposts', $context)) {
+            if (!has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
                 continue;
             }
         }
@@ -1573,7 +1573,7 @@ function hsuforum_grade_item_update($forum, $grades=NULL) {
         $grades = NULL;
     }
 
-    return grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 0, $grades, $params);
+    return grade_update('mod/hsuforum', $forum->course, 'mod', 'forum', $forum->id, 0, $grades, $params);
 }
 
 /**
@@ -1587,7 +1587,7 @@ function hsuforum_grade_item_delete($forum) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
-    return grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 0, NULL, array('deleted'=>1));
+    return grade_update('mod/hsuforum', $forum->course, 'mod', 'forum', $forum->id, 0, NULL, array('deleted'=>1));
 }
 
 
@@ -1866,7 +1866,7 @@ function hsuforum_get_readable_forums($userid, $courseid=0) {
             $forum->context = $context;
             $forum->cm = $cm;
 
-            if (!has_capability('mod/forum:viewdiscussion', $context)) {
+            if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
                 continue;
             }
 
@@ -1886,14 +1886,14 @@ function hsuforum_get_readable_forums($userid, $courseid=0) {
         /// hidden timed discussions
             $forum->viewhiddentimedposts = true;
             if (!empty($CFG->hsuforum_enabletimedposts)) {
-                if (!has_capability('mod/forum:viewhiddentimedposts', $context)) {
+                if (!has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
                     $forum->viewhiddentimedposts = false;
                 }
             }
 
         /// qanda access
             if ($forum->type == 'qanda'
-                    && !has_capability('mod/forum:viewqandawithoutposting', $context)) {
+                    && !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
 
                 // We need to check whether the user has posted in the qanda forum.
                 $forum->onlydiscussions = array();  // Holds discussion ids for the discussions
@@ -1959,7 +1959,7 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
         $context = $forum->context;
 
         if ($forum->type == 'qanda'
-            && !has_capability('mod/forum:viewqandawithoutposting', $context)) {
+            && !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
             if (!empty($forum->onlydiscussions)) {
                 list($discussionid_sql, $discussionid_params) = $DB->get_in_or_equal($forum->onlydiscussions, SQL_PARAMS_NAMED, 'qanda'.$forumid.'_');
                 $params = array_merge($params, $discussionid_params);
@@ -2164,7 +2164,7 @@ function hsuforum_get_user_posts($forumid, $userid) {
 
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         $cm = get_coursemodule_from_instance('forum', $forumid);
-        if (!has_capability('mod/forum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2200,7 +2200,7 @@ function hsuforum_get_user_involved_discussions($forumid, $userid) {
     $params = array($forumid, $userid);
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         $cm = get_coursemodule_from_instance('forum', $forumid);
-        if (!has_capability('mod/forum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2233,7 +2233,7 @@ function hsuforum_count_user_posts($forumid, $userid) {
     $params = array($forumid, $userid);
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         $cm = get_coursemodule_from_instance('forum', $forumid);
-        if (!has_capability('mod/forum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2537,13 +2537,13 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $fullpo
 
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-    if (!has_capability('mod/forum:viewdiscussion', $modcontext)) { /// User must have perms to view discussions
+    if (!has_capability('mod/hsuforum:viewdiscussion', $modcontext)) { /// User must have perms to view discussions
         return array();
     }
 
     if (!empty($CFG->hsuforum_enabletimedposts)) { /// Users must fulfill timed posts
 
-        if (!has_capability('mod/forum:viewhiddentimedposts', $modcontext)) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
             $params[] = $now;
@@ -2747,7 +2747,7 @@ function hsuforum_get_discussions_count($cm) {
 
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-        if (!has_capability('mod/forum:viewhiddentimedposts', $modcontext)) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
             $params[] = $now;
@@ -3154,15 +3154,15 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
 
     if (!isset($cm->cache->caps)) {
         $cm->cache->caps = array();
-        $cm->cache->caps['mod/forum:viewdiscussion']   = has_capability('mod/forum:viewdiscussion', $modcontext);
+        $cm->cache->caps['mod/hsuforum:viewdiscussion']   = has_capability('mod/hsuforum:viewdiscussion', $modcontext);
         $cm->cache->caps['moodle/site:viewfullnames']  = has_capability('moodle/site:viewfullnames', $modcontext);
-        $cm->cache->caps['mod/forum:editanypost']      = has_capability('mod/forum:editanypost', $modcontext);
-        $cm->cache->caps['mod/forum:splitdiscussions'] = has_capability('mod/forum:splitdiscussions', $modcontext);
-        $cm->cache->caps['mod/forum:deleteownpost']    = has_capability('mod/forum:deleteownpost', $modcontext);
-        $cm->cache->caps['mod/forum:deleteanypost']    = has_capability('mod/forum:deleteanypost', $modcontext);
-        $cm->cache->caps['mod/forum:viewanyrating']    = has_capability('mod/forum:viewanyrating', $modcontext);
-        $cm->cache->caps['mod/forum:exportpost']       = has_capability('mod/forum:exportpost', $modcontext);
-        $cm->cache->caps['mod/forum:exportownpost']    = has_capability('mod/forum:exportownpost', $modcontext);
+        $cm->cache->caps['mod/hsuforum:editanypost']      = has_capability('mod/hsuforum:editanypost', $modcontext);
+        $cm->cache->caps['mod/hsuforum:splitdiscussions'] = has_capability('mod/hsuforum:splitdiscussions', $modcontext);
+        $cm->cache->caps['mod/hsuforum:deleteownpost']    = has_capability('mod/hsuforum:deleteownpost', $modcontext);
+        $cm->cache->caps['mod/hsuforum:deleteanypost']    = has_capability('mod/hsuforum:deleteanypost', $modcontext);
+        $cm->cache->caps['mod/hsuforum:viewanyrating']    = has_capability('mod/hsuforum:viewanyrating', $modcontext);
+        $cm->cache->caps['mod/hsuforum:exportpost']       = has_capability('mod/hsuforum:exportpost', $modcontext);
+        $cm->cache->caps['mod/hsuforum:exportownpost']    = has_capability('mod/hsuforum:exportownpost', $modcontext);
     }
 
     if (!isset($cm->uservisible)) {
@@ -3290,15 +3290,15 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     if (!$post->parent && $forum->type == 'news' && $discussion->timestart > time()) {
         $age = 0;
     }
-    if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/forum:editanypost']) {
+    if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/hsuforum:editanypost']) {
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('edit'=>$post->id)), 'text'=>$str->edit);
     }
 
-    if ($cm->cache->caps['mod/forum:splitdiscussions'] && $post->parent && $forum->type != 'single') {
+    if ($cm->cache->caps['mod/hsuforum:splitdiscussions'] && $post->parent && $forum->type != 'single') {
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('prune'=>$post->id)), 'text'=>$str->prune, 'title'=>$str->pruneheading);
     }
 
-    if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/forum:deleteownpost']) || $cm->cache->caps['mod/forum:deleteanypost']) {
+    if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/hsuforum:deleteownpost']) || $cm->cache->caps['mod/hsuforum:deleteanypost']) {
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('delete'=>$post->id)), 'text'=>$str->delete);
     }
 
@@ -3306,7 +3306,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('reply'=>$post->id)), 'text'=>$str->reply);
     }
 
-    if ($CFG->enableportfolios && ($cm->cache->caps['mod/forum:exportpost'] || ($ownpost && $cm->cache->caps['mod/forum:exportownpost']))) {
+    if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
         $p = array('postid' => $post->id);
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
@@ -3484,10 +3484,10 @@ function hsuforum_rating_permissions($contextid, $component, $ratingarea) {
         return null;
     }
     return array(
-        'view'    => has_capability('mod/forum:viewrating', $context),
-        'viewany' => has_capability('mod/forum:viewanyrating', $context),
-        'viewall' => has_capability('mod/forum:viewallratings', $context),
-        'rate'    => has_capability('mod/forum:rate', $context)
+        'view'    => has_capability('mod/hsuforum:viewrating', $context),
+        'viewany' => has_capability('mod/hsuforum:viewanyrating', $context),
+        'viewall' => has_capability('mod/hsuforum:viewallratings', $context),
+        'rate'    => has_capability('mod/hsuforum:rate', $context)
     );
 }
 
@@ -3674,7 +3674,7 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
         echo "</td>\n";
     }
 
-    if (has_capability('mod/forum:viewdiscussion', $modcontext)) {   // Show the column with replies
+    if (has_capability('mod/hsuforum:viewdiscussion', $modcontext)) {   // Show the column with replies
         echo '<td class="replies">';
         echo '<a href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'">';
         echo $post->replies.'</a>';
@@ -3941,7 +3941,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
     $imagereturn = '';
     $output = '';
 
-    $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/forum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/forum:exportownpost', $context)));
+    $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/hsuforum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/hsuforum:exportownpost', $context)));
 
     if ($canexport) {
         require_once($CFG->libdir.'/portfoliolib.php');
@@ -4673,7 +4673,7 @@ function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $can
 
     if (hsuforum_is_forcesubscribed($forum)) {
         return $messages['forcesubscribed'];
-    } else if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE && !has_capability('mod/forum:managesubscriptions', $context)) {
+    } else if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE && !has_capability('mod/hsuforum:managesubscriptions', $context)) {
         return $messages['cantsubscribe'];
     } else if ($cantaccessagroup) {
         return $messages['cantaccessgroup'];
@@ -4893,11 +4893,11 @@ function hsuforum_user_can_post_discussion($forum, $currentgroup=null, $unused=-
     $groupmode = groups_get_activity_groupmode($cm);
 
     if ($forum->type == 'news') {
-        $capname = 'mod/forum:addnews';
+        $capname = 'mod/hsuforum:addnews';
     } else if ($forum->type == 'qanda') {
-        $capname = 'mod/forum:addquestion';
+        $capname = 'mod/hsuforum:addquestion';
     } else {
-        $capname = 'mod/forum:startdiscussion';
+        $capname = 'mod/hsuforum:startdiscussion';
     }
 
     if (!has_capability($capname, $context)) {
@@ -4985,9 +4985,9 @@ function hsuforum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $cour
     }
 
     if ($forum->type == 'news') {
-        $capname = 'mod/forum:replynews';
+        $capname = 'mod/hsuforum:replynews';
     } else {
-        $capname = 'mod/forum:replypost';
+        $capname = 'mod/hsuforum:replypost';
     }
 
     if (!has_capability($capname, $context, $user->id)) {
@@ -5042,7 +5042,7 @@ function hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion, $
     }
 
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
-    if (!has_capability('mod/forum:viewdiscussion', $modcontext)) {
+    if (!has_capability('mod/hsuforum:viewdiscussion', $modcontext)) {
         return false;
     }
 
@@ -5088,13 +5088,13 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
         }
     }
 
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
         return false;
     }
 
     if ($forum->type == 'qanda' &&
             !hsuforum_user_has_posted($forum->id, $discussion->id, $user->id) &&
-            !has_capability('mod/forum:viewqandawithoutposting', $context)) {
+            !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
         return false;
     }
     return true;
@@ -5149,7 +5149,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         $user = $USER;
     }
 
-    $canviewdiscussion = !empty($cm->cache->caps['mod/forum:viewdiscussion']) || has_capability('mod/forum:viewdiscussion', get_context_instance(CONTEXT_MODULE, $cm->id), $user->id);
+    $canviewdiscussion = !empty($cm->cache->caps['mod/hsuforum:viewdiscussion']) || has_capability('mod/hsuforum:viewdiscussion', get_context_instance(CONTEXT_MODULE, $cm->id), $user->id);
     if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), get_context_instance(CONTEXT_USER, $post->userid))) {
         return false;
     }
@@ -5171,7 +5171,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
 
         return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)) ||
                 $firstpost->id == $post->id || $post->userid == $user->id || $firstpost->userid == $user->id ||
-                has_capability('mod/forum:viewqandawithoutposting', $modcontext, $user->id, false));
+                has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id, false));
     }
     return true;
 }
@@ -5287,7 +5287,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     } else if (isguestuser() or !isloggedin() or $forum->type == 'news') {
         // no button and no info
 
-    } else if ($groupmode and has_capability('mod/forum:startdiscussion', $context)) {
+    } else if ($groupmode and has_capability('mod/hsuforum:startdiscussion', $context)) {
         // inform users why they can not post new discussion
         if ($currentgroup) {
             echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'));
@@ -5361,7 +5361,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         if ($groupmode > 0) {
             echo '<th class="header group" scope="col">'.get_string('group').'</th>';
         }
-        if (has_capability('mod/forum:viewdiscussion', $context)) {
+        if (has_capability('mod/hsuforum:viewdiscussion', $context)) {
             echo '<th class="header replies" scope="col">'.get_string('replies', 'hsuforum').'</th>';
             // If the forum can be tracked, display the unread column.
             if ($cantrack) {
@@ -5768,7 +5768,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
 
     $groupmode       = groups_get_activity_groupmode($cm, $course);
     $cm_context      = get_context_instance(CONTEXT_MODULE, $cm->id);
-    $viewhiddentimed = has_capability('mod/forum:viewhiddentimedposts', $cm_context);
+    $viewhiddentimed = has_capability('mod/hsuforum:viewhiddentimedposts', $cm_context);
     $accessallgroups = has_capability('moodle/site:accessallgroups', $cm_context);
 
     if (is_null($modinfo->groups)) {
@@ -5934,7 +5934,7 @@ function hsuforum_user_enrolled($cp) {
     global $DB;
 
     // NOTE: this has to be as fast as possible - we do not want to slow down enrolments!
-    //       Originally there used to be 'mod/forum:initialsubscriptions' which was
+    //       Originally there used to be 'mod/hsuforum:initialsubscriptions' which was
     //       introduced because we did not have enrolment information in earlier versions...
 
     $sql = "SELECT f.id
@@ -6812,7 +6812,7 @@ function hsuforum_check_throttling($forum, $cm=null) {
     }
 
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
-    if(has_capability('mod/forum:postwithoutthrottling', $modcontext)) {
+    if(has_capability('mod/hsuforum:postwithoutthrottling', $modcontext)) {
         return true;
     }
 
@@ -7128,42 +7128,42 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
 
             // Create overrides for default student and guest roles (prevent).
             foreach ($studentroles as $studentrole) {
-                assign_capability('mod/forum:viewdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:viewhiddentimedposts', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:startdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:replypost', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:viewrating', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:viewanyrating', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:rate', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:createattachment', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:deleteownpost', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:deleteanypost', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:splitdiscussions', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:movediscussions', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:editanypost', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:viewqandawithoutposting', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:viewsubscribers', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:managesubscriptions', CAP_PREVENT, $studentrole->id, $context->id);
-                assign_capability('mod/forum:postwithoutthrottling', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewhiddentimedposts', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:startdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:replypost', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewrating', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewanyrating', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:rate', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:createattachment', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:deleteownpost', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:deleteanypost', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:splitdiscussions', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:movediscussions', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:editanypost', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewqandawithoutposting', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewsubscribers', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:managesubscriptions', CAP_PREVENT, $studentrole->id, $context->id);
+                assign_capability('mod/hsuforum:postwithoutthrottling', CAP_PREVENT, $studentrole->id, $context->id);
             }
             foreach ($guestroles as $guestrole) {
-                assign_capability('mod/forum:viewdiscussion', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:viewhiddentimedposts', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:startdiscussion', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:replypost', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:viewrating', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:viewanyrating', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:rate', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:createattachment', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:deleteownpost', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:deleteanypost', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:splitdiscussions', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:movediscussions', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:editanypost', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:viewqandawithoutposting', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:viewsubscribers', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:managesubscriptions', CAP_PREVENT, $guestrole->id, $context->id);
-                assign_capability('mod/forum:postwithoutthrottling', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewdiscussion', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewhiddentimedposts', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:startdiscussion', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:replypost', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewrating', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewanyrating', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:rate', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:createattachment', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:deleteownpost', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:deleteanypost', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:splitdiscussions', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:movediscussions', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:editanypost', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewqandawithoutposting', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:viewsubscribers', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:managesubscriptions', CAP_PREVENT, $guestrole->id, $context->id);
+                assign_capability('mod/hsuforum:postwithoutthrottling', CAP_PREVENT, $guestrole->id, $context->id);
             }
         }
     } else {
@@ -7187,20 +7187,20 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
         switch ($forum->open) {
             case 0:
                 foreach ($studentroles as $studentrole) {
-                    assign_capability('mod/forum:startdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
-                    assign_capability('mod/forum:replypost', CAP_PREVENT, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:startdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:replypost', CAP_PREVENT, $studentrole->id, $context->id);
                 }
                 break;
             case 1:
                 foreach ($studentroles as $studentrole) {
-                    assign_capability('mod/forum:startdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
-                    assign_capability('mod/forum:replypost', CAP_ALLOW, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:startdiscussion', CAP_PREVENT, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:replypost', CAP_ALLOW, $studentrole->id, $context->id);
                 }
                 break;
             case 2:
                 foreach ($studentroles as $studentrole) {
-                    assign_capability('mod/forum:startdiscussion', CAP_ALLOW, $studentrole->id, $context->id);
-                    assign_capability('mod/forum:replypost', CAP_ALLOW, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:startdiscussion', CAP_ALLOW, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:replypost', CAP_ALLOW, $studentrole->id, $context->id);
                 }
                 break;
         }
@@ -7212,18 +7212,18 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
         switch ($forum->assessed) {
             case 1:
                 foreach ($studentroles as $studentrole) {
-                    assign_capability('mod/forum:rate', CAP_ALLOW, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:rate', CAP_ALLOW, $studentrole->id, $context->id);
                 }
                 foreach ($teacherroles as $teacherrole) {
-                    assign_capability('mod/forum:rate', CAP_ALLOW, $teacherrole->id, $context->id);
+                    assign_capability('mod/hsuforum:rate', CAP_ALLOW, $teacherrole->id, $context->id);
                 }
                 break;
             case 2:
                 foreach ($studentroles as $studentrole) {
-                    assign_capability('mod/forum:rate', CAP_PREVENT, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:rate', CAP_PREVENT, $studentrole->id, $context->id);
                 }
                 foreach ($teacherroles as $teacherrole) {
-                    assign_capability('mod/forum:rate', CAP_ALLOW, $teacherrole->id, $context->id);
+                    assign_capability('mod/hsuforum:rate', CAP_ALLOW, $teacherrole->id, $context->id);
                 }
                 break;
         }
@@ -7235,18 +7235,18 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
         switch ($forum->assesspublic) {
             case 0:
                 foreach ($studentroles as $studentrole) {
-                    assign_capability('mod/forum:viewanyrating', CAP_PREVENT, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:viewanyrating', CAP_PREVENT, $studentrole->id, $context->id);
                 }
                 foreach ($teacherroles as $teacherrole) {
-                    assign_capability('mod/forum:viewanyrating', CAP_ALLOW, $teacherrole->id, $context->id);
+                    assign_capability('mod/hsuforum:viewanyrating', CAP_ALLOW, $teacherrole->id, $context->id);
                 }
                 break;
             case 1:
                 foreach ($studentroles as $studentrole) {
-                    assign_capability('mod/forum:viewanyrating', CAP_ALLOW, $studentrole->id, $context->id);
+                    assign_capability('mod/hsuforum:viewanyrating', CAP_ALLOW, $studentrole->id, $context->id);
                 }
                 foreach ($teacherroles as $teacherrole) {
-                    assign_capability('mod/forum:viewanyrating', CAP_ALLOW, $teacherrole->id, $context->id);
+                    assign_capability('mod/hsuforum:viewanyrating', CAP_ALLOW, $teacherrole->id, $context->id);
                 }
                 break;
         }
@@ -7425,7 +7425,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $enrolled = is_enrolled($PAGE->cm->context, $USER, '', false);
     $activeenrolled = is_enrolled($PAGE->cm->context, $USER, '', true);
 
-    $canmanage  = has_capability('mod/forum:managesubscriptions', $PAGE->cm->context);
+    $canmanage  = has_capability('mod/hsuforum:managesubscriptions', $PAGE->cm->context);
     $subscriptionmode = hsuforum_get_forcesubscribed($forumobject);
     $cansubscribe = ($activeenrolled && $subscriptionmode != HSUFORUM_FORCESUBSCRIBE && ($subscriptionmode != HSUFORUM_DISALLOWSUBSCRIBE || $canmanage));
 
@@ -7484,7 +7484,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
     }
 
-    if (has_capability('mod/forum:viewsubscribers', $PAGE->cm->context)){
+    if (has_capability('mod/hsuforum:viewsubscribers', $PAGE->cm->context)){
         $url = new moodle_url('/mod/hsuforum/subscribers.php', array('id'=>$forumobject->id));
         $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
     }
@@ -8051,7 +8051,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             // Check that either the current user can view the forum, or that the
             // current user has capabilities over the requested user and the requested
             // user can view the discussion
-            if (!has_capability('mod/forum:viewdiscussion', $cm->context) && !($hascapsonuser && has_capability('mod/forum:viewdiscussion', $cm->context, $user->id))) {
+            if (!has_capability('mod/hsuforum:viewdiscussion', $cm->context) && !($hascapsonuser && has_capability('mod/hsuforum:viewdiscussion', $cm->context, $user->id))) {
                 continue;
             }
 
@@ -8068,7 +8068,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
                 }
 
                 // hidden timed discussions
-                if (!empty($CFG->hsuforum_enabletimedposts) && !has_capability('mod/forum:viewhiddentimedposts', $cm->context)) {
+                if (!empty($CFG->hsuforum_enabletimedposts) && !has_capability('mod/hsuforum:viewhiddentimedposts', $cm->context)) {
                     $forumsearchselect[] = "(d.userid = :userid{$forumid} OR (d.timestart < :timestart{$forumid} AND (d.timeend = 0 OR d.timeend > :timeend{$forumid})))";
                     $forumsearchparams['userid'.$forumid] = $user->id;
                     $forumsearchparams['timestart'.$forumid] = $now;
@@ -8076,7 +8076,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
                 }
 
                 // qanda access
-                if ($forum->type == 'qanda' && !has_capability('mod/forum:viewqandawithoutposting', $cm->context)) {
+                if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $cm->context)) {
                     // We need to check whether the user has posted in the qanda forum.
                     $discussionspostedin = hsuforum_discussions_user_has_posted_in($forum->id, $user->id);
                     if (!empty($discussionspostedin)) {

@@ -374,11 +374,11 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
     function check_permissions() {
         $context = get_context_instance(CONTEXT_MODULE, $this->cm->id);
         if ($this->post) {
-            return (has_capability('mod/forum:exportpost', $context)
+            return (has_capability('mod/hsuforum:exportpost', $context)
                 || ($this->post->userid == $this->user->id
-                    && has_capability('mod/forum:exportownpost', $context)));
+                    && has_capability('mod/hsuforum:exportownpost', $context)));
         }
-        return has_capability('mod/forum:exportdiscussion', $context);
+        return has_capability('mod/hsuforum:exportdiscussion', $context);
     }
     /**
      * @return string

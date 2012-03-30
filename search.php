@@ -455,7 +455,7 @@ function hsuforum_menu_list($course)  {
             continue;
         }
         $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-        if (!has_capability('mod/forum:viewdiscussion', $context)) {
+        if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
             continue;
         }
         $menu[$cm->instance] = format_string($cm->name);

@@ -259,12 +259,12 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
         if (((time() - $post->created) > $CFG->maxeditingtime) and
-                    !has_capability('mod/forum:editanypost', $modcontext)) {
+                    !has_capability('mod/hsuforum:editanypost', $modcontext)) {
             print_error('maxtimehaspassed', 'forum', '', format_time($CFG->maxeditingtime));
         }
     }
     if (($post->userid <> $USER->id) and
-                !has_capability('mod/forum:editanypost', $modcontext)) {
+                !has_capability('mod/hsuforum:editanypost', $modcontext)) {
         print_error('cannoteditposts', 'forum');
     }
 
@@ -301,8 +301,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     require_login($course, false, $cm);
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-    if ( !(($post->userid == $USER->id && has_capability('mod/forum:deleteownpost', $modcontext))
-                || has_capability('mod/forum:deleteanypost', $modcontext)) ) {
+    if ( !(($post->userid == $USER->id && has_capability('mod/hsuforum:deleteownpost', $modcontext))
+                || has_capability('mod/hsuforum:deleteanypost', $modcontext)) ) {
         print_error('cannotdeletepost', 'forum');
     }
 
@@ -312,7 +312,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (!empty($confirm) && confirm_sesskey()) {    // User has confirmed the delete
         //check user capability to delete post.
         $timepassed = time() - $post->created;
-        if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/forum:deleteanypost', $modcontext)) {
+        if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
             print_error("cannotdeletepost", "forum",
                       hsuforum_go_back_to("discuss.php?d=$post->discussion"));
         }
@@ -321,7 +321,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             notice(get_string('couldnotdeleteratings', 'rating'),
                     hsuforum_go_back_to("discuss.php?d=$post->discussion"));
 
-        } else if ($replycount && !has_capability('mod/forum:deleteanypost', $modcontext)) {
+        } else if ($replycount && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
             print_error("couldnotdeletereplies", "forum",
                     hsuforum_go_back_to("discuss.php?d=$post->discussion"));
 
@@ -338,7 +338,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
                 redirect("view.php?f=$discussion->forum");
 
-            } else if (hsuforum_delete_post($post, has_capability('mod/forum:deleteanypost', $modcontext),
+            } else if (hsuforum_delete_post($post, has_capability('mod/hsuforum:deleteanypost', $modcontext),
                 $course, $cm, $forum)) {
 
                 if ($forum->type == 'single') {
@@ -367,7 +367,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_heading($course->fullname);
 
         if ($replycount) {
-            if (!has_capability('mod/forum:deleteanypost', $modcontext)) {
+            if (!has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
                 print_error("couldnotdeletereplies", "forum",
                       hsuforum_go_back_to("discuss.php?d=$post->discussion"));
             }
@@ -418,7 +418,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     } else {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
     }
-    if (!has_capability('mod/forum:splitdiscussions', $modcontext)) {
+    if (!has_capability('mod/hsuforum:splitdiscussions', $modcontext)) {
         print_error('cannotsplit', 'forum');
     }
 
@@ -599,7 +599,7 @@ if ($fromform = $mform_post->get_data()) {
     // WARNING: the $fromform->message array has been overwritten, do not use it anymore!
     $fromform->messagetrust  = trusttext_trusted($modcontext);
 
-    $contextcheck = isset($fromform->groupinfo) && has_capability('mod/forum:movediscussions', $modcontext);
+    $contextcheck = isset($fromform->groupinfo) && has_capability('mod/hsuforum:movediscussions', $modcontext);
 
     if ($fromform->edit) {           // Updating a post
         unset($fromform->groupid);
@@ -617,9 +617,9 @@ if ($fromform = $mform_post->get_data()) {
         // or has either startnewdiscussion or reply capability and is editting own post
         // then he can proceed
         // MDL-7066
-        if ( !(($realpost->userid == $USER->id && (has_capability('mod/forum:replypost', $modcontext)
-                            || has_capability('mod/forum:startdiscussion', $modcontext))) ||
-                            has_capability('mod/forum:editanypost', $modcontext)) ) {
+        if ( !(($realpost->userid == $USER->id && (has_capability('mod/hsuforum:replypost', $modcontext)
+                            || has_capability('mod/hsuforum:startdiscussion', $modcontext))) ||
+                            has_capability('mod/hsuforum:editanypost', $modcontext)) ) {
             print_error('cannotupdatepost', 'forum');
         }
 
@@ -845,7 +845,7 @@ if (empty($parent) && empty($edit) && !hsuforum_user_can_post_discussion($forum,
 }
 
 if ($forum->type == 'qanda'
-            && !has_capability('mod/forum:viewqandawithoutposting', $modcontext)
+            && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext)
             && !empty($discussion->id)
             && !hsuforum_user_has_posted($forum->id, $discussion->id, $USER->id)) {
     echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));

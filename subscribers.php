@@ -48,7 +48,7 @@ if (! $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) {
 require_login($course->id, false, $cm);
 
 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
-if (!has_capability('mod/forum:viewsubscribers', $context)) {
+if (!has_capability('mod/hsuforum:viewsubscribers', $context)) {
     print_error('nopermissiontosubscribe', 'forum');
 }
 
@@ -95,7 +95,7 @@ $strsubscribers = get_string("subscribers", "hsuforum");
 $PAGE->navbar->add($strsubscribers);
 $PAGE->set_title($strsubscribers);
 $PAGE->set_heading($COURSE->fullname);
-if (has_capability('mod/forum:managesubscriptions', $context)) {
+if (has_capability('mod/hsuforum:managesubscriptions', $context)) {
     $PAGE->set_button(hsuforum_update_subscriptions_button($course->id, $id));
     if ($edit != -1) {
         $USER->subscriptionsediting = $edit;

@@ -55,7 +55,7 @@
     require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
-    require_capability('mod/forum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'forum');
+    require_capability('mod/hsuforum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'forum');
 
     if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
@@ -76,7 +76,7 @@
     if ($move > 0 and confirm_sesskey()) {
         $return = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id;
 
-        require_capability('mod/forum:movediscussions', $modcontext);
+        require_capability('mod/hsuforum:movediscussions', $modcontext);
 
         if ($forum->type == 'single') {
             print_error('cannotmovefromsingleforum', 'forum', $return);
@@ -98,7 +98,7 @@
             print_error('cannotmovenotvisible', 'forum', $return);
         }
 
-        require_capability('mod/forum:startdiscussion', get_context_instance(CONTEXT_MODULE,$cmto->id));
+        require_capability('mod/hsuforum:startdiscussion', get_context_instance(CONTEXT_MODULE,$cmto->id));
 
         if (!hsuforum_move_attachments($discussion, $forum->id, $forumto->id)) {
             echo $OUTPUT->notification("Errors occurred while moving attachment directories - check your file permissions");
@@ -194,7 +194,7 @@
 /// Print the controls across the top
     echo '<div class="discussioncontrols clearfix">';
 
-    if (!empty($CFG->enableportfolios) && has_capability('mod/forum:exportdiscussion', $modcontext)) {
+    if (!empty($CFG->enableportfolios) && has_capability('mod/hsuforum:exportdiscussion', $modcontext)) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), '/mod/hsuforum/locallib.php');
@@ -216,7 +216,7 @@
     echo "</div>";
 
     if ($forum->type != 'single'
-                && has_capability('mod/forum:movediscussions', $modcontext)) {
+                && has_capability('mod/hsuforum:movediscussions', $modcontext)) {
 
         echo '<div class="discussioncontrol movediscussion">';
         // Popup menu to move discussions to other forums. The discussion in a
@@ -228,7 +228,7 @@
             // Check forum types and eliminate simple discussions.
             $forumcheck = $DB->get_records('forum', array('course' => $course->id),'', 'id, type');
             foreach ($modinfo->instances['forum'] as $forumcm) {
-                if (!$forumcm->uservisible || !has_capability('mod/forum:startdiscussion',
+                if (!$forumcm->uservisible || !has_capability('mod/hsuforum:startdiscussion',
                     get_context_instance(CONTEXT_MODULE,$forumcm->id))) {
                     continue;
                 }
@@ -265,7 +265,7 @@
         echo $OUTPUT->notification(get_string('thisforumisthrottled','forum',$a));
     }
 
-    if ($forum->type == 'qanda' && !has_capability('mod/forum:viewqandawithoutposting', $modcontext) &&
+    if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
                 !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
         echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
     }
@@ -274,7 +274,7 @@
         echo $OUTPUT->notification(get_string('discussionmoved', 'forum', format_string($forum->name,true)));
     }
 
-    $canrate = has_capability('mod/forum:rate', $modcontext);
+    $canrate = has_capability('mod/hsuforum:rate', $modcontext);
     hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
 
     echo $OUTPUT->footer();

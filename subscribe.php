@@ -59,7 +59,7 @@ $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
 if ($user) {
     require_sesskey();
-    if (!has_capability('mod/forum:managesubscriptions', $context)) {
+    if (!has_capability('mod/hsuforum:managesubscriptions', $context)) {
         print_error('nopermissiontosubscribe', 'forum');
     }
     $user = $DB->get_record('user', array('id' => $user), MUST_EXIST);
@@ -99,7 +99,7 @@ $returnto = optional_param('backtoindex',0,PARAM_INT)
     ? "index.php?id=".$course->id
     : "view.php?f=$id";
 
-if (!is_null($mode) and has_capability('mod/forum:managesubscriptions', $context)) {
+if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $context)) {
     require_sesskey();
     switch ($mode) {
         case HSUFORUM_CHOOSESUBSCRIBE : // 0
@@ -150,10 +150,10 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
 
 } else {  // subscribe
     if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE &&
-                !has_capability('mod/forum:managesubscriptions', $context)) {
+                !has_capability('mod/hsuforum:managesubscriptions', $context)) {
         print_error('disallowsubscribe', 'forum', $_SERVER["HTTP_REFERER"]);
     }
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
         print_error('noviewdiscussionspermission', 'forum', $_SERVER["HTTP_REFERER"]);
     }
     if (is_null($sesskey)) {    // we came here via link in email
