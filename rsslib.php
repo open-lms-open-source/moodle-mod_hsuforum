@@ -44,7 +44,7 @@ function hsuforum_rss_get_feed($context, $args) {
     }
 
     $forumid  = clean_param($args[3], PARAM_INT);
-    $cm = get_coursemodule_from_instance('forum', $forumid, 0, false, MUST_EXIST);
+    $cm = get_coursemodule_from_instance('hsuforum', $forumid, 0, false, MUST_EXIST);
     if ($cm) {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
@@ -55,7 +55,7 @@ function hsuforum_rss_get_feed($context, $args) {
     }
 
     $forum = $DB->get_record('hsuforum', array('id' => $forumid), '*', MUST_EXIST);
-    if (!rss_enabled_for_mod('forum', $forum)) {
+    if (!rss_enabled_for_mod('hsuforum', $forum)) {
         return null;
     }
 

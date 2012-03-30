@@ -77,7 +77,7 @@ if (!isloggedin() or isguestuser()) {
         print_error('invalidcourseid');
     }
 
-    if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) { // For the logs
+    if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) { // For the logs
         print_error('invalidcoursemodule');
     } else {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -103,7 +103,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
         print_error('invalidcourseid');
     }
-    if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+    if (! $cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
         print_error("invalidcoursemodule");
     }
 
@@ -168,7 +168,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
         print_error('invalidcourseid');
     }
-    if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+    if (! $cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
         print_error('invalidcoursemodule');
     }
 
@@ -249,7 +249,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
         print_error('invalidcourseid');
     }
-    if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+    if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
         print_error('invalidcoursemodule');
     } else {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -291,7 +291,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! $forum = $DB->get_record("hsuforum", array("id" => $discussion->forum))) {
         print_error('invalidforumid', 'forum');
     }
-    if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $forum->course)) {
+    if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $forum->course)) {
         print_error('invalidcoursemodule');
     }
     if (!$course = $DB->get_record('course', array('id' => $forum->course))) {
@@ -413,7 +413,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (!$post->parent) {
         print_error('alreadyfirstpost', 'forum');
     }
-    if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $forum->course)) { // For the logs
+    if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $forum->course)) { // For the logs
         print_error('invalidcoursemodule');
     } else {
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -490,7 +490,7 @@ if (!isset($coursecontext)) {
 
 // from now on user must be logged on properly
 
-if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) { // For the logs
+if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) { // For the logs
     print_error('invalidcoursemodule');
 }
 $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -868,7 +868,7 @@ if (!empty($parent)) {
     }
 } else {
     if (!empty($forum->intro)) {
-        echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
+        echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
     }
 }
 

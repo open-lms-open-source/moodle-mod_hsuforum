@@ -184,7 +184,7 @@ function hsuforum_update_instance($forum, $mform) {
             print_error('cannotfindfirstpost', 'forum');
         }
 
-        $cm         = get_coursemodule_from_instance('forum', $forum->id);
+        $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id, MUST_EXIST);
 
         if ($mform and $draftid = file_get_submitted_draft_itemid('introeditor')) {
@@ -230,7 +230,7 @@ function hsuforum_delete_instance($id) {
     if (!$forum = $DB->get_record('hsuforum', array('id'=>$id))) {
         return false;
     }
-    if (!$cm = get_coursemodule_from_instance('forum', $forum->id)) {
+    if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id)) {
         return false;
     }
     if (!$course = $DB->get_record('course', array('id'=>$cm->course))) {
@@ -452,7 +452,7 @@ function hsuforum_cron() {
                 }
             }
             if (!isset($coursemodules[$forumid])) {
-                if ($cm = get_coursemodule_from_instance('forum', $forumid, $courseid)) {
+                if ($cm = get_coursemodule_from_instance('hsuforum', $forumid, $courseid)) {
                     $coursemodules[$forumid] = $cm;
                 } else {
                     mtrace('Could not find course module for forum '.$forumid);
@@ -763,7 +763,7 @@ function hsuforum_cron() {
                 }
 
                 if (!isset($coursemodules[$forumid])) {
-                    if ($cm = get_coursemodule_from_instance('forum', $forumid, $courseid)) {
+                    if ($cm = get_coursemodule_from_instance('hsuforum', $forumid, $courseid)) {
                         $coursemodules[$forumid] = $cm;
                     } else {
                         continue;
@@ -1179,7 +1179,7 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
 
     if ($posts = hsuforum_get_user_posts($forum->id, $user->id)) {
 
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) {
+        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) {
             print_error('invalidcoursemodule');
         }
         $discussions = hsuforum_get_user_involved_discussions($forum->id, $user->id);
@@ -1216,7 +1216,7 @@ function hsuforum_print_overview($courses,&$htmlarray) {
         return array();
     }
 
-    if (!$forums = get_all_instances_in_courses('forum',$courses)) {
+    if (!$forums = get_all_instances_in_courses('hsuforum',$courses)) {
         return;
     }
 
@@ -2163,7 +2163,7 @@ function hsuforum_get_user_posts($forumid, $userid) {
     $params = array($forumid, $userid);
 
     if (!empty($CFG->hsuforum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('forum', $forumid);
+        $cm = get_coursemodule_from_instance('hsuforum', $forumid);
         if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
@@ -2199,7 +2199,7 @@ function hsuforum_get_user_involved_discussions($forumid, $userid) {
     $timedsql = "";
     $params = array($forumid, $userid);
     if (!empty($CFG->hsuforum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('forum', $forumid);
+        $cm = get_coursemodule_from_instance('hsuforum', $forumid);
         if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
@@ -2232,7 +2232,7 @@ function hsuforum_count_user_posts($forumid, $userid) {
     $timedsql = "";
     $params = array($forumid, $userid);
     if (!empty($CFG->hsuforum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('forum', $forumid);
+        $cm = get_coursemodule_from_instance('hsuforum', $forumid);
         if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
@@ -2872,7 +2872,7 @@ function hsuforum_subscribed_users($course, $forum, $groupid=0, $context = null,
     }
 
     if (empty($context)) {
-        $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id);
         $context = get_context_instance(CONTEXT_MODULE, $cm->id);
     }
 
@@ -3527,7 +3527,7 @@ function hsuforum_rating_validate($params) {
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
     $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id , false, MUST_EXIST);
+    $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id , false, MUST_EXIST);
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     // Make sure the context provided is the context of the forum
@@ -3617,7 +3617,7 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
     static $strmarkalldread;
 
     if (empty($modcontext)) {
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -3881,8 +3881,8 @@ function hsuforum_move_attachments($discussion, $forumfrom, $forumto) {
 
     $fs = get_file_storage();
 
-    $newcm = get_coursemodule_from_instance('forum', $forumto);
-    $oldcm = get_coursemodule_from_instance('forum', $forumfrom);
+    $newcm = get_coursemodule_from_instance('hsuforum', $forumto);
+    $oldcm = get_coursemodule_from_instance('hsuforum', $forumfrom);
 
     $newcontext = get_context_instance(CONTEXT_MODULE, $newcm->id);
     $oldcontext = get_context_instance(CONTEXT_MODULE, $oldcm->id);
@@ -4198,7 +4198,7 @@ function hsuforum_add_new_post($post, $mform, &$message) {
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
     $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum));
-    $cm         = get_coursemodule_from_instance('forum', $forum->id);
+    $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
     $context    = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     $post->created    = $post->modified = time();
@@ -4238,7 +4238,7 @@ function hsuforum_update_post($post, $mform, &$message) {
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
     $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum));
-    $cm         = get_coursemodule_from_instance('forum', $forum->id);
+    $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
     $context    = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     $post->modified = time();
@@ -4293,7 +4293,7 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
     // to from the discuss entry.
 
     $forum = $DB->get_record('hsuforum', array('id'=>$discussion->forum));
-    $cm    = get_coursemodule_from_instance('forum', $forum->id);
+    $cm    = get_coursemodule_from_instance('hsuforum', $forum->id);
 
     $post = new stdClass();
     $post->discussion    = 0;
@@ -4877,7 +4877,7 @@ function hsuforum_user_can_post_discussion($forum, $currentgroup=null, $unused=-
 
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
     }
@@ -4963,7 +4963,7 @@ function hsuforum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $cour
 
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
     }
@@ -5140,7 +5140,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
 
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
     }
@@ -5198,7 +5198,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     global $CFG, $USER, $OUTPUT;
 
     if (!$cm) {
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
     }
@@ -6806,7 +6806,7 @@ function hsuforum_check_throttling($forum, $cm=null) {
     }
 
     if (!$cm) {
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
     }
@@ -6941,7 +6941,7 @@ function hsuforum_reset_userdata($data) {
         $fs = get_file_storage();
         if ($forums) {
             foreach ($forums as $forumid=>$unused) {
-                if (!$cm = get_coursemodule_from_instance('forum', $forumid)) {
+                if (!$cm = get_coursemodule_from_instance('hsuforum', $forumid)) {
                     continue;
                 }
                 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -6988,7 +6988,7 @@ function hsuforum_reset_userdata($data) {
     if (!empty($data->reset_hsuforum_ratings)) {
         if ($forums) {
             foreach ($forums as $forumid=>$unused) {
-                if (!$cm = get_coursemodule_from_instance('forum', $forumid)) {
+                if (!$cm = get_coursemodule_from_instance('hsuforum', $forumid)) {
                     continue;
                 }
                 $context = get_context_instance(CONTEXT_MODULE, $cm->id);
@@ -7019,7 +7019,7 @@ function hsuforum_reset_userdata($data) {
 
     /// updating dates - shift may be negative too
     if ($data->timeshift) {
-        shift_course_mod_dates('forum', array('assesstimestart', 'assesstimefinish'), $data->timeshift, $data->courseid);
+        shift_course_mod_dates('hsuforum', array('assesstimestart', 'assesstimefinish'), $data->timeshift, $data->courseid);
         $status[] = array('component'=>$componentstr, 'item'=>get_string('datechanged'), 'error'=>false);
     }
 
@@ -7171,7 +7171,7 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
 
         if (empty($cmid)) {
             // We were not given the course_module id. Try to find it.
-            if (!$cm = get_coursemodule_from_instance('forum', $forum->id)) {
+            if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id)) {
                 echo $OUTPUT->notification('Could not get the course module for the forum');
                 return false;
             } else {
@@ -8039,7 +8039,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             continue;
         }
         // Iterate
-        foreach ($modinfo->get_instances_of('forum') as $forumid => $cm) {
+        foreach ($modinfo->get_instances_of('hsuforum') as $forumid => $cm) {
             if (!$cm->uservisible or !isset($forums[$forumid])) {
                 continue;
             }

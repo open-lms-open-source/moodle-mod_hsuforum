@@ -38,7 +38,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
 
         // Define each element separated
 
-        $forum = new backup_nested_element('forum', array('id'), array(
+        $forum = new backup_nested_element('hsuforum', array('id'), array(
             'type', 'name', 'intro', 'introformat',
             'assessed', 'assesstimestart', 'assesstimefinish', 'scale',
             'maxbytes', 'maxattachments', 'forcesubscribe', 'trackingtype',
@@ -103,7 +103,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
 
         // Define sources
 
-        $forum->set_source_table('forum', array('id' => backup::VAR_ACTIVITYID));
+        $forum->set_source_table('hsuforum', array('id' => backup::VAR_ACTIVITYID));
 
         // All these source definitions only happen if we are including user info
         if ($userinfo) {

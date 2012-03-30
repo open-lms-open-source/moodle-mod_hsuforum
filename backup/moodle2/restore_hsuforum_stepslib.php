@@ -36,7 +36,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
 
-        $paths[] = new restore_path_element('forum', '/activity/forum');
+        $paths[] = new restore_path_element('hsuforum', '/activity/forum');
         if ($userinfo) {
             $paths[] = new restore_path_element('hsuforum_discussion', '/activity/hsuforum/discussions/discussion');
             $paths[] = new restore_path_element('hsuforum_post', '/activity/hsuforum/discussions/discussion/posts/post');
@@ -74,7 +74,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 
-        $data->forum = $this->get_new_parentid('forum');
+        $data->forum = $this->get_new_parentid('hsuforum');
         $data->timemodified = $this->apply_date_offset($data->timemodified);
         $data->timestart = $this->apply_date_offset($data->timestart);
         $data->timeend = $this->apply_date_offset($data->timeend);
@@ -143,7 +143,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data = (object)$data;
         $oldid = $data->id;
 
-        $data->forum = $this->get_new_parentid('forum');
+        $data->forum = $this->get_new_parentid('hsuforum');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('hsuforum_subscriptions', $data);
@@ -155,7 +155,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data = (object)$data;
         $oldid = $data->id;
 
-        $data->forumid = $this->get_new_parentid('forum');
+        $data->forumid = $this->get_new_parentid('hsuforum');
         $data->discussionid = $this->get_mappingid('hsuforum_discussion', $data->discussionid);
         $data->postid = $this->get_mappingid('hsuforum_post', $data->postid);
         $data->userid = $this->get_mappingid('user', $data->userid);
@@ -169,7 +169,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data = (object)$data;
         $oldid = $data->id;
 
-        $data->forumid = $this->get_new_parentid('forum');
+        $data->forumid = $this->get_new_parentid('hsuforum');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('hsuforum_track_prefs', $data);

@@ -220,7 +220,7 @@ foreach ($posts as $post) {
         print_error('invalidforumid', 'forum');
     }
 
-    if (!$cm = get_coursemodule_from_instance('forum', $forum->id)) {
+    if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id)) {
         print_error('invalidcoursemodule');
     }
 

@@ -48,7 +48,7 @@
     $PAGE->set_url('/mod/hsuforum/view.php', $params);
 
     if ($id) {
-        if (! $cm = get_coursemodule_from_id('forum', $id)) {
+        if (! $cm = get_coursemodule_from_id('hsuforum', $id)) {
             print_error('invalidcoursemodule');
         }
         if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
@@ -74,7 +74,7 @@
             print_error('coursemisconf');
         }
 
-        if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+        if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
             print_error('missingparameter');
         }
         // move require_course_login here to use forced language for course
@@ -187,7 +187,7 @@
 
         case 'eachuser':
             if (!empty($forum->intro)) {
-                echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
+                echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
             }
             echo '<p class="mdl-align">';
             if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
@@ -213,7 +213,7 @@
 
         case 'blog':
             if (!empty($forum->intro)) {
-                echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
+                echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
             }
             echo '<br />';
             if (!empty($showall)) {
@@ -225,7 +225,7 @@
 
         default:
             if (!empty($forum->intro)) {
-                echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
+                echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
             }
             echo '<br />';
             if (!empty($showall)) {

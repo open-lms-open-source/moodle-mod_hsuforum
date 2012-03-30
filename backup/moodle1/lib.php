@@ -44,7 +44,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
      * For each path returned, the corresponding conversion method must be
      * defined.
      *
-     * Note that the paths /MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM do not
+     * Note that the paths /MOODLE_BACKUP/COURSE/MODULES/MOD/HSUFORUM do not
      * actually exist in the file. The last element with the module name was
      * appended by the moodle1_converter class.
      *
@@ -52,7 +52,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
      */
     public function get_paths() {
         return array(
-            new convert_path('forum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM',
+            new convert_path('hsuforum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/HSUFORUM',
                 array(
                     'renamefields' => array(
                         'format' => 'messageformat',
@@ -70,7 +70,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
     }
 
     /**
-     * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM data
+     * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/HSUFORUM data
      */
     public function process_forum($data) {
         // get the course module id and context id
@@ -91,7 +91,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
         $this->open_xml_writer("activities/hsuforum_{$this->moduleid}/forum.xml");
         $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
             'modulename' => 'forum', 'contextid' => $contextid));
-        $this->xmlwriter->begin_tag('forum', array('id' => $instanceid));
+        $this->xmlwriter->begin_tag('hsuforum', array('id' => $instanceid));
 
         foreach ($data as $field => $value) {
             if ($field <> 'id') {
@@ -110,7 +110,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
     public function on_hsuforum_end() {
         // finish writing forum.xml
         $this->xmlwriter->end_tag('discussions');
-        $this->xmlwriter->end_tag('forum');
+        $this->xmlwriter->end_tag('hsuforum');
         $this->xmlwriter->end_tag('activity');
         $this->close_xml_writer();
 

@@ -57,27 +57,27 @@ class backup_hsuforum_activity_task extends backup_activity_task {
 
         // Link to the list of forums
         $search="/(".$base."\/mod\/forum\/index.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMINDEX*$2@$', $content);
+        $content= preg_replace($search, '$@HSUFORUMINDEX*$2@$', $content);
 
         // Link to forum view by moduleid
         $search="/(".$base."\/mod\/forum\/view.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMVIEWBYID*$2@$', $content);
+        $content= preg_replace($search, '$@HSUFORUMVIEWBYID*$2@$', $content);
 
         // Link to forum view by forumid
         $search="/(".$base."\/mod\/forum\/view.php\?f\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMVIEWBYF*$2@$', $content);
+        $content= preg_replace($search, '$@HSUFORUMVIEWBYF*$2@$', $content);
 
         // Link to forum discussion with parent syntax
         $search="/(".$base."\/mod\/forum\/discuss.php\?d\=)([0-9]+)\&parent\=([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
+        $content= preg_replace($search, '$@HSUFORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
 
         // Link to forum discussion with relative syntax
         $search="/(".$base."\/mod\/forum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
+        $content= preg_replace($search, '$@HSUFORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
 
         // Link to forum discussion by discussionid
         $search="/(".$base."\/mod\/forum\/discuss.php\?d\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMDISCUSSIONVIEW*$2@$', $content);
+        $content= preg_replace($search, '$@HSUFORUMDISCUSSIONVIEW*$2@$', $content);
 
         return $content;
     }

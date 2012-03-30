@@ -41,7 +41,7 @@ $PAGE->set_url($url);
 
 $forum = $DB->get_record('hsuforum', array('id'=>$id), '*', MUST_EXIST);
 $course = $DB->get_record('course', array('id'=>$forum->course), '*', MUST_EXIST);
-if (! $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) {
+if (! $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) {
     $cm->id = 0;
 }
 

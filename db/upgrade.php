@@ -57,7 +57,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
     if ($oldversion < 2008072800) {
     /// Define field completiondiscussions to be added to forum
-        $table = new xmldb_table('forum');
+        $table = new xmldb_table('hsuforum');
         $field = new xmldb_field('completiondiscussions');
         $field->set_attributes(XMLDB_TYPE_INTEGER, '9', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'blockperiod');
 
@@ -156,7 +156,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
     if ($oldversion < 2008090800) {
 
     /// Define field maxattachments to be added to forum
-        $table = new xmldb_table('forum');
+        $table = new xmldb_table('hsuforum');
         $field = new xmldb_field('maxattachments', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '1', 'maxbytes');
 
     /// Conditionally launch add field maxattachments
@@ -215,7 +215,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
     if ($oldversion < 2009042003) {
 
     /// Define field introformat to be added to forum
-        $table = new xmldb_table('forum');
+        $table = new xmldb_table('hsuforum');
         $field = new xmldb_field('introformat', XMLDB_TYPE_INTEGER, '4', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'intro');
 
     /// Launch add field introformat
@@ -243,7 +243,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
     if ($oldversion < 2009042700) {
 
     /// Changing list of values (enum) of field type on table forum to none
-        $table = new xmldb_table('forum');
+        $table = new xmldb_table('hsuforum');
         $field = new xmldb_field('type', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'general', 'course');
 
     /// Launch change of list of values for field type

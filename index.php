@@ -223,7 +223,7 @@ if ($generalforums) {
             }
         }
 
-        $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->hsuforum_shortpost);
+        $forum->intro = shorten_text(format_module_intro('hsuforum', $forum, $cm->id), $CFG->hsuforum_shortpost);
         $forumname = format_string($forum->name, true);;
 
         if ($cm->visible) {
@@ -350,7 +350,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                 }
             }
 
-            $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->hsuforum_shortpost);
+            $forum->intro = shorten_text(format_module_intro('hsuforum', $forum, $cm->id), $CFG->hsuforum_shortpost);
 
             if ($cm->sectionnum != $currentsection) {
                 $printsection = get_section_name($course, $sections[$cm->sectionnum]);

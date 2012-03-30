@@ -87,7 +87,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
             throw new portfolio_caller_exception('invalidforumid', 'forum');
         }
 
-        if (!$this->cm = get_coursemodule_from_instance('forum', $this->forum->id)) {
+        if (!$this->cm = get_coursemodule_from_instance('hsuforum', $this->forum->id)) {
             throw new portfolio_caller_exception('invalidcoursemodule');
         }
 

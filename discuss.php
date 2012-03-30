@@ -42,7 +42,7 @@
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $d), '*', MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
     $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
+    $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
 
     require_course_login($course, true, $cm);
 
@@ -90,7 +90,7 @@
             print_error('cannotmovetosingleforum', 'forum', $return);
         }
 
-        if (!$cmto = get_coursemodule_from_instance('forum', $forumto->id, $course->id)) {
+        if (!$cmto = get_coursemodule_from_instance('hsuforum', $forumto->id, $course->id)) {
             print_error('cannotmovetonotfound', 'forum', $return);
         }
 
