@@ -50,7 +50,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
         asort($hsuforum_types);
         $mform->addElement('select', 'type', get_string('forumtype', 'hsuforum'), $hsuforum_types);
-        $mform->addHelpButton('forcesubscribe', 'subscriptionmode', 'hsuforum');
+        $mform->addHelpButton('type', 'forumtype', 'hsuforum');
         $mform->setDefault('type', 'general');
 
         $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
