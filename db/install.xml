@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/hsuforum/db" VERSION="20100322" COMMENT="XMLDB file for Moodle mod/hsuforum"
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/hsuforum/db" VERSION="20120330" COMMENT="XMLDB file for Moodle mod/hsuforum"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -28,7 +28,9 @@
         <FIELD NAME="blockperiod" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="blockafter" NEXT="completiondiscussions"/>
         <FIELD NAME="completiondiscussions" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain number of posts are required to mark this forum completed for a user." PREVIOUS="blockperiod" NEXT="completionreplies"/>
         <FIELD NAME="completionreplies" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain number of replies are required to mark this forum complete for a user." PREVIOUS="completiondiscussions" NEXT="completionposts"/>
-        <FIELD NAME="completionposts" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain number of posts or replies (total) are required to mark this forum complete for a user." PREVIOUS="completionreplies"/>
+        <FIELD NAME="completionposts" TYPE="int" LENGTH="9" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain number of posts or replies (total) are required to mark this forum complete for a user." PREVIOUS="completionreplies" NEXT="anonymous"/>
+        <FIELD NAME="anonymous" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="completionposts" NEXT="gradetype"/>
+        <FIELD NAME="gradetype" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="anonymous"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -75,7 +77,10 @@
         <FIELD NAME="messagetrust" TYPE="int" LENGTH="2" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="messageformat" NEXT="attachment"/>
         <FIELD NAME="attachment" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="messagetrust" NEXT="totalscore"/>
         <FIELD NAME="totalscore" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="attachment" NEXT="mailnow"/>
-        <FIELD NAME="mailnow" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="totalscore"/>
+        <FIELD NAME="mailnow" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="totalscore" NEXT="reveal"/>
+        <FIELD NAME="reveal" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="mailnow" NEXT="flags"/>
+        <FIELD NAME="flags" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="reveal" NEXT="privatereply"/>
+        <FIELD NAME="privatereply" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="flags"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="discussion"/>
@@ -105,7 +110,7 @@
         <INDEX NAME="user" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="hsuforum_subscriptions" COMMENT="Keeps track of who is subscribed to what forum" PREVIOUS="hsuforum_queue" NEXT="hsuforum_read">
+    <TABLE NAME="hsuforum_subscriptions" COMMENT="Keeps track of who is subscribed to what forum" PREVIOUS="hsuforum_queue" NEXT="hsuforum_subscriptions_disc">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="forum"/>
@@ -119,7 +124,21 @@
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="hsuforum_read" COMMENT="Tracks each users read posts" PREVIOUS="hsuforum_subscriptions" NEXT="hsuforum_track_prefs">
+    <TABLE NAME="hsuforum_subscriptions_disc" COMMENT="Contains the discussion subscriptions" PREVIOUS="hsuforum_subscriptions" NEXT="hsuforum_read">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="discussion"/>
+        <FIELD NAME="discussion" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="discussion"/>
+        <KEY NAME="discussion" TYPE="foreign" FIELDS="discussion" REFTABLE="hsuforum_discussion" REFFIELDS="id" PREVIOUS="primary"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="hsuforum_read" COMMENT="Tracks each users read posts" PREVIOUS="hsuforum_subscriptions_disc" NEXT="hsuforum_track_prefs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="forumid"/>

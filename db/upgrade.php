@@ -49,6 +49,36 @@ function xmldb_hsuforum_upgrade($oldversion) {
 //===== 1.9.0 upgrade line ======//
 
     if ($oldversion < 2007101511) {
+    /// HSUFORUM UPGRADES
+        // Rename field hsuforum on table hsuforum_discussions to forum
+        $table = new xmldb_table('hsuforum_discussions');
+        $field = new xmldb_field('hsuforum', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'course');
+
+        // Launch rename field hsuforum
+        $dbman->rename_field($table, $field, 'forum');
+
+        // Rename field hsuforum on table hsuforum_subscriptions to forum
+        $table = new xmldb_table('hsuforum_subscriptions');
+        $field = new xmldb_field('hsuforum', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'userid');
+
+        // Launch rename field hsuforum
+        $dbman->rename_field($table, $field, 'forum');
+
+        // Rename field hsuforumid on table hsuforum_read to forumid
+        $table = new xmldb_table('hsuforum_read');
+        $field = new xmldb_field('hsuforumid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'userid');
+
+        // Launch rename field hsuforumid
+        $dbman->rename_field($table, $field, 'forumid');
+
+        // hsuforum_discussion_subscripts was too long of a name
+        // Define table hsuforum_discussion_subscripts to be renamed to hsuforum_subscriptions_disc
+        $table = new xmldb_table('hsuforum_discussion_subscripts');
+
+        // Launch rename table for hsuforum_discussion_subscripts
+        $dbman->rename_table($table, 'hsuforum_subscriptions_disc');
+    /// HSUFORUM UPGRADES END
+
         //MDL-13866 - send forum ratins to gradebook again
         require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
         hsuforum_upgrade_grades();
@@ -163,6 +193,29 @@ function xmldb_hsuforum_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
+
+    /// HSUFORUM specific upgrades to maxattach and multiattach
+        $field = new xmldb_field('maxattach', XMLDB_TYPE_INTEGER, '2', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '5');
+        if (!$dbman->field_exists($table, $field)) {
+            $DB->execute("
+                UPDATE {hsuforum}
+                   SET maxattachments = maxattach
+            ");
+
+            $dbman->drop_field($table, $field);
+        }
+        $field = new xmldb_field('multiattach', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '1');
+        if (!$dbman->field_exists($table, $field)) {
+            // This disabled attachments, so clear out maxattachments
+            $DB->execute("
+                UPDATE {hsuforum}
+                   SET maxattachments = 0
+                 WHERE multiattach = 0
+            ");
+
+            $dbman->drop_field($table, $field);
+        }
+
 
     /// forum savepoint reached
         upgrade_mod_savepoint(true, 2008090800, 'hsuforum');
