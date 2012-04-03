@@ -142,6 +142,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $post->parent        = 0;
     $post->subject       = '';
     $post->userid        = $USER->id;
+    $post->reveal        = 0;
     $post->message       = '';
     $post->messageformat = editors_get_preferred_format();
     $post->messagetrust  = 0;
@@ -561,6 +562,7 @@ $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'mailnow'=>!empty($post->mailnow),
                                     'userid'=>$post->userid,
                                     'parent'=>$post->parent,
+                                    'reveal'=>$post->reveal,
                                     'discussion'=>$post->discussion,
                                     'course'=>$course->id) +
                                     $page_params +

@@ -53,6 +53,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('type', 'forumtype', 'hsuforum');
         $mform->setDefault('type', 'general');
 
+        $mform->addElement('advcheckbox', 'anonymous', get_string('anonymous', 'hsuforum'));
+        $mform->addHelpButton('anonymous', 'anonymous', 'hsuforum');
+
         $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
 
         $options = array();

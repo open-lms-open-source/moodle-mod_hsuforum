@@ -623,10 +623,12 @@ function hsuforum_cron() {
 
                 mtrace('Sending ', '');
 
+                $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
+
                 $eventdata = new stdClass();
                 $eventdata->component        = 'mod_hsuforum';
                 $eventdata->name             = 'posts';
-                $eventdata->userfrom         = $userfrom;
+                $eventdata->userfrom         = $postuser;
                 $eventdata->userto           = $userto;
                 $eventdata->subject          = $postsubject;
                 $eventdata->fullmessage      = $posttext;
@@ -635,7 +637,7 @@ function hsuforum_cron() {
                 $eventdata->notification = 1;
 
                 $smallmessagestrings = new stdClass();
-                $smallmessagestrings->user = fullname($userfrom);
+                $smallmessagestrings->user = fullname($postuser);
                 $smallmessagestrings->forumname = "$shortname: ".format_string($forum->name,true).": ".$discussion->name;
                 $smallmessagestrings->message = $post->message;
                 //make sure strings are in message recipients language
@@ -887,14 +889,18 @@ function hsuforum_cron() {
                         $userfrom->customheaders = array ("Precedence: Bulk");
 
                         if ($userto->maildigest == 2) {
+                            $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
                             // Subjects only
                             $by = new stdClass();
-                            $by->name = fullname($userfrom);
+                            $by->name = fullname($postuser);
                             $by->date = userdate($post->modified);
                             $posttext .= "\n".format_string($post->subject,true).' '.get_string("bynameondate", "hsuforum", $by);
                             $posttext .= "\n---------------------------------------------------------------------";
 
-                            $by->name = "<a target=\"_blank\" href=\"$CFG->wwwroot/user/view.php?id=$userfrom->id&amp;course=$course->id\">$by->name</a>";
+
+                            if (!hsuforum_is_anonymous_user($postuser)) {
+                                $by->name = "<a target=\"_blank\" href=\"$CFG->wwwroot/user/view.php?id=$postuser->id&amp;course=$course->id\">$by->name</a>";
+                            }
                             $posthtml .= '<div><a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id.'#p'.$post->id.'">'.format_string($post->subject,true).'</a> '.get_string("bynameondate", "hsuforum", $by).'</div>';
 
                         } else {
@@ -998,8 +1004,10 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
         $canreply = $userto->canpost[$discussion->id];
     }
 
+    $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
+
     $by = New stdClass;
-    $by->name = fullname($userfrom, $viewfullnames);
+    $by->name = fullname($postuser, $viewfullnames);
     $by->date = userdate($post->modified, "", $userto->timezone);
 
     $strbynameondate = get_string('bynameondate', 'hsuforum', $by);
@@ -1347,7 +1355,7 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
 
     // do not use log table if possible, it may be huge and is expensive to join with other tables
 
-    if (!$posts = $DB->get_records_sql("SELECT p.*, f.type AS forumtype, d.forum, d.groupid,
+    if (!$posts = $DB->get_records_sql("SELECT p.*, f.anonymous as forumanonymous, f.type AS forumtype, d.forum, d.groupid,
                                               d.timestart, d.timeend, d.userid AS duserid,
                                               u.firstname, u.lastname, u.email, u.picture
                                          FROM {hsuforum_posts} p
@@ -1425,9 +1433,20 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
     foreach ($printposts as $post) {
         $subjectclass = empty($post->parent) ? ' bold' : '';
 
+        $postuser = new stdClass();
+        $postuser->id = $post->userid;
+        $postuser->firstname = $post->firstname;
+        $postuser->lastname = $post->lastname;
+
+        $postuser = hsuforum_anonymize_user($postuser, (object) array(
+            'id' => $post->forum,
+            'course' => $course->id,
+            'anonymous' => $post->forumanonymous
+        ), $post);
+
         echo '<li><div class="head">'.
                '<div class="date">'.userdate($post->modified, $strftimerecent).'</div>'.
-               '<div class="name">'.fullname($post, $viewfullnames).'</div>'.
+               '<div class="name">'.fullname($postuser, $viewfullnames).'</div>'.
              '</div>';
         echo '<div class="info'.$subjectclass.'">';
         if (empty($post->parent)) {
@@ -2600,7 +2619,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $fullpo
         $forumsort = "d.timemodified DESC";
     }
     if (empty($fullpost)) {
-        $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid";
+        $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid,p.reveal";
     } else {
         $postdata = "p.*";
     }
@@ -3014,6 +3033,8 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
         $viewfullnames = $userto->viewfullnames[$forum->id];
     }
 
+    $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
+
     // add absolute file links
     $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_hsuforum', 'post', $post->id);
 
@@ -3025,7 +3046,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
     $output = '<table border="0" cellpadding="3" cellspacing="0" class="forumpost">';
 
     $output .= '<tr class="header"><td width="35" valign="top" class="picture left">';
-    $output .= $OUTPUT->user_picture($userfrom, array('courseid'=>$course->id));
+    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id), array('link' => (!hsuforum_is_anonymous_user($postuser))));
     $output .= '</td>';
 
     if ($post->parent) {
@@ -3035,9 +3056,13 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
     }
     $output .= '<div class="subject">'.format_string($post->subject).'</div>';
 
-    $fullname = fullname($userfrom, $viewfullnames);
+    $fullname = fullname($postuser, $viewfullnames);
     $by = new stdClass();
-    $by->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$userfrom->id.'&amp;course='.$course->id.'">'.$fullname.'</a>';
+    if (!hsuforum_is_anonymous_user($postuser)) {
+        $by->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$postuser->id.'&amp;course='.$course->id.'">'.$fullname.'</a>';
+    } else {
+        $by->name = $fullname;
+    }
     $by->date = userdate($post->modified, '', $userto->timezone);
     $output .= '<div class="author">'.get_string('bynameondate', 'hsuforum', $by).'</div>';
 
@@ -3235,6 +3260,8 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     $postuser->fullname    = fullname($postuser, $cm->cache->caps['moodle/site:viewfullnames']);
     $postuser->profilelink = new moodle_url('/user/view.php', array('id'=>$post->userid, 'course'=>$course->id));
 
+    $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
+
     // Prepare the groups the posting user belongs to
     if (isset($cm->cache->usersgroups)) {
         $groups = array();
@@ -3350,7 +3377,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     $output .= html_writer::start_tag('div', array('class'=>'forumpost clearfix'.$forumpostclass.$topicclass));
     $output .= html_writer::start_tag('div', array('class'=>'row header clearfix'));
     $output .= html_writer::start_tag('div', array('class'=>'left picture'));
-    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id));
+    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id, 'link' => (!hsuforum_is_anonymous_user($postuser))));
     $output .= html_writer::end_tag('div');
 
 
@@ -3363,7 +3390,11 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     $output .= html_writer::tag('div', $postsubject, array('class'=>'subject'));
 
     $by = new stdClass();
-    $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
+    if (!hsuforum_is_anonymous_user($postuser)) {
+        $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
+    } else {
+        $by->name = $postuser->fullname;
+    }
     $by->date = userdate($post->modified);
     $output .= html_writer::tag('div', get_string('bynameondate', 'hsuforum', $by), array('class'=>'author'));
 
@@ -3649,14 +3680,20 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
     $postuser->picture = $post->picture;
     $postuser->email = $post->email;
 
+    $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
+
     echo '<td class="picture">';
-    echo $OUTPUT->user_picture($postuser, array('courseid'=>$forum->course));
+    echo $OUTPUT->user_picture($postuser, array('courseid'=>$forum->course, 'link' => (!hsuforum_is_anonymous_user($postuser))));
     echo "</td>\n";
 
     // User name
-    $fullname = fullname($post, has_capability('moodle/site:viewfullnames', $modcontext));
+    $fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $modcontext));
     echo '<td class="author">';
-    echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->userid.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
+    if (!hsuforum_is_anonymous_user($postuser)) {
+        echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$postuser->id.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
+    } else {
+        echo $fullname;
+    }
     echo "</td>\n";
 
     // Group picture
@@ -3713,8 +3750,15 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
     $usermodified->id        = $post->usermodified;
     $usermodified->firstname = $post->umfirstname;
     $usermodified->lastname  = $post->umlastname;
-    echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
-         fullname($usermodified).'</a><br />';
+
+    $usermodified = hsuforum_anonymize_user($usermodified, $forum, $post);
+
+    if (!hsuforum_is_anonymous_user($usermodified)) {
+        echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
+            fullname($usermodified).'</a><br />';
+    } else {
+        echo fullname($usermodified).'<br />';
+    }
     echo '<a href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.$parenturl.'">'.
           userdate($usedate, $datestring).'</a>';
     echo "</td>\n";
@@ -5654,8 +5698,14 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                     echo "</div>\n";
                     continue;
                 }
+                $postuser = new stdClass;
+                $postuser->id        = $post->userid;
+                $postuser->firstname = $post->firstname;
+                $postuser->lastname  = $post->lastname;
+                $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
+
                 $by = new stdClass();
-                $by->name = fullname($post, $canviewfullnames);
+                $by->name = fullname($postuser, $canviewfullnames);
                 $by->date = userdate($post->modified);
 
                 if ($forumtracked) {
@@ -5752,7 +5802,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
         $groupjoin   = "";
     }
 
-    if (!$posts = $DB->get_records_sql("SELECT p.*, f.type AS forumtype, d.forum, d.groupid,
+    if (!$posts = $DB->get_records_sql("SELECT p.*, f.anonymous AS forumanonymous, f.type AS forumtype, d.forum, d.groupid,
                                               d.timestart, d.timeend, d.userid AS duserid,
                                               u.firstname, u.lastname, u.email, u.picture, u.imagealt, u.email
                                          FROM {hsuforum_posts} p
@@ -5825,13 +5875,27 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
         $tmpactivity->content->subject    = format_string($post->subject);
         $tmpactivity->content->parent     = $post->parent;
 
+        $postuser = new stdClass();
+        $postuser->id = $post->userid;
+        $postuser->firstname = $post->firstname;
+        $postuser->lastname = $post->lastname;
+        $postuser->picture = $post->picture;
+        $postuser->imagealt = $post->imagealt;
+        $postuser->email = $post->email;
+
+        $postuser = hsuforum_anonymize_user($postuser, (object) array(
+            'id' => $post->forum,
+            'course' => $courseid,
+            'anonymous' => $post->forumanonymous
+        ), $post);
+
         $tmpactivity->user = new stdClass();
-        $tmpactivity->user->id        = $post->userid;
-        $tmpactivity->user->firstname = $post->firstname;
-        $tmpactivity->user->lastname  = $post->lastname;
-        $tmpactivity->user->picture   = $post->picture;
-        $tmpactivity->user->imagealt  = $post->imagealt;
-        $tmpactivity->user->email     = $post->email;
+        $tmpactivity->user->id        = $postuser->id;
+        $tmpactivity->user->firstname = $postuser->firstname;
+        $tmpactivity->user->lastname  = $postuser->lastname;
+        $tmpactivity->user->picture   = $postuser->picture;
+        $tmpactivity->user->imagealt  = $postuser->imagealt;
+        $tmpactivity->user->email     = $postuser->email;
 
         $activities[$index++] = $tmpactivity;
     }
@@ -5855,7 +5919,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
     echo '<table border="0" cellpadding="3" cellspacing="0" class="forum-recent">';
 
     echo "<tr><td class=\"userpicture\" valign=\"top\">";
-    echo $OUTPUT->user_picture($activity->user, array('courseid'=>$courseid));
+    echo $OUTPUT->user_picture($activity->user, array('courseid'=>$courseid, 'link' => (!hsuforum_is_anonymous_user($activity->user))));
     echo "</td><td class=\"$class\">";
 
     echo '<div class="title">';
@@ -5870,8 +5934,12 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
 
     echo '<div class="user">';
     $fullname = fullname($activity->user, $viewfullnames);
-    echo "<a href=\"$CFG->wwwroot/user/view.php?id={$activity->user->id}&amp;course=$courseid\">"
-         ."{$fullname}</a> - ".userdate($activity->timestamp);
+    if (hsuforum_is_anonymous_user($activity->user)) {
+        echo "{$fullname} - ".userdate($activity->timestamp);
+    } else {
+        echo "<a href=\"$CFG->wwwroot/user/view.php?id={$activity->user->id}&amp;course=$courseid\">"
+                 ."{$fullname}</a> - ".userdate($activity->timestamp);
+    }
     echo '</div>';
       echo "</td></tr></table>";
 
@@ -7429,6 +7497,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $subscriptionmode = hsuforum_get_forcesubscribed($forumobject);
     $cansubscribe = ($activeenrolled && $subscriptionmode != HSUFORUM_FORCESUBSCRIBE && ($subscriptionmode != HSUFORUM_DISALLOWSUBSCRIBE || $canmanage));
 
+    if (has_capability('mod/hsuforum:viewposters', $PAGE->cm->context)) {
+        $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
+    }
     if ($canmanage) {
         $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
 
@@ -8135,9 +8206,11 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
 
     $sql = "FROM {hsuforum_posts} p
             JOIN {hsuforum_discussions} d ON d.id = p.discussion
+            JOIN {hsuforum} f ON f.id = d.forum
             JOIN {user} u ON u.id = p.userid
            WHERE ($wheresql)
-             AND p.userid = :userid ";
+             AND p.userid = :userid
+             AND f.anonymous = 0 ";
     $orderby = "ORDER BY p.modified DESC";
     $forumsearchparams['userid'] = $user->id;
 
@@ -8157,4 +8230,58 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
     }
 
     return $return;
+}
+
+/**
+ * @param $user
+ * @param null $forum
+ * @return stdClass
+ * @author Mark Nielsen
+ */
+function hsuforum_anonymize_user($user, $forum, $post) {
+    static $anonymous = null;
+
+    if (!isset($forum->anonymous) or !isset($forum->course)) {
+        throw new coding_exception('Must pass the forum\'s anonymous and course fields');
+    }
+    if (!isset($post->reveal)) {
+        throw new coding_exception('Must pass the post\'s reveal field');
+    }
+    if (empty($forum->anonymous) or !empty($post->reveal)) {
+        return $user;
+    }
+    if (is_null($anonymous)) {
+        $guest = guest_user();
+        $anonymous = (object) array(
+            'id' => $guest->id,
+            'firstname' => get_string('anonymousfirstname', 'hsuforum'),
+            'lastname' => get_string('anonymouslastname', 'hsuforum'),
+            'picture' => 0,
+            'email' => $guest->email,
+            'profilelink' => new moodle_url('/user/view.php', array('id'=>$guest->id, 'course'=>$forum->course)),
+        );
+        $anonymous->fullname = fullname($anonymous, true);
+        $anonymous->imagealt = $anonymous->fullname;
+    }
+    $return = clone($user);
+    foreach ($anonymous as $name => $value) {
+        if (property_exists($user, $name)) {
+            $return->$name = $value;
+        }
+    }
+    return $return;
+}
+
+/**
+ * @param $user
+ * @return bool
+ * @author Mark Nielsen
+ */
+function hsuforum_is_anonymous_user($user) {
+    static $guest = null;
+
+    if (is_null($guest)) {
+        $guest = guest_user();
+    }
+    return ($user->id == $guest->id);
 }

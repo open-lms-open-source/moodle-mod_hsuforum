@@ -44,7 +44,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             'maxbytes', 'maxattachments', 'forcesubscribe', 'trackingtype',
             'rsstype', 'rssarticles', 'timemodified', 'warnafter',
             'blockafter', 'blockperiod', 'completiondiscussions', 'completionreplies',
-            'completionposts'));
+            'completionposts', 'anonymous'));
 
         $discussions = new backup_nested_element('discussions');
 
@@ -58,7 +58,8 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
         $post = new backup_nested_element('post', array('id'), array(
             'parent', 'userid', 'created', 'modified',
             'mailed', 'subject', 'message', 'messageformat',
-            'messagetrust', 'attachment', 'totalscore', 'mailnow'));
+            'messagetrust', 'attachment', 'totalscore', 'mailnow',
+            'reveal'));
 
         $ratings = new backup_nested_element('ratings');
 

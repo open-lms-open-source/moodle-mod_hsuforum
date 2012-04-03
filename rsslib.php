@@ -172,7 +172,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
     }
 
     $forumsort = "d.timemodified DESC";
-    $postdata = "p.id, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
+    $postdata = "p.id, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.reveal AS postreveal, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
 
     $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend,
                    u.firstname as userfirstname, u.lastname as userlastname, u.email, u.picture, u.imagealt
@@ -211,6 +211,7 @@ function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                  u.id AS userid,
                  u.firstname AS userfirstname,
                  u.lastname AS userlastname,
+                 p.reveal AS postreveal,
                  p.subject AS postsubject,
                  p.message AS postmessage,
                  p.created AS postcreated,
@@ -291,6 +292,7 @@ function hsuforum_rss_feed_contents($forum, $sql) {
             }
             $user->firstname = $rec->userfirstname;
             $user->lastname = $rec->userlastname;
+            $user = hsuforum_anonymize_user($user, $forum, (object) array('id' => $rec->postid, 'reveal' => $rec->postreveal));
             $item->author = fullname($user);
             $item->pubdate = $rec->postcreated;
             if ($isdiscussion) {

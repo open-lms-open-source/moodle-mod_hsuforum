@@ -31,7 +31,7 @@ class mod_hsuforum_post_form extends moodleform {
 
     function definition() {
 
-        global $CFG;
+        global $CFG, $USER;
         $mform    =& $this->_form;
 
         $course        = $this->_customdata['course'];
@@ -132,6 +132,12 @@ class mod_hsuforum_post_form extends moodleform {
                 $mform->addElement('static', 'groupinfo', get_string('group'), $groupname);
             }
         }
+
+        if (!empty($forum->anonymous) and $post->userid == $USER->id and has_capability('mod/hsuforum:revealpost', $modcontext)) {
+            $mform->addElement('advcheckbox', 'reveal', get_string('reveal', 'hsuforum'));
+            $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
+        }
+
         //-------------------------------------------------------------------------------
         // buttons
         if (isset($post->edit)) { // hack alert

@@ -89,3 +89,7 @@
 
 /** Unknown Styles ??? */
 #email .unsubscribelink {margin-top:20px;}
+
+.hsuforum_viewposters th a {vertical-align: top;}
+.hsuforum_viewposters th .commands {display: inline;}
+.hsuforum_viewposters .col_userpic {width: 40px; text-align: center;}
