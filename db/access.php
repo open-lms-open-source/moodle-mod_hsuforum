@@ -363,10 +363,23 @@ $capabilities = array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy' => array(
+        'archetypes' => array(
             'guest' => CAP_PROHIBIT,
             'student' => CAP_PREVENT,
             'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'mod/hsuforum:viewflags'=> array(
+
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'guest' => CAP_PROHIBIT,
+            'student' => CAP_PREVENT,
+            'teacher' => CAP_PREVENT,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
         )

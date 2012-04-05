@@ -115,5 +115,82 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         return $output;
     }
 
+    /**
+     * The javascript module used by the presentation layer
+     *
+     * @return array
+     * @author Mark Nielsen
+     */
+    public function get_js_module() {
+        return array(
+            'name'      => 'mod_hsuforum',
+            'fullpath'  => '/mod/hsuforum/module.js',
+            'requires'  => array(
+                'base',
+                'node',
+                'event',
+                'io-base',
+                'json',
+            ),
+            'strings' => array(
+                array('jsondecodeerror', 'hsuforum'),
+                array('ajaxrequesterror', 'hsuforum'),
+            )
+        );
+    }
 
+    /**
+     * @param stdClass $post The post to add flags to
+     * @param context_module $context
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function post_flags($post, context_module $context) {
+        global $OUTPUT, $PAGE;
+
+        static $jsinit = false;
+
+        if (!has_capability('mod/hsuforum:viewflags', $context)) {
+            return '';
+        }
+        if (!property_exists($post, 'flags')) {
+            throw new coding_exception('The post\'s flags property must be set');
+        }
+        require_once(__DIR__.'/lib/flag.php');
+
+        $flaglib   = new hsuforum_lib_flag();
+        $canedit   = has_capability('mod/hsuforum:editanypost', $context);
+        $returnurl = $PAGE->url;
+
+        if ($canedit and !$jsinit) {
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_flags', null, false, $this->get_js_module());
+            $jsinit = true;
+        }
+
+        $flaghtml = array();
+        foreach ($flaglib->get_flags() as $flag) {
+            $class = 'hsuforum_flag';
+            if ($flaglib->is_flagged($post->flags, $flag)) {
+                $class .= ' hsuforum_flag_active';
+            }
+            $attributes = array('class' => $class);
+
+            $icon = new pix_icon("flag/$flag", $flaglib->get_flag_name($flag), 'hsuforum', array('class' => 'iconsmall'));
+
+            if ($canedit) {
+                $url = new moodle_url('/mod/hsuforum/route.php', array(
+                    'contextid'    => $context->id,
+                    'action'       => 'flag',
+                    'returnurl'    => $returnurl,
+                    'postid'       => $post->id,
+                    'flag'         => $flag,
+                    'sesskey'      => sesskey()
+                ));
+                $flaghtml[] = $OUTPUT->action_icon($url, $icon, null, $attributes);
+            } else {
+                $flaghtml[] = html_writer::tag('span', $this->render($icon), $attributes);
+            }
+        }
+        return html_writer::tag('div', implode('', $flaghtml), array('class' => 'hsuforum_flags'));
+    }
 }

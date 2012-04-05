@@ -209,6 +209,8 @@ foreach ($searchterms as $key => $searchterm) {
 }
 $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
 
+echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+
 foreach ($posts as $post) {
 
     // Replace the simple subject with the three items forum name -> thread name -> subject
@@ -287,7 +289,7 @@ foreach ($posts as $post) {
     hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false,
             $fulllink, '', -99, false);
 }
-
+echo $OUTPUT->box_end(); // End mod_hsuforum_posts_container
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
 echo $OUTPUT->footer();

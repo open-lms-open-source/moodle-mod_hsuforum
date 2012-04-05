@@ -9,9 +9,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0) {
+    define('AJAX_SCRIPT', true);
+}
 require_once(dirname(dirname(__DIR__)).'/config.php');
 require_once(__DIR__.'/lib/controller/route.php');
 require_once(__DIR__.'/controller/posters.php');
+require_once(__DIR__.'/controller/flag.php');
 
 global $COURSE, $PAGE, $OUTPUT, $CFG, $DB;  // For IDE...
 
@@ -38,6 +42,7 @@ $PAGE->set_url('/mod/hsuforum/route.php', array(
 
 $route = new hsuforum_lib_controller_route();
 $route->add_controller(new hsuforum_controller_posters());
+$route->add_controller(new hsuforum_controller_flag());
 
 $response = $route->action($action);
 

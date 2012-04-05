@@ -24,7 +24,8 @@ class hsuforum_lib_table_posters extends table_sql {
         $params = array('forumid' => $PAGE->activityrecord->id);
 
         $this->set_sql(
-            "$fields, u.firstname, u.lastname, COUNT(*) AS total, SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS posts, SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replies, 0 AS substantive",
+            "$fields, u.firstname, u.lastname, COUNT(*) AS total, SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS posts,
+             SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replies, SUM(CASE WHEN p.flags LIKE '%substantive%' THEN 1 ELSE 0 END) AS substantive",
             '{hsuforum_posts} p, {hsuforum_discussions} d, {hsuforum} f, {user} u',
             'u.id = p.userid AND p.discussion = d.id AND d.forum = f.id AND f.id = :forumid GROUP BY p.userid',
             $params

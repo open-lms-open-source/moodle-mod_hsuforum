@@ -2619,7 +2619,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $fullpo
         $forumsort = "d.timemodified DESC";
     }
     if (empty($fullpost)) {
-        $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid,p.reveal";
+        $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid,p.reveal,p.flags";
     } else {
         $postdata = "p.*";
     }
@@ -3159,7 +3159,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
  */
 function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=false, $reply=false, $link=false,
                           $footer="", $highlight="", $postisread=null, $dummyifcantsee=true, $istracked=null, $return=false) {
-    global $USER, $CFG, $OUTPUT;
+    global $USER, $CFG, $OUTPUT, $PAGE;
 
     require_once($CFG->libdir . '/filelib.php');
 
@@ -3387,6 +3387,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     if (empty($post->subjectnoformat)) {
         $postsubject = format_string($postsubject);
     }
+    $postsubject .= $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext, $discussion);
     $output .= html_writer::tag('div', $postsubject, array('class'=>'subject'));
 
     $by = new stdClass();
@@ -3642,7 +3643,7 @@ function hsuforum_rating_validate($params) {
 function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring="",
                                         $cantrack=true, $forumtracked=true, $canviewparticipants=true, $modcontext=NULL) {
 
-    global $USER, $CFG, $OUTPUT;
+    global $USER, $CFG, $OUTPUT, $PAGE;
 
     static $rowcount;
     static $strmarkalldread;
@@ -3694,6 +3695,7 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
     } else {
         echo $fullname;
     }
+    echo $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext);
     echo "</td>\n";
 
     // Group picture
@@ -5396,6 +5398,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $unreads = array();
     }
 
+    echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+
     if ($displayformat == 'header') {
         echo '<table cellspacing="0" class="forumheaderlist">';
         echo '<thead>';
@@ -5502,6 +5506,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo $strolder.'</a> ...</div>';
     }
 
+    echo $OUTPUT->box_end(); // End mod_hsuforum_posts_container
+
     if ($page != -1) { ///Show the paging bar
         echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
     }
@@ -5526,7 +5532,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
  * @param bool $canrate
  */
 function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mode, $canreply=NULL, $canrate=false) {
-    global $USER, $CFG;
+    global $USER, $CFG, $OUTPUT;
 
     require_once($CFG->dirroot.'/rating/lib.php');
 
@@ -5602,6 +5608,8 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
 
     $postread = !empty($post->postread);
 
+    echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+
     hsuforum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, false,
                          '', '', $postread, true, $forumtracked);
 
@@ -5620,6 +5628,8 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
             hsuforum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
             break;
     }
+
+    echo $OUTPUT->box_end(); // End mod_hsuforum_posts_container
 }
 
 
@@ -5672,7 +5682,7 @@ function hsuforum_print_posts_flat($course, &$cm, $forum, $discussion, $post, $m
  * @return void
  */
 function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent, $depth, $reply, $forumtracked, $posts) {
-    global $USER, $CFG;
+    global $USER, $CFG, $PAGE;
 
     $link  = false;
 
@@ -5720,6 +5730,7 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                 echo $style."<a name=\"$post->id\"></a>".
                      "<a href=\"discuss.php?d=$post->discussion&amp;parent=$post->id\">".format_string($post->subject,true)."</a> ";
                 print_string("bynameondate", "hsuforum", $by);
+                echo $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext, $discussion);
                 echo "</span>";
             }
 
