@@ -5241,7 +5241,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
  */
 function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, $displayformat='plain', $sort='',
                                         $currentgroup=-1, $groupmode=-1, $page=-1, $perpage=100, $cm=NULL) {
-    global $CFG, $USER, $OUTPUT;
+    global $CFG, $USER, $OUTPUT, $PAGE;
 
     if (!$cm) {
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
@@ -5249,6 +5249,20 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         }
     }
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+
+    /** @var $renderer mod_hsuforum_renderer */
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+
+    $showdisplayformat = false;
+    if (ajaxenabled() and $displayformat == 'header') {
+        $displayformat = optional_param('displayformat', '', PARAM_ALPHA);
+        if (!empty($displayformat)) {
+            set_user_preference('hsuforum_displayformat', $displayformat);
+        } else {
+            $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
+        }
+        $showdisplayformat = true;
+    }
 
     if (empty($sort)) {
         $sort = "d.timemodified DESC";
@@ -5308,6 +5322,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         }
     }
 
+    echo $OUTPUT->box_start('hsuforum_discussion_controls clearfix');
+
     if ($canstart) {
         echo '<div class="singlebutton forumaddnew">';
         echo "<form id=\"newdiscussionform\" method=\"get\" action=\"$CFG->wwwroot/mod/hsuforum/post.php\">";
@@ -5341,6 +5357,18 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'));
         }
     }
+
+    if ($showdisplayformat) {
+        $display = new single_select($PAGE->url, 'displayformat', array(
+            'header' => get_string('default', 'hsuforum'),
+            'tree'   => get_string('tree', 'hsuforum'),
+        ), $displayformat, null, 'displayformatid');
+
+        $display->set_label(get_string('discussiondisplay', 'hsuforum').':&nbsp;');
+        echo $OUTPUT->render($display);
+    }
+
+    echo $OUTPUT->box_end(); // End discussion_controls
 
 // Get all the recent discussions we're allowed to see
 
@@ -5460,6 +5488,16 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $discussion->subject = $discussion->name;
 
         switch ($displayformat) {
+            case 'tree':
+                if (empty($nodes)) {
+                    $nodes = array();
+                }
+                if ($node = $renderer->post_to_node($cm, $forum, $discussion, $discussion, $forumtracked)) {
+                    $nodes[] = $node;
+                }
+
+                break;
+
             case 'header':
                 if ($groupmode > 0) {
                     if (isset($groups[$discussion->groupid])) {
@@ -5493,6 +5531,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     if ($displayformat == "header") {
         echo '</tbody>';
         echo '</table>';
+    } else if ($displayformat == 'tree') {
+        echo $renderer->discussion_nodes($nodes);
     }
 
     if ($olddiscussionlink) {

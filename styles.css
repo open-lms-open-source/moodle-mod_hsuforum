@@ -97,4 +97,6 @@
 .hsuforum_flags {display: inline; padding-left:10px;}
 .hsuforum_flag {opacity:.2; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=%IEHIDEOPACITY%)"; filter:alpha(opacity=20); padding-right: 3px;}
 .hsuforum_flag_active {opacity:1; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";filter:alpha(opacity=100);}
-
+.hsuforum_discussion_controls .singleselect {float: right;}
+.hsuforum_discussion_controls .forumaddnew {float: left;}
+.hsuforum_discussion_controls {padding-bottom: 5px;}

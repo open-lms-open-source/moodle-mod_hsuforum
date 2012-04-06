@@ -33,6 +33,39 @@ M.mod_hsuforum.init_flags = function(Y) {
 /**
  * @author Mark Nielsen
  */
+M.mod_hsuforum.init_treeview = function(Y, id, url, nodes) {
+    var tree = new YAHOO.widget.TreeView(id, nodes);
+
+    // This allows links to be clicked
+    tree.subscribe('clickEvent', function() {
+        return false;
+    });
+    tree.setDynamicLoad(function(node, fnLoadComplete) {
+        var dicussionid = node.data.id;
+        if (!dicussionid) {
+            fnLoadComplete();
+            return;
+        }
+        M.mod_hsuforum.io(Y, url + '&discussionid=' + encodeURI(dicussionid), function(data) {
+            var addNodes = function(nodeList, nodeListParent) {
+                var children;
+                for (var i = 0, len = nodeList.length; i < len; i++) {
+                    children = nodeList[i].children;
+                    nodeList[i].children = [];
+                    var parent = new YAHOO.widget.HTMLNode(nodeList[i], nodeListParent, false);
+                    addNodes(children, parent);
+                }
+            };
+            addNodes(data, node);
+            fnLoadComplete();
+        });
+    });
+    tree.render();
+};
+
+/**
+ * @author Mark Nielsen
+ */
 M.mod_hsuforum.io = function(Y, url, successCallback, failureCallback) {
     Y.io(url, {
         on: {

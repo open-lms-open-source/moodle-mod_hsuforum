@@ -131,6 +131,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 'event',
                 'io-base',
                 'json',
+                'yui2-treeview',
             ),
             'strings' => array(
                 array('jsondecodeerror', 'hsuforum'),
@@ -192,5 +193,101 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             }
         }
         return html_writer::tag('div', implode('', $flaghtml), array('class' => 'hsuforum_flags'));
+    }
+
+    /**
+     * @param $cm
+     * @param $forum
+     * @param $discussion
+     * @param $post
+     * @param $forumtracked
+     * @return bool|object
+     * @author Mark Nielsen
+     */
+    public function post_to_node($cm, $forum, $discussion, $post, $forumtracked) {
+        global $CFG, $PAGE;
+
+        if (!hsuforum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
+            return false;
+        }
+        $canviewfullnames = has_capability('moodle/site:viewfullnames', $PAGE->context);
+        $displaymode = get_user_preferences('hsuforum_displaymode', $CFG->hsuforum_displaymode);
+
+        $postuser = new stdClass;
+        $postuser->id        = $post->userid;
+        $postuser->firstname = $post->firstname;
+        $postuser->lastname  = $post->lastname;
+        $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
+
+        $by = new stdClass();
+        $by->name = fullname($postuser, $canviewfullnames);
+        $by->date = userdate($post->modified);
+
+        $class = '';
+        if ($forumtracked) {
+            if (!empty($post->postread)) {
+                $class = 'read';
+            } else {
+                $class = 'unread';
+            }
+        }
+        if ($displaymode == HSUFORUM_MODE_THREADED) {
+            $url = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion, 'parent' => $post->id));
+        } else {
+            $url = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
+            $url->set_anchor("p$post->id");
+        }
+        $html = "<span class=\"$class\">".
+                html_writer::link($url, format_string($post->subject,true)).'&nbsp;'.
+                get_string("bynameondate", "hsuforum", $by).
+                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $PAGE->context, $discussion).
+                "</span>";
+
+        $leaf = true;
+        if (!empty($post->replies)) { // Actually a discussion...
+            $leaf = false;
+        } else if (!empty($post->children)) {
+            $leaf = false;
+        }
+        $node = (object) array(
+            'type' => 'html',
+            'html' => $html,
+            'isLeaf' => $leaf,
+            'nowrap' => true,
+            'id' => null,
+            'children' => array(),
+        );
+
+        if (empty($post->parent)) {
+            $node->id = $discussion->id;
+        }
+        if (!empty($post->children)) {
+            foreach ($post->children as $childpost) {
+                if ($childnode = $this->post_to_node($cm, $forum, $discussion, $childpost, $forumtracked)) {
+                    $node->children[] = $childnode;
+                }
+            }
+        }
+        return $node;
+    }
+
+    /**
+     * @param array $nodes
+     * @author Mark Nielsen
+     * @return string
+     */
+    public function discussion_nodes(array $nodes) {
+        global $OUTPUT, $PAGE;
+
+        $output = '';
+        if (!empty($nodes)) {
+            $id  = html_writer::random_id('hsuforum_treeview');
+            $url = new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->context->id, 'action' => 'postnodes'));
+
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_treeview', array($id, $url->out(false), $nodes), false, $this->get_js_module());
+            $output .= html_writer::tag('noscript', $OUTPUT->notification(get_string('javascriptdisableddisplayformat', 'hsuforum')));
+            $output .= html_writer::tag('div', '', array('id' => $id, 'class' => 'hsuforum_treeview'));
+        }
+        return $output;
     }
 }

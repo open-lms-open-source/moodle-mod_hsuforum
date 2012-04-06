@@ -428,3 +428,7 @@ $string['flag:bookmark'] = 'Bookmark';
 $string['flag:substantive'] = 'Substantive';
 $string['jsondecodeerror'] = 'Failed to decode response, please try again.';
 $string['ajaxrequesterror'] = 'Failed to complete request, please try again.';
+$string['default'] = 'Default';
+$string['tree'] = 'Tree';
+$string['discussiondisplay'] = 'Discussion display';
+$string['javascriptdisableddisplayformat'] = 'Javascript has been disabled in your browser.  Please enable Javascript and reload the page or select a different discussion view.';
