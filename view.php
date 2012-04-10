@@ -27,7 +27,6 @@
 
     $id          = optional_param('id', 0, PARAM_INT);       // Course Module ID
     $f           = optional_param('f', 0, PARAM_INT);        // Forum ID
-    $mode        = optional_param('mode', 0, PARAM_INT);     // Display mode (for single forum)
     $showall     = optional_param('showall', '', PARAM_INT); // show all discussions on one page
     $changegroup = optional_param('group', -1, PARAM_INT);   // choose the current group
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
@@ -135,108 +134,7 @@
 
     $SESSION->fromdiscussion = $FULLME;   // Return here if we post or set subscription etc
 
-
-/// Print settings and things across the top
-
-    // If it's a simple single discussion forum, we need to print the display
-    // mode control.
-    if ($forum->type == 'single') {
-        $discussion = NULL;
-        $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
-        if (!empty($discussions)) {
-            $discussion = array_pop($discussions);
-        }
-        if ($discussion) {
-            if ($mode) {
-                set_user_preference("hsuforum_displaymode", $mode);
-            }
-            $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
-            hsuforum_print_mode_form($forum->id, $displaymode, $forum->type);
-        }
-    }
-
-    if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
-        $a->blockafter = $forum->blockafter;
-        $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
-        echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
-    }
-
-    if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {
-        echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
-    }
-
-    switch ($forum->type) {
-        case 'single':
-            if (!empty($discussions) && count($discussions) > 1) {
-                echo $OUTPUT->notification(get_string('warnformorepost', 'hsuforum'));
-            }
-            if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
-                print_error('cannotfindfirstpost', 'hsuforum');
-            }
-            if ($mode) {
-                set_user_preference("hsuforum_displaymode", $mode);
-            }
-
-            $canreply    = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
-            $canrate     = has_capability('mod/hsuforum:rate', $context);
-            $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
-
-            echo '&nbsp;'; // this should fix the floating in FF
-            hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
-            break;
-
-        case 'eachuser':
-            if (!empty($forum->intro)) {
-                echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
-            }
-            echo '<p class="mdl-align">';
-            if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
-                print_string("allowsdiscussions", "hsuforum");
-            } else {
-                echo '&nbsp;';
-            }
-            echo '</p>';
-            if (!empty($showall)) {
-                hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
-            } else {
-                hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
-            }
-            break;
-
-        case 'teacher':
-            if (!empty($showall)) {
-                hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
-            } else {
-                hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
-            }
-            break;
-
-        case 'blog':
-            if (!empty($forum->intro)) {
-                echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
-            }
-            echo '<br />';
-            if (!empty($showall)) {
-                hsuforum_print_latest_discussions($course, $forum, 0, 'plain', '', -1, -1, -1, 0, $cm);
-            } else {
-                hsuforum_print_latest_discussions($course, $forum, -1, 'plain', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
-            }
-            break;
-
-        default:
-            if (!empty($forum->intro)) {
-                echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
-            }
-            echo '<br />';
-            if (!empty($showall)) {
-                hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
-            } else {
-                hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
-            }
-
-
-            break;
-    }
+    $PAGE->get_renderer('mod_hsuforum')->view($course, $cm, $forum, $context);
 
     echo $OUTPUT->footer($course);
 

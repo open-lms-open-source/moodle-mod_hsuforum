@@ -49,14 +49,14 @@
 
 .path-mod-hsuforum .forumolddiscuss,
 #page-mod-hsuforum-search .c0 {text-align:right;}
-.path-mod-hsuforum .indent {margin-left: 30px;}
-.path-mod-hsuforum .forumheaderlist {width: 100%;border-width:1px;border-style:solid;border-collapse:separate;margin-top: 10px;}
-.path-mod-hsuforum .forumheaderlist td {border-width:1px 0px 0px 1px;border-style:solid;}
-.path-mod-hsuforum .forumheaderlist .picture {width: 35px;}
-.path-mod-hsuforum .forumheaderlist .discussion .starter {vertical-align: middle;}
-.path-mod-hsuforum .forumheaderlist .discussion .lastpost {white-space: nowrap;text-align: right;}
-.path-mod-hsuforum .forumheaderlist .replies,
-.path-mod-hsuforum .forumheaderlist .discussion .author {white-space: nowrap;}
+.mod_hsuforum_posts_container .indent {margin-left: 30px;}
+.mod_hsuforum_posts_container .forumheaderlist {width: 100%;border-width:1px;border-style:solid;border-collapse:separate;margin-top: 10px;}
+.mod_hsuforum_posts_container .forumheaderlist td {border-width:1px 0px 0px 1px;border-style:solid;}
+.mod_hsuforum_posts_container .forumheaderlist .picture {width: 35px;}
+.mod_hsuforum_posts_container .forumheaderlist .discussion .starter {vertical-align: middle;}
+.mod_hsuforum_posts_container .forumheaderlist .discussion .lastpost {white-space: nowrap;text-align: right;}
+.mod_hsuforum_posts_container .forumheaderlist .replies,
+.mod_hsuforum_posts_container .forumheaderlist .discussion .author {white-space: nowrap;}
 
 /** Styles for subscribers.php */
 #page-mod-hsuforum-subscribers .subscriberdiv,
@@ -67,6 +67,15 @@
 #page-mod-hsuforum-subscribers .subscribertable tr td.existing,
 #page-mod-hsuforum-subscribers .subscribertable tr td.potential {width:42%;}
 
+/** Styles for discussion subscribers */
+.path-mod-hsuforum .subscriberdiv,
+.path-mod-hsuforum .subscribertable {width:100%;vertical-align:top;}
+.path-mod-hsuforum .subscribertable tr td {vertical-align:top;}
+.path-mod-hsuforum .subscribertable tr td.actions {width:16%;padding-top:3em;}
+.path-mod-hsuforum .subscribertable tr td.actions .actionbutton {margin:0.3em 0;padding:0.5em 0;width:100%;}
+.path-mod-hsuforum .subscribertable tr td.existing,
+.path-mod-hsuforum .subscribertable tr td.potential {width:42%;}
+
 /** Styles for discuss.php **/
 #page-mod-hsuforum-discuss .discussioncontrols {width:100%;margin:5px;}
 #page-mod-hsuforum-discuss .discussioncontrols .discussioncontrol {width:33%;float:left;}
@@ -76,7 +85,7 @@
 #page-mod-hsuforum-discuss .discussioncontrol.movediscussion .movediscussionoption {}
 
 /** Styles for view.php **/
-#page-mod-hsuforum-view .forumaddnew {margin-bottom: 20px;}
+.hsuforum_discussion_controls .forumaddnew {margin-bottom: 20px;}
 #page-mod-hsuforum-view .groupmenu {float: left;text-align:left;white-space: nowrap;}
 #page-mod-hsuforum-index .subscription,
 #page-mod-hsuforum-view .subscription {float: right;text-align:right;white-space: nowrap;margin: 5px 0;}
@@ -85,7 +94,7 @@
 #page-mod-hsuforum-search .introcontent {padding: 15px;font-weight:bold;}
 
 #page-mod-hsuforum-index .unread img,
-#page-mod-hsuforum-view .unread img {margin-left: 5px;}
+.mod_hsuforum_posts_container .unread img {margin-left: 5px;}
 
 /** Unknown Styles ??? */
 #email .unsubscribelink {margin-top:20px;}
@@ -100,3 +109,4 @@
 .hsuforum_discussion_controls .singleselect {float: right;}
 .hsuforum_discussion_controls .forumaddnew {float: left;}
 .hsuforum_discussion_controls {padding-bottom: 5px;}
+.hsuforum_highlightposter {font-weight: bold;}

@@ -53,6 +53,9 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             'assessed', 'timemodified', 'usermodified', 'timestart',
             'timeend'));
 
+        $discussionsubs = new backup_nested_element('subscriptions');
+        $discussionsub  = new backup_nested_element('subscription', array('id'), array('userid'));
+
         $posts = new backup_nested_element('posts');
 
         $post = new backup_nested_element('post', array('id'), array(
@@ -96,6 +99,9 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
         $forum->add_child($trackedprefs);
         $trackedprefs->add_child($track);
 
+        $discussion->add_child($discussionsubs);
+        $discussionsubs->add_child($discussionsub);
+
         $discussion->add_child($posts);
         $posts->add_child($post);
 
@@ -113,6 +119,8 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
                   FROM {hsuforum_discussions}
                  WHERE forum = ?',
                 array(backup::VAR_PARENTID));
+
+            $discussionsub->set_source_table('hsuforum_subscriptions_disc', array('discussion' => backup::VAR_PARENTID));
 
             // Need posts ordered by id so parents are always before childs on restore
             $post->set_source_sql("SELECT *
@@ -138,6 +146,8 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
         $forum->annotate_ids('scale', 'scale');
 
         $discussion->annotate_ids('group', 'groupid');
+
+        $discussionsub->annotate_ids('user', 'userid');
 
         $post->annotate_ids('user', 'userid');
 

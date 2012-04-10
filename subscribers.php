@@ -96,17 +96,17 @@ $PAGE->navbar->add($strsubscribers);
 $PAGE->set_title($strsubscribers);
 $PAGE->set_heading($COURSE->fullname);
 if (has_capability('mod/hsuforum:managesubscriptions', $context)) {
-    $PAGE->set_button(hsuforum_update_subscriptions_button($course->id, $id));
     if ($edit != -1) {
         $USER->subscriptionsediting = $edit;
     }
+    $PAGE->set_button(hsuforum_update_subscriptions_button($course->id, $id));
 } else {
     unset($USER->subscriptionsediting);
 }
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('forum', 'hsuforum').' '.$strsubscribers);
 if (empty($USER->subscriptionsediting)) {
-    echo $forumoutput->subscriber_overview(hsuforum_subscribed_users($course, $forum, $currentgroup, $context), $forum, $course);
+    echo $forumoutput->subscriber_overview(hsuforum_subscribed_users($course, $forum, $currentgroup, $context), $forum->name, $course);
 } else if (hsuforum_is_forcesubscribed($forum)) {
     $subscriberselector->set_force_subscribed(true);
     echo $forumoutput->subscribed_users($subscriberselector);

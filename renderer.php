@@ -77,16 +77,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * the subscribers page if editing was turned off
      *
      * @param array $users
-     * @param object $forum
+     * @param string $entityname
      * @param object $course
      * @return string
      */
-    public function subscriber_overview($users, $forum , $course) {
+    public function subscriber_overview($users, $entityname, $course) {
         $output = '';
         if (!$users || !is_array($users) || count($users)===0) {
             $output .= $this->output->heading(get_string("nosubscribers", "hsuforum"));
         } else {
-            $output .= $this->output->heading(get_string("subscribersto","hsuforum", "'".format_string($forum->name)."'"));
+            $output .= $this->output->heading(get_string("subscribersto","hsuforum", "'".format_string($entityname)."'"));
             $table = new html_table();
             $table->cellpadding = 5;
             $table->cellspacing = 5;
@@ -196,6 +196,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     /**
+     * @param \context_module $context
      * @param $cm
      * @param $forum
      * @param $discussion
@@ -204,13 +205,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return bool|object
      * @author Mark Nielsen
      */
-    public function post_to_node($cm, $forum, $discussion, $post, $forumtracked) {
+    public function post_to_node(context_module $context, $cm, $forum, $discussion, $post, $forumtracked) {
         global $CFG, $PAGE;
 
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
             return false;
         }
-        $canviewfullnames = has_capability('moodle/site:viewfullnames', $PAGE->context);
+        $canviewfullnames = has_capability('moodle/site:viewfullnames', $context);
         $displaymode = get_user_preferences('hsuforum_displaymode', $CFG->hsuforum_displaymode);
 
         $postuser = new stdClass;
@@ -223,6 +224,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $by->name = fullname($postuser, $canviewfullnames);
         $by->date = userdate($post->modified);
 
+        if (!hsuforum_is_anonymous_user($postuser) and has_capability('moodle/course:manageactivities', $context)) {
+            $by->name = html_writer::tag('span', $by->name, array('class' => 'hsuforum_highlightposter'));
+        }
         $class = '';
         if ($forumtracked) {
             if (!empty($post->postread)) {
@@ -240,7 +244,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $html = "<span class=\"$class\">".
                 html_writer::link($url, format_string($post->subject,true)).'&nbsp;'.
                 get_string("bynameondate", "hsuforum", $by).
-                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $PAGE->context, $discussion).
+                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $context, $discussion).
                 "</span>";
 
         $leaf = true;
@@ -259,11 +263,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         );
 
         if (empty($post->parent)) {
-            $node->id = $discussion->id;
+            $node->id = $post->discussion;
         }
         if (!empty($post->children)) {
             foreach ($post->children as $childpost) {
-                if ($childnode = $this->post_to_node($cm, $forum, $discussion, $childpost, $forumtracked)) {
+                if ($childnode = $this->post_to_node($context, $cm, $forum, $discussion, $childpost, $forumtracked)) {
                     $node->children[] = $childnode;
                 }
             }
@@ -276,18 +280,133 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      * @return string
      */
-    public function discussion_nodes(array $nodes) {
+    public function discussion_nodes(context_module $context, array $nodes) {
         global $OUTPUT, $PAGE;
 
         $output = '';
         if (!empty($nodes)) {
             $id  = html_writer::random_id('hsuforum_treeview');
-            $url = new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->context->id, 'action' => 'postnodes'));
+            $url = new moodle_url('/mod/hsuforum/route.php', array('contextid' => $context->id, 'action' => 'postnodes'));
 
             $PAGE->requires->js_init_call('M.mod_hsuforum.init_treeview', array($id, $url->out(false), $nodes), false, $this->get_js_module());
             $output .= html_writer::tag('noscript', $OUTPUT->notification(get_string('javascriptdisableddisplayformat', 'hsuforum')));
             $output .= html_writer::tag('div', '', array('id' => $id, 'class' => 'hsuforum_treeview'));
         }
         return $output;
+    }
+
+    /**
+     * @param $course
+     * @param $cm
+     * @param $forum
+     * @param context_module $context
+     * @author Mark Nielsen
+     */
+    public function view($course, $cm, $forum, context_module $context) {
+        global $CFG, $USER, $DB, $OUTPUT;
+
+        $mode = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
+        $page = optional_param('page', 0, PARAM_INT); // which page to show
+
+        // If it's a simple single discussion forum, we need to print the display
+        // mode control.
+        $discussion = NULL;
+        if ($forum->type == 'single') {
+            $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
+            if (!empty($discussions)) {
+                $discussion = array_pop($discussions);
+            }
+            if ($discussion) {
+                if ($mode) {
+                    set_user_preference("hsuforum_displaymode", $mode);
+                }
+                $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
+                hsuforum_print_mode_form($forum->id, $displaymode, $forum->type);
+            }
+        }
+
+        if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
+            $a = new stdClass();
+            $a->blockafter = $forum->blockafter;
+            $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
+            echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
+        }
+
+        if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {
+            echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
+        }
+
+        switch ($forum->type) {
+            case 'single':
+                if (!empty($discussions) && count($discussions) > 1) {
+                    echo $OUTPUT->notification(get_string('warnformorepost', 'hsuforum'));
+                }
+                if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
+                    print_error('cannotfindfirstpost', 'hsuforum');
+                }
+                if ($mode) {
+                    set_user_preference("hsuforum_displaymode", $mode);
+                }
+
+                $canreply    = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
+                $canrate     = has_capability('mod/hsuforum:rate', $context);
+                $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
+
+                echo '&nbsp;'; // this should fix the floating in FF
+                hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
+                break;
+
+            case 'eachuser':
+                if (!empty($forum->intro)) {
+                    echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
+                }
+                echo '<p class="mdl-align">';
+                if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
+                    print_string("allowsdiscussions", "hsuforum");
+                } else {
+                    echo '&nbsp;';
+                }
+                echo '</p>';
+                if (!empty($showall)) {
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                } else {
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                }
+                break;
+
+            case 'teacher':
+                if (!empty($showall)) {
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                } else {
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                }
+                break;
+
+            case 'blog':
+                if (!empty($forum->intro)) {
+                    echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
+                }
+                echo '<br />';
+                if (!empty($showall)) {
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'plain', '', -1, -1, -1, 0, $cm);
+                } else {
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'plain', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                }
+                break;
+
+            default:
+                if (!empty($forum->intro)) {
+                    echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
+                }
+                echo '<br />';
+                if (!empty($showall)) {
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                } else {
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                }
+
+
+                break;
+        }
     }
 }

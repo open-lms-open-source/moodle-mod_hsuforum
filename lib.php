@@ -398,7 +398,10 @@ function hsuforum_cron() {
     $courses         = array();
     $coursemodules   = array();
     $subscribedusers = array();
+    $discussionsubscribers = array();
 
+    require_once(__DIR__.'/repository/discussion.php');
+    $discussionrepo = new hsuforum_repository_discussion();
 
     // Posts older than 2 days will not be mailed.  This is to avoid the problem where
     // cron has not been running for a long time, and then suddenly people are flooded
@@ -477,6 +480,21 @@ function hsuforum_cron() {
                 }
             }
 
+            // caching subscribed users of each discussion
+            if (!isset($discussionsubscribers[$discussionid])) {
+                $modcontext = get_context_instance(CONTEXT_MODULE, $coursemodules[$forumid]->id);
+                if ($subusers = $discussionrepo->get_subscribed_users($forums[$forumid], $discussions[$discussionid], $modcontext, 0, null, array(), 'u.email ASC')) {
+                    // Get a list of the users subscribed to discussions in the hsuforum.
+                    foreach ($subusers as $postuser) {
+                        unset($postuser->description); // not necessary
+                        // the user is subscribed to this discussion
+                        $discussionsubscribers[$discussionid][$postuser->id] = $postuser->id;
+                        // this user is a user we have to process later
+                        $users[$postuser->id] = $postuser;
+                    }
+                }
+            }
+
             $mailcount[$pid] = 0;
             $errorcount[$pid] = 0;
         }
@@ -519,7 +537,9 @@ function hsuforum_cron() {
                 // Do some checks  to see if we can bail out now
                 // Only active enrolled users are in the list of subscribers
                 if (!isset($subscribedusers[$forum->id][$userto->id])) {
-                    continue; // user does not subscribe to this forum
+                    if (!isset($discussionsubscribers[$post->discussion][$userto->id])) {
+                        continue; // user does not subscribe to this forum
+                    }
                 }
 
                 // Don't send email if the forum is Q&A and the user has not posted
@@ -3392,6 +3412,9 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
 
     $by = new stdClass();
     if (!hsuforum_is_anonymous_user($postuser)) {
+        if (has_capability('moodle/course:manageactivities', $modcontext)) {
+            $postuser->fullname = html_writer::tag('span', $postuser->fullname, array('class' => 'hsuforum_highlightposter'));
+        }
         $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
     } else {
         $by->name = $postuser->fullname;
@@ -3691,6 +3714,9 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
     $fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $modcontext));
     echo '<td class="author">';
     if (!hsuforum_is_anonymous_user($postuser)) {
+        if (has_capability('moodle/course:manageactivities', $modcontext)) {
+            $fullname = html_writer::tag('span', $fullname, array('class' => 'hsuforum_highlightposter'));
+        }
         echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$postuser->id.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
     } else {
         echo $fullname;
@@ -3743,6 +3769,28 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
             }
             echo "</td>\n";
         }
+    }
+
+    require_once(__DIR__.'/lib/subscribe/discussion.php');
+    $subscribe = new hsuforum_lib_subscribe_discussion($forum, $modcontext);
+    if ($subscribe->can_subscribe()) {
+        $subscribeurl = new moodle_url('/mod/hsuforum/route.php', array(
+            'contextid' => $modcontext->id,
+            'action' => 'subscribedisc',
+            'discussionid' => $post->discussion,
+            'sesskey' => sesskey(),
+            'returnurl' => $PAGE->url,
+        ));
+
+        if ($subscribe->is_subscribed($post->discussion)) {
+            $label = get_string('yes');
+        } else {
+            $label = get_string('no');
+        }
+        echo html_writer::tag('td',
+            html_writer::link($subscribeurl, $label, array('title' => get_string('changediscussionsubscription', 'hsuforum'))),
+            array('class' => 'subscribed')
+        );
     }
 
     echo '<td class="lastpost">';
@@ -4612,6 +4660,11 @@ function hsuforum_get_subscribed_forums($course) {
 function hsuforum_subscribe($userid, $forumid) {
     global $DB;
 
+    require_once(__DIR__.'/repository/discussion.php');
+
+    $repo = new hsuforum_repository_discussion();
+    $repo->unsubscribe_all($forumid, $userid);
+
     if ($DB->record_exists("hsuforum_subscriptions", array("userid"=>$userid, "forum"=>$forumid))) {
         return true;
     }
@@ -4632,6 +4685,12 @@ function hsuforum_subscribe($userid, $forumid) {
  */
 function hsuforum_unsubscribe($userid, $forumid) {
     global $DB;
+
+    require_once(__DIR__.'/repository/discussion.php');
+
+    $repo = new hsuforum_repository_discussion();
+    $repo->unsubscribe_all($forumid, $userid);
+
     return $DB->delete_records("hsuforum_subscriptions", array("userid"=>$userid, "forum"=>$forumid));
 }
 
@@ -5451,6 +5510,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 echo '</th>';
             }
         }
+        require_once(__DIR__.'/lib/subscribe/discussion.php');
+        $subscribe = new hsuforum_lib_subscribe_discussion($forum, $context);
+        if ($subscribe->can_subscribe()) {
+            echo '<th class="header subscribed" scope="col">'.get_string('subscribed', 'hsuforum').'</th>';
+        }
         echo '<th class="header lastpost" scope="col">'.get_string('lastpost', 'hsuforum').'</th>';
         echo '</tr>';
         echo '</thead>';
@@ -5492,7 +5556,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 if (empty($nodes)) {
                     $nodes = array();
                 }
-                if ($node = $renderer->post_to_node($cm, $forum, $discussion, $discussion, $forumtracked)) {
+                if ($node = $renderer->post_to_node($context, $cm, $forum, $discussion, $discussion, $forumtracked)) {
                     $nodes[] = $node;
                 }
 
@@ -5532,7 +5596,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo '</tbody>';
         echo '</table>';
     } else if ($displayformat == 'tree') {
-        echo $renderer->discussion_nodes($nodes);
+        echo $renderer->discussion_nodes($context, $nodes);
     }
 
     if ($olddiscussionlink) {
@@ -5758,6 +5822,9 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                 $by->name = fullname($postuser, $canviewfullnames);
                 $by->date = userdate($post->modified);
 
+                if (!hsuforum_is_anonymous_user($postuser) and has_capability('moodle/course:manageactivities', $modcontext)) {
+                    $by->name = html_writer::tag('span', $by->name, array('class' => 'hsuforum_highlightposter'));
+                }
                 if ($forumtracked) {
                     if (!empty($post->postread)) {
                         $style = '<span class="forumthread read">';
@@ -7548,6 +7615,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $subscriptionmode = hsuforum_get_forcesubscribed($forumobject);
     $cansubscribe = ($activeenrolled && $subscriptionmode != HSUFORUM_FORCESUBSCRIBE && ($subscriptionmode != HSUFORUM_DISALLOWSUBSCRIBE || $canmanage));
 
+    $discussionid = optional_param('d', 0, PARAM_INT);
+    $viewingdiscussion = ($PAGE->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
+
     if (has_capability('mod/hsuforum:viewposters', $PAGE->cm->context)) {
         $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
     }
@@ -7606,9 +7676,42 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
     }
 
+    if ($viewingdiscussion) {
+        require_once(__DIR__.'/lib/subscribe/discussion.php');
+        $subscribe = new hsuforum_lib_subscribe_discussion($forumobject, $PAGE->cm->context);
+
+        if ($subscribe->can_subscribe()) {
+            $subscribeurl = new moodle_url('/mod/hsuforum/route.php', array(
+                'contextid'    => $PAGE->cm->context->id,
+                'action'       => 'subscribedisc',
+                'discussionid' => $discussionid,
+                'sesskey'      => sesskey(),
+                'returnurl'    => $PAGE->url,
+            ));
+
+            if ($subscribe->is_subscribed($discussionid)) {
+                $linktext = get_string('unsubscribedisc', 'hsuforum');
+            } else {
+                $linktext = get_string('subscribedisc', 'hsuforum');
+            }
+            $forumnode->add($linktext, $subscribeurl, navigation_node::TYPE_SETTING);
+        }
+    }
+
+
     if (has_capability('mod/hsuforum:viewsubscribers', $PAGE->cm->context)){
         $url = new moodle_url('/mod/hsuforum/subscribers.php', array('id'=>$forumobject->id));
         $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
+
+        $discsubscribers = ($viewingdiscussion or (optional_param('action', '', PARAM_ALPHA) == 'discsubscribers'));
+        if ($discsubscribers and !hsuforum_is_forcesubscribed($forumobject)) {
+            $url = new moodle_url('/mod/hsuforum/route.php', array(
+                'contextid'    => $PAGE->cm->context->id,
+                'action'       => 'discsubscribers',
+                'discussionid' => $discussionid,
+            ));
+            $forumnode->add(get_string('showdiscussionsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING, null, 'discsubscribers');
+        }
     }
 
     if ($enrolled && hsuforum_tp_can_track_forums($forumobject)) { // keep tracking info for users with suspended enrolments
@@ -8020,7 +8123,7 @@ function hsuforum_get_forums_user_posted_in($user, array $courseids = null, $dis
  *               ->posts: An array containing the posts to show for this request.
  */
 function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = false, $discussionsonly = false, $limitfrom = 0, $limitnum = 50) {
-    global $DB, $USER;
+    global $DB, $USER, $CFG;
 
     $return = new stdClass;
     $return->totalcount = 0;    // The total number of posts that the current user is able to view

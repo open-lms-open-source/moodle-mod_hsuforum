@@ -13,6 +13,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strcasecmp($_SERVER['HTTP_X_REQ
     define('AJAX_SCRIPT', true);
 }
 require_once(dirname(dirname(__DIR__)).'/config.php');
+require_once(__DIR__.'/lib.php');
 require_once(__DIR__.'/lib/controller/route.php');
 require_once(__DIR__.'/controller/posters.php');
 require_once(__DIR__.'/controller/flag.php');
