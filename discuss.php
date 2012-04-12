@@ -25,6 +25,8 @@
  */
 
     require_once('../../config.php');
+    require_once(__DIR__.'/lib/discussion/sort.php');
+    require_once(__DIR__.'/lib/discussion/nav.php');
 
     $d      = required_param('d', PARAM_INT);                // Discussion ID
     $parent = optional_param('parent', 0, PARAM_INT);        // If set, then display this post and all children.
@@ -125,11 +127,11 @@
         set_user_preference('hsuforum_displaymode', $mode);
     }
 
-    $displaymode = get_user_preferences('hsuforum_displaymode', $CFG->hsuforum_displaymode);
+    $displaymode = hsuforum_get_layout_mode($forum);
 
     if ($parent) {
         // If flat AND parent, then force nested display this time
-        if ($displaymode == HSUFORUM_MODE_FLATOLDEST or $displaymode == HSUFORUM_MODE_FLATNEWEST) {
+        if ($displaymode == HSUFORUM_MODE_FLATOLDEST or $displaymode == HSUFORUM_MODE_FLATNEWEST or $displaymode == HSUFORUM_MODE_FLATFIRSTNAME or $displaymode == HSUFORUM_MODE_FLATLASTNAME) {
             $displaymode = HSUFORUM_MODE_NESTED;
         }
     } else {
@@ -169,6 +171,23 @@
     if ($node && $post->id != $discussion->firstpost) {
         $node->add(format_string($post->subject), $PAGE->url);
     }
+
+    $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $modcontext);
+    $dnav  = hsuforum_lib_discussion_nav::get_from_session($cm, $dsort);
+
+    $prevdiscussion = $dnav->get_prev_discussionid($discussion->id);
+    $nextdiscussion = $dnav->get_next_discussionid($discussion->id);
+
+    if ($prevdiscussion) {
+        $prevdiscussion = $DB->get_record('hsuforum_discussions', array('id' => $prevdiscussion));
+    }
+    if ($nextdiscussion) {
+        $nextdiscussion = $DB->get_record('hsuforum_discussions', array('id' => $nextdiscussion));
+    }
+    hsuforum_lib_discussion_nav::set_to_session($dnav);
+
+    /** @var $renderer mod_hsuforum_renderer */
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
 
     $PAGE->set_title("$course->shortname: ".format_string($discussion->name));
     $PAGE->set_heading($course->fullname);
@@ -212,7 +231,7 @@
 
     // groups selector not needed here
     echo '<div class="discussioncontrol displaymode">';
-    hsuforum_print_mode_form($discussion->id, $displaymode);
+    hsuforum_print_mode_form($discussion->id, $displaymode, $forum);
     echo "</div>";
 
     if ($forum->type != 'single'
@@ -275,7 +294,9 @@
     }
 
     $canrate = has_capability('mod/hsuforum:rate', $modcontext);
+    echo $renderer->discussion_navigation($prevdiscussion, $nextdiscussion, array('class' => 'hsuforumtopicnav_top'));
     hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
+    echo $renderer->discussion_navigation($prevdiscussion, $nextdiscussion, array('class' => 'hsuforumtopicnav_bottom'));
 
     echo $OUTPUT->footer();
 

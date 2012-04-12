@@ -11,7 +11,7 @@
 
 require_once(dirname(dirname(__DIR__)).'/repository/discussion.php');
 
-class hsuforum_lib_subscribe_discussion {
+class hsuforum_lib_discussion_subscribe {
     /**
      * @var context_module
      */
@@ -69,7 +69,7 @@ class hsuforum_lib_subscribe_discussion {
 
     /**
      * @param \stdClass $forum
-     * @return hsuforum_lib_subscribe_discussion
+     * @return hsuforum_lib_discussion_subscribe
      */
     public function set_forum($forum) {
         $this->forum = $forum;
@@ -85,7 +85,7 @@ class hsuforum_lib_subscribe_discussion {
 
     /**
      * @param \context_module $context
-     * @return hsuforum_lib_subscribe_discussion
+     * @return hsuforum_lib_discussion_subscribe
      */
     public function set_context(context_module $context) {
         $this->context = $context;
@@ -101,7 +101,7 @@ class hsuforum_lib_subscribe_discussion {
 
     /**
      * @param \hsuforum_repository_discussion $repo
-     * @return hsuforum_lib_subscribe_discussion
+     * @return hsuforum_lib_discussion_subscribe
      */
     public function set_repo(hsuforum_repository_discussion $repo) {
         $this->repo = $repo;
@@ -117,7 +117,7 @@ class hsuforum_lib_subscribe_discussion {
 
     /**
      * @param int $userid
-     * @return hsuforum_lib_subscribe_discussion
+     * @return hsuforum_lib_discussion_subscribe
      */
     public function set_userid($userid) {
         $this->userid = $userid;
@@ -192,7 +192,7 @@ class hsuforum_lib_subscribe_discussion {
      * Subscribe to a discussion
      *
      * @param int $discussionid
-     * @return hsuforum_lib_subscribe_discussion
+     * @return hsuforum_lib_discussion_subscribe
      */
     public function subscribe($discussionid) {
         $this->require_can_subscribe();
@@ -204,7 +204,7 @@ class hsuforum_lib_subscribe_discussion {
      * Unubscribe from a discussion
      *
      * @param int $discussionid
-     * @return hsuforum_lib_subscribe_discussion
+     * @return hsuforum_lib_discussion_subscribe
      */
     public function unsubscribe($discussionid) {
         $this->require_can_subscribe();
@@ -215,7 +215,7 @@ class hsuforum_lib_subscribe_discussion {
     /**
      * Unsubscribe from all discussions
      *
-     * @return hsuforum_lib_subscribe_discussion
+     * @return hsuforum_lib_discussion_subscribe
      */
     public function unsubscribe_all() {
         $this->require_can_subscribe();

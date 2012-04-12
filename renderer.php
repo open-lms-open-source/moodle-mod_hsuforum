@@ -206,13 +206,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function post_to_node(context_module $context, $cm, $forum, $discussion, $post, $forumtracked) {
-        global $CFG, $PAGE;
+        global $PAGE;
 
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
             return false;
         }
         $canviewfullnames = has_capability('moodle/site:viewfullnames', $context);
-        $displaymode = get_user_preferences('hsuforum_displaymode', $CFG->hsuforum_displaymode);
+        $displaymode = hsuforum_get_layout_mode($forum);
 
         $postuser = new stdClass;
         $postuser->id        = $post->userid;
@@ -229,7 +229,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         $class = '';
         if ($forumtracked) {
-            if (!empty($post->postread)) {
+            if (empty($post->parent)) {
+                if (empty($discussion->unread)) {
+                    $class = 'read';
+                } else {
+                    $class = 'unread';
+                }
+            } else if (!empty($post->postread)) {
                 $class = 'read';
             } else {
                 $class = 'unread';
@@ -241,9 +247,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $url = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
             $url->set_anchor("p$post->id");
         }
-        $html = "<span class=\"$class\">".
+        $html = "<span><span class=\"$class\">".
                 html_writer::link($url, format_string($post->subject,true)).'&nbsp;'.
-                get_string("bynameondate", "hsuforum", $by).
+                get_string("bynameondate", "hsuforum", $by).'</span>'.
                 $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $context, $discussion).
                 "</span>";
 
@@ -296,6 +302,71 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     /**
+     * @param hsuforum_lib_discussion_sort $sort
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function discussion_sorting(hsuforum_lib_discussion_sort $sort) {
+        global $OUTPUT, $PAGE;
+
+        $keyselect = $OUTPUT->single_select($PAGE->url, 'dsortkey', $sort->get_key_options_menu(), $sort->get_key(), array());
+        $dirselect = $OUTPUT->single_select($PAGE->url, 'dsortdirection', $sort->get_direction_options_menu(), $sort->get_direction(), array());
+
+        $output  = html_writer::tag('div', $keyselect, array('class' => 'hsuforum_discussion_sort_key'));
+        $output .= html_writer::tag('div', $dirselect, array('class' => 'hsuforum_discussion_sort_direction'));
+
+        return html_writer::tag('div', $output, array('class' => 'hsuforum_discussion_sort'));
+    }
+
+    /**
+     * @param stdClass|boolean $prevdiscussion
+     * @param stdClass|boolean $nextdiscussion
+     * @param array $attributes
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function discussion_navigation($prevdiscussion, $nextdiscussion, $attributes = array()) {
+        if (empty($prevdiscussion) and empty($nextdiscussion)) {
+            return '';
+        }
+
+        $classes = array();
+        $shorten = function ($name) {
+            return shorten_text(format_string($name), 25, true);
+        };
+
+        if (!empty($prevdiscussion)) {
+            $title = get_string('prevdiscussion', 'hsuforum', $shorten($prevdiscussion->name));
+            $html  = html_writer::link(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $prevdiscussion->id)), $title, array('title' => $title));
+        } else {
+            $html = '';
+            $classes[] = 'hsuforum_no_prevtopic';
+        }
+        $output = html_writer::tag('div', $html, array('class' => 'hsuforumprevtopic'));
+
+        if (!empty($nextdiscussion)) {
+            $title = get_string('nextdiscussion', 'hsuforum', $shorten($nextdiscussion->name));
+            $html  = html_writer::link(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $nextdiscussion->id)), $title, array('title' => $title));
+        } else {
+            $html = '';
+            $classes[] = 'hsuforum_no_nexttopic';
+        }
+        $output .= html_writer::tag('div', $html, array('class' => 'hsuforumnexttopic'));
+
+        if (empty($classes)) {
+            $classes[] = 'hsuforum_both_nextprevtopics';
+        }
+        $classes = 'hsuforumtopicnav '.implode(' ', $classes);
+
+        if (array_key_exists('class', $attributes)) {
+            $attributes['class'] = $classes.' '.$attributes['class'];
+        } else {
+            $attributes['class'] = $classes;
+        }
+        return html_writer::tag('div', $output, $attributes);
+    }
+
+    /**
      * @param $course
      * @param $cm
      * @param $forum
@@ -303,10 +374,30 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function view($course, $cm, $forum, context_module $context) {
-        global $CFG, $USER, $DB, $OUTPUT;
+        global $CFG, $USER, $DB, $OUTPUT, $PAGE;
 
-        $mode = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
-        $page = optional_param('page', 0, PARAM_INT); // which page to show
+        require_once(__DIR__.'/lib/discussion/sort.php');
+        require_once(__DIR__.'/lib/discussion/nav.php');
+
+        $showall = optional_param('showall', '', PARAM_INT); // show all discussions on one page
+        $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
+        $page    = optional_param('page', 0, PARAM_INT); // which page to show
+
+        /// find out current groups mode
+        groups_print_activity_menu($cm, $PAGE->url);
+        groups_get_activity_group($cm);
+        groups_get_activity_groupmode($cm);
+
+        // Unset session
+        hsuforum_lib_discussion_nav::set_to_session();
+
+        $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
+        if ($forum->type != 'single') {
+            $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
+            $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
+            hsuforum_lib_discussion_sort::set_to_session($dsort);
+            echo $this->discussion_sorting($dsort);
+        }
 
         // If it's a simple single discussion forum, we need to print the display
         // mode control.
@@ -321,7 +412,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     set_user_preference("hsuforum_displaymode", $mode);
                 }
                 $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
-                hsuforum_print_mode_form($forum->id, $displaymode, $forum->type);
+                hsuforum_print_mode_form($forum->id, $displaymode, $forum);
             }
         }
 
@@ -368,17 +459,17 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
                 echo '</p>';
                 if (!empty($showall)) {
-                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
                 } else {
-                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', $dsort->get_sort_sql(), -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
                 }
                 break;
 
             case 'teacher':
                 if (!empty($showall)) {
-                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
                 } else {
-                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', $dsort->get_sort_sql(), -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
                 }
                 break;
 
@@ -388,9 +479,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
                 echo '<br />';
                 if (!empty($showall)) {
-                    hsuforum_print_latest_discussions($course, $forum, 0, 'plain', '', -1, -1, -1, 0, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'plain', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
                 } else {
-                    hsuforum_print_latest_discussions($course, $forum, -1, 'plain', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'plain', $dsort->get_sort_sql(), -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
                 }
                 break;
 
@@ -400,9 +491,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
                 echo '<br />';
                 if (!empty($showall)) {
-                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', '', -1, -1, -1, 0, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, 0, 'header', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
                 } else {
-                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', '', -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
+                    hsuforum_print_latest_discussions($course, $forum, -1, 'header', $dsort->get_sort_sql(), -1, -1, $page, $CFG->hsuforum_manydiscussions, $cm);
                 }
 
 

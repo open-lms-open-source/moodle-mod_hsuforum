@@ -27,7 +27,6 @@
 
     $id          = optional_param('id', 0, PARAM_INT);       // Course Module ID
     $f           = optional_param('f', 0, PARAM_INT);        // Forum ID
-    $showall     = optional_param('showall', '', PARAM_INT); // show all discussions on one page
     $changegroup = optional_param('group', -1, PARAM_INT);   // choose the current group
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
     $search      = optional_param('search', '', PARAM_CLEAN);// search string
@@ -119,11 +118,6 @@
     if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
         notice(get_string('noviewdiscussionspermission', 'hsuforum'));
     }
-
-/// find out current groups mode
-    groups_print_activity_menu($cm, $CFG->wwwroot . '/mod/hsuforum/view.php?id=' . $cm->id);
-    $currentgroup = groups_get_activity_group($cm);
-    $groupmode = groups_get_activity_groupmode($cm);
 
 /// Okay, we can show the discussions. Log the forum view.
     if ($cm->id) {

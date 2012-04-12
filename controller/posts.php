@@ -61,23 +61,35 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
             print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
         }
 
-        $mode = get_user_preferences('hsuforum_displaymode', $CFG->hsuforum_displaymode);
-        if ($mode == HSUFORUM_MODE_FLATNEWEST) {
-            $sort = "p.created DESC";
-        } else {
-            $sort = "p.created ASC";
-        }
-
         $forumtracked = hsuforum_tp_is_tracked($forum);
-        $posts        = hsuforum_get_all_discussion_posts($discussion->id, $sort, $forumtracked);
+        $mode         = hsuforum_get_layout_mode($forum);
+        $posts        = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort($forum), $forumtracked);
         $nodes        = array();
 
-        if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
-            foreach ($posts[$post->id]->children as $post) {
-                if ($node = $this->get_renderer()->post_to_node($PAGE->context, $cm, $forum, $discussion, $post, $forumtracked)) {
-                    $nodes[] = $node;
+        switch ($mode) {
+            case HSUFORUM_MODE_FLATFIRSTNAME:
+            case HSUFORUM_MODE_FLATLASTNAME:
+            case HSUFORUM_MODE_FLATNEWEST:
+            case HSUFORUM_MODE_FLATOLDEST:
+                foreach ($posts as $post) {
+                    if (empty($post->parent)) {
+                        continue;
+                    }
+                    unset($post->children);
+                    if ($node = $this->get_renderer()->post_to_node($PAGE->context, $cm, $forum, $discussion, $post, $forumtracked)) {
+                        $nodes[] = $node;
+                    }
                 }
-            }
+                break;
+
+            default:
+                if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
+                    foreach ($posts[$post->id]->children as $post) {
+                        if ($node = $this->get_renderer()->post_to_node($PAGE->context, $cm, $forum, $discussion, $post, $forumtracked)) {
+                            $nodes[] = $node;
+                        }
+                    }
+                }
         }
         echo json_encode($nodes);
     }
@@ -90,12 +102,12 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
 
         require_sesskey();
 
-        require_once(dirname(__DIR__).'/lib/subscribe/discussion.php');
+        require_once(dirname(__DIR__).'/lib/discussion/subscribe.php');
 
         $discussionid = required_param('discussionid', PARAM_INT);
         $returnurl    = required_param('returnurl', PARAM_LOCALURL);
 
-        $subscribe = new hsuforum_lib_subscribe_discussion($PAGE->activityrecord, $PAGE->context);
+        $subscribe = new hsuforum_lib_discussion_subscribe($PAGE->activityrecord, $PAGE->context);
 
         if ($subscribe->is_subscribed($discussionid)) {
             $subscribe->unsubscribe($discussionid);
