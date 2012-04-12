@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/hsuforum/db" VERSION="20120330" COMMENT="XMLDB file for Moodle mod/hsuforum"
+﻿﻿<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/hsuforum/db" VERSION="20120411" COMMENT="XMLDB file for Moodle mod/hsuforum"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -90,7 +90,8 @@
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" NEXT="created"/>
         <INDEX NAME="created" UNIQUE="false" FIELDS="created" PREVIOUS="userid" NEXT="mailed"/>
-        <INDEX NAME="mailed" UNIQUE="false" FIELDS="mailed" PREVIOUS="created"/>
+        <INDEX NAME="mailed" UNIQUE="false" FIELDS="mailed" PREVIOUS="created" NEXT="privatereply"/>
+        <INDEX NAME="privatereply" UNIQUE="false" FIELDS="privatereply" PREVIOUS="mailed"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="hsuforum_queue" COMMENT="For keeping track of posts that will be mailed in digest form" PREVIOUS="hsuforum_posts" NEXT="hsuforum_subscriptions">

@@ -1382,8 +1382,8 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
                                               JOIN {hsuforum_discussions} d ON d.id = p.discussion
                                               JOIN {hsuforum} f             ON f.id = d.forum
                                               JOIN {user} u              ON u.id = p.userid
-                                        WHERE p.created > ? AND f.course = ?
-                                     ORDER BY p.id ASC", array($timestart, $course->id))) { // order by initial posting date
+                                        WHERE p.created > ? AND f.course = ? AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                                     ORDER BY p.id ASC", array($timestart, $course->id, $USER->id, $USER->id))) { // order by initial posting date
          return false;
     }
 
@@ -1795,11 +1795,14 @@ function hsuforum_get_all_discussion_posts($discussionid, $sort, $tracking=false
     }
 
     $params[] = $discussionid;
+    $params[] = $USER->id;
+    $params[] = $USER->id;
     if (!$posts = $DB->get_records_sql("SELECT p.*, u.firstname, u.lastname, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {hsuforum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
+                                      AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                                  ORDER BY $sort", $params)) {
         return array();
     }
@@ -1984,7 +1987,7 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
 
     $fullaccess = array();
     $where = array();
-    $params = array();
+    $params = array('privatereply1' => $USER->id, 'privatereply2' => $USER->id);
 
     foreach ($forums as $forumid => $forum) {
         $select = array();
@@ -2072,7 +2075,8 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
                   {hsuforum_discussions} d,
                   {user} u";
 
-    $selectsql = " $messagesearch
+    $selectsql = "(p.privatereply = 0 OR p.privatereply = :privatereply1 OR p.userid = :privatereply2)
+               AND $messagesearch
                AND p.discussion = d.id
                AND p.userid = u.id
                AND $selectdiscussion
@@ -2364,7 +2368,7 @@ function hsuforum_get_firstpost_from_discussion($discussionid) {
  * @return array
  */
 function hsuforum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $page=-1, $perpage=0) {
-    global $CFG, $DB;
+    global $USER, $DB;
 
     if ($limit > 0) {
         $limitfrom = 0;
@@ -2392,18 +2396,18 @@ function hsuforum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $
         $sql = "SELECT p.discussion, COUNT(p.id) AS replies, MAX(p.id) AS lastpostid
                   FROM {hsuforum_posts} p
                        JOIN {hsuforum_discussions} d ON p.discussion = d.id
-                 WHERE p.parent > 0 AND d.forum = ?
+                 WHERE p.parent > 0 AND d.forum = ? AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
               GROUP BY p.discussion";
-        return $DB->get_records_sql($sql, array($forumid));
+        return $DB->get_records_sql($sql, array($forumid, $USER->id, $USER->id));
 
     } else {
         $sql = "SELECT p.discussion, (COUNT(p.id) - 1) AS replies, MAX(p.id) AS lastpostid
                   FROM {hsuforum_posts} p
                        JOIN {hsuforum_discussions} d ON p.discussion = d.id
-                 WHERE d.forum = ?
+                 WHERE d.forum = ? AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
               GROUP BY p.discussion $groupby
               $orderby";
-        return $DB->get_records_sql("SELECT * FROM ($sql) sq", array($forumid), $limitfrom, $limitnum);
+        return $DB->get_records_sql("SELECT * FROM ($sql) sq", array($forumid, $USER->id, $USER->id), $limitfrom, $limitnum);
     }
 }
 
@@ -2639,7 +2643,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $fullpo
         $forumsort = "d.timemodified DESC";
     }
     if (empty($fullpost)) {
-        $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid,p.reveal,p.flags";
+        $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid,p.reveal,p.flags,p.privatereply";
     } else {
         $postdata = "p.*";
     }
@@ -2722,10 +2726,13 @@ function hsuforum_get_discussions_unread($cm) {
                    LEFT JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = $USER->id)
              WHERE d.forum = {$cm->instance}
                    AND p.modified >= :cutoffdate AND r.id is NULL
+                   AND (p.privatereply = 0 OR p.privatereply = :privatereply1 OR p.userid = :privatereply2)
                    $groupselect
                    $timedsql
           GROUP BY d.id";
     $params['cutoffdate'] = $cutoffdate;
+    $params['privatereply1'] = $USER->id;
+    $params['privatereply2'] = $USER->id;
 
     if ($unreads = $DB->get_records_sql($sql, $params)) {
         foreach ($unreads as $unread) {
@@ -3240,9 +3247,11 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         $output .= html_writer::tag('div', get_string('forumauthorhidden','hsuforum'), array('class'=>'author')); // author
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('div'); // row
-        $output .= html_writer::start_tag('div', array('class'=>'row'));
-        $output .= html_writer::tag('div', '&nbsp;', array('class'=>'left side')); // Groups
+        $output .= html_writer::start_tag('div', array('class'=>'row maincontent clearfix'));
+        $output .= html_writer::tag('div', '&nbsp;', array('class'=>'left')); // Groups
+        $output .= html_writer::start_tag('div', array('class'=>'no-overflow'));
         $output .= html_writer::tag('div', get_string('forumbodyhidden','hsuforum'), array('class'=>'content')); // Content
+        $output .= html_writer::end_tag('div'); // no-overflow
         $output .= html_writer::end_tag('div'); // row
         $output .= html_writer::end_tag('div'); // forumpost
 
@@ -3349,7 +3358,10 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('delete'=>$post->id)), 'text'=>$str->delete);
     }
 
-    if ($reply) {
+    if (!property_exists($post, 'privatereply')) {
+        throw new coding_exception('Must set post\'s privatereply property!');
+    }
+    if ($reply and empty($post->privatereply)) {
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('reply'=>$post->id)), 'text'=>$str->reply);
     }
 
@@ -4306,8 +4318,10 @@ function hsuforum_add_new_post($post, $mform, &$message) {
     hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
 
     // Update discussion modified date
-    $DB->set_field("hsuforum_discussions", "timemodified", $post->modified, array("id" => $post->discussion));
-    $DB->set_field("hsuforum_discussions", "usermodified", $post->userid, array("id" => $post->discussion));
+    if (empty($post->privatereply)) {
+        $DB->set_field("hsuforum_discussions", "timemodified", $post->modified, array("id" => $post->discussion));
+        $DB->set_field("hsuforum_discussions", "usermodified", $post->userid, array("id" => $post->discussion));
+    }
 
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
         hsuforum_tp_mark_post_read($post->userid, $post, $post->forum);
@@ -4339,8 +4353,10 @@ function hsuforum_update_post($post, $mform, &$message) {
 
     $DB->update_record('hsuforum_posts', $post);
 
-    $discussion->timemodified = $post->modified; // last modified tracking
-    $discussion->usermodified = $post->userid;   // last modified tracking
+    if (empty($post->privatereply)) {
+        $discussion->timemodified = $post->modified; // last modified tracking
+        $discussion->usermodified = $post->userid; // last modified tracking
+    }
 
     if (!$post->parent) {   // Post is a discussion starter - update discussion title and times too
         $discussion->name      = $post->subject;
@@ -4563,18 +4579,21 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
  * @return int
  */
 function hsuforum_count_replies($post, $children=true) {
-    global $DB;
+    global $DB, $USER;
     $count = 0;
 
+    $select = 'parent = ? AND (privatereply = 0 OR privatereply = ? OR userid = ?)';
+    $params = array($post->id, $USER->id, $USER->id);
+
     if ($children) {
-        if ($childposts = $DB->get_records('hsuforum_posts', array('parent' => $post->id))) {
+        if ($childposts = $DB->get_records_select('hsuforum_posts', $select, $params)) {
            foreach ($childposts as $childpost) {
                $count ++;                   // For this child
                $count += hsuforum_count_replies($childpost, true);
            }
         }
     } else {
-        $count += $DB->count_records('hsuforum_posts', array('parent' => $post->id));
+        $count += $DB->count_records_select('hsuforum_posts', $select, $params);
     }
 
     return $count;
@@ -5278,6 +5297,15 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
                 $firstpost->id == $post->id || $post->userid == $user->id || $firstpost->userid == $user->id ||
                 has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id, false));
     }
+
+    if (!property_exists($post, 'privatereply')) {
+        throw new coding_exception('Must set post\'s privatereply property!');
+    }
+    if (!empty($post->privatereply)) {
+        if ($post->userid != $user->id and $post->privatereply != $user->id) {
+            return false;
+        }
+    }
     return true;
 }
 
@@ -5902,7 +5930,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
     $modinfo =& get_fast_modinfo($course);
 
     $cm = $modinfo->cms[$cmid];
-    $params = array($timestart, $cm->instance);
+    $params = array($timestart, $cm->instance, $USER->id, $USER->id);
 
     if ($userid) {
         $userselect = "AND u.id = ?";
@@ -5928,7 +5956,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
                                               JOIN {hsuforum} f             ON f.id = d.forum
                                               JOIN {user} u              ON u.id = p.userid
                                               $groupjoin
-                                        WHERE p.created > ? AND f.id = ?
+                                        WHERE p.created > ? AND f.id = ? AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                                               $userselect $groupselect
                                      ORDER BY p.id ASC", $params)) { // order by initial posting date
          return;
@@ -6636,7 +6664,7 @@ function hsuforum_tp_count_hsuforum_unread_posts($cm, $course) {
 
     $now = round(time(), -2); // db cache friendliness
     $cutoffdate = $now - ($CFG->hsuforum_oldpostdays*24*60*60);
-    $params = array($USER->id, $forumid, $cutoffdate);
+    $params = array($USER->id, $forumid, $cutoffdate, $USER->id, $USER->id);
 
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
@@ -6654,6 +6682,7 @@ function hsuforum_tp_count_hsuforum_unread_posts($cm, $course) {
                    LEFT JOIN {hsuforum_read} r   ON (r.postid = p.id AND r.userid = ?)
              WHERE d.forum = ?
                    AND p.modified >= ? AND r.id is NULL
+                   AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                    $timedsql
                    AND d.groupid $groups_sql";
 

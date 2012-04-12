@@ -143,6 +143,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $post->subject       = '';
     $post->userid        = $USER->id;
     $post->reveal        = 0;
+    $post->privatereply  = 0;
     $post->message       = '';
     $post->messageformat = editors_get_preferred_format();
     $post->messagetrust  = 0;
@@ -218,6 +219,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $post->discussion  = $parent->discussion;
     $post->parent      = $parent->id;
     $post->reveal      = 0;
+    $post->privatereply= 0;
     $post->subject     = $parent->subject;
     $post->userid      = $USER->id;
     $post->message     = '';
@@ -564,6 +566,7 @@ $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'userid'=>$post->userid,
                                     'parent'=>$post->parent,
                                     'reveal'=>$post->reveal,
+                                    'privatereply'=>$post->privatereply,
                                     'discussion'=>$post->discussion,
                                     'course'=>$course->id) +
                                     $page_params +

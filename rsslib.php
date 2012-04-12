@@ -186,6 +186,8 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 }
 
 function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
+    global $USER;
+
     $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
 
     //get group enforcement SQL
@@ -222,6 +224,7 @@ function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                {user} u
             WHERE d.forum = {$forum->id} AND
                 p.discussion = d.id AND
+                (p.privatereply = 0 OR p.privatereply = $USER->id OR p.userid = $USER->id) AND
                 u.id = p.userid $newsince
                 $groupselect
             ORDER BY p.created desc";

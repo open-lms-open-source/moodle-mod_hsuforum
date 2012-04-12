@@ -62,7 +62,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             'parent', 'userid', 'created', 'modified',
             'mailed', 'subject', 'message', 'messageformat',
             'messagetrust', 'attachment', 'totalscore', 'mailnow',
-            'reveal', 'flags'));
+            'reveal', 'flags', 'privatereply'));
 
         $ratings = new backup_nested_element('ratings');
 

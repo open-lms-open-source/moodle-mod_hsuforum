@@ -31,7 +31,7 @@ class mod_hsuforum_post_form extends moodleform {
 
     function definition() {
 
-        global $CFG, $USER;
+        global $CFG, $USER, $DB;
         $mform    =& $this->_form;
 
         $course        = $this->_customdata['course'];
@@ -136,6 +136,11 @@ class mod_hsuforum_post_form extends moodleform {
         if (!empty($forum->anonymous) and $post->userid == $USER->id and has_capability('mod/hsuforum:revealpost', $modcontext)) {
             $mform->addElement('advcheckbox', 'reveal', get_string('reveal', 'hsuforum'));
             $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
+        }
+        if (!empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
+            $parentauthorid = $DB->get_field('hsuforum_posts', 'userid', array('id' => $post->parent), MUST_EXIST);
+            $mform->addElement('advcheckbox', 'privatereply', get_string('privatereply', 'hsuforum'), null, null, array(0, $parentauthorid));
+            $mform->addHelpButton('privatereply', 'privatereply', 'hsuforum');
         }
 
         //-------------------------------------------------------------------------------

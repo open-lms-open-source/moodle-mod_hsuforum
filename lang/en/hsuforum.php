@@ -438,3 +438,5 @@ $string['unsubscribedisc'] = 'Unsubscribe to this discussion';
 $string['subscribedisc'] = 'Subscribe to this discussion';
 $string['showdiscussionsubscribers'] = 'Show/edit discussion subscribers';
 $string['discussionsubscribers'] = 'Discussion subscribers';
+$string['privatereply'] = 'Private reply';
+$string['privatereply_help'] = 'If checked, then this post will only be visible to the user that you are responding to.  Also, no one will be able to reply to this post.';
