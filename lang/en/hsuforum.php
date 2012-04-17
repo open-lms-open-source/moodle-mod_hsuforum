@@ -415,11 +415,11 @@ $string['yournewtopic'] = 'Your new discussion topic';
 $string['yourreply'] = 'Your reply';
 
 $string['anonymous'] = 'Enable anonymous posting';
-$string['anonymous_help'] = 'Poster\'s names will be suppressed when viewing the forum.';
+$string['anonymous_help'] = 'If enabled, then the author\'s name for each post will be suppressed when viewing the forum.';
 $string['anonymousfirstname'] = 'Anonymous';
 $string['anonymouslastname'] = 'User';
 $string['reveal'] = 'Reveal yourself in this post';
-$string['reveal_help'] = 'If checked, then your name will be shown in the post and you will no long be anonymous.';
+$string['reveal_help'] = 'If checked, then your name will be shown in the post and you will no longer be anonymous.';
 $string['hsuforum:revealpost'] = 'Reveal yourself in an anonymous forum';
 $string['hsuforum:viewflags'] = 'View post flags';
 $string['viewposters'] = 'View posters';
