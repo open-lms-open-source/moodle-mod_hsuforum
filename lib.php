@@ -4405,6 +4405,9 @@ function hsuforum_delete_discussion($discussion, $fulldelete, $course, $cm, $for
     if (!$DB->delete_records("hsuforum_discussions", array("id"=>$discussion->id))) {
         $result = false;
     }
+    if (!$DB->delete_records('hsuforum_subscriptions_disc', array('discussion' => $discussion->id))) {
+        $result = false;
+    }
 
     // Update completion state if we are tracking completion based on number of posts
     // But don't bother when deleting whole thing
