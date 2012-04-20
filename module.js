@@ -61,6 +61,33 @@ M.mod_hsuforum.init_treeview = function(Y, id, url, nodes) {
         });
     });
     tree.render();
+
+    var wrapper = Y.one('#'+id).ancestor('.hsuforum_treeview_wrapper');
+    wrapper.one('.hsuforum_expandall').on('click', function(e) {
+        e.preventDefault();
+        var expandAll = function(node) {
+            if (!node.isRoot() && !node.data.doExpandAll) {
+                return;
+            }
+            for (var i = 0; i < node.children.length; i++) {
+                var child = node.children[i];
+                child.data.doExpandAll = true;
+                if (child.expanded) {
+                    child.collapse();
+                }
+                child.expand();
+            }
+            node.data.doExpandAll = false;
+        };
+        tree.subscribe('expandComplete', expandAll);
+        tree.collapseAll();
+        expandAll(tree.getRoot());
+    });
+
+    wrapper.one('.hsuforum_collapseall').on('click', function(e) {
+        e.preventDefault();
+        tree.collapseAll();
+    });
 };
 
 /**

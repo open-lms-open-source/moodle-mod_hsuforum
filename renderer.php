@@ -238,30 +238,25 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     /**
-     * @param \context_module $context
      * @param $cm
-     * @param $forum
      * @param $discussion
      * @param $post
-     * @param $forumtracked
      * @return bool|object
      * @author Mark Nielsen
      */
-    public function post_to_node(context_module $context, $cm, $forum, $discussion, $post, $forumtracked) {
+    public function post_to_node($cm, $discussion, $post) {
         global $PAGE;
 
-        if (!hsuforum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
+        hsuforum_cm_add_cache($cm);
+
+        if (!hsuforum_user_can_see_post($cm->cache->forum, $discussion, $post, NULL, $cm)) {
             return false;
         }
-        $displaymode = hsuforum_get_layout_mode($forum);
-        $postuser    = hsuforum_extract_postuser($post, $forum, $context);
-
-        $by = new stdClass();
-        $by->name = $postuser->fullname;
-        $by->date = userdate($post->modified);
+        $displaymode = hsuforum_get_layout_mode($cm->cache->forum);
+        $postuser    = hsuforum_extract_postuser($post, $cm->cache->forum, $cm->cache->context);
 
         $class = '';
-        if ($forumtracked) {
+        if ($cm->cache->istracked) {
             if (!empty($post->postread)) {
                 $class = 'read';
             } else {
@@ -274,10 +269,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $url = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
             $url->set_anchor("p$post->id");
         }
+        if (empty($post->parent)) {
+            $author = $this->discussion_startedby($cm, $discussion, $postuser).'. '.
+                      $this->discussion_lastpostby($cm, $discussion);
+        } else {
+            $author = get_string('createdbynameondate', 'hsuforum', array('name' => $postuser->fullname, 'date' => userdate($post->modified)));
+        }
         $html = "<span><span class=\"$class\">".
                 html_writer::link($url, format_string($post->subject,true)).'&nbsp;'.
-                get_string("bynameondate", "hsuforum", $by).'</span>'.
-                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $context).
+                $author.'</span>'.
+                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $cm->cache->context).
                 "</span>";
 
         $leaf = true;
@@ -300,7 +301,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         if (!empty($post->children)) {
             foreach ($post->children as $childpost) {
-                if ($childnode = $this->post_to_node($context, $cm, $forum, $discussion, $childpost, $forumtracked)) {
+                if ($childnode = $this->post_to_node($cm, $discussion, $childpost)) {
                     $node->children[] = $childnode;
                 }
             }
@@ -322,9 +323,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $id  = html_writer::random_id('hsuforum_treeview');
             $url = new moodle_url('/mod/hsuforum/route.php', array('contextid' => $context->id, 'action' => 'postnodes'));
 
+            $expandall   = html_writer::link($PAGE->url, get_string('expandall', 'hsuforum'), array('class' => 'hsuforum_expandall'));
+            $collapseall = html_writer::link($PAGE->url, get_string('collapseall', 'hsuforum'), array('class' => 'hsuforum_collapseall'));
+
             $PAGE->requires->js_init_call('M.mod_hsuforum.init_treeview', array($id, $url->out(false), $nodes), false, $this->get_js_module());
+
+            $commands = html_writer::tag('div', $expandall.' / '.$collapseall, array('class' => 'hsuforum_treeview_commands'));
+            $treeview = html_writer::tag('div', '', array('id' => $id, 'class' => 'hsuforum_treeview'));
+
             $output .= html_writer::tag('noscript', $OUTPUT->notification(get_string('javascriptdisableddisplayformat', 'hsuforum')));
-            $output .= html_writer::tag('div', '', array('id' => $id, 'class' => 'hsuforum_treeview'));
+            $output .= html_writer::tag('div', $commands.$treeview, array('class' => 'hsuforum_treeview_wrapper'));
         }
         return $output;
     }
@@ -419,36 +427,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $postrating   = $this->post_rating($discussion);
         $postcommands = $this->post_commands($discussion, $discussion, $cm, $canreply);
 
-        $author = '';
-        if ($cm->cache->groupmode > 0) {
-            if (isset($cm->cache->groups[$discussion->groupid])) {
-                $group = $cm->cache->groups[$discussion->groupid];
-                $author = get_string('startedbyxgroupx', 'hsuforum', array('name' => $postuser->fullname, 'group' => format_string($group->name)));
-            }
-        }
-        if (empty($author)) {
-            $author = get_string('startedbyx', 'hsuforum', $postuser->fullname);
-        }
-        $postsubject .= html_writer::tag('div', $author, array('class' => 'author'));
+        $postsubject .= html_writer::tag('div', $this->discussion_startedby($cm, $discussion, $postuser), array('class' => 'author'));
+        $postsubject .= html_writer::tag('div', $this->discussion_lastpostby($cm, $discussion), array('class' => 'lastpostby'));
 
-        $usermodified            = new stdClass();
-        $usermodified->id        = $discussion->usermodified;
-        $usermodified->firstname = $discussion->umfirstname;
-        $usermodified->lastname  = $discussion->umlastname;
-
-        $lastpost         = new stdClass;
-        $lastpost->id     = $discussion->lastpostid;
-        $lastpost->userid = $discussion->usermodified;
-        $lastpost->reveal = is_null($discussion->umreveal) ? $discussion->reveal : $discussion->umreveal;
-
-        $usermodified = hsuforum_get_postuser($usermodified, $lastpost, $cm->cache->forum, $cm->cache->context);
-        $usedate      = (empty($discussion->timemodified)) ? $discussion->modified : $discussion->timemodified;
-
-        $postsubject .= html_writer::tag(
-            'div',
-            get_string('lastpostbyx', 'hsuforum', array('name' => $usermodified->fullname, 'time' => userdate($usedate, $cm->cache->str->strftimerecentfull))),
-            array('class' => 'lastpostby')
-        );
         $header  = html_writer::tag('div', $this->render($postuser->user_picture), array('class' => 'picture'));
         $header .= $this->discussion_info($cm, $discussion);
         $header .= html_writer::tag('div', $postsubject, array('class' => 'hsuforum_nested_header_content'));
@@ -489,7 +470,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $postsubject .= html_writer::tag(
             'div',
-            get_string('postedbyx', 'hsuforum', array('name' => $postuser->fullname, 'time' => userdate($post->modified, $cm->cache->str->strftimerecentfull))),
+            get_string('createdbynameondate', 'hsuforum', array('name' => $postuser->fullname, 'date' => userdate($post->modified, $cm->cache->str->strftimerecentfull))),
             array('class' => 'author')
         );
         $header  = html_writer::tag('div', $this->render($postuser->user_picture), array('class' => 'picture'));
@@ -510,6 +491,53 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $body  = html_writer::tag('div', $postmessage.$footer.$posts, array('class' => 'hsuforum_nested_body'));
 
         return html_writer::tag('div', $header.$body, array('class' => 'hsuforum_nested_wrapper hsuforum_nested_post clearfix'));
+    }
+
+    /**
+     * @param $cm
+     * @param $discussion
+     * @param null $postuser
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function discussion_startedby($cm, $discussion, $postuser = null) {
+        hsuforum_cm_add_cache($cm);
+
+        if (is_null($postuser)) {
+            $postuser = hsuforum_extract_postuser($discussion, $cm->cache->forum, $cm->cache->context);
+        }
+        if ($cm->cache->groupmode > 0) {
+            if (isset($cm->cache->groups[$discussion->groupid])) {
+                $group = $cm->cache->groups[$discussion->groupid];
+                return get_string('startedbyxgroupx', 'hsuforum', array('name' => $postuser->fullname, 'group' => format_string($group->name)));
+            }
+        }
+        return get_string('startedbyx', 'hsuforum', $postuser->fullname);
+    }
+
+    /**
+     * @param $cm
+     * @param $discussion
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function discussion_lastpostby($cm, $discussion) {
+        hsuforum_cm_add_cache($cm);
+
+        $usermodified            = new stdClass();
+        $usermodified->id        = $discussion->usermodified;
+        $usermodified->firstname = $discussion->umfirstname;
+        $usermodified->lastname  = $discussion->umlastname;
+
+        $lastpost         = new stdClass;
+        $lastpost->id     = $discussion->lastpostid;
+        $lastpost->userid = $discussion->usermodified;
+        $lastpost->reveal = is_null($discussion->umreveal) ? $discussion->reveal : $discussion->umreveal;
+
+        $usermodified = hsuforum_get_postuser($usermodified, $lastpost, $cm->cache->forum, $cm->cache->context);
+        $usedate      = (empty($discussion->timemodified)) ? $discussion->modified : $discussion->timemodified;
+
+        return get_string('lastpostbyx', 'hsuforum', array('name' => $usermodified->fullname, 'time' => userdate($usedate, $cm->cache->str->strftimerecentfull)));
     }
 
     /**

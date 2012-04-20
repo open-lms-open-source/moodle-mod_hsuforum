@@ -67,7 +67,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
 
         if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
             foreach ($posts[$post->id]->children as $post) {
-                if ($node = $this->get_renderer()->post_to_node($PAGE->context, $cm, $forum, $discussion, $post, $forumtracked)) {
+                if ($node = $this->get_renderer()->post_to_node($cm, $discussion, $post)) {
                     $nodes[] = $node;
                 }
             }

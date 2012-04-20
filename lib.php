@@ -5390,7 +5390,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
 // Get all the recent discussions we're allowed to see
 
-    $getuserlastmodified = ($displayformat == 'header' or $displayformat == 'nested');
+    $getuserlastmodified = ($displayformat == 'header' or $displayformat == 'nested' or $displayformat == 'tree');
 
     $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
     if (!$discussions) {
@@ -5514,7 +5514,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 if (empty($nodes)) {
                     $nodes = array();
                 }
-                if ($node = $renderer->post_to_node($context, $cm, $forum, $discussion, $discussion, $forumtracked)) {
+                if ($node = $renderer->post_to_node($cm, $discussion, $discussion)) {
                     $nodes[] = $node;
                 }
                 break;
