@@ -2515,7 +2515,7 @@ function hsuforum_count_unrated_posts($discussionid, $userid) {
  * @param int $perpage
  * @return moodle_recordset
  */
-function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forumselect=true, $limit=-1, $userlastmodified=false, $page=-1, $perpage=0) {
+function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forumselect=true, $limit=-1, $userlastmodified=false, $page=-1, $perpage=0, $returnrs = true) {
     global $CFG, $DB, $USER;
 
     require_once(__DIR__.'/lib/discussion/subscribe.php');
@@ -2535,7 +2535,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
     $forum = $DB->get_record('forum', array('id' => $cm->instance), '*', MUST_EXIST);
 
     if (hsuforum_tp_is_tracked($forum)) {
-        $trackselect = ' unread.unread, ';
+        $trackselect = ' unread.unread, dunread.postread, ';
         $tracksql    = 'LEFT OUTER JOIN (
             SELECT d.id, COUNT(p.id) AS unread
               FROM {hsuforum_discussions} d
@@ -2545,9 +2545,18 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
                AND p.modified >= ? AND r.id is NULL
                AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
           GROUP BY d.id
-        ) unread ON d.id = unread.id';
+        ) unread ON d.id = unread.id
 
-        $params = array_merge($params, array($USER->id, $cm->instance, $cutoffdate, $USER->id, $USER->id));
+        JOIN (
+            SELECT d.id, CASE WHEN r.id IS NULL THEN 0 ELSE 1 END AS postread
+              FROM {hsuforum_discussions} d
+              JOIN {hsuforum_posts} p ON p.discussion = d.id AND p.parent = 0
+   LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
+             WHERE d.forum = ?
+               AND p.modified >= ?
+        ) dunread ON d.id = dunread.id';
+
+        $params = array_merge($params, array($USER->id, $cm->instance, $cutoffdate, $USER->id, $USER->id, $USER->id, $cm->instance, $cutoffdate));
     } else {
         $trackselect = $tracksql = '';
     }
@@ -2629,8 +2638,9 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
         $umfields = "";
         $umtable  = "";
     } else {
-        $umfields = ", um.firstname AS umfirstname, um.lastname AS umlastname";
-        $umtable  = " LEFT JOIN {user} um ON (d.usermodified = um.id)";
+        $umfields = ", um.firstname AS umfirstname, um.lastname AS umlastname, up.reveal AS umreveal";
+        $umtable  = " LEFT JOIN {user} um ON (d.usermodified = um.id)
+                      LEFT OUTER JOIN {hsuforum_posts} up ON extra.lastpostid = up.id";
     }
 
     // Sort of hacky, but allows for custom select
@@ -2659,7 +2669,11 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
              WHERE d.forum = ? AND p.parent = 0
                    $timelimit $groupselect
           ORDER BY $forumsort";
-    return $DB->get_recordset_sql($sql, $params, $limitfrom, $limitnum);
+
+    if ($returnrs) {
+        return $DB->get_recordset_sql($sql, $params, $limitfrom, $limitnum);
+    }
+    return $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
 }
 
 /**
@@ -3338,12 +3352,12 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     if (empty($post->subjectnoformat)) {
         $postsubject = format_string($postsubject);
     }
-    $postsubject .= $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext, $discussion);
+    $postsubject .= $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext);
     $output .= html_writer::tag('div', $postsubject, array('class'=>'subject'));
 
     $by = new stdClass();
     if (!hsuforum_is_anonymous_user($postuser)) {
-        if (has_capability('moodle/course:manageactivities', $modcontext)) {
+        if (has_capability('moodle/course:manageactivities', $modcontext, $postuser->id)) {
             $postuser->fullname = html_writer::tag('span', $postuser->fullname, array('class' => 'hsuforum_highlightposter'));
         }
         $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
@@ -3609,6 +3623,9 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
         $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
     }
 
+    /** @var $renderer mod_hsuforum_renderer */
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+
     if (!isset($rowcount)) {
         $rowcount = 0;
         $strmarkalldread = get_string('markalldread', 'hsuforum');
@@ -3645,14 +3662,14 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
     $fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $modcontext));
     echo '<td class="author">';
     if (!hsuforum_is_anonymous_user($postuser)) {
-        if (has_capability('moodle/course:manageactivities', $modcontext)) {
+        if (has_capability('moodle/course:manageactivities', $modcontext, $postuser->id)) {
             $fullname = html_writer::tag('span', $fullname, array('class' => 'hsuforum_highlightposter'));
         }
         echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$postuser->id.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
     } else {
         echo $fullname;
     }
-    echo $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext);
+    echo $renderer->post_flags($post, $modcontext);
     echo "</td>\n";
 
     // Group picture
@@ -3704,24 +3721,8 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
 
     require_once(__DIR__.'/lib/discussion/subscribe.php');
     $subscribe = new hsuforum_lib_discussion_subscribe($forum, $modcontext);
-    if ($subscribe->can_subscribe()) {
-        $subscribeurl = new moodle_url('/mod/hsuforum/route.php', array(
-            'contextid' => $modcontext->id,
-            'action' => 'subscribedisc',
-            'discussionid' => $post->discussion,
-            'sesskey' => sesskey(),
-            'returnurl' => $PAGE->url,
-        ));
-
-        if (!empty($post->subscriptionid)) {
-            $label = get_string('yes');
-        } else {
-            $label = get_string('no');
-        }
-        echo html_writer::tag('td',
-            html_writer::link($subscribeurl, $label, array('title' => get_string('changediscussionsubscription', 'hsuforum'))),
-            array('class' => 'subscribed')
-        );
+    if ($link = $renderer->discussion_subscribe_link($post, $subscribe)) {
+        echo html_writer::tag('td', $link, array('class' => 'subscribe'));
     }
 
     echo '<td class="lastpost">';
@@ -3732,7 +3733,12 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
     $usermodified->firstname = $post->umfirstname;
     $usermodified->lastname  = $post->umlastname;
 
-    $usermodified = hsuforum_anonymize_user($usermodified, $forum, $post);
+    $lastpost = new stdClass;
+    $lastpost->id = $post->lastpostid;
+    $lastpost->userid = $post->usermodified;
+    $lastpost->reveal = is_null($post->umreveal) ? $post->reveal : $post->umreveal;
+
+    $usermodified = hsuforum_anonymize_user($usermodified, $forum, $lastpost);
 
     if (!hsuforum_is_anonymous_user($usermodified)) {
         echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
@@ -5252,6 +5258,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                                         $currentgroup=-1, $groupmode=-1, $page=-1, $perpage=100, $cm=NULL) {
     global $CFG, $USER, $OUTPUT, $PAGE;
 
+    require_once($CFG->dirroot.'/rating/lib.php');
+
     if (!$cm) {
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
@@ -5277,6 +5285,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $sort = "d.timemodified DESC";
     }
 
+    $olddiscussionlink = false;
+
  // Sort out some defaults
     if ($perpage <= 0) {
         $perpage = 0;
@@ -5297,7 +5307,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     }
 
     $fullpost = false;
-    if ($displayformat == 'plain') {
+    if ($displayformat == 'plain' or $displayformat == 'nested') {
         $fullpost = true;
     }
 
@@ -5369,6 +5379,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $display = new single_select($PAGE->url, 'displayformat', array(
             'header' => get_string('default', 'hsuforum'),
             'tree'   => get_string('tree', 'hsuforum'),
+            'nested' => get_string('nested', 'hsuforum'),
         ), $displayformat, array(), 'displayformatid');
 
         $display->set_label(get_string('discussiondisplay', 'hsuforum'));
@@ -5379,10 +5390,10 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
 // Get all the recent discussions we're allowed to see
 
-    $getuserlastmodified = ($displayformat == 'header');
+    $getuserlastmodified = ($displayformat == 'header' or $displayformat == 'nested');
 
-    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage);
-    if (!$discussions->valid()) {
+    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
+    if (!$discussions) {
         echo '<div class="forumnodiscuss">';
         if ($forum->type == 'news') {
             echo '('.get_string('nonews', 'hsuforum').')';
@@ -5395,6 +5406,23 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         return;
     }
 
+    if ($displayformat == 'nested' and $forum->assessed != RATING_AGGREGATE_NONE) {
+        $ratingoptions = new stdClass;
+        $ratingoptions->context = $context;
+        $ratingoptions->component = 'mod_hsuforum';
+        $ratingoptions->ratingarea = 'post';
+        $ratingoptions->items = $discussions;
+        $ratingoptions->aggregate = $forum->assessed;
+        $ratingoptions->scaleid = $forum->scale;
+        $ratingoptions->userid = $USER->id;
+        $ratingoptions->returnurl = "$CFG->wwwroot/mod/hsuforum/view.php?id=$cm->id";
+        $ratingoptions->assesstimestart = $forum->assesstimestart;
+        $ratingoptions->assesstimefinish = $forum->assesstimefinish;
+
+        $rm = new rating_manager();
+        $discussions = $rm->get_ratings($ratingoptions);
+    }
+
 // If we want paging
     if ($page != -1) {
         ///Get the number of discussions found
@@ -5402,6 +5430,10 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
         ///Show the paging bar
         echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
+    } else {
+        if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
+            $olddiscussionlink = true;
+        }
     }
 
     $canviewparticipants = has_capability('moodle/course:viewparticipants',$context);
@@ -5451,9 +5483,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo '<tbody>';
     }
 
-    $discussioncount = 0;
     foreach ($discussions as $discussion) {
-        $discussioncount++;
         if (empty($discussion->replies)) {
             $discussion->replies = 0;
         }
@@ -5487,7 +5517,10 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 if ($node = $renderer->post_to_node($context, $cm, $forum, $discussion, $discussion, $forumtracked)) {
                     $nodes[] = $node;
                 }
+                break;
 
+            case 'nested':
+                echo $renderer->nested_discussion($cm, $discussion);
                 break;
 
             case 'header':
@@ -5519,16 +5552,17 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             break;
         }
     }
-    $discussions->close();
 
     if ($displayformat == "header") {
         echo '</tbody>';
         echo '</table>';
     } else if ($displayformat == 'tree') {
         echo $renderer->discussion_nodes($context, $nodes);
+    } else if ($displayformat == 'nested') {
+        echo html_writer::tag('noscript', $OUTPUT->notification(get_string('javascriptdisableddisplayformat', 'hsuforum')));
     }
 
-    if ($page == -1 and $maxdiscussions > 0 and $maxdiscussions <= $discussioncount) {
+    if ($olddiscussionlink) {
         if ($forum->type == 'news') {
             $strolder = get_string('oldertopics', 'hsuforum');
         } else {
@@ -5586,7 +5620,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
     $posters = array();
 
     $forumtracked = hsuforum_tp_is_tracked($forum);
-    $posts = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort($forum), $forumtracked);
+    $posts = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort($mode), $forumtracked);
     $post = $posts[$post->id];
 
     foreach ($posts as $pid=>$p) {
@@ -5740,7 +5774,7 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                 $by->name = fullname($postuser, $canviewfullnames);
                 $by->date = userdate($post->modified);
 
-                if (!hsuforum_is_anonymous_user($postuser) and has_capability('moodle/course:manageactivities', $modcontext)) {
+                if (!hsuforum_is_anonymous_user($postuser) and has_capability('moodle/course:manageactivities', $modcontext, $postuser->id)) {
                     $by->name = html_writer::tag('span', $by->name, array('class' => 'hsuforum_highlightposter'));
                 }
                 if ($forumtracked) {
@@ -5755,7 +5789,7 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                 echo $style."<a name=\"$post->id\"></a>".
                      "<a href=\"discuss.php?d=$post->discussion&amp;parent=$post->id\">".format_string($post->subject,true)."</a> ";
                 print_string("bynameondate", "hsuforum", $by);
-                echo $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext, $discussion);
+                echo $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $modcontext);
                 echo "</span>";
             }
 
@@ -8313,6 +8347,53 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
 }
 
 /**
+ * Extract the user object from the post object
+ *
+ * @param $post
+ * @param $forum
+ * @param context_module $context
+ * @return stdClass
+ */
+function hsuforum_extract_postuser($post, $forum, context_module $context) {
+    $postuser     = new stdClass();
+    $postuser->id = $post->userid;
+
+    $fields = array('firstname', 'lastname', 'imagealt', 'picture', 'email');
+    foreach ($fields as $field) {
+        if (property_exists($post, $field)) {
+            $postuser->$field = $post->$field;
+        }
+    }
+    return hsuforum_get_postuser($postuser, $post, $forum, $context);
+}
+
+/**
+ * Given a user, return post user that is ready for display (EG:
+ * anonymous is enforced as well as highlighting)
+ *
+ * @param $user
+ * @param $post
+ * @param $forum
+ * @param context_module $context
+ * @return stdClass
+ */
+function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
+    $postuser = hsuforum_anonymize_user($user, $forum, $post);
+
+    if (property_exists($user, 'picture')) {
+        $postuser->user_picture           = new user_picture($postuser);
+        $postuser->user_picture->courseid = $forum->course;
+        $postuser->user_picture->link     = (!hsuforum_is_anonymous_user($postuser));
+    }
+    $postuser->fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $context));
+
+    if (!hsuforum_is_anonymous_user($postuser) and has_capability('moodle/course:manageactivities', $context, $postuser->id)) {
+        $postuser->fullname = html_writer::tag('span', $postuser->fullname, array('class' => 'hsuforum_highlightposter'));
+    }
+    return $postuser;
+}
+
+/**
  * @param $user
  * @param null $forum
  * @return stdClass
@@ -8338,6 +8419,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
             'lastname' => get_string('anonymouslastname', 'hsuforum'),
             'picture' => 0,
             'email' => $guest->email,
+            'imagealt' => '',
             'profilelink' => new moodle_url('/user/view.php', array('id'=>$guest->id, 'course'=>$forum->course)),
         );
         $anonymous->fullname = fullname($anonymous, true);
@@ -8383,16 +8465,14 @@ function hsuforum_get_layout_mode($forum) {
 }
 
 /**
- * @param stdClass $forum
+ * @param int $mode The HSUFORUM_MODE_* constant
  * @return string
  * @author Mark Nielsen
  */
-function hsuforum_get_layout_mode_sort($forum) {
-    $mode = hsuforum_get_layout_mode($forum);
-
+function hsuforum_get_layout_mode_sort($mode) {
     if ($mode == HSUFORUM_MODE_FLATFIRSTNAME) {
         $sort = 'u.firstname ASC, p.created ASC';
-    } else if ($mode = HSUFORUM_MODE_FLATLASTNAME) {
+    } else if ($mode == HSUFORUM_MODE_FLATLASTNAME) {
         $sort = 'u.lastname ASC, p.created ASC';
     } else if ($mode == HSUFORUM_MODE_FLATNEWEST) {
         $sort = "p.created DESC";
@@ -8400,4 +8480,68 @@ function hsuforum_get_layout_mode_sort($forum) {
         $sort = "p.created ASC";
     }
     return $sort;
+}
+
+/**
+ * @param $cm
+ * @author Mark Nielsen
+ */
+function hsuforum_cm_add_cache(&$cm) {
+    global $DB, $COURSE;
+
+    if (!isset($cm->cache)) {
+        $cm->cache = new stdClass;
+    }
+    if (!isset($cm->cache->context)) {
+        $cm->cache->context = context_module::instance($cm->id);
+    }
+    if (!isset($cm->cache->forum)) {
+        $cm->cache->forum = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
+    }
+    if (!isset($cm->cache->course)) {
+        if ($COURSE->id == $cm->course) {
+            $cm->cache->course = $COURSE;
+        } else {
+            $cm->cache->course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+        }
+    }
+    if (!isset($cm->cache->caps)) {
+        $cm->cache->caps = array();
+        $cm->cache->caps['mod/hsuforum:viewdiscussion']   = has_capability('mod/hsuforum:viewdiscussion', $cm->cache->context);
+        $cm->cache->caps['moodle/site:viewfullnames']     = has_capability('moodle/site:viewfullnames', $cm->cache->context);
+        $cm->cache->caps['mod/hsuforum:editanypost']      = has_capability('mod/hsuforum:editanypost', $cm->cache->context);
+        $cm->cache->caps['mod/hsuforum:splitdiscussions'] = has_capability('mod/hsuforum:splitdiscussions', $cm->cache->context);
+        $cm->cache->caps['mod/hsuforum:deleteownpost']    = has_capability('mod/hsuforum:deleteownpost', $cm->cache->context);
+        $cm->cache->caps['mod/hsuforum:deleteanypost']    = has_capability('mod/hsuforum:deleteanypost', $cm->cache->context);
+        $cm->cache->caps['mod/hsuforum:viewanyrating']    = has_capability('mod/hsuforum:viewanyrating', $cm->cache->context);
+        $cm->cache->caps['mod/hsuforum:exportpost']       = has_capability('mod/hsuforum:exportpost', $cm->cache->context);
+        $cm->cache->caps['mod/hsuforum:exportownpost']    = has_capability('mod/hsuforum:exportownpost', $cm->cache->context);
+    }
+    if (!isset($cm->cache->str)) {
+        $cm->cache->str                     = new stdClass;
+        $cm->cache->str->edit               = get_string('edit', 'hsuforum');
+        $cm->cache->str->delete             = get_string('delete', 'hsuforum');
+        $cm->cache->str->reply              = get_string('reply', 'hsuforum');
+        $cm->cache->str->parent             = get_string('parent', 'hsuforum');
+        $cm->cache->str->pruneheading       = get_string('pruneheading', 'hsuforum');
+        $cm->cache->str->prune              = get_string('prune', 'hsuforum');
+        $cm->cache->str->markread           = get_string('markread', 'hsuforum');
+        $cm->cache->str->markunread         = get_string('markunread', 'hsuforum');
+        $cm->cache->str->strftimerecentfull = get_string('strftimerecentfull');
+    }
+    if (!isset($cm->cache->displaymode)) {
+        $cm->cache->displaymode = hsuforum_get_layout_mode($cm->cache->forum);
+    }
+    if (!isset($cm->cache->istracked)) {
+        $cm->cache->istracked = hsuforum_tp_is_tracked($cm->cache->forum);
+    }
+    if (!isset($cm->cache->cantrack)) {
+        $cm->cache->cantrack = hsuforum_tp_can_track_forums($cm->cache->forum);
+    }
+    if (!isset($cm->cache->groupmode)) {
+        $cm->cache->groupmode = groups_get_activity_groupmode($cm, $cm->cache->course);
+    }
+    if (!isset($cm->cache->groups)) {
+        $cm->cache->groups = groups_get_all_groups($cm->course, 0, $cm->groupingid);
+    }
 }

@@ -129,13 +129,19 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 'base',
                 'node',
                 'event',
+                'anim',
                 'io-base',
                 'json',
                 'yui2-treeview',
+                'core_rating',
             ),
             'strings' => array(
                 array('jsondecodeerror', 'hsuforum'),
                 array('ajaxrequesterror', 'hsuforum'),
+                array('clicktoexpand', 'hsuforum'),
+                array('clicktocollapse', 'hsuforum'),
+                array('yes'),
+                array('no'),
             )
         );
     }
@@ -196,6 +202,42 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     /**
+     * @param stdClass $discussion
+     * @param hsuforum_lib_discussion_subscribe $subscribe
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function discussion_subscribe_link($discussion, hsuforum_lib_discussion_subscribe $subscribe) {
+        global $PAGE;
+
+        static $jsinit = false;
+
+        if ($subscribe->can_subscribe()) {
+            if (!$jsinit) {
+                $PAGE->requires->js_init_call('M.mod_hsuforum.init_subscribe', null, false, $this->get_js_module());
+                $jsinit = true;
+            }
+            $subscribeurl = new moodle_url('/mod/hsuforum/route.php', array(
+                'contextid' => $subscribe->get_context()->id,
+                'action' => 'subscribedisc',
+                'discussionid' => $discussion->discussion,
+                'sesskey' => sesskey(),
+                'returnurl' => $PAGE->url,
+            ));
+
+            $class = '';
+            if (!empty($discussion->subscriptionid)) {
+                $label = get_string('yes');
+                $class = ' subscribed';
+            } else {
+                $label = get_string('no');
+            }
+            return html_writer::link($subscribeurl, $label, array('title' => get_string('changediscussionsubscription', 'hsuforum'), 'class' => 'hsuforum_discussion_subscribe'.$class));
+        }
+        return '';
+    }
+
+    /**
      * @param \context_module $context
      * @param $cm
      * @param $forum
@@ -211,31 +253,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
             return false;
         }
-        $canviewfullnames = has_capability('moodle/site:viewfullnames', $context);
         $displaymode = hsuforum_get_layout_mode($forum);
-
-        $postuser = new stdClass;
-        $postuser->id        = $post->userid;
-        $postuser->firstname = $post->firstname;
-        $postuser->lastname  = $post->lastname;
-        $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
+        $postuser    = hsuforum_extract_postuser($post, $forum, $context);
 
         $by = new stdClass();
-        $by->name = fullname($postuser, $canviewfullnames);
+        $by->name = $postuser->fullname;
         $by->date = userdate($post->modified);
 
-        if (!hsuforum_is_anonymous_user($postuser) and has_capability('moodle/course:manageactivities', $context)) {
-            $by->name = html_writer::tag('span', $by->name, array('class' => 'hsuforum_highlightposter'));
-        }
         $class = '';
         if ($forumtracked) {
-            if (empty($post->parent)) {
-                if (empty($discussion->unread)) {
-                    $class = 'read';
-                } else {
-                    $class = 'unread';
-                }
-            } else if (!empty($post->postread)) {
+            if (!empty($post->postread)) {
                 $class = 'read';
             } else {
                 $class = 'unread';
@@ -250,7 +277,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $html = "<span><span class=\"$class\">".
                 html_writer::link($url, format_string($post->subject,true)).'&nbsp;'.
                 get_string("bynameondate", "hsuforum", $by).'</span>'.
-                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $context, $discussion).
+                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $context).
                 "</span>";
 
         $leaf = true;
@@ -282,6 +309,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     /**
+     * @param \context_module $context
      * @param array $nodes
      * @author Mark Nielsen
      * @return string
@@ -364,6 +392,314 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $attributes['class'] = $classes;
         }
         return html_writer::tag('div', $output, $attributes);
+    }
+
+    /**
+     * @param stdClass $cm
+     * @param stdClass $discussion
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function nested_discussion($cm, $discussion) {
+        global $PAGE, $USER;
+
+        static $jsinit = false;
+
+        hsuforum_cm_add_cache($cm);
+
+        if (!$jsinit) {
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_nested', null, false, $this->get_js_module());
+            $jsinit = true;
+        }
+        $canreply = hsuforum_user_can_post($cm->cache->forum, $discussion, $USER, $cm, $cm->cache->course, $cm->cache->context);
+
+        $postuser     = hsuforum_extract_postuser($discussion, $cm->cache->forum, $cm->cache->context);
+        $postsubject  = $this->post_subject($discussion, $cm->cache->context);
+        $postmessage  = $this->post_message($discussion, $cm);
+        $postrating   = $this->post_rating($discussion);
+        $postcommands = $this->post_commands($discussion, $discussion, $cm, $canreply);
+
+        $author = '';
+        if ($cm->cache->groupmode > 0) {
+            if (isset($cm->cache->groups[$discussion->groupid])) {
+                $group = $cm->cache->groups[$discussion->groupid];
+                $author = get_string('startedbyxgroupx', 'hsuforum', array('name' => $postuser->fullname, 'group' => format_string($group->name)));
+            }
+        }
+        if (empty($author)) {
+            $author = get_string('startedbyx', 'hsuforum', $postuser->fullname);
+        }
+        $postsubject .= html_writer::tag('div', $author, array('class' => 'author'));
+
+        $usermodified            = new stdClass();
+        $usermodified->id        = $discussion->usermodified;
+        $usermodified->firstname = $discussion->umfirstname;
+        $usermodified->lastname  = $discussion->umlastname;
+
+        $lastpost         = new stdClass;
+        $lastpost->id     = $discussion->lastpostid;
+        $lastpost->userid = $discussion->usermodified;
+        $lastpost->reveal = is_null($discussion->umreveal) ? $discussion->reveal : $discussion->umreveal;
+
+        $usermodified = hsuforum_get_postuser($usermodified, $lastpost, $cm->cache->forum, $cm->cache->context);
+        $usedate      = (empty($discussion->timemodified)) ? $discussion->modified : $discussion->timemodified;
+
+        $postsubject .= html_writer::tag(
+            'div',
+            get_string('lastpostbyx', 'hsuforum', array('name' => $usermodified->fullname, 'time' => userdate($usedate, $cm->cache->str->strftimerecentfull))),
+            array('class' => 'lastpostby')
+        );
+        $header  = html_writer::tag('div', $this->render($postuser->user_picture), array('class' => 'picture'));
+        $header .= $this->discussion_info($cm, $discussion);
+        $header .= html_writer::tag('div', $postsubject, array('class' => 'hsuforum_nested_header_content'));
+        $header  = $this->post_header($cm, $discussion, $header);
+
+        $footer  = html_writer::tag('div', $postrating.$postcommands, array('class' => 'hsuforum_nested_footer'));
+
+        if ($discussion->replies > 0) {
+            $postsurl = new moodle_url('/mod/hsuforum/route.php', array('action' => 'postsnested', 'contextid' => $cm->cache->context->id, 'discussionid' => $discussion->discussion));
+            $posts    = html_writer::tag('div', '', array('class' => 'hsuforum_nested_posts indent', 'postsurl' => $postsurl));
+        } else {
+            $posts = '';
+        }
+        $body = html_writer::tag('div', $postmessage.$footer.$posts, array('class' => 'hsuforum_nested_body'));
+
+        return html_writer::tag('div', $header.$body, array('class' => 'hsuforum_nested_wrapper hsuforum_nested_discussion clearfix'));
+    }
+
+    /**
+     * @param stdClass $cm
+     * @param stdClass $discussion
+     * @param stdClass $post
+     * @param boolean $canreply
+     * @return bool|string
+     * @author Mark Nielsen
+     */
+    public function nested_post($cm, $discussion, $post, $canreply) {
+        hsuforum_cm_add_cache($cm);
+
+        if (!hsuforum_user_can_see_post($cm->cache->forum, $discussion, $post, NULL, $cm)) {
+            return false;
+        }
+        $postuser     = hsuforum_extract_postuser($post, $cm->cache->forum, $cm->cache->context);
+        $postsubject  = $this->post_subject($post, $cm->cache->context);
+        $postmessage  = $this->post_message($post, $cm);
+        $postrating   = $this->post_rating($post);
+        $postcommands = $this->post_commands($post, $discussion, $cm, $canreply);
+
+        $postsubject .= html_writer::tag(
+            'div',
+            get_string('postedbyx', 'hsuforum', array('name' => $postuser->fullname, 'time' => userdate($post->modified, $cm->cache->str->strftimerecentfull))),
+            array('class' => 'author')
+        );
+        $header  = html_writer::tag('div', $this->render($postuser->user_picture), array('class' => 'picture'));
+        $header .= html_writer::tag('div', $postsubject, array('class' => 'hsuforum_nested_header_content'));
+        $header  = $this->post_header($cm, $post, $header);
+
+        $footer  = html_writer::tag('div', $postrating.$postcommands, array('class' => 'hsuforum_nested_footer'));
+
+        $childrenoutput = '';
+        if (!empty($post->children)) {
+            foreach ($post->children as $child) {
+                if ($childoutput = $this->nested_post($cm, $discussion, $child, $canreply)) {
+                    $childrenoutput .= $childoutput;
+                }
+            }
+        }
+        $posts = html_writer::tag('div', $childrenoutput, array('class' => 'hsuforum_nested_posts indent postsloaded'));
+        $body  = html_writer::tag('div', $postmessage.$footer.$posts, array('class' => 'hsuforum_nested_body'));
+
+        return html_writer::tag('div', $header.$body, array('class' => 'hsuforum_nested_wrapper hsuforum_nested_post clearfix'));
+    }
+
+    /**
+     * @param stdClass $cm
+     * @param stdClass $discussion
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function discussion_info($cm, $discussion) {
+        hsuforum_cm_add_cache($cm);
+
+        $infos = array();
+        if ($cm->cache->caps['mod/hsuforum:viewdiscussion']) {
+            $infos[] = html_writer::tag('div', get_string('repliesx', 'hsuforum', $discussion->replies), array('class' => 'replies'));
+
+            if ($cm->cache->cantrack) {
+                $unread = html_writer::tag('span', '-', array('class' => 'read'));
+                if ($cm->cache->istracked) {
+                    if ($discussion->unread > 0) {
+                        $unread = html_writer::tag('span', $discussion->unread, array('class' => 'unread'));
+                    } else {
+                        $unread = html_writer::tag('span', $discussion->unread, array('class' => 'read'));
+                    }
+                }
+                $infos[] = html_writer::tag('div', get_string('unreadx', 'hsuforum', $unread), array('class' => 'unreadposts'));
+            }
+        }
+        require_once(__DIR__.'/lib/discussion/subscribe.php');
+        $subscribe = new hsuforum_lib_discussion_subscribe($cm->cache->forum, $cm->cache->context);
+        if ($link = $this->discussion_subscribe_link($discussion, $subscribe)) {
+            $infos[] = html_writer::tag('div', get_string('subscribedx', 'hsuforum', $link), array('class' => 'subscribe'));
+        }
+        return html_writer::tag('div', implode('', $infos), array('class' => 'discussioninfo'));
+    }
+
+    /**
+     * @param stdClass $cm
+     * @param stdClass $post
+     * @param string $headercontent
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function post_header($cm, $post, $headercontent) {
+        hsuforum_cm_add_cache($cm);
+
+        $unreadclass = $unreadurl = '';
+        if ($cm->cache->istracked) {
+            if (!empty($post->postread)) {
+                $unreadclass = ' read';
+            } else {
+                $unreadclass = ' unread';
+                $unreadurl   = new moodle_url('/mod/hsuforum/route.php', array('action' => 'markread', 'contextid' => $cm->cache->context->id, 'postid' => $post->id));
+            }
+        }
+        return html_writer::tag('div', $headercontent, array('class' => 'hsuforum_nested_header'.$unreadclass, 'title' => get_string('clicktoexpand', 'hsuforum'), 'unreadurl' => $unreadurl));
+    }
+
+    /**
+     * @param stdClass $post
+     * @param context_module $context
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function post_subject($post, context_module $context) {
+        $postsubject = $post->subject;
+        if (empty($post->subjectnoformat)) {
+            $postsubject = format_string($postsubject);
+        }
+        $postsubject .= $this->post_flags($post, $context);
+        return html_writer::tag('div', $postsubject, array('class' => 'subject'));
+
+    }
+
+    /**
+     * @param stdClass $post
+     * @param stdClass $cm
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function post_message($post, $cm) {
+
+        hsuforum_cm_add_cache($cm);
+
+        $options = new stdClass;
+        $options->para    = false;
+        $options->trusted = $post->messagetrust;
+        $options->context = $cm->cache->context;
+
+        list($attachments, $attachedimages) = hsuforum_print_attachments($post, $cm, 'separateimages');
+
+        $postcontent  = format_text($post->message, $post->messageformat, $options, $cm->course);
+        $postcontent .= html_writer::tag('div', $attachedimages, array('class' => 'attachedimages'));
+        $postcontent  = html_writer::tag('div', $postcontent, array('class' => 'posting'));
+
+        if (!empty($attachments)) {
+            $postcontent = html_writer::tag('div', $attachments, array('class' => 'attachments')).$postcontent;
+        }
+        return html_writer::tag('div', $postcontent, array('class' => 'content'));
+    }
+
+    /**
+     * @param stdClass $post
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function post_rating($post) {
+        $output = '';
+        if (!empty($post->rating)) {
+            $output = html_writer::tag('div', $this->render($post->rating), array('class'=>'forum-post-rating'));
+        }
+        return $output;
+    }
+
+    /**
+     * @param stdClass $post
+     * @param stdClass $discussion
+     * @param stdClass $cm
+     * @param bool $canreply
+     * @return string
+     * @throws coding_exception
+     * @author Mark Nielsen
+     */
+    public function post_commands($post, $discussion, $cm, $canreply) {
+        global $CFG, $USER;
+
+        hsuforum_cm_add_cache($cm);
+
+        $discussionlink = new moodle_url('/mod/hsuforum/discuss.php', array('d'=> $post->discussion));
+        $ownpost        = (isloggedin() and $post->userid == $USER->id);
+        $commands       = array();
+
+        // Zoom in to the parent specifically
+        if ($post->parent) {
+            $url = new moodle_url($discussionlink);
+            if ($cm->cache->displaymode == HSUFORUM_MODE_THREADED) {
+                $url->param('parent', $post->parent);
+            } else {
+                $url->set_anchor('p'.$post->parent);
+            }
+            $commands[] = array('url'=>$url, 'text'=>$cm->cache->str->parent);
+        }
+
+        // Hack for allow to edit news posts those are not displayed yet until they are displayed
+        $age = time() - $post->created;
+        if (!$post->parent && $cm->cache->forum->type == 'news' && $discussion->timestart > time()) {
+            $age = 0;
+        }
+        if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/hsuforum:editanypost']) {
+            $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('edit'=>$post->id)), 'text'=>$cm->cache->str->edit);
+        }
+
+        if ($cm->cache->caps['mod/hsuforum:splitdiscussions'] && $post->parent && $cm->cache->forum->type != 'single') {
+            $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('prune'=>$post->id)), 'text'=>$cm->cache->str->prune, 'title'=>$cm->cache->str->pruneheading);
+        }
+
+        if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/hsuforum:deleteownpost']) || $cm->cache->caps['mod/hsuforum:deleteanypost']) {
+            $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('delete'=>$post->id)), 'text'=>$cm->cache->str->delete);
+        }
+
+        if (!property_exists($post, 'privatereply')) {
+            throw new coding_exception('Must set post\'s privatereply property!');
+        }
+        if ($canreply and empty($post->privatereply)) {
+            $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('reply'=>$post->id)), 'text'=>$cm->cache->str->reply);
+        }
+
+        if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
+            require_once($CFG->libdir.'/portfoliolib.php');
+            $button = new portfolio_add_button();
+            $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), '/mod/hsuforum/locallib.php');
+            list($attachments, $attachedimages) = hsuforum_print_attachments($post, $cm, 'separateimages');
+            if (empty($attachments)) {
+                $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
+            } else {
+                $button->set_formats(PORTFOLIO_FORMAT_RICHHTML);
+            }
+            $porfoliohtml = $button->to_html(PORTFOLIO_ADD_TEXT_LINK);
+            if (!empty($porfoliohtml)) {
+                $commands[] = $porfoliohtml;
+            }
+        }
+        $commandhtml = array();
+        foreach ($commands as $command) {
+            if (is_array($command)) {
+                $commandhtml[] = html_writer::link($command['url'], $command['text']);
+            } else {
+                $commandhtml[] = $command;
+            }
+        }
+        return html_writer::tag('div', implode(' | ', $commandhtml), array('class'=>'commands'));
     }
 
     /**

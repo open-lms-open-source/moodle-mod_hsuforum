@@ -66,6 +66,181 @@ M.mod_hsuforum.init_treeview = function(Y, id, url, nodes) {
 /**
  * @author Mark Nielsen
  */
+M.mod_hsuforum.init_subscribe = function(Y) {
+    var nodes = Y.all('.mod_hsuforum_posts_container');
+    if (nodes) {
+        nodes.each(function(node) {
+            node.delegate('click', function(e) {
+                var link = e.target;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                M.mod_hsuforum.io(Y, link.get('href'), function() {
+                    link.toggleClass('subscribed');
+                    if (link.hasClass('subscribed')) {
+                        link.setContent(M.str.moodle.yes);
+                    } else {
+                        link.setContent(M.str.moodle.no);
+                    }
+                });
+            }, 'a.hsuforum_discussion_subscribe');
+        });
+    }
+};
+
+/**
+ * @author Mark Nielsen
+ */
+M.mod_hsuforum.init_nested = function(Y) {
+    var nodes = Y.all('.mod_hsuforum_posts_container');
+    if (nodes) {
+        nodes.each(function(node) {
+            node.delegate('click', function(e) {
+                // Ignore when images or links are clicked
+                if (e.target.test('img') || e.target.test('a')) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+
+                var parent = e.target.ancestor('.hsuforum_nested_wrapper');
+                var body = parent.one('.hsuforum_nested_body');
+                var header = parent.one('.hsuforum_nested_header');
+
+                M.mod_hsuforum.toggle_expanded(Y, body, function() {
+                    parent.toggleClass('expanded');
+                    if (!parent.hasClass('expanded')) {
+                        header.set('title', M.str.hsuforum.clicktoexpand);
+                    } else {
+                        header.set('title', M.str.hsuforum.clicktocollapse);
+                    }
+                    M.mod_hsuforum.markread(Y, header);
+
+                    var posts = body.one('.hsuforum_nested_posts');
+                    if (posts) {
+                        M.mod_hsuforum.load_posts(Y, body, posts);
+                    }
+                });
+            }, '.hsuforum_nested_header');
+
+            node.delegate('click', function(e) {
+                var a;
+                if (e.target.test('a')) {
+                    a = e.target;
+                } else {
+                    a = e.target.ancestor('a');
+                }
+                if (a) {
+                    e.preventDefault();
+                    openpopup(e, {
+                        url: a.get('href') + '&popup=1',
+                        name: 'ratings',
+                        options: "height=400,width=600,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent"
+                    });
+                }
+            }, '.forum-post-rating');
+        });
+    }
+};
+
+/**
+ * @author Mark Nielsen
+ */
+M.mod_hsuforum.markread = function(Y, node) {
+    if (node.hasClass('unread') && node.hasAttribute('unreadurl')) {
+        M.mod_hsuforum.io(Y, node.getAttribute('unreadurl'),
+            function() {     // Success
+                node.replaceClass('unread', 'read');
+
+                var unread = node.ancestor('.hsuforum_nested_discussion').one('.unreadposts .unread');
+                if (unread) {
+                    var count = parseInt(unread.getContent()) - 1;
+                    unread.setContent(count);
+
+                    if (count == 0) {
+                        unread.replaceClass('unread', 'read');
+                    }
+                }
+            }, function() {  // Failure
+                node.removeAttribute('unreadurl');
+            }
+        );
+    }
+};
+
+/**
+ * @author Mark Nielsen
+ */
+M.mod_hsuforum.toggle_expanded = function(Y, node, callback) {
+    var anim = new Y.Anim({
+        node: node,
+        duration: .3,
+        from: { height: 0 },
+        to: {
+            height: function(node) {
+                return node.get('scrollHeight');
+            }
+        },
+        easing: Y.Easing.easeOut
+    });
+
+    anim.set('reverse', node.hasClass('expanded'));
+    anim.on('end', function() {
+        node.toggleClass('expanded');
+
+        // Allow it to grow as children are expanded
+        if (node.hasClass('expanded')) {
+            node.setStyle('height', 'auto');
+        }
+        if (callback) {
+            callback()
+        }
+    });
+    anim.run();
+};
+
+/**
+ * @author Mark Nielsen
+ */
+M.mod_hsuforum.load_posts = function(Y, body, node) {
+    if (!node.hasClass('postsloaded')) {
+        node.addClass('postsloaded');
+
+        M.mod_hsuforum.io(Y, node.getAttribute('postsurl'), function(data) {
+            // Freeze the height so we can animate it
+            body.setStyle('height', body.getComputedStyle('height'));
+
+            node.setContent(data.html);
+            M.mod_hsuforum.init_rating(Y, node);
+
+            var anim = new Y.Anim({
+                node: body,
+                duration: .3,
+                from: { height: body.get('clientHeight') },
+                to: { height: body.get('scrollHeight') },
+                easing: Y.Easing.easeOut
+            });
+            anim.on('end', function() {
+                body.setStyle('height', 'auto');
+            });
+            anim.run();
+        });
+    }
+};
+
+/**
+ * @author Mark Nielsen
+ */
+M.mod_hsuforum.init_rating = function(Y, node) {
+    M.core_rating.Y = Y;
+    node.all('select.postratingmenu').each(M.core_rating.attach_rating_events, M.core_rating);
+    node.all('input.postratingmenusubmit').setStyle('display', 'none');
+};
+
+/**
+ * @author Mark Nielsen
+ */
 M.mod_hsuforum.io = function(Y, url, successCallback, failureCallback) {
     Y.io(url, {
         on: {

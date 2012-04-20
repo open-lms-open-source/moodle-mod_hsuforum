@@ -58,40 +58,126 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
             print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
-            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
+            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
         $forumtracked = hsuforum_tp_is_tracked($forum);
-        $mode         = hsuforum_get_layout_mode($forum);
-        $posts        = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort($forum), $forumtracked);
+        $posts        = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort(HSUFORUM_MODE_NESTED), $forumtracked);
         $nodes        = array();
 
-        switch ($mode) {
-            case HSUFORUM_MODE_FLATFIRSTNAME:
-            case HSUFORUM_MODE_FLATLASTNAME:
-            case HSUFORUM_MODE_FLATNEWEST:
-            case HSUFORUM_MODE_FLATOLDEST:
-                foreach ($posts as $post) {
-                    if (empty($post->parent)) {
-                        continue;
-                    }
-                    unset($post->children);
-                    if ($node = $this->get_renderer()->post_to_node($PAGE->context, $cm, $forum, $discussion, $post, $forumtracked)) {
-                        $nodes[] = $node;
-                    }
+        if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
+            foreach ($posts[$post->id]->children as $post) {
+                if ($node = $this->get_renderer()->post_to_node($PAGE->context, $cm, $forum, $discussion, $post, $forumtracked)) {
+                    $nodes[] = $node;
                 }
-                break;
-
-            default:
-                if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
-                    foreach ($posts[$post->id]->children as $post) {
-                        if ($node = $this->get_renderer()->post_to_node($PAGE->context, $cm, $forum, $discussion, $post, $forumtracked)) {
-                            $nodes[] = $node;
-                        }
-                    }
-                }
+            }
         }
         echo json_encode($nodes);
+    }
+
+    /**
+     * Gets nested post HTML
+     *
+     * @throws coding_exception
+     */
+    public function postsnested_action() {
+        global $PAGE, $DB, $CFG, $COURSE, $USER;
+
+        if (!AJAX_SCRIPT) {
+            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+        }
+        require_once($CFG->dirroot.'/rating/lib.php');
+
+        $discussionid = required_param('discussionid', PARAM_INT);
+        $discussion   = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
+        $forum        = $PAGE->activityrecord;
+        $course       = $COURSE;
+        $cm           = $PAGE->cm;
+        $context      = $PAGE->context;
+
+        if ($forum->type == 'news') {
+            if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
+                || $discussion->timestart <= time())
+                && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
+                print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            }
+        }
+        if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
+            print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        }
+        if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        }
+
+        $forumtracked = hsuforum_tp_is_tracked($forum);
+        $posts        = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort(HSUFORUM_MODE_NESTED), $forumtracked);
+        $output       = '';
+        $canreply     = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
+
+        if ($forum->assessed != RATING_AGGREGATE_NONE) {
+            $ratingoptions = new stdClass;
+            $ratingoptions->context = $context;
+            $ratingoptions->component = 'mod_hsuforum';
+            $ratingoptions->ratingarea = 'post';
+            $ratingoptions->items = $posts;
+            $ratingoptions->aggregate = $forum->assessed;
+            $ratingoptions->scaleid = $forum->scale;
+            $ratingoptions->userid = $USER->id;
+            $ratingoptions->returnurl = "$CFG->wwwroot/mod/hsuforum/view.php?id=$cm->id";
+            $ratingoptions->assesstimestart = $forum->assesstimestart;
+            $ratingoptions->assesstimefinish = $forum->assesstimefinish;
+
+            $rm = new rating_manager();
+            $posts = $rm->get_ratings($ratingoptions);
+        }
+        if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
+            foreach ($posts[$post->id]->children as $post) {
+                if ($postoutput = $this->get_renderer()->nested_post($cm, $discussion, $post, $canreply)) {
+                    $output .= $postoutput;
+                }
+            }
+        }
+        echo json_encode((object) array(
+            'html' => $output,
+        ));
+    }
+
+    /**
+     * Marks a post as read
+     *
+     * @throws coding_exception
+     */
+    public function markread_action() {
+        global $PAGE, $DB, $CFG, $COURSE, $USER;
+
+        if (!AJAX_SCRIPT) {
+            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+        }
+        require_once($CFG->dirroot.'/rating/lib.php');
+
+        $postid  = required_param('postid', PARAM_INT);
+        $forum   = $PAGE->activityrecord;
+        $course  = $COURSE;
+        $cm      = $PAGE->cm;
+
+        if (!$post = hsuforum_get_post_full($postid)) {
+            print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        }
+        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
+
+        if ($forum->type == 'news') {
+            if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
+                || $discussion->timestart <= time())
+                && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
+                print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            }
+        }
+        if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        }
+        if (hsuforum_tp_is_tracked($forum)) {
+            hsuforum_tp_add_read_record($USER->id, $post->id);
+        }
     }
 
     /**
@@ -114,7 +200,9 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         } else {
             $subscribe->subscribe($discussionid);
         }
-        redirect(new moodle_url($returnurl));
+        if (!AJAX_SCRIPT) {
+            redirect(new moodle_url($returnurl));
+        }
     }
 
     public function discsubscribers_action() {
