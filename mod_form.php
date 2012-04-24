@@ -147,11 +147,52 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $this->standard_grading_coursemodule_elements();
 
         $this->standard_coursemodule_elements();
+
+        $mform =& $this->_form;
+        $mform->addElement('select', 'gradetype', get_string('gradetype', 'hsuforum') , hsuforum_get_grading_types());
+        $mform->setDefault('gradetype', HSUFORUM_GRADETYPE_NONE);
+        $mform->addHelpButton('gradetype', 'gradetype', 'hsuforum');
+
+        $mform->insertElementBefore($mform->removeElement('gradetype'), 'grade');
+        $scale = $mform->insertElementBefore($mform->removeElement('scale'), 'grade');
+        $scale->setLabel(get_string('grade'));
+
+        // Done abusing this poor fellow...
+        $mform->removeElement('grade');
+
+        $mform->disabledIf('assessed', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
+        $mform->disabledIf('ratingtime', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
+        $mform->disabledIf('assesstimestart', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
+        $mform->disabledIf('assesstimefinish', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
+
+        foreach ($this->current->_advancedgradingdata['areas'] as $areaname => $areadata) {
+            $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
+        }
+        $key = array_search('scale', $mform->_dependencies['assessed']['eq'][0]);
+        if ($key !== false) {
+            unset($mform->_dependencies['assessed']['eq'][0][$key]);
+        }
+        $mform->disabledIf('scale', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
+        $mform->disabledIf('gradecat', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
 //-------------------------------------------------------------------------------
 // buttons
         $this->add_action_buttons();
 
     }
+
+    function standard_grading_coursemodule_elements() {
+        $this->_features->rating = false;
+        parent::standard_grading_coursemodule_elements();
+        $this->_features->rating = true;
+    }
+/*
+    function standard_coursemodule_elements() {
+        parent::standard_coursemodule_elements();
+
+        $mform =& $this->_form;
+//        $mform->removeElement('scale');
+    }
+*/
 
     function definition_after_data() {
         parent::definition_after_data();

@@ -130,6 +130,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 'node',
                 'event',
                 'anim',
+                'panel',
+                'dd-plugin',
                 'io-base',
                 'json',
                 'yui2-treeview',
@@ -728,6 +730,71 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             }
         }
         return html_writer::tag('div', implode(' | ', $commandhtml), array('class'=>'commands'));
+    }
+
+    /**
+     * @param $userid
+     * @param $cm
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function user_posts_overview($userid, $cm) {
+        global $PAGE;
+
+        hsuforum_cm_add_cache($cm);
+
+        $output = '';
+        if ($posts = hsuforum_get_user_posts($cm->cache->forum->id, $userid, $cm->cache->context)) {
+            $discussions = hsuforum_get_user_involved_discussions($cm->cache->forum->id, $userid);
+
+            foreach ($discussions as $discussion) {
+                if (!$discussionpost = hsuforum_get_post_full($discussion->firstpost)) {
+                    continue;
+                }
+                $output .= hsuforum_print_post($discussionpost, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, '');
+                $output .= html_writer::start_tag('div', array('class' => 'indent'));
+                foreach ($posts as $post) {
+                    if ($post->discussion == $discussion->id and !empty($post->parent)) {
+                        $command = html_writer::link(
+                            new moodle_url('/mod/hsuforum/route.php', array('action' => 'postincontext', 'contextid' => $cm->cache->context->id, 'postid' => $post->id)),
+                            get_string('viewincontext', 'hsuforum'),
+                            array('class' => 'hsuforum_viewincontext', 'postid' => $post->id)
+                        );
+                        $output .= hsuforum_print_post($post, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, $command);
+                    }
+                }
+                $output .= html_writer::end_tag('div');
+            }
+        }
+        if (!empty($output)) {
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_post_in_context', null, false, $this->get_js_module());
+            $output  = html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container'));
+        }
+        return $output;
+    }
+
+    /**
+     * @param $cm
+     * @param $discussion
+     * @param $post
+     * @return string
+     * @author Mark Nielsen
+     */
+    public function post_in_context($cm, $discussion, $post) {
+        $output = '';
+
+        hsuforum_cm_add_cache($cm);
+
+        $output .= hsuforum_print_post($post, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, '');
+
+        if (!empty($post->children)) {
+            foreach ($post->children as $child) {
+                $output .= html_writer::start_tag('div', array('class' => 'indent'));
+                $output .= $this->post_in_context($cm, $discussion, $child);
+                $output .= html_writer::end_tag('div');
+            }
+        }
+        return $output;
     }
 
     /**

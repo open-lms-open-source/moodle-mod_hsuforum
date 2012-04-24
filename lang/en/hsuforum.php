@@ -465,3 +465,13 @@ $string['clicktocollapse'] = 'Click to hide post message and any replies';
 $string['createdbynameondate'] = 'Created by {$a->name} on {$a->date}';
 $string['expandall'] = 'Expand all';
 $string['collapseall'] = 'Collapse all';
+$string['viewincontext'] = 'View in context';
+$string['gradetypenone'] = 'None';
+$string['gradetypemanual'] = 'Manual';
+$string['gradetyperating'] = 'Rating';
+$string['gradetype'] = 'Grade Type';
+$string['gradetype_help'] = 'The grade type is used to determine the method of grading.
+
+* None: the forum is not graded.
+* Manual: the forum has to be manually graded by the teacher via the grade book.
+* Rating: use ratings for generating a grade.';

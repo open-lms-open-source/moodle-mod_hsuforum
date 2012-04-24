@@ -46,6 +46,10 @@ define('HSUFORUM_TRACKING_OFF', 0);
 define('HSUFORUM_TRACKING_OPTIONAL', 1);
 define('HSUFORUM_TRACKING_ON', 2);
 
+define ('HSUFORUM_GRADETYPE_NONE', 0);
+define ('HSUFORUM_GRADETYPE_MANUAL', 1);
+define ('HSUFORUM_GRADETYPE_RATING', 2);
+
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 
 /**
@@ -63,6 +67,17 @@ function hsuforum_add_instance($forum, $mform) {
     global $CFG, $DB;
 
     $forum->timemodified = time();
+
+    if ($forum->gradetype != HSUFORUM_GRADETYPE_RATING) {
+        $forum->assessed = 0;
+    }
+    if ($forum->gradetype != HSUFORUM_GRADETYPE_MANUAL) {
+        foreach ($forum as $name => $value) {
+            if (strpos($name, 'advancedgradingmethod_') !== false) {
+                $forum->$name = '';
+            }
+        }
+    }
 
     if (empty($forum->assessed)) {
         $forum->assessed = 0;
@@ -136,6 +151,16 @@ function hsuforum_update_instance($forum, $mform) {
     $forum->timemodified = time();
     $forum->id           = $forum->instance;
 
+    if ($forum->gradetype != HSUFORUM_GRADETYPE_RATING) {
+        $forum->assessed = 0;
+    }
+    if ($forum->gradetype != HSUFORUM_GRADETYPE_MANUAL) {
+        foreach ($forum as $name => $value) {
+            if (strpos($name, 'advancedgradingmethod_') !== false) {
+                $forum->$name = '';
+            }
+        }
+    }
     if (empty($forum->assessed)) {
         $forum->assessed = 0;
     }
@@ -298,11 +323,20 @@ function hsuforum_supports($feature) {
         case FEATURE_RATE:                    return true;
         case FEATURE_BACKUP_MOODLE2:          return true;
         case FEATURE_SHOW_DESCRIPTION:        return true;
+        case FEATURE_ADVANCED_GRADING:        return true;
 
         default: return null;
     }
 }
 
+/**
+ * Lists all gradable areas for the advanced grading methods
+ *
+ * @return array
+ */
+function hsuforum_grading_areas_list() {
+    return array('posts' => get_string('posts', 'hsuforum'));
+}
 
 /**
  * Obtains the automatic completion state for this forum based on any conditions
@@ -1498,6 +1532,9 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
 function hsuforum_get_user_grades($forum, $userid = 0) {
     global $CFG;
 
+    if ($forum->gradetype != HSUFORUM_GRADETYPE_RATING) {
+        return false;
+    }
     require_once($CFG->dirroot.'/rating/lib.php');
 
     $ratingoptions = new stdClass;
@@ -1531,7 +1568,7 @@ function hsuforum_update_grades($forum, $userid=0, $nullifnone=true) {
     global $CFG, $DB;
     require_once($CFG->libdir.'/gradelib.php');
 
-    if (!$forum->assessed) {
+    if ($forum->gradetype == HSUFORUM_GRADETYPE_NONE or ($forum->gradetype == HSUFORUM_GRADETYPE_RATING and !$forum->assessed)) {
         hsuforum_grade_item_update($forum);
 
     } else if ($grades = hsuforum_get_user_grades($forum, $userid)) {
@@ -1596,7 +1633,7 @@ function hsuforum_grade_item_update($forum, $grades=NULL) {
 
     $params = array('itemname'=>$forum->name, 'idnumber'=>$forum->cmidnumber);
 
-    if (!$forum->assessed or $forum->scale == 0) {
+    if ($forum->gradetype == HSUFORUM_GRADETYPE_NONE or ($forum->gradetype == HSUFORUM_GRADETYPE_RATING and !$forum->assessed) or $forum->scale == 0) {
         $params['gradetype'] = GRADE_TYPE_NONE;
 
     } else if ($forum->scale > 0) {
@@ -2201,15 +2238,18 @@ function hsuforum_mark_old_posts_as_mailed($endtime, $now=null) {
  * @uses CONTEXT_MODULE
  * @return array
  */
-function hsuforum_get_user_posts($forumid, $userid) {
+function hsuforum_get_user_posts($forumid, $userid, context_module $context = null) {
     global $CFG, $DB;
 
     $timedsql = "";
     $params = array($forumid, $userid);
 
     if (!empty($CFG->hsuforum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('hsuforum', $forumid);
-        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (is_null($context)) {
+            $cm = get_coursemodule_from_instance('hsuforum', $forumid);
+            $context = context_module::instance($cm->id);
+        }
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , $context)) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -3114,10 +3154,10 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
  *          (the default) then print a dummy 'you can't see this post' post.
  *          If false, don't output anything at all.
  * @param bool|null $istracked
- * @return void
+ * @return void|string
  */
 function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=false, $reply=false, $link=false,
-                          $footer="", $highlight="", $postisread=null, $dummyifcantsee=true, $istracked=null, $return=false) {
+                          $footer="", $highlight="", $postisread=null, $dummyifcantsee=true, $istracked=null, $return=false, $commandsoverride = null) {
     global $USER, $CFG, $OUTPUT, $PAGE;
 
     require_once($CFG->libdir . '/filelib.php');
@@ -3167,7 +3207,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
             return;
         }
         $output .= html_writer::tag('a', '', array('id'=>'p'.$post->id));
-        $output .= html_writer::start_tag('div', array('class'=>'forumpost clearfix'));
+        $output .= html_writer::start_tag('div', array('id' => 'postid'.$post->id, 'class'=>'forumpost clearfix'));
         $output .= html_writer::start_tag('div', array('class'=>'row header'));
         $output .= html_writer::tag('div', '', array('class'=>'left picture')); // Picture
         if ($post->parent) {
@@ -3339,7 +3379,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     }
 
     $output .= html_writer::tag('a', '', array('id'=>'p'.$post->id));
-    $output .= html_writer::start_tag('div', array('class'=>'forumpost clearfix'.$forumpostclass.$topicclass));
+    $output .= html_writer::start_tag('div', array('id' => 'postid'.$post->id, 'class'=>'forumpost clearfix'.$forumpostclass.$topicclass));
     $output .= html_writer::start_tag('div', array('class'=>'row header clearfix'));
     $output .= html_writer::start_tag('div', array('class'=>'left picture'));
     $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id, 'link' => (!hsuforum_is_anonymous_user($postuser))));
@@ -3431,6 +3471,12 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         } else {
             $commandhtml[] = $command;
         }
+    }
+    if (!is_null($commandsoverride)) {
+        if (!is_array($commandsoverride)) {
+            $commandsoverride = array($commandsoverride);
+        }
+        $commandhtml = $commandsoverride;
     }
     $output .= html_writer::tag('div', implode(' | ', $commandhtml), array('class'=>'commands'));
 
@@ -7467,6 +7513,17 @@ function hsuforum_get_hsuforum_types_all() {
                   'single'   => get_string('singleforum', 'hsuforum'),
                   'qanda'    => get_string('qandaforum', 'hsuforum'),
                   'blog'     => get_string('blogforum', 'hsuforum'));
+}
+
+/**
+ * Returns array of hsuforum grade types
+ */
+function hsuforum_get_grading_types(){
+    return array(
+        HSUFORUM_GRADETYPE_NONE   => get_string('gradetypenone', 'hsuforum'),
+        HSUFORUM_GRADETYPE_MANUAL => get_string('gradetypemanual', 'hsuforum'),
+        HSUFORUM_GRADETYPE_RATING => get_string('gradetyperating', 'hsuforum')
+    );
 }
 
 /**

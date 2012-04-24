@@ -119,6 +119,9 @@
 .hsuforum_treeview_commands {margin-bottom: 10px;}
 .hsuforum_treeview_wrapper {display: none;}
 .jsenabled .hsuforum_treeview_wrapper {display: block;}
+.hsuforum_postincontext_dialog .yui3-widget-bd {overflow-y: scroll;}
+.hsuforum_postincontext_dialog .yui3-widget-bd .hsuforum_flags {display: none;}
+
 
 .hsuforum_nested_discussion {margin-bottom: 10px;}
 .hsuforum_nested_body .content {padding: 5px; border-left:1px solid #000; border-right:1px solid #000;}

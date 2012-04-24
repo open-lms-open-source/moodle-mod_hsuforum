@@ -119,6 +119,46 @@ M.mod_hsuforum.init_subscribe = function(Y) {
 /**
  * @author Mark Nielsen
  */
+M.mod_hsuforum.init_post_in_context = function(Y) {
+    var nodes = Y.all('.mod_hsuforum_posts_container');
+    if (nodes) {
+        nodes.each(function(node) {
+            node.delegate('click', function(e) {
+                var link = e.target;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                M.mod_hsuforum.io(Y, link.get('href'), function(data) {
+                    var panelNode = Y.Node.create('<div class="hsuforum_postincontext_dialog" />');
+                    var panel = new Y.Panel({
+                        contentBox: panelNode,
+                        bodyContent: data.html,
+                        centered: true,
+                        height: Math.round(node.get('winHeight') * .75),
+                        width: Math.round(node.get('winWidth') * .75),
+                        zIndex: 1000,
+                        modal: true,
+                        visible: true,
+                        render: true,
+                        plugins: [Y.Plugin.Drag],
+                        hideOn: [ { eventName: 'clickoutside' } ]
+                    });
+                    panel.after('visibleChange', function (e) {
+                        if (!e.newVal && e.prevVal) {
+                            panel.destroy();
+                            panelNode.remove(true);
+                        }
+                    });
+                });
+            }, 'a.hsuforum_viewincontext');
+        });
+    }
+};
+
+/**
+ * @author Mark Nielsen
+ */
 M.mod_hsuforum.init_nested = function(Y) {
     var nodes = Y.all('.mod_hsuforum_posts_container');
     if (nodes) {

@@ -33,7 +33,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
     }
 
     /**
-     * View Posters
+     * Get post nodes
      */
     public function postnodes_action() {
         global $PAGE, $DB, $CFG, $COURSE, $USER;
@@ -139,6 +139,47 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         }
         echo json_encode((object) array(
             'html' => $output,
+        ));
+    }
+
+    /**
+     * Prints a discussion
+     */
+    public function postincontext_action() {
+        global $PAGE, $DB, $CFG, $COURSE, $USER;
+
+        if (!AJAX_SCRIPT) {
+            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+        }
+        $postid = required_param('postid', PARAM_INT);
+        $forum  = $PAGE->activityrecord;
+        $course = $COURSE;
+        $cm     = $PAGE->cm;
+
+        if (!$focuspost = hsuforum_get_post_full($postid)) {
+            print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        }
+        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $focuspost->discussion), '*', MUST_EXIST);
+
+        if ($forum->type == 'news') {
+            if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
+                || $discussion->timestart <= time())
+                && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
+                print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            }
+        }
+        if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
+            print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        }
+        if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        }
+
+        $posts  = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort(HSUFORUM_MODE_NESTED), false);
+        $output = $this->get_renderer()->post_in_context($cm, $discussion, $posts[$post->id]);
+
+        echo json_encode((object) array(
+            'html' => html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container')),
         ));
     }
 
