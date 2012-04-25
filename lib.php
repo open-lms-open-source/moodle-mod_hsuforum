@@ -68,9 +68,6 @@ function hsuforum_add_instance($forum, $mform) {
 
     $forum->timemodified = time();
 
-    if ($forum->gradetype != HSUFORUM_GRADETYPE_RATING) {
-        $forum->assessed = 0;
-    }
     if ($forum->gradetype != HSUFORUM_GRADETYPE_MANUAL) {
         foreach ($forum as $name => $value) {
             if (strpos($name, 'advancedgradingmethod_') !== false) {
@@ -151,9 +148,6 @@ function hsuforum_update_instance($forum, $mform) {
     $forum->timemodified = time();
     $forum->id           = $forum->instance;
 
-    if ($forum->gradetype != HSUFORUM_GRADETYPE_RATING) {
-        $forum->assessed = 0;
-    }
     if ($forum->gradetype != HSUFORUM_GRADETYPE_MANUAL) {
         foreach ($forum as $name => $value) {
             if (strpos($name, 'advancedgradingmethod_') !== false) {
@@ -1521,20 +1515,39 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
 }
 
 /**
- * Return grade for given user or all users.
+ * @param $forum
+ * @param $userid
+ * @return bool|string
+ * @author Mark Nielsen
+ */
+function hsuforum_get_user_formatted_rating_grade($forum, $userid) {
+    $grades = hsuforum_get_user_rating_grades($forum, $userid);
+    if (!empty($grades) and array_key_exists($userid, $grades)) {
+        $gradeitem = grade_item::fetch(array(
+            'courseid'     => $forum->course,
+            'itemtype'     => 'mod',
+            'itemmodule'   => 'hsuforum',
+            'iteminstance' => $forum->id,
+            'itemnumber'   => 0,
+        ));
+        return grade_format_gradevalue($grades[$userid]->rawgrade, $gradeitem);
+    }
+    return false;
+}
+
+/**
+ * Return rating grades for given user or all users.
  *
  * @global object
  * @global object
  * @param object $forum
  * @param int $userid optional user id, 0 means all users
  * @return array array of grades, false if none
+ * @author Mark Nielsen
  */
-function hsuforum_get_user_grades($forum, $userid = 0) {
+function hsuforum_get_user_rating_grades($forum, $userid = 0) {
     global $CFG;
 
-    if ($forum->gradetype != HSUFORUM_GRADETYPE_RATING) {
-        return false;
-    }
     require_once($CFG->dirroot.'/rating/lib.php');
 
     $ratingoptions = new stdClass;
@@ -1552,6 +1565,22 @@ function hsuforum_get_user_grades($forum, $userid = 0) {
 
     $rm = new rating_manager();
     return $rm->get_user_grades($ratingoptions);
+}
+
+/**
+ * Return grade for given user or all users.
+ *
+ * @global object
+ * @global object
+ * @param object $forum
+ * @param int $userid optional user id, 0 means all users
+ * @return array array of grades, false if none
+ */
+function hsuforum_get_user_grades($forum, $userid = 0) {
+    if ($forum->gradetype != HSUFORUM_GRADETYPE_RATING) {
+        return false;
+    }
+    return hsuforum_get_user_rating_grades($forum, $userid);
 }
 
 /**

@@ -475,3 +475,8 @@ $string['gradetype_help'] = 'The grade type is used to determine the method of g
 * None: the forum is not graded.
 * Manual: the forum has to be manually graded by the teacher via the grade book.
 * Rating: use ratings for generating a grade.';
+$string['totalsubstantive'] = 'Substantive Posts: {$a}';
+$string['totalposts'] = 'Replies: {$a}';
+$string['totaldiscussions'] = 'Posts: {$a}';
+$string['totalpostsanddiscussions'] = 'Total posts: {$a}';
+$string['totalrating'] = 'Rating: {$a}';

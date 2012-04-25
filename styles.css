@@ -121,6 +121,8 @@
 .jsenabled .hsuforum_treeview_wrapper {display: block;}
 .hsuforum_postincontext_dialog .yui3-widget-bd {overflow-y: scroll;}
 .hsuforum_postincontext_dialog .yui3-widget-bd .hsuforum_flags {display: none;}
+.hsuforum_counts {border:1px solid #000; text-align: center; margin-bottom: 20px; padding: 5px; }
+.hsuforum_count {display:inline; padding-left: 20px; padding-right: 20px;}
 
 .hsuforum_nested_discussion {margin-bottom: 10px;}
 .hsuforum_nested_body .content {padding: 5px; border-left:1px solid #000; border-right:1px solid #000;}

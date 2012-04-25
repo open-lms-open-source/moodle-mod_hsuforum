@@ -743,18 +743,35 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         hsuforum_cm_add_cache($cm);
 
-        $output = '';
+        require_once(__DIR__.'/lib/flag.php');
+
+        $output    = '';
+        $postcount = $discussioncount = $flagcount = 0;
+        $flaglib   = new hsuforum_lib_flag();
         if ($posts = hsuforum_get_user_posts($cm->cache->forum->id, $userid, $cm->cache->context)) {
             $discussions = hsuforum_get_user_involved_discussions($cm->cache->forum->id, $userid);
 
             foreach ($discussions as $discussion) {
-                if (!$discussionpost = hsuforum_get_post_full($discussion->firstpost)) {
-                    continue;
+                if ($discussion->userid == $userid) {
+                    $discussionpost = $posts[$discussion->firstpost];
+
+                    $discussioncount++;
+                    if ($flaglib->is_flagged($discussionpost->flags, 'substantive')) {
+                        $flagcount++;
+                    }
+                } else {
+                    if (!$discussionpost = hsuforum_get_post_full($discussion->firstpost)) {
+                        continue;
+                    }
                 }
                 $output .= hsuforum_print_post($discussionpost, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, '');
                 $output .= html_writer::start_tag('div', array('class' => 'indent'));
                 foreach ($posts as $post) {
                     if ($post->discussion == $discussion->id and !empty($post->parent)) {
+                        $postcount++;
+                        if ($flaglib->is_flagged($post->flags, 'substantive')) {
+                            $flagcount++;
+                        }
                         $command = html_writer::link(
                             new moodle_url('/mod/hsuforum/route.php', array('action' => 'postincontext', 'contextid' => $cm->cache->context->id, 'postid' => $post->id)),
                             get_string('viewincontext', 'hsuforum'),
@@ -768,7 +785,22 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         if (!empty($output)) {
             $PAGE->requires->js_init_call('M.mod_hsuforum.init_post_in_context', null, false, $this->get_js_module());
-            $output  = html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container'));
+
+            $counts = array(
+                get_string('totalpostsanddiscussions', 'hsuforum', ($discussioncount+$postcount)),
+                get_string('totaldiscussions', 'hsuforum', $discussioncount),
+                get_string('totalposts', 'hsuforum', $postcount),
+                get_string('totalsubstantive', 'hsuforum', $flagcount),
+            );
+            if ($grade = hsuforum_get_user_formatted_rating_grade($cm->cache->forum, $userid)) {
+                $counts[] = get_string('totalrating', 'hsuforum', $grade);
+            }
+            $countshtml = '';
+            foreach ($counts as $count) {
+                $countshtml .= html_writer::tag('div', $count, array('class' => 'hsuforum_count'));
+            }
+            $output = html_writer::tag('div', $countshtml, array('class' => 'hsuforum_counts')).$output;
+            $output = html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container'));
         }
         return $output;
     }

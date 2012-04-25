@@ -160,11 +160,6 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         // Done abusing this poor fellow...
         $mform->removeElement('grade');
 
-        $mform->disabledIf('assessed', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
-        $mform->disabledIf('ratingtime', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
-        $mform->disabledIf('assesstimestart', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
-        $mform->disabledIf('assesstimefinish', 'gradetype', 'neq', HSUFORUM_GRADETYPE_RATING);
-
         foreach ($this->current->_advancedgradingdata['areas'] as $areaname => $areadata) {
             $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
         }
@@ -172,7 +167,6 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         if ($key !== false) {
             unset($mform->_dependencies['assessed']['eq'][0][$key]);
         }
-        $mform->disabledIf('scale', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
         $mform->disabledIf('gradecat', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
 //-------------------------------------------------------------------------------
 // buttons
