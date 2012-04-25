@@ -122,7 +122,6 @@
 .hsuforum_postincontext_dialog .yui3-widget-bd {overflow-y: scroll;}
 .hsuforum_postincontext_dialog .yui3-widget-bd .hsuforum_flags {display: none;}
 
-
 .hsuforum_nested_discussion {margin-bottom: 10px;}
 .hsuforum_nested_body .content {padding: 5px; border-left:1px solid #000; border-right:1px solid #000;}
 .hsuforum_nested_wrapper .picture {float:left;}
@@ -142,3 +141,7 @@
 .hsuforum_nested_wrapper .lastpostby {font-size: .8em; font-style: italic;}
 .hsuforum_nested_wrapper {display: none;}
 .jsenabled .hsuforum_nested_wrapper {display: block;}
+
+#local-joulegrader .content .mod_hsuforum_posts_container,
+#local-joulegrader .content .mod_hsuforum_posts_container .content {text-align: left; margin-right: 0; overflow: hidden;}
+#local-joulegrader .content .mod_hsuforum_posts_container {margin-right: 10px; }
