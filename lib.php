@@ -7664,6 +7664,16 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $discussionid = optional_param('d', 0, PARAM_INT);
     $viewingdiscussion = ($PAGE->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
 
+    if (is_dir($CFG->dirroot.'/local/joulegrader') and $forumobject->gradetype == HSUFORUM_GRADETYPE_MANUAL) {
+        $area = $DB->get_record('grading_areas', array(
+            'contextid' => $PAGE->cm->context->id,
+            'component' => 'mod_hsuforum',
+            'areaname'  => 'posts',
+        ));
+        if ($area) {
+            $forumnode->add(get_string('grade', 'hsuforum'), new moodle_url('/local/joulegrader/view.php', array('courseid' => $PAGE->cm->course, 'garea' => $area->id)), navigation_node::TYPE_SETTING, null, null, new pix_icon('i/grades', get_string('grade', 'hsuforum')));
+        }
+    }
     if (has_capability('mod/hsuforum:viewposters', $PAGE->cm->context)) {
         $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
     }

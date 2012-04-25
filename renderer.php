@@ -764,8 +764,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                         continue;
                     }
                 }
-                $output .= hsuforum_print_post($discussionpost, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, '');
-                $output .= html_writer::start_tag('div', array('class' => 'indent'));
+                if (!$cm->cache->forum->anonymous) {
+                    $output .= hsuforum_print_post($discussionpost, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, '');
+                    $output .= html_writer::start_tag('div', array('class' => 'indent'));
+                }
                 foreach ($posts as $post) {
                     if ($post->discussion == $discussion->id and !empty($post->parent)) {
                         $postcount++;
@@ -777,15 +779,22 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                             get_string('viewincontext', 'hsuforum'),
                             array('class' => 'hsuforum_viewincontext', 'postid' => $post->id)
                         );
-                        $output .= hsuforum_print_post($post, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, $command);
+                        if (!$cm->cache->forum->anonymous) {
+                            $output .= hsuforum_print_post($post, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, $command);
+                        }
                     }
                 }
-                $output .= html_writer::end_tag('div');
+                if (!$cm->cache->forum->anonymous) {
+                    $output .= html_writer::end_tag('div');
+                }
             }
         }
-        if (!empty($output)) {
+        if (!empty($postcount) or !empty($discussioncount)) {
             $PAGE->requires->js_init_call('M.mod_hsuforum.init_post_in_context', null, false, $this->get_js_module());
 
+            if ($cm->cache->forum->anonymous) {
+                $output = html_writer::tag('h3', get_string('thisisanonymous', 'hsuforum'));
+            }
             $counts = array(
                 get_string('totalpostsanddiscussions', 'hsuforum', ($discussioncount+$postcount)),
                 get_string('totaldiscussions', 'hsuforum', $discussioncount),

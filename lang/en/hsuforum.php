@@ -480,3 +480,5 @@ $string['totalposts'] = 'Replies: {$a}';
 $string['totaldiscussions'] = 'Posts: {$a}';
 $string['totalpostsanddiscussions'] = 'Total posts: {$a}';
 $string['totalrating'] = 'Rating: {$a}';
+$string['grade'] = 'Grade';
+$string['thisisanonymous'] = 'This forum is anonymous.';
