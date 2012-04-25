@@ -179,17 +179,12 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         parent::standard_grading_coursemodule_elements();
         $this->_features->rating = true;
     }
-/*
-    function standard_coursemodule_elements() {
-        parent::standard_coursemodule_elements();
-
-        $mform =& $this->_form;
-//        $mform->removeElement('scale');
-    }
-*/
 
     function definition_after_data() {
+        $this->_features->rating = false;
         parent::definition_after_data();
+        $this->_features->rating = true;
+
         $mform     =& $this->_form;
         $type      =& $mform->getElement('type');
         $typevalue = $mform->getElementValue('type');
