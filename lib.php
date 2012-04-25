@@ -1548,6 +1548,9 @@ function hsuforum_get_user_formatted_rating_grade($forum, $userid) {
 function hsuforum_get_user_rating_grades($forum, $userid = 0) {
     global $CFG;
 
+    if (!$forum->assessed) {
+        return false;
+    }
     require_once($CFG->dirroot.'/rating/lib.php');
 
     $ratingoptions = new stdClass;
