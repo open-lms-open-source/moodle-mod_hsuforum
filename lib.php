@@ -573,7 +573,8 @@ function hsuforum_cron() {
                 }
 
                 // Don't send email if the forum is Q&A and the user has not posted
-                if ($forum->type == 'qanda' && !hsuforum_get_user_posted_time($discussion->id, $userto->id)) {
+                // Initial topics are still mailed
+                if ($forum->type == 'qanda' && !hsuforum_get_user_posted_time($discussion->id, $userto->id) && $pid != $discussion->firstpost) {
                     mtrace('Did not email '.$userto->id.' because user has not posted in discussion');
                     continue;
                 }
@@ -4530,7 +4531,7 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
 
     $context = get_context_instance(CONTEXT_MODULE, $cm->id);
 
-    if ($children != 'ignore' && ($childposts = $DB->get_records('hsuforum_posts', array('parent'=>$post->id)))) {
+    if ($children !== 'ignore' && ($childposts = $DB->get_records('hsuforum_posts', array('parent'=>$post->id)))) {
        if ($children) {
            foreach ($childposts as $childpost) {
                hsuforum_delete_post($childpost, true, $course, $cm, $forum, $skipcompletion);

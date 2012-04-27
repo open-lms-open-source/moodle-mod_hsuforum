@@ -119,7 +119,7 @@
         redirect($return.'&moved=-1&sesskey='.sesskey());
     }
 
-    add_to_log($course->id, 'hsuforum', 'view discussion', $PAGE->url->out(false), $discussion->id, $cm->id);
+    add_to_log($course->id, 'hsuforum', 'view discussion', "discuss.php?d=$discussion->id", $discussion->id, $cm->id);
 
     unset($SESSION->fromdiscussion);
 

@@ -127,6 +127,7 @@ if (hsuforum_is_forcesubscribed($forum)) {
     redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
 }
 
+$info = new stdClass();
 $info->name  = fullname($user);
 $info->forum = format_string($forum->name);
 
