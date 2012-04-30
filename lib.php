@@ -2605,7 +2605,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
         return array();
     }
 
-    $forum = $DB->get_record('forum', array('id' => $cm->instance), '*', MUST_EXIST);
+    $forum = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
 
     if (hsuforum_tp_is_tracked($forum)) {
         $trackselect = ' unread.unread, dunread.postread, ';
