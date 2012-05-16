@@ -5627,7 +5627,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
                 $discussion->forum = $forum->id;
 
-                hsuforum_print_post($discussion, $discussion, $forum, $cm, $course, $ownpost, 0, $link, false);
+                hsuforum_print_post($discussion, $discussion, $forum, $cm, $course, $ownpost, 0, $link, false,
+                        '', null, true, $forumtracked);
             break;
         }
     }

@@ -111,7 +111,7 @@ class restore_hsuforum_activity_task extends restore_activity_task {
                                         null, 'delete discussion');
         $rules[] = new restore_log_rule('hsuforum', 'delete discussion', 'view.php?id={course_module}', '{hsuforum}');
         $rules[] = new restore_log_rule('hsuforum', 'add post', 'discuss.php?d={hsuforum_discussion}&parent={hsuforum_post}', '{hsuforum_post}');
-        $rules[] = new restore_log_rule('hsuforum', 'update post', 'discuss.php?d={hsuforum_discussion}&parent={hsuforum_post}', '{hsuforum_post}');
+        $rules[] = new restore_log_rule('hsuforum', 'update post', 'discuss.php?d={hsuforum_discussion}#p{hsuforum_post}&parent={hsuforum_post}', '{hsuforum_post}');
         $rules[] = new restore_log_rule('hsuforum', 'prune post', 'discuss.php?d={hsuforum_discussion}', '{hsuforum_post}');
         $rules[] = new restore_log_rule('hsuforum', 'delete post', 'discuss.php?d={hsuforum_discussion}', '[post]');
 
