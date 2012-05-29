@@ -56,12 +56,12 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
                 array(
                     'renamefields' => array(
                         'format' => 'messageformat',
+                        'maxattach' => 'maxattachments',
                     ),
                     'newfields' => array(
                         'completiondiscussions' => 0,
                         'completionreplies' => 0,
                         'completionpost' => 0,
-                        'maxattachments' => 1,
                         'introformat' => 0,
                     ),
                 )
@@ -72,7 +72,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
     /**
      * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/HSUFORUM data
      */
-    public function process_forum($data) {
+    public function process_hsuforum($data) {
         // get the course module id and context id
         $instanceid     = $data['id'];
         $cminfo         = $this->get_cminfo($instanceid);
@@ -87,8 +87,16 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
         $this->fileman->itemid   = 0;
         $data['intro'] = moodle1_converter::migrate_referenced_files($data['intro'], $this->fileman);
 
+        if (!array_key_exists('maxattachments', $data)) {
+            $data['maxattachments'] = 1;
+        }
+        if (array_key_exists('multiattach', $data) && empty($data['multiattach'])) {
+            $data['maxattachments'] = 0;
+        }
+        unset($data['multiattach']);
+
         // start writing forum.xml
-        $this->open_xml_writer("activities/hsuforum_{$this->moduleid}/forum.xml");
+        $this->open_xml_writer("activities/hsuforum_{$this->moduleid}/hsuforum.xml");
         $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
             'modulename' => 'hsuforum', 'contextid' => $contextid));
         $this->xmlwriter->begin_tag('hsuforum', array('id' => $instanceid));
@@ -108,7 +116,7 @@ class moodle1_mod_hsuforum_handler extends moodle1_mod_handler {
      * This is executed when we reach the closing </MOD> tag of our 'hsuforum' path
      */
     public function on_hsuforum_end() {
-        // finish writing forum.xml
+        // finish writing hsuforum.xml
         $this->xmlwriter->end_tag('discussions');
         $this->xmlwriter->end_tag('hsuforum');
         $this->xmlwriter->end_tag('activity');

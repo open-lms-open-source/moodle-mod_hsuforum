@@ -631,6 +631,9 @@ if ($fromform = $mform_post->get_data()) {
 
         // If the user has access to all groups and they are changing the group, then update the post.
         if ($contextcheck) {
+            if (empty($fromform->groupinfo)) {
+                $fromform->groupinfo = -1;
+            }
             $DB->set_field('hsuforum_discussions' ,'groupid' , $fromform->groupinfo, array('firstpost' => $fromform->id));
         }
 

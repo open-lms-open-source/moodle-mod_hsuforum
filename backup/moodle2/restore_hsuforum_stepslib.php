@@ -36,10 +36,10 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
 
-        $paths[] = new restore_path_element('hsuforum', '/activity/forum');
+        $paths[] = new restore_path_element('hsuforum', '/activity/hsuforum');
         if ($userinfo) {
             $paths[] = new restore_path_element('hsuforum_discussion', '/activity/hsuforum/discussions/discussion');
-            $paths[] = new restore_path_element('hsuforum_discussion_subscription', '/activity/hsuforum/discussions/discussion/subscriptions/subscription');
+            $paths[] = new restore_path_element('hsuforum_discussion_subscription', '/activity/hsuforum/discussions/discussion/subscriptions_discs/subscriptions_disc');
             $paths[] = new restore_path_element('hsuforum_post', '/activity/hsuforum/discussions/discussion/posts/post');
             $paths[] = new restore_path_element('hsuforum_rating', '/activity/hsuforum/discussions/discussion/posts/post/ratings/rating');
             $paths[] = new restore_path_element('hsuforum_subscription', '/activity/hsuforum/subscriptions/subscription');
@@ -51,7 +51,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         return $this->prepare_activity_structure($paths);
     }
 
-    protected function process_forum($data) {
+    protected function process_hsuforum($data) {
         global $DB;
 
         $data = (object)$data;
@@ -83,6 +83,9 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data->groupid = $this->get_mappingid('group', $data->groupid);
         $data->usermodified = $this->get_mappingid('user', $data->usermodified);
 
+        if (empty($data->groupid)) {
+            $data->groupid = -1;
+        }
         $newitemid = $DB->insert_record('hsuforum_discussions', $data);
         $this->set_mapping('hsuforum_discussion', $oldid, $newitemid);
     }

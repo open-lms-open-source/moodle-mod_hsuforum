@@ -2620,7 +2620,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
           GROUP BY d.id
         ) unread ON d.id = unread.id
 
-        JOIN (
+   LEFT OUTER JOIN (
             SELECT d.id, CASE WHEN r.id IS NULL THEN 0 ELSE 1 END AS postread
               FROM {hsuforum_discussions} d
               JOIN {hsuforum_posts} p ON p.discussion = d.id AND p.parent = 0

@@ -53,8 +53,8 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             'assessed', 'timemodified', 'usermodified', 'timestart',
             'timeend'));
 
-        $discussionsubs = new backup_nested_element('subscriptions');
-        $discussionsub  = new backup_nested_element('subscription', array('id'), array('userid'));
+        $discussionsubs = new backup_nested_element('subscriptions_discs');
+        $discussionsub  = new backup_nested_element('subscriptions_disc', array('id'), array('userid'));
 
         $posts = new backup_nested_element('posts');
 

@@ -43,7 +43,7 @@ class backup_hsuforum_activity_task extends backup_activity_task {
      */
     protected function define_my_steps() {
         // Forum only has one structure step
-        $this->add_step(new backup_hsuforum_activity_structure_step('forum structure', 'forum.xml'));
+        $this->add_step(new backup_hsuforum_activity_structure_step('hsuforum_structure', 'hsuforum.xml'));
     }
 
     /**
@@ -56,27 +56,27 @@ class backup_hsuforum_activity_task extends backup_activity_task {
         $base = preg_quote($CFG->wwwroot,"/");
 
         // Link to the list of forums
-        $search="/(".$base."\/mod\/forum\/index.php\?id\=)([0-9]+)/";
+        $search="/(".$base."\/mod\/hsuforum\/index.php\?id\=)([0-9]+)/";
         $content= preg_replace($search, '$@HSUFORUMINDEX*$2@$', $content);
 
         // Link to forum view by moduleid
-        $search="/(".$base."\/mod\/forum\/view.php\?id\=)([0-9]+)/";
+        $search="/(".$base."\/mod\/hsuforum\/view.php\?id\=)([0-9]+)/";
         $content= preg_replace($search, '$@HSUFORUMVIEWBYID*$2@$', $content);
 
         // Link to forum view by forumid
-        $search="/(".$base."\/mod\/forum\/view.php\?f\=)([0-9]+)/";
+        $search="/(".$base."\/mod\/hsuforum\/view.php\?f\=)([0-9]+)/";
         $content= preg_replace($search, '$@HSUFORUMVIEWBYF*$2@$', $content);
 
         // Link to forum discussion with parent syntax
-        $search="/(".$base."\/mod\/forum\/discuss.php\?d\=)([0-9]+)\&parent\=([0-9]+)/";
+        $search="/(".$base."\/mod\/hsuforum\/discuss.php\?d\=)([0-9]+)\&parent\=([0-9]+)/";
         $content= preg_replace($search, '$@HSUFORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
 
         // Link to forum discussion with relative syntax
-        $search="/(".$base."\/mod\/forum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
+        $search="/(".$base."\/mod\/hsuforum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
         $content= preg_replace($search, '$@HSUFORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
 
         // Link to forum discussion by discussionid
-        $search="/(".$base."\/mod\/forum\/discuss.php\?d\=)([0-9]+)/";
+        $search="/(".$base."\/mod\/hsuforum\/discuss.php\?d\=)([0-9]+)/";
         $content= preg_replace($search, '$@HSUFORUMDISCUSSIONVIEW*$2@$', $content);
 
         return $content;

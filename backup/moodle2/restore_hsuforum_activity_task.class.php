@@ -44,7 +44,7 @@ class restore_hsuforum_activity_task extends restore_activity_task {
      */
     protected function define_my_steps() {
         // Choice only has one structure step
-        $this->add_step(new restore_hsuforum_activity_structure_step('hsuforum_structure', 'forum.xml'));
+        $this->add_step(new restore_hsuforum_activity_structure_step('hsuforum_structure', 'hsuforum.xml'));
     }
 
     /**
