@@ -44,7 +44,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             'maxbytes', 'maxattachments', 'forcesubscribe', 'trackingtype',
             'rsstype', 'rssarticles', 'timemodified', 'warnafter',
             'blockafter', 'blockperiod', 'completiondiscussions', 'completionreplies',
-            'completionposts', 'anonymous'));
+            'completionposts', 'anonymous', 'gradetype'));
 
         $discussions = new backup_nested_element('discussions');
 
