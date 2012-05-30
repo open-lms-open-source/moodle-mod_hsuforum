@@ -482,3 +482,4 @@ $string['totalpostsanddiscussions'] = 'Total posts: {$a}';
 $string['totalrating'] = 'Rating: {$a}';
 $string['grade'] = 'Grade';
 $string['thisisanonymous'] = 'This forum is anonymous.';
+$string['anonymouswarning'] = 'By moving this discussion topic you might reveal anonymous information. Are you sure you want to do that?';

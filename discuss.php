@@ -34,6 +34,7 @@
     $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum
     $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
     $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
+    $warned = optional_param('warned', 0, PARAM_INT);
 
     $url = new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$d));
     if ($parent !== 0) {
@@ -102,21 +103,23 @@
 
         require_capability('mod/hsuforum:startdiscussion', get_context_instance(CONTEXT_MODULE,$cmto->id));
 
-        if (!hsuforum_move_attachments($discussion, $forum->id, $forumto->id)) {
-            echo $OUTPUT->notification("Errors occurred while moving attachment directories - check your file permissions");
+        if (!$forum->anonymous or $warned) {
+            if (!hsuforum_move_attachments($discussion, $forum->id, $forumto->id)) {
+                echo $OUTPUT->notification("Errors occurred while moving attachment directories - check your file permissions");
+            }
+            $DB->set_field('hsuforum_discussions', 'forum', $forumto->id, array('id' => $discussion->id));
+            $DB->set_field('hsuforum_read', 'forumid', $forumto->id, array('discussionid' => $discussion->id));
+            add_to_log($course->id, 'hsuforum', 'move discussion', "discuss.php?d=$discussion->id", $discussion->id, $cmto->id);
+
+            require_once($CFG->libdir.'/rsslib.php');
+            require_once($CFG->dirroot.'/mod/hsuforum/rsslib.php');
+
+            // Delete the RSS files for the 2 forums to force regeneration of the feeds
+            hsuforum_rss_delete_file($forum);
+            hsuforum_rss_delete_file($forumto);
+
+            redirect($return.'&moved=-1&sesskey='.sesskey());
         }
-        $DB->set_field('hsuforum_discussions', 'forum', $forumto->id, array('id' => $discussion->id));
-        $DB->set_field('hsuforum_read', 'forumid', $forumto->id, array('discussionid' => $discussion->id));
-        add_to_log($course->id, 'hsuforum', 'move discussion', "discuss.php?d=$discussion->id", $discussion->id, $cmto->id);
-
-        require_once($CFG->libdir.'/rsslib.php');
-        require_once($CFG->dirroot.'/mod/hsuforum/rsslib.php');
-
-        // Delete the RSS files for the 2 forums to force regeneration of the feeds
-        hsuforum_rss_delete_file($forum);
-        hsuforum_rss_delete_file($forumto);
-
-        redirect($return.'&moved=-1&sesskey='.sesskey());
     }
 
     add_to_log($course->id, 'hsuforum', 'view discussion', "discuss.php?d=$discussion->id", $discussion->id, $cm->id);
@@ -267,7 +270,7 @@
                 echo '<div class="movediscussionoption">';
                 $select = new url_select($forummenu, '',
                         array(''=>get_string("movethisdiscussionto", "hsuforum")),
-                        'forummenu', get_string('move'));
+                        'forummenu');
                 echo $OUTPUT->render($select);
                 echo "</div>";
             }
@@ -276,6 +279,15 @@
     }
     echo '<div class="clearfloat">&nbsp;</div>';
     echo "</div>";
+
+    // Print Notice of Warning if Moving this Discussion
+    if ($move > 0 and confirm_sesskey()) {
+        echo $OUTPUT->confirm(
+            get_string('anonymouswarning', 'hsuforum'),
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id, 'move' => $move, 'warned' => 1)),
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id))
+        );
+    }
 
     if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
         $a = new stdClass();
