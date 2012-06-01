@@ -3078,7 +3078,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
     $output = '<table border="0" cellpadding="3" cellspacing="0" class="forumpost">';
 
     $output .= '<tr class="header"><td width="35" valign="top" class="picture left">';
-    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id), array('link' => (!hsuforum_is_anonymous_user($postuser))));
+    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id, 'link' => (!hsuforum_is_anonymous_user($postuser))));
     $output .= '</td>';
 
     if ($post->parent) {
