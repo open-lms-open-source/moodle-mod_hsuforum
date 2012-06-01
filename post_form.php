@@ -138,9 +138,14 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
         }
         if (!empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
-            $parentauthorid = $DB->get_field('hsuforum_posts', 'userid', array('id' => $post->parent), MUST_EXIST);
-            $mform->addElement('advcheckbox', 'privatereply', get_string('privatereply', 'hsuforum'), null, null, array(0, $parentauthorid));
-            $mform->addHelpButton('privatereply', 'privatereply', 'hsuforum');
+            if ($post->userid != $USER->id) {
+                $mform->addElement('hidden', 'privatereply', 0);
+                $mform->setType('privatereply', PARAM_INT);
+            } else {
+                $parentauthorid = $DB->get_field('hsuforum_posts', 'userid', array('id' => $post->parent), MUST_EXIST);
+                $mform->addElement('advcheckbox', 'privatereply', get_string('privatereply', 'hsuforum'), null, null, array(0, $parentauthorid));
+                $mform->addHelpButton('privatereply', 'privatereply', 'hsuforum');
+            }
         }
 
         //-------------------------------------------------------------------------------
