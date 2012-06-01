@@ -68,7 +68,7 @@ class hsuforum_lib_discussion_sort implements Serializable {
             $instance->disable('subscribe');
         }
         if (!hsuforum_tp_is_tracked($forum)) {
-            $instance->disable('replies');
+            $instance->disable('unread');
         }
         return $instance;
     }
