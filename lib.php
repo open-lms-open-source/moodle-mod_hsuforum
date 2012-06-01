@@ -4425,6 +4425,12 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
     $post->course        = $forum->course; // speedup
     $post->mailnow       = $discussion->mailnow;
 
+    if (!is_null($mform)) {
+        $data = $mform->get_data();
+        if (!empty($data->reveal)) {
+            $post->reveal = 1;
+        }
+    }
     $post->id = $DB->insert_record("hsuforum_posts", $post);
 
     // TODO: Fix the calling code so that there always is a $cm when this function is called
