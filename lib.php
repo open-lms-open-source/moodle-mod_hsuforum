@@ -3891,26 +3891,6 @@ function hsuforum_shorten_post($message) {
 }
 
 /**
- * Print the drop down that allows the user to select how they want to have
- * the discussion displayed.
- *
- * @param int $id forum id if $forumtype is 'single',
- *              discussion id for any other forum type
- * @param mixed $mode forum layout mode
- * @param object $forum
- */
-function hsuforum_print_mode_form($id, $mode, $forum) {
-    global $OUTPUT;
-    if ($forum->type == 'single') {
-        $select = new single_select(new moodle_url("/mod/hsuforum/view.php", array('f'=>$id)), 'mode', hsuforum_get_layout_modes($forum), $mode, null, "mode");
-        $select->class = "forummode";
-    } else {
-        $select = new single_select(new moodle_url("/mod/hsuforum/discuss.php", array('d'=>$id)), 'mode', hsuforum_get_layout_modes($forum), $mode, null, "mode");
-    }
-    echo $OUTPUT->render($select);
-}
-
-/**
  * @global object
  * @param object $course
  * @param string $search

@@ -234,7 +234,8 @@
 
     // groups selector not needed here
     echo '<div class="discussioncontrol displaymode">';
-    hsuforum_print_mode_form($discussion->id, $displaymode, $forum);
+    $select = new single_select(new moodle_url("/mod/hsuforum/discuss.php", array('d'=> $discussion->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
+    echo $OUTPUT->render($select);
     echo "</div>";
 
     if ($forum->type != 'single'

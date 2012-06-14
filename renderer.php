@@ -885,8 +885,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 if ($mode) {
                     set_user_preference("hsuforum_displaymode", $mode);
                 }
-                $displaymode = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
-                hsuforum_print_mode_form($forum->id, $displaymode, $forum);
+                $displaymode   = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
+                $select        = new single_select(new moodle_url("/mod/hsuforum/view.php", array('id'=> $cm->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
+                $select->class = "forummode";
+                echo $OUTPUT->render($select);
             }
         }
 
