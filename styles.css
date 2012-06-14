@@ -147,3 +147,5 @@
 #local-joulegrader .content .mod_hsuforum_posts_container,
 #local-joulegrader .content .mod_hsuforum_posts_container .content {text-align: left; margin-right: 0; overflow: hidden;}
 #local-joulegrader .content .mod_hsuforum_posts_container {margin-right: 10px; }
+
+.hsuforum_postincontext_dialog .yui3-widget-hd { cursor: move; }

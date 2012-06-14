@@ -144,6 +144,7 @@ M.mod_hsuforum.init_post_in_context = function(Y) {
                         plugins: [Y.Plugin.Drag],
                         hideOn: [ { eventName: 'clickoutside' } ]
                     });
+                    panel.dd.addHandle('.hsuforum_postincontext_dialog .yui3-widget-hd');
                     panel.after('visibleChange', function (e) {
                         if (!e.newVal && e.prevVal) {
                             panel.destroy();
