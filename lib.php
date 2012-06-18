@@ -5579,7 +5579,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 if (empty($nodes)) {
                     $nodes = array();
                 }
-                if ($node = $renderer->post_to_node($cm, $discussion, $discussion)) {
+                if ($node = $renderer->post_to_node($cm, $discussion, $discussion, true)) {
                     $nodes[] = $node;
                 }
                 break;
