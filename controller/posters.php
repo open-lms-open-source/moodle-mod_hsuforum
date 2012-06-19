@@ -19,9 +19,7 @@ class hsuforum_controller_posters extends hsuforum_controller_abstract {
      * @param string $action
      */
     public function require_capability($action) {
-        global $PAGE;
-
-        require_capability('mod/hsuforum:viewposters', $PAGE->context);
+        // Anyone can view
     }
 
     /**
@@ -36,6 +34,7 @@ class hsuforum_controller_posters extends hsuforum_controller_abstract {
         $table->column_class('userpic', 'col_userpic');
 
         echo $OUTPUT->header();
+        echo $OUTPUT->heading(get_string('viewposters', 'hsuforum'));
         $table->out('25', false);
         echo $OUTPUT->footer();
     }
