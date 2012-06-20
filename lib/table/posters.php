@@ -17,8 +17,8 @@ class hsuforum_lib_table_posters extends table_sql {
 
         parent::__construct($uniqueid);
 
-        $this->define_columns(array('userpic', 'fullname', 'posts', 'replies', 'substantive'));
-        $this->define_headers(array('', get_string('fullnameuser'), get_string('posts', 'hsuforum'), get_string('replies', 'hsuforum'), get_string('substantive', 'hsuforum')));
+        $this->define_columns(array('userpic', 'fullname', 'total', 'posts', 'replies', 'substantive'));
+        $this->define_headers(array('', get_string('fullnameuser'), get_string('totalposts', 'hsuforum'), get_string('posts', 'hsuforum'), get_string('replies', 'hsuforum'), get_string('substantive', 'hsuforum')));
 
         $fields = user_picture::fields('u', null, 'id', 'picture');
         $params = array('forumid' => $PAGE->activityrecord->id);
