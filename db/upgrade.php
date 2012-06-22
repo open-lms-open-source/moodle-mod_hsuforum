@@ -427,6 +427,20 @@ function xmldb_hsuforum_upgrade($oldversion) {
         // hsuforum savepoint reached
         upgrade_mod_savepoint(true, 2011112905, 'hsuforum');
     }
+    
+    if ($oldversion < 2011112906) {
+        // Rename field hsuforumid on table hsuforum_track_prefs to forumid
+        $table = new xmldb_table('hsuforum_track_prefs');
+        $field = new xmldb_field('hsuforumid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'userid');
+
+        // Conditionally launch rename field hsuforumid (if it exists)
+        if($dbman->field_exists($table,$field)) {
+            $dbman->rename_field($table, $field, 'forumid');
+        }
+        
+        // hsuforum savepoint reached
+        upgrade_mod_savepoint(true, 2011112906, 'hsuforum');
+    }
 
     return true;
 }
