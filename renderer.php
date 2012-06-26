@@ -243,15 +243,17 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @param $cm
      * @param $discussion
      * @param $post
+     * @param $skipcansee
      * @return bool|object
      * @author Mark Nielsen
      */
-    public function post_to_node($cm, $discussion, $post) {
+    public function post_to_node($cm, $discussion, $post, $skipcansee = false) {
         global $PAGE;
 
         hsuforum_cm_add_cache($cm);
 
-        if (!hsuforum_user_can_see_post($cm->cache->forum, $discussion, $post, NULL, $cm)) {
+        // Sometimes we must skip this check because $discussion isn't the actual discussion record, it's some sort of monster!
+        if (!$skipcansee and !hsuforum_user_can_see_post($cm->cache->forum, $discussion, $post, NULL, $cm)) {
             return false;
         }
         $displaymode = hsuforum_get_layout_mode($cm->cache->forum);

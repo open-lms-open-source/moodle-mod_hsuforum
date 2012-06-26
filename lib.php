@@ -5579,7 +5579,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 if (empty($nodes)) {
                     $nodes = array();
                 }
-                if ($node = $renderer->post_to_node($cm, $discussion, $discussion)) {
+                if ($node = $renderer->post_to_node($cm, $discussion, $discussion, true)) {
                     $nodes[] = $node;
                 }
                 break;
@@ -7655,9 +7655,8 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $discussionid = optional_param('d', 0, PARAM_INT);
     $viewingdiscussion = ($PAGE->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
 
-    if (has_capability('mod/hsuforum:viewposters', $PAGE->cm->context)) {
-        $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
-    }
+    $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
+
     if ($canmanage) {
         $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
 
