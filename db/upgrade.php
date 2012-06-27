@@ -413,7 +413,15 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
     // Moodle v2.2.0 release upgrade line
     // Put any upgrade step following this
-    if ($oldversion < 2011112905) {
+    if ($oldversion < 2011112907) {
+        /// Conditionally add field privatereply to be added to hsuforum
+        $table = new xmldb_table('hsuforum_posts');
+        $field = new xmldb_field('privatereply');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'flags');
+        
+        if(!$dbman->field_exists($table,$field)) {
+            $dbman->add_field($table, $field);
+        }
 
         // Define index privatereply (not unique) to be added to hsuforum_posts
         $table = new xmldb_table('hsuforum_posts');
@@ -424,11 +432,6 @@ function xmldb_hsuforum_upgrade($oldversion) {
             $dbman->add_index($table, $index);
         }
 
-        // hsuforum savepoint reached
-        upgrade_mod_savepoint(true, 2011112905, 'hsuforum');
-    }
-    
-    if ($oldversion < 2011112906) {
         // Rename field hsuforumid on table hsuforum_track_prefs to forumid
         $table = new xmldb_table('hsuforum_track_prefs');
         $field = new xmldb_field('hsuforumid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'userid');
@@ -439,7 +442,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         }
         
         // hsuforum savepoint reached
-        upgrade_mod_savepoint(true, 2011112906, 'hsuforum');
+        upgrade_mod_savepoint(true, 2011112907, 'hsuforum');
     }
 
     return true;
