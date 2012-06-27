@@ -802,7 +802,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $counts = array(
                 get_string('totalpostsanddiscussions', 'hsuforum', ($discussioncount+$postcount)),
                 get_string('totaldiscussions', 'hsuforum', $discussioncount),
-                get_string('totalposts', 'hsuforum', $postcount),
+                get_string('totalreplies', 'hsuforum', $postcount),
                 get_string('totalsubstantive', 'hsuforum', $flagcount),
             );
             if ($grade = hsuforum_get_user_formatted_rating_grade($cm->cache->forum, $userid)) {
