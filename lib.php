@@ -312,6 +312,8 @@ function hsuforum_delete_instance($id) {
  * @return mixed True if yes (some features may use other values)
  */
 function hsuforum_supports($feature) {
+    global $CFG;
+
     switch($feature) {
         case FEATURE_GROUPS:                  return true;
         case FEATURE_GROUPINGS:               return true;
@@ -324,7 +326,7 @@ function hsuforum_supports($feature) {
         case FEATURE_RATE:                    return true;
         case FEATURE_BACKUP_MOODLE2:          return true;
         case FEATURE_SHOW_DESCRIPTION:        return true;
-        case FEATURE_ADVANCED_GRADING:        return true;
+        case FEATURE_ADVANCED_GRADING:        return (!empty($CFG->mod_hsuforum_grading_interface));
 
         default: return null;
     }

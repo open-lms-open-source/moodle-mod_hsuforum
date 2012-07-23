@@ -142,6 +142,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 array('ajaxrequesterror', 'hsuforum'),
                 array('clicktoexpand', 'hsuforum'),
                 array('clicktocollapse', 'hsuforum'),
+                array('manualwarning', 'hsuforum'),
                 array('yes'),
                 array('no'),
             )

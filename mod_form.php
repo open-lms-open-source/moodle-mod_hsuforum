@@ -30,7 +30,7 @@ require_once ($CFG->dirroot.'/course/moodleform_mod.php');
 class mod_hsuforum_mod_form extends moodleform_mod {
 
     function definition() {
-        global $CFG, $COURSE, $DB;
+        global $CFG, $COURSE, $PAGE;
 
         $mform    =& $this->_form;
 
@@ -148,9 +148,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
         $this->standard_coursemodule_elements();
 
-        $mform =& $this->_form;
-        $mform->addElement('select', 'gradetype', get_string('gradetype', 'hsuforum') , hsuforum_get_grading_types());
+        $mform->addElement('select', 'gradetype', get_string('gradetype', 'hsuforum'), hsuforum_get_grading_types());
         $mform->setDefault('gradetype', HSUFORUM_GRADETYPE_NONE);
+        $mform->setType('gradetype', PARAM_INT);
         $mform->addHelpButton('gradetype', 'gradetype', 'hsuforum');
 
         $mform->insertElementBefore($mform->removeElement('gradetype'), 'grade');
@@ -160,8 +160,10 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         // Done abusing this poor fellow...
         $mform->removeElement('grade');
 
-        foreach ($this->current->_advancedgradingdata['areas'] as $areaname => $areadata) {
-            $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
+        if ($this->_features->advancedgrading) {
+            foreach ($this->current->_advancedgradingdata['areas'] as $areaname => $areadata) {
+                $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
+            }
         }
         $key = array_search('scale', $mform->_dependencies['assessed']['eq'][0]);
         if ($key !== false) {
@@ -172,6 +174,11 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 // buttons
         $this->add_action_buttons();
 
+        if (!$this->_features->advancedgrading) {
+            /** @var $renderer mod_hsuforum_renderer */
+            $renderer = $PAGE->get_renderer('mod_hsuforum');
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_modform', array(HSUFORUM_GRADETYPE_MANUAL), false, $renderer->get_js_module());
+        }
     }
 
     function standard_grading_coursemodule_elements() {

@@ -359,3 +359,31 @@ M.mod_hsuforum.io_failure_handler = function(Y, callback) {
         callback();
     }
 };
+
+/**
+ * @author Mark Nielsen
+ */
+M.mod_hsuforum.init_modform = function(Y, HSUFORUM_GRADETYPE_MANUAL) {
+    var gradetype = Y.one('.path-mod-hsuforum select[name="gradetype"]');
+
+    if (gradetype) {
+        var warning = Y.Node.create('<span id="gradetype_warning" class="hidden">' + M.str.hsuforum.manualwarning + '</span>');
+        gradetype.get('parentNode').appendChild(warning);
+
+        var updateMessage = function() {
+            if (gradetype.get('value') == HSUFORUM_GRADETYPE_MANUAL) {
+                warning.removeClass('hidden');
+            } else {
+                warning.addClass('hidden');
+            }
+        };
+
+        // Init the view
+        updateMessage();
+
+        // Update view on change
+        gradetype.on('change', function() {
+            updateMessage();
+        });
+    }
+};
