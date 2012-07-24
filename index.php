@@ -19,6 +19,8 @@
  * @package mod-hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @author Mark Nielsen
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');

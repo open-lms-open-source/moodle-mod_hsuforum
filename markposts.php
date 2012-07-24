@@ -21,6 +21,8 @@
  * @package mod-hsuforum
  * @copyright 2005 mchurch
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @author Mark Nielsen
  */
 
 require_once("../../config.php");

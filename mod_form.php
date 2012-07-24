@@ -19,6 +19,8 @@
  * @package mod-hsuforum
  * @copyright Jamie Pratt <me@jamiep.org>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @author Mark Nielsen
  */
 
 if (!defined('MOODLE_INTERNAL')) {

@@ -39,6 +39,8 @@
  * @package mod-hsuforum
  * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @author Mark Nielsen
  */
 
 function xmldb_hsuforum_upgrade($oldversion) {
