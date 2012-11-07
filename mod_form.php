@@ -279,5 +279,18 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         }
         return $data;
     }
+
+    function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+
+        if (!empty($data['completionusegrade'])) {
+            // This is the same logic as in hsuforum_grade_item_update() for determining that the gradetype is GRADE_TYPE_NONE
+            // If GRADE_TYPE_NONE, then we cannot have this completion criteria because there may be no grade item!
+            if ($data['gradetype'] == HSUFORUM_GRADETYPE_NONE or ($data['gradetype'] == HSUFORUM_GRADETYPE_RATING and !$data['assessed']) or $data['scale'] == 0) {
+                $errors['completionusegrade'] = get_string('completionusegradeerror', 'hsuforum');
+            }
+        }
+        return $errors;
+    }
 }
 
