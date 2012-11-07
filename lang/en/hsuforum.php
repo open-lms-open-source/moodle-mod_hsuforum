@@ -508,3 +508,4 @@ $string['thisisanonymous'] = 'This forum is anonymous.';
 $string['anonymouswarning'] = 'By moving this discussion topic you might reveal anonymous information. Are you sure you want to do that?';
 $string['totalposts'] = 'Total posts';
 $string['completionusegradeerror'] = 'Cannot require grade because this forum is not graded.  Either remove this completion requirement or make this forum graded.';
+$string['splitprivatewarning'] = 'You are splitting a private reply. After splitting, this post will no longer be private.';

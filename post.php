@@ -446,6 +446,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $newpost->id      = $post->id;
         $newpost->parent  = 0;
         $newpost->subject = $name;
+        $newpost->privatereply = 0;
 
         $DB->update_record("hsuforum_posts", $newpost);
 
@@ -472,12 +473,16 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading(get_string('pruneheading', 'hsuforum'));
+        if (!empty($post->privatereply)) {
+            echo $OUTPUT->notification(get_string('splitprivatewarning', 'hsuforum'));
+        }
         echo '<center>';
 
         include('prune.html');
 
-        hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
         echo '</center>';
+
+        hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
     }
     echo $OUTPUT->footer();
     die;
