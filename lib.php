@@ -413,7 +413,7 @@ WHERE
  * @return string A unique message-id
  */
 function hsuforum_get_email_message_id($postid, $usertoid, $hostname) {
-    return '<'.hash('sha256',$postid.'to'.$usertoid.'@'.$hostname).'>';
+    return '<'.hash('sha256',$postid.'to'.$usertoid).'@'.$hostname.'>';
 }
 
 /**
@@ -1368,23 +1368,33 @@ function hsuforum_print_overview($courses,&$htmlarray) {
         return;
     }
 
-
-    // get all forum logs in ONE query (much better!)
+    // Courses to search for new posts
+    $coursessqls = array();
     $params = array();
-    $sql = "SELECT instance,cmid,l.course,COUNT(l.id) as count FROM {log} l "
-        ." JOIN {course_modules} cm ON cm.id = cmid "
-        ." WHERE (";
     foreach ($courses as $course) {
-        $sql .= '(l.course = ? AND l.time > ?) OR ';
-        $params[] = $course->id;
-        $params[] = $course->lastaccess;
+
+        // If the user has never entered into the course all posts are pending
+        if ($course->lastaccess == 0) {
+            $coursessqls[] = '(f.course = ?)';
+            $params[] = $course->id;
+
+        // Only posts created after the course last access
+        } else {
+            $coursessqls[] = '(f.course = ? AND p.created > ?)';
+            $params[] = $course->id;
+            $params[] = $course->lastaccess;
+        }
     }
-    $sql = substr($sql,0,-3); // take off the last OR
-
-    $sql .= ") AND l.module = 'hsuforum' AND action = 'add post' "
-        ." AND userid != ? GROUP BY cmid,l.course,instance";
-
     $params[] = $USER->id;
+    $coursessql = implode(' OR ', $coursessqls);
+
+    $sql = "SELECT f.id, COUNT(*) as count "
+                .'FROM {hsuforum} f '
+                .'JOIN {hsuforum_discussions} d ON d.forum  = f.id '
+                .'JOIN {hsuforum_posts} p ON p.discussion = d.id '
+                ."WHERE ($coursessql) "
+                .'AND p.userid != ? '
+                .'GROUP BY f.id';
 
     if (!$new = $DB->get_records_sql($sql, $params)) {
         $new = array(); // avoid warnings
