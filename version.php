@@ -18,14 +18,14 @@
  * Version information
  *
  * @package    mod
- * @subpackage forum
+ * @subpackage hsuforum
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2011112907;       // The current module version (Date: YYYYMMDDXX)
-$module->requires  = 2011112900;       // Requires this Moodle version
+$module->version   = 2012061700;       // The current module version (Date: YYYYMMDDXX)
+$module->requires  = 2012061700;       // Requires this Moodle version
 $module->component = 'mod_hsuforum';   // Full name of the plugin (used for diagnostics)
 $module->cron      = 60;

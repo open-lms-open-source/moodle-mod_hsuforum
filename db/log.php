@@ -18,8 +18,8 @@
 /**
  * Definition of log events
  *
- * @package    mod
- * @subpackage forum
+ * @package    mod_hsuforum
+ * @category   log
  * @copyright  2010 Petr Skoda (http://skodak.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

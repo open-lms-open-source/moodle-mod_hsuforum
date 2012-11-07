@@ -418,7 +418,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $table = new xmldb_table('hsuforum_posts');
         $field = new xmldb_field('privatereply');
         $field->set_attributes(XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'flags');
-        
+
         if(!$dbman->field_exists($table,$field)) {
             $dbman->add_field($table, $field);
         }
@@ -440,10 +440,17 @@ function xmldb_hsuforum_upgrade($oldversion) {
         if($dbman->field_exists($table,$field)) {
             $dbman->rename_field($table, $field, 'forumid');
         }
-        
+
         // hsuforum savepoint reached
         upgrade_mod_savepoint(true, 2011112907, 'hsuforum');
     }
+
+    // Moodle v2.2.0 release upgrade line
+    // Put any upgrade step following this
+
+    // Moodle v2.3.0 release upgrade line
+    // Put any upgrade step following this
+
 
     return true;
 }

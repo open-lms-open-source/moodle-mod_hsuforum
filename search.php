@@ -64,7 +64,7 @@ if ($timetorestrict) {
 }
 
 $PAGE->set_pagelayout('standard');
-$PAGE->set_url($FULLME);
+$PAGE->set_url($FULLME); //TODO: this is very sloppy --skodak
 
 if (empty($search)) {   // Check the other parameters instead
     if (!empty($words)) {
@@ -371,11 +371,11 @@ function hsuforum_print_big_search_form($course) {
     }
 
     echo '<input name="timetorestrict" type="checkbox" value="1" alt="'.get_string('searchdateto', 'hsuforum').'" onclick="return lockoptions(\'searchform\', \'timetorestrict\', timetoitems)" ' .$datetochecked. ' /> ';
-    $selectors = html_writer::select_time('days', 'fromday', $dateto)
-               . html_writer::select_time('months', 'frommonth', $dateto)
-               . html_writer::select_time('years', 'fromyear', $dateto)
-               . html_writer::select_time('hours', 'fromhour', $dateto)
-               . html_writer::select_time('minutes', 'fromminute', $dateto);
+    $selectors = html_writer::select_time('days', 'today', $dateto)
+               . html_writer::select_time('months', 'tomonth', $dateto)
+               . html_writer::select_time('years', 'toyear', $dateto)
+               . html_writer::select_time('hours', 'tohour', $dateto)
+               . html_writer::select_time('minutes', 'tominute', $dateto);
     echo $selectors;
 
     echo '<input type="hidden" name="htoday" value="0" />';

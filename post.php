@@ -113,7 +113,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         if (!isguestuser()) {
             if (!is_enrolled($coursecontext)) {
                 if (enrol_selfenrol_available($course->id)) {
-                    $SESSION->wantsurl = $FULLME;
+                    $SESSION->wantsurl = qualified_me();
                     $SESSION->enrolcancel = $_SERVER['HTTP_REFERER'];
                     redirect($CFG->wwwroot.'/enrol/index.php?id='.$course->id, get_string('youneedtoenrol'));
                 }
@@ -183,7 +183,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (! hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
         if (!isguestuser()) {
             if (!is_enrolled($coursecontext)) {  // User is a guest here!
-                $SESSION->wantsurl = $FULLME;
+                $SESSION->wantsurl = qualified_me();
                 $SESSION->enrolcancel = $_SERVER['HTTP_REFERER'];
                 redirect($CFG->wwwroot.'/enrol/index.php?id='.$course->id, get_string('youneedtoenrol'));
             }
@@ -514,20 +514,22 @@ require_once('post_form.php');
 $mform_post = new mod_hsuforum_post_form('post.php', array('course'=>$course, 'cm'=>$cm, 'coursecontext'=>$coursecontext, 'modcontext'=>$modcontext, 'forum'=>$forum, 'post'=>$post));
 
 $draftitemid = file_get_submitted_draft_itemid('attachments');
-file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_hsuforum', 'attachment', empty($post->id)?null:$post->id);
+file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_hsuforum', 'attachment', empty($post->id)?null:$post->id, mod_hsuforum_post_form::attachment_options($forum));
 
 //load data into form NOW!
 
 if ($USER->id != $post->userid) {   // Not the original author, so add a message to the end
+    $data = new stdClass();
     $data->date = userdate($post->modified);
     if ($post->messageformat == FORMAT_HTML) {
         $data->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$USER->id.'&course='.$post->course.'">'.
                        fullname($USER).'</a>';
-        $post->message .= '<p>(<span class="edited">'.get_string('editedby', 'hsuforum', $data).'</span>)</p>';
+        $post->message .= '<p><span class="edited">('.get_string('editedby', 'hsuforum', $data).')</span></p>';
     } else {
         $data->name = fullname($USER);
         $post->message .= "\n\n(".get_string('editedby', 'hsuforum', $data).')';
     }
+    unset($data);
 }
 
 if (!empty($parent)) {
@@ -552,7 +554,7 @@ if (hsuforum_is_subscribed($USER->id, $forum->id)) {
 }
 
 $draftid_editor = file_get_submitted_draft_itemid('message');
-$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', empty($post->id) ? null : $post->id, array('subdirs'=>true), $post->message);
+$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', empty($post->id) ? null : $post->id, mod_hsuforum_post_form::editor_options(), $post->message);
 $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'general'=>$heading,
                                     'subject'=>$post->subject,
@@ -654,7 +656,13 @@ if ($fromform = $mform_post->get_data()) {
         if (!empty($message)) { // if we're printing stuff about the file upload
             $timemessage = 4;
         }
-        $message .= '<br />'.get_string("postupdated", "hsuforum");
+
+        if ($realpost->userid == $USER->id) {
+            $message .= '<br />'.get_string("postupdated", "hsuforum");
+        } else {
+            $realuser = $DB->get_record('user', array('id' => $realpost->userid));
+            $message .= '<br />'.get_string("editedpostupdated", "hsuforum", fullname($realuser));
+        }
 
         if ($subscribemessage = hsuforum_post_subscription($fromform, $forum)) {
             $timemessage = 4;

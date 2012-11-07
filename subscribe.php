@@ -62,7 +62,7 @@ if ($user) {
     if (!has_capability('mod/hsuforum:managesubscriptions', $context)) {
         print_error('nopermissiontosubscribe', 'hsuforum');
     }
-    $user = $DB->get_record('user', array('id' => $user), MUST_EXIST);
+    $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
 } else {
     $user = $USER;
 }
@@ -78,7 +78,7 @@ if ($groupmode && !hsuforum_is_subscribed($user->id, $forum) && !has_capability(
     }
 }
 
-require_login($course->id, false, $cm);
+require_login($course, false, $cm);
 
 if (is_null($mode) and !is_enrolled($context, $USER, '', true)) {   // Guests and visitors can't subscribe - only enrolled
     $PAGE->set_title($course->shortname);

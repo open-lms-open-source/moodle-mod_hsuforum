@@ -93,6 +93,8 @@
 /** Styles for search.php */
 #page-mod-hsuforum-search .introcontent {padding: 15px;font-weight:bold;}
 
+#page-mod-hsuforum-index .unread a:first-child,
+#page-mod-hsuforum-view .unread a:first-child {padding-right: 10px;}
 #page-mod-hsuforum-index .unread img,
 .mod_hsuforum_posts_container .forumheaderlist .unread img {margin-left: 5px;}
 

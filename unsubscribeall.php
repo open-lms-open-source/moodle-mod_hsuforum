@@ -47,15 +47,20 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading($strunsubscribeall);
 
 if (data_submitted() and $confirm and confirm_sesskey()) {
-    $DB->delete_records('hsuforum_subscriptions', array('userid'=>$USER->id));
+    $forums = hsuforum_get_optional_subscribed_forums();
+
+    foreach($forums as $forum) {
+        hsuforum_unsubscribe($USER->id, $forum->id);
+    }
     $DB->set_field('user', 'autosubscribe', 0, array('id'=>$USER->id));
+
     echo $OUTPUT->box(get_string('unsubscribealldone', 'hsuforum'));
     echo $OUTPUT->continue_button($return);
     echo $OUTPUT->footer();
     die;
 
 } else {
-    $a = $DB->count_records('hsuforum_subscriptions', array('userid'=>$USER->id));
+    $a = count(hsuforum_get_optional_subscribed_forums());
 
     if ($a) {
         $msg = get_string('unsubscribeallconfirm', 'hsuforum', $a);
