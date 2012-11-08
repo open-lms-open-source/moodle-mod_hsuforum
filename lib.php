@@ -51,9 +51,9 @@ define ('HSUFORUM_GRADETYPE_NONE', 0);
 define ('HSUFORUM_GRADETYPE_MANUAL', 1);
 define ('HSUFORUM_GRADETYPE_RATING', 2);
 
-if (!defined('FORUM_CRON_USER_CACHE')) {
+if (!defined('HSUFORUM_CRON_USER_CACHE')) {
     /** Defines how many full user records are cached in forum cron. */
-    define('FORUM_CRON_USER_CACHE', 5000);
+    define('HSUFORUM_CRON_USER_CACHE', 5000);
 }
 
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
@@ -548,7 +548,7 @@ function hsuforum_cron() {
                         // this user is subscribed to this forum
                         $subscribedusers[$forumid][$postuser->id] = $postuser->id;
                         $userscount++;
-                        if ($userscount > FORUM_CRON_USER_CACHE) {
+                        if ($userscount > HSUFORUM_CRON_USER_CACHE) {
                             // Store minimal user info.
                             $minuser = new stdClass();
                             $minuser->id = $postuser->id;
@@ -653,7 +653,7 @@ function hsuforum_cron() {
                 } else if ($userfrom = $DB->get_record('user', array('id' => $post->userid))) {
                     hsuforum_cron_minimise_user_record($userfrom);
                     // Fetch only once if possible, we can add it to user list, it will be skipped anyway.
-                    if ($userscount <= FORUM_CRON_USER_CACHE) {
+                    if ($userscount <= HSUFORUM_CRON_USER_CACHE) {
                         $userscount++;
                         $users[$userfrom->id] = $userfrom;
                     }
@@ -1003,7 +1003,7 @@ function hsuforum_cron() {
 
                         } else if ($userfrom = $DB->get_record('user', array('id' => $post->userid))) {
                             hsuforum_cron_minimise_user_record($userfrom);
-                            if ($userscount <= FORUM_CRON_USER_CACHE) {
+                            if ($userscount <= HSUFORUM_CRON_USER_CACHE) {
                                 $userscount++;
                                 $users[$userfrom->id] = $userfrom;
                             }
@@ -4760,7 +4760,7 @@ function hsuforum_get_optional_subscribed_forums() {
                    LEFT JOIN {hsuforum_subscriptions} fs ON (fs.forum = f.id AND fs.userid = :userid)
              WHERE f.forcesubscribe <> :forcesubscribe AND fs.id IS NOT NULL
                    AND cm.course $coursesql";
-    $params = array_merge($courseparams, array('modulename'=>'hsuforum', 'userid'=>$USER->id, 'forcesubscribe'=>FORUM_FORCESUBSCRIBE));
+    $params = array_merge($courseparams, array('modulename'=>'hsuforum', 'userid'=>$USER->id, 'forcesubscribe'=>HSUFORUM_FORCESUBSCRIBE));
     if (!$forums = $DB->get_records_sql($sql, $params)) {
         return array();
     }
