@@ -155,6 +155,7 @@ $string['forum'] = 'Forum';
 $string['hsuforum:addinstance'] = 'Add a new forum';
 $string['hsuforum:addnews'] = 'Add news';
 $string['hsuforum:addquestion'] = 'Add question';
+$string['hsuforum:allowforcesubscribe'] = 'Allow force subscribe';
 $string['forumauthorhidden'] = 'Author (hidden)';
 $string['forumblockingalmosttoomanyposts'] = 'You are approaching the posting threshold. You have posted {$a->numposts} times in the last {$a->blockperiod} and the limit is {$a->blockafter} posts.';
 $string['forumbodyhidden'] = 'This post cannot be viewed by you, probably because you have not posted in the discussion or the maximum editing time hasn\'t passed yet.';

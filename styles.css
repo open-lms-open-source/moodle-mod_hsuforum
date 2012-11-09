@@ -101,6 +101,19 @@
 /** Unknown Styles ??? */
 #email .unsubscribelink {margin-top:20px;}
 
+
+/* Forumpost unread
+-------------------------*/
+#page-mod-hsuforum-view .unread,
+.forumpost.unread .row.header,
+.path-course-view .unread,
+span.unread {
+    background-color: #FFD;
+}
+.forumpost.unread .row.header {
+    border-bottom: 1px solid #DDD;
+}
+
 .hsuforum_viewposters th a {vertical-align: top;}
 .hsuforum_viewposters th .commands {display: inline;}
 .hsuforum_viewposters .col_userpic {width: 40px; text-align: center;}

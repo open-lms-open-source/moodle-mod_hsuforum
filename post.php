@@ -537,8 +537,10 @@ if ($USER->id != $post->userid) {   // Not the original author, so add a message
     unset($data);
 }
 
+$formheading = '';
 if (!empty($parent)) {
     $heading = get_string("yourreply", "hsuforum");
+    $formheading = get_string('reply', 'hsuforum');
 } else {
     if ($forum->type == 'qanda') {
         $heading = get_string('yournewquestion', 'hsuforum');
@@ -894,6 +896,9 @@ if (!empty($parent)) {
     }
 }
 
+if (!empty($formheading)) {
+    echo $OUTPUT->heading($formheading, 2, array('class' => 'accesshide'));
+}
 $mform_post->display();
 
 echo $OUTPUT->footer();
