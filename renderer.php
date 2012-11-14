@@ -756,7 +756,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $discussions = hsuforum_get_user_involved_discussions($cm->cache->forum->id, $userid);
 
             foreach ($discussions as $discussion) {
-                if ($discussion->userid == $userid) {
+                if ($discussion->userid == $userid and array_key_exists($discussion->firstpost, $posts)) {
                     $discussionpost = $posts[$discussion->firstpost];
 
                     $discussioncount++;
