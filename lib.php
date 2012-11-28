@@ -6747,7 +6747,7 @@ function hsuforum_tp_get_course_unread_posts($userid, $courseid) {
 
     $now = round(time(), -2); // db cache friendliness
     $cutoffdate = $now - ($CFG->hsuforum_oldpostdays*24*60*60);
-    $params = array($userid, $userid, $courseid, $cutoffdate);
+    $params = array($userid, $userid, $courseid, $cutoffdate, $userid, $userid);
 
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
@@ -6768,6 +6768,7 @@ function hsuforum_tp_get_course_unread_posts($userid, $courseid) {
                    AND p.modified >= ? AND r.id is NULL
                    AND (f.trackingtype = ".HSUFORUM_TRACKING_ON."
                         OR (f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))
+                   AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                    $timedsql
           GROUP BY f.id";
 
