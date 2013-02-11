@@ -51,7 +51,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
      * Get post nodes
      */
     public function postnodes_action() {
-        global $PAGE, $DB, $CFG, $COURSE, $USER;
+        global $PAGE, $DB, $CFG, $USER;
 
         if (!AJAX_SCRIPT) {
             throw new coding_exception('This is an AJAX action and you cannot access it directly');
@@ -59,7 +59,6 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         $discussionid = required_param('discussionid', PARAM_INT);
         $discussion   = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
         $forum        = $PAGE->activityrecord;
-        $course       = $COURSE;
         $cm           = $PAGE->cm;
 
         if ($forum->type == 'news') {
@@ -72,7 +71,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
             print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
-        if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+        if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
             print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
@@ -120,7 +119,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
             print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
-        if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+        if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
             print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
@@ -161,14 +160,13 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
      * Prints a discussion
      */
     public function postincontext_action() {
-        global $PAGE, $DB, $CFG, $COURSE, $USER;
+        global $PAGE, $DB, $CFG, $USER;
 
         if (!AJAX_SCRIPT) {
             throw new coding_exception('This is an AJAX action and you cannot access it directly');
         }
         $postid = required_param('postid', PARAM_INT);
         $forum  = $PAGE->activityrecord;
-        $course = $COURSE;
         $cm     = $PAGE->cm;
 
         if (!$focuspost = hsuforum_get_post_full($postid)) {
@@ -186,7 +184,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
             print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
-        if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+        if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
             print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
@@ -204,7 +202,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
      * @throws coding_exception
      */
     public function markread_action() {
-        global $PAGE, $DB, $CFG, $COURSE, $USER;
+        global $PAGE, $DB, $CFG, $USER;
 
         if (!AJAX_SCRIPT) {
             throw new coding_exception('This is an AJAX action and you cannot access it directly');
@@ -213,7 +211,6 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
 
         $postid  = required_param('postid', PARAM_INT);
         $forum   = $PAGE->activityrecord;
-        $course  = $COURSE;
         $cm      = $PAGE->cm;
 
         if (!$post = hsuforum_get_post_full($postid)) {
@@ -228,7 +225,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
                 print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
             }
         }
-        if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
+        if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
             print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         if (hsuforum_tp_is_tracked($forum)) {
