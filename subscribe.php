@@ -57,7 +57,7 @@ $PAGE->set_url($url);
 $forum   = $DB->get_record('hsuforum', array('id' => $id), '*', MUST_EXIST);
 $course  = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
 $cm      = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 if ($user) {
     require_sesskey();
@@ -105,19 +105,19 @@ if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $cont
     require_sesskey();
     switch ($mode) {
         case HSUFORUM_CHOOSESUBSCRIBE : // 0
-            hsuforum_forcesubscribe($forum->id, 0);
+            hsuforum_forcesubscribe($forum->id, HSUFORUM_CHOOSESUBSCRIBE);
             redirect($returnto, get_string("everyonecannowchoose", "hsuforum"), 1);
             break;
         case HSUFORUM_FORCESUBSCRIBE : // 1
-            hsuforum_forcesubscribe($forum->id, 1);
+            hsuforum_forcesubscribe($forum->id, HSUFORUM_FORCESUBSCRIBE);
             redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;
         case HSUFORUM_INITIALSUBSCRIBE : // 2
-            hsuforum_forcesubscribe($forum->id, 2);
+            hsuforum_forcesubscribe($forum->id, HSUFORUM_INITIALSUBSCRIBE);
             redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;
         case HSUFORUM_DISALLOWSUBSCRIBE : // 3
-            hsuforum_forcesubscribe($forum->id, 3);
+            hsuforum_forcesubscribe($forum->id, HSUFORUM_DISALLOWSUBSCRIBE);
             redirect($returnto, get_string("noonecansubscribenow", "hsuforum"), 1);
             break;
         default:

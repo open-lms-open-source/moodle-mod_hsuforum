@@ -25,6 +25,7 @@
  * @author     Mark Nielsen
  */
 
+$string['activityoverview'] = 'There are new forum posts';
 $string['addanewdiscussion'] = 'Add a new discussion topic';
 $string['addanewquestion'] = 'Add a new question';
 $string['addanewtopic'] = 'Add a new topic';
@@ -160,7 +161,7 @@ $string['hsuforum:addquestion'] = 'Add question';
 $string['hsuforum:allowforcesubscribe'] = 'Allow force subscribe';
 $string['forumauthorhidden'] = 'Author (hidden)';
 $string['forumblockingalmosttoomanyposts'] = 'You are approaching the posting threshold. You have posted {$a->numposts} times in the last {$a->blockperiod} and the limit is {$a->blockafter} posts.';
-$string['forumbodyhidden'] = 'This post cannot be viewed by you, probably because you have not posted in the discussion or the maximum editing time hasn\'t passed yet.';
+$string['forumbodyhidden'] = 'This post cannot be viewed by you, probably because you have not posted in the discussion, the maximum editing time hasn\'t passed yet, the discussion has not started or the discussion has expired.';
 $string['hsuforum:createattachment'] = 'Create attachments';
 $string['hsuforum:deleteanypost'] = 'Delete any posts (anytime)';
 $string['hsuforum:deleteownpost'] = 'Delete own posts (within deadline)';
@@ -181,7 +182,6 @@ $string['forums'] = 'Forums';
 $string['hsuforum:splitdiscussions'] = 'Split discussions';
 $string['hsuforum:startdiscussion'] = 'Start new discussions';
 $string['forumsubjecthidden'] = 'Subject (hidden)';
-$string['hsuforum:throttlingapplies'] = 'Throttling applies';
 $string['forumtracked'] = 'Unread posts are being tracked';
 $string['forumtrackednot'] = 'Unread posts are not being tracked';
 $string['forumtype'] = 'Forum type';

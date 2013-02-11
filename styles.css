@@ -52,6 +52,7 @@
 .mod_hsuforum_posts_container .indent {margin-left: 30px;}
 .mod_hsuforum_posts_container .forumheaderlist {width: 100%;border-width:1px;border-style:solid;border-collapse:separate;margin-top: 10px;}
 .mod_hsuforum_posts_container .forumheaderlist td {border-width:1px 0px 0px 1px;border-style:solid;}
+.mod_hsuforum_posts_container .forumheaderlist th.header.replies .iconsmall { margin: 0 .3em;}
 .mod_hsuforum_posts_container .forumheaderlist .picture {width: 35px;}
 .mod_hsuforum_posts_container .forumheaderlist .discussion .starter {vertical-align: middle;}
 .mod_hsuforum_posts_container .forumheaderlist .discussion .lastpost {white-space: nowrap;text-align: right;}
@@ -97,10 +98,11 @@
 #page-mod-hsuforum-view .unread a:first-child {padding-right: 10px;}
 #page-mod-hsuforum-index .unread img,
 .mod_hsuforum_posts_container .forumheaderlist .unread img {margin-left: 5px;}
+.dir-rtl#page-mod-hsuforum-index .unread img,
+.dir-rtl .mod_hsuforum_posts_container .forumheaderlist .unread img {margin-right: 5px; margin-left: 0; }
 
 /** Unknown Styles ??? */
 #email .unsubscribelink {margin-top:20px;}
-
 
 /* Forumpost unread
 -------------------------*/

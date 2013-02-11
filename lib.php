@@ -93,7 +93,7 @@ function hsuforum_add_instance($forum, $mform = null) {
     }
 
     $forum->id = $DB->insert_record('hsuforum', $forum);
-    $modcontext = get_context_instance(CONTEXT_MODULE, $forum->coursemodule);
+    $modcontext = context_module::instance($forum->coursemodule);
 
     if ($forum->type == 'single') {  // Create related discussion.
         $discussion = new stdClass();
@@ -103,7 +103,7 @@ function hsuforum_add_instance($forum, $mform = null) {
         $discussion->assessed      = $forum->assessed;
         $discussion->message       = $forum->intro;
         $discussion->messageformat = $forum->introformat;
-        $discussion->messagetrust  = trusttext_trusted(get_context_instance(CONTEXT_COURSE, $forum->course));
+        $discussion->messagetrust  = trusttext_trusted(context_course::instance($forum->course));
         $discussion->mailnow       = false;
         $discussion->groupid       = -1;
 
@@ -112,24 +112,18 @@ function hsuforum_add_instance($forum, $mform = null) {
         $discussion->id = hsuforum_add_discussion($discussion, null, $message);
 
         if ($mform and $draftid = file_get_submitted_draft_itemid('introeditor')) {
-            // ugly hack - we need to copy the files somehow
+            // Ugly hack - we need to copy the files somehow.
             $discussion = $DB->get_record('hsuforum_discussions', array('id'=>$discussion->id), '*', MUST_EXIST);
             $post = $DB->get_record('hsuforum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
 
-            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_hsuforum', 'post', $post->id,
-                    mod_hsuforum_post_form::attachment_options($forum), $post->message);
+            $options = array('subdirs'=>true); // Use the same options as intro field!
+            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_hsuforum', 'post', $post->id, $options, $post->message);
             $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
         }
     }
 
     if ($forum->forcesubscribe == HSUFORUM_INITIALSUBSCRIBE) {
-    /// all users should be subscribed initially
-    /// Note: hsuforum_get_potential_subscribers should take the forum context,
-    /// but that does not exist yet, becuase the forum is only half build at this
-    /// stage. However, because the forum is brand new, we know that there are
-    /// no role assignments or overrides in the forum context, so using the
-    /// course context gives the same list of users.
-        $users = hsuforum_get_potential_subscribers($modcontext, 0, 'u.id, u.email', '');
+        $users = hsuforum_get_potential_subscribers($modcontext, 0, 'u.id, u.email');
         foreach ($users as $user) {
             hsuforum_subscribe($user->id, $forum->id);
         }
@@ -214,23 +208,21 @@ function hsuforum_update_instance($forum, $mform) {
         }
 
         $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id, MUST_EXIST);
+        $modcontext = context_module::instance($cm->id, MUST_EXIST);
 
-        if ($mform and $draftid = file_get_submitted_draft_itemid('introeditor')) {
-            // ugly hack - we need to copy the files somehow
-            $discussion = $DB->get_record('hsuforum_discussions', array('id'=>$discussion->id), '*', MUST_EXIST);
-            $post = $DB->get_record('hsuforum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
-
-            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_hsuforum', 'post', $post->id,
-                    mod_hsuforum_post_form::editor_options(), $post->message);
-        }
-
+        $post = $DB->get_record('hsuforum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
         $post->subject       = $forum->name;
         $post->message       = $forum->intro;
         $post->messageformat = $forum->introformat;
         $post->messagetrust  = trusttext_trusted($modcontext);
         $post->modified      = $forum->timemodified;
-        $post->userid        = $USER->id;    // MDL-18599, so that current teacher can take ownership of activities
+        $post->userid        = $USER->id;    // MDL-18599, so that current teacher can take ownership of activities.
+
+        if ($mform and $draftid = file_get_submitted_draft_itemid('introeditor')) {
+            // Ugly hack - we need to copy the files somehow.
+            $options = array('subdirs'=>true); // Use the same options as intro field!
+            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_hsuforum', 'post', $post->id, $options, $post->message);
+        }
 
         $DB->update_record('hsuforum_posts', $post);
         $discussion->name = $forum->name;
@@ -267,7 +259,7 @@ function hsuforum_delete_instance($id) {
         return false;
     }
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     // now get rid of all files
     $fs = get_file_storage();
@@ -329,6 +321,7 @@ function hsuforum_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:          return true;
         case FEATURE_SHOW_DESCRIPTION:        return true;
         case FEATURE_ADVANCED_GRADING:        return (!empty($CFG->mod_hsuforum_grading_interface));
+        case FEATURE_PLAGIARISM:              return true;
 
         default: return null;
     }
@@ -546,7 +539,7 @@ function hsuforum_cron() {
 
             // caching subscribed users of each forum
             if (!isset($subscribedusers[$forumid])) {
-                $modcontext = get_context_instance(CONTEXT_MODULE, $coursemodules[$forumid]->id);
+                $modcontext = context_module::instance($coursemodules[$forumid]->id);
                 if ($subusers = hsuforum_subscribed_users($courses[$courseid], $forums[$forumid], 0, $modcontext, "u.*")) {
                     foreach ($subusers as $postuser) {
                         // this user is subscribed to this forum
@@ -674,11 +667,11 @@ function hsuforum_cron() {
 
                 // Fill caches
                 if (!isset($userto->viewfullnames[$forum->id])) {
-                    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+                    $modcontext = context_module::instance($cm->id);
                     $userto->viewfullnames[$forum->id] = has_capability('moodle/site:viewfullnames', $modcontext);
                 }
                 if (!isset($userto->canpost[$discussion->id])) {
-                    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+                    $modcontext = context_module::instance($cm->id);
                     $userto->canpost[$discussion->id] = hsuforum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
                 }
                 if (!isset($userfrom->groups[$forum->id])) {
@@ -745,7 +738,7 @@ function hsuforum_cron() {
                     $userfrom->customheaders[] = 'References: '.hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
                 }
 
-                $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
+                $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
 
                 $postsubject = html_to_text("$shortname: ".format_string($post->subject, true));
                 $posttext = hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto);
@@ -959,18 +952,18 @@ function hsuforum_cron() {
 
                     // Fill caches
                     if (!isset($userto->viewfullnames[$forum->id])) {
-                        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+                        $modcontext = context_module::instance($cm->id);
                         $userto->viewfullnames[$forum->id] = has_capability('moodle/site:viewfullnames', $modcontext);
                     }
                     if (!isset($userto->canpost[$discussion->id])) {
-                        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+                        $modcontext = context_module::instance($cm->id);
                         $userto->canpost[$discussion->id] = hsuforum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
                     }
 
                     $strforums      = get_string('forums', 'hsuforum');
                     $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
                     $canreply       = $userto->canpost[$discussion->id];
-                    $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
+                    $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
 
                     $posttext .= "\n \n";
                     $posttext .= '=====================================================================';
@@ -1134,7 +1127,7 @@ function hsuforum_cron() {
 function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $bare = false) {
     global $CFG, $USER;
 
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
 
     if (!isset($userto->viewfullnames[$forum->id])) {
         $viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
@@ -1163,7 +1156,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     $posttext = '';
 
     if (!$bare) {
-        $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
+        $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
         $posttext  = "$shortname -> $strforums -> ".format_string($forum->name,true);
 
         if ($discussion->name != $forum->name) {
@@ -1227,7 +1220,7 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
 
     $strforums = get_string('forums', 'hsuforum');
     $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
-    $shortname = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
+    $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
 
     $posthtml = '<head>';
 /*    foreach ($CFG->stylesheets as $stylesheet) {
@@ -1539,7 +1532,7 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
         if (!$cm->uservisible) {
             continue;
         }
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
 
         if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
             continue;
@@ -2018,7 +2011,7 @@ function hsuforum_get_readable_forums($userid, $courseid=0) {
             if (!$cm->uservisible or !isset($courseforums[$forumid])) {
                 continue;
             }
-            $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $context = context_module::instance($cm->id);
             $forum = $courseforums[$forumid];
             $forum->context = $context;
             $forum->cm = $cm;
@@ -2361,7 +2354,7 @@ function hsuforum_get_user_involved_discussions($forumid, $userid) {
     $params = array($forumid, $userid);
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         $cm = get_coursemodule_from_instance('hsuforum', $forumid);
-        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , context_module::instance($cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2394,7 +2387,7 @@ function hsuforum_count_user_posts($forumid, $userid) {
     $params = array($forumid, $userid);
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         $cm = get_coursemodule_from_instance('hsuforum', $forumid);
-        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , get_context_instance(CONTEXT_MODULE, $cm->id))) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , context_module::instance($cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2528,7 +2521,7 @@ function hsuforum_count_discussions($forum, $cm, $course) {
         return $cache[$course->id][$forum->id];
     }
 
-    if (has_capability('moodle/site:accessallgroups', get_context_instance(CONTEXT_MODULE, $cm->id))) {
+    if (has_capability('moodle/site:accessallgroups', context_module::instance($cm->id))) {
         return $cache[$course->id][$forum->id];
     }
 
@@ -2642,7 +2635,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
     $cutoffdate = $now - ($CFG->hsuforum_oldpostdays*24*60*60);
     $params = array($cm->instance, $USER->id, $USER->id);
 
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
 
     if (!has_capability('mod/hsuforum:viewdiscussion', $modcontext)) { /// User must have perms to view discussions
         return array();
@@ -2716,7 +2709,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
 
     if ($groupmode) {
         if (empty($modcontext)) {
-            $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $modcontext = context_module::instance($cm->id);
         }
 
         if ($groupmode == VISIBLEGROUPS or has_capability('moodle/site:accessallgroups', $modcontext)) {
@@ -2810,7 +2803,7 @@ function hsuforum_get_discussions_count($cm) {
     $currentgroup = groups_get_activity_group($cm);
 
     if ($groupmode) {
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
 
         if ($groupmode == VISIBLEGROUPS or has_capability('moodle/site:accessallgroups', $modcontext)) {
             if ($currentgroup) {
@@ -2839,7 +2832,7 @@ function hsuforum_get_discussions_count($cm) {
 
     if (!empty($CFG->hsuforum_enabletimedposts)) {
 
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
 
         if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?))";
@@ -2909,20 +2902,20 @@ function hsuforum_get_user_discussions($courseid, $userid, $groupid=0) {
  * @param string $sort sort order. As for get_users_by_capability.
  * @return array list of users.
  */
-function hsuforum_get_potential_subscribers($forumcontext, $groupid, $fields, $sort) {
+function hsuforum_get_potential_subscribers($forumcontext, $groupid, $fields, $sort = '') {
     global $DB;
 
     // only active enrolled users or everybody on the frontpage
     list($esql, $params) = get_enrolled_sql($forumcontext, 'mod/hsuforum:allowforcesubscribe', $groupid, true);
+    if (!$sort) {
+        list($sort, $sortparams) = users_order_by_sql('u');
+        $params = array_merge($params, $sortparams);
+    }
 
     $sql = "SELECT $fields
               FROM {user} u
-              JOIN ($esql) je ON je.id = u.id";
-    if ($sort) {
-        $sql = "$sql ORDER BY $sort";
-    } else {
-        $sql = "$sql ORDER BY u.lastname ASC, u.firstname ASC";
-    }
+              JOIN ($esql) je ON je.id = u.id
+          ORDER BY $sort";
 
     return $DB->get_records_sql($sql, $params);
 }
@@ -2967,7 +2960,7 @@ function hsuforum_subscribed_users($course, $forum, $groupid=0, $context = null,
 
     if (empty($context)) {
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id);
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
     }
 
     if (hsuforum_is_forcesubscribed($forum)) {
@@ -3059,19 +3052,12 @@ function hsuforum_get_course_forum($courseid, $type) {
     $mod->module = $module->id;
     $mod->instance = $forum->id;
     $mod->section = 0;
-    if (! $mod->coursemodule = add_course_module($mod) ) {   // assumes course/lib.php is loaded
+    include_once("$CFG->dirroot/course/lib.php");
+    if (! $mod->coursemodule = add_course_module($mod) ) {
         echo $OUTPUT->notification("Could not add a new course module to the course '" . $courseid . "'");
         return false;
     }
-    if (! $sectionid = add_mod_to_section($mod) ) {   // assumes course/lib.php is loaded
-        echo $OUTPUT->notification("Could not add the new course module to that section");
-        return false;
-    }
-    $DB->set_field("course_modules", "section", $sectionid, array("id" => $mod->coursemodule));
-
-    include_once("$CFG->dirroot/course/lib.php");
-    rebuild_course_cache($courseid);
-
+    $sectionid = course_add_cm_to_section($courseid, $mod->coursemodule, 0);
     return $DB->get_record("hsuforum", array("id" => "$forum->id"));
 }
 
@@ -3100,7 +3086,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
 
     global $CFG, $OUTPUT;
 
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
 
     if (!isset($userto->viewfullnames[$forum->id])) {
         $viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
@@ -3241,11 +3227,19 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     // String cache
     static $str;
 
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
 
     $post->course = $course->id;
     $post->forum  = $forum->id;
     $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_hsuforum', 'post', $post->id);
+    if (!empty($CFG->enableplagiarism)) {
+        require_once($CFG->libdir.'/plagiarismlib.php');
+        $post->message .= plagiarism_get_links(array('userid' => $post->userid,
+            'content' => $post->message,
+            'cmid' => $cm->id,
+            'course' => $post->course,
+            'hsuforum' => $post->forum));
+    }
 
     // caching
     if (!isset($cm->cache)) {
@@ -3395,7 +3389,13 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     if (!$post->parent && $forum->type == 'news' && $discussion->timestart > time()) {
         $age = 0;
     }
-    if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/hsuforum:editanypost']) {
+
+    if ($forum->type == 'single' and $discussion->firstpost == $post->id) {
+        if (has_capability('moodle/course:manageactivities', $modcontext)) {
+            // The first post in single simple is the forum description.
+            $commands[] = array('url'=>new moodle_url('/course/modedit.php', array('update'=>$cm->id, 'sesskey'=>sesskey(), 'return'=>1)), 'text'=>$str->edit);
+        }
+    } else if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/hsuforum:editanypost']) {
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('edit'=>$post->id)), 'text'=>$str->edit);
     }
 
@@ -3403,7 +3403,9 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('prune'=>$post->id)), 'text'=>$str->prune, 'title'=>$str->pruneheading);
     }
 
-    if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/hsuforum:deleteownpost']) || $cm->cache->caps['mod/hsuforum:deleteanypost']) {
+    if ($forum->type == 'single' and $discussion->firstpost == $post->id) {
+        // Do not allow deleting of first post in single simple type.
+    } else if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/hsuforum:deleteownpost']) || $cm->cache->caps['mod/hsuforum:deleteanypost']) {
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php', array('delete'=>$post->id)), 'text'=>$str->delete);
     }
 
@@ -3411,14 +3413,14 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         throw new coding_exception('Must set post\'s privatereply property!');
     }
     if ($reply and empty($post->privatereply)) {
-        $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php#mform1', array('reply'=>$post->id)), 'text'=>$str->reply);
+        $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php#mformforum', array('reply'=>$post->id)), 'text'=>$str->reply);
     }
 
     if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
         $p = array('postid' => $post->id);
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
-        $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), '/mod/hsuforum/locallib.php');
+        $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), 'mod_hsuforum');
         if (empty($attachments)) {
             $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
         } else {
@@ -3599,7 +3601,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
  * @return array an associative array of the user's rating permissions
  */
 function hsuforum_rating_permissions($contextid, $component, $ratingarea) {
-    $context = get_context_instance_by_id($contextid, MUST_EXIST);
+    $context = context::instance_by_id($contextid, MUST_EXIST);
     if ($component != 'mod_hsuforum' || $ratingarea != 'post') {
         // We don't know about this component/ratingarea so just return null to get the
         // default restrictive permissions.
@@ -3650,7 +3652,7 @@ function hsuforum_rating_validate($params) {
     $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id , false, MUST_EXIST);
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     // Make sure the context provided is the context of the forum
     if ($context->id != $params['context']->id) {
@@ -3742,7 +3744,7 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext = context_module::instance($cm->id);
     }
 
     /** @var $renderer mod_hsuforum_renderer */
@@ -3825,7 +3827,7 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
                     echo '</a>';
                     echo '<a title="'.$strmarkalldread.'" href="'.$CFG->wwwroot.'/mod/hsuforum/markposts.php?f='.
                          $forum->id.'&amp;d='.$post->discussion.'&amp;mark=read&amp;returnpage=view.php">' .
-                         '<img src="'.$OUTPUT->pix_url('t/clear') . '" class="iconsmall" alt="'.$strmarkalldread.'" /></a>';
+                         '<img src="'.$OUTPUT->pix_url('t/markasread') . '" class="iconsmall" alt="'.$strmarkalldread.'" /></a>';
                     echo '</span>';
                 } else {
                     echo '<span class="read">';
@@ -4017,8 +4019,8 @@ function hsuforum_move_attachments($discussion, $forumfrom, $forumto) {
     $newcm = get_coursemodule_from_instance('hsuforum', $forumto);
     $oldcm = get_coursemodule_from_instance('hsuforum', $forumfrom);
 
-    $newcontext = get_context_instance(CONTEXT_MODULE, $newcm->id);
-    $oldcontext = get_context_instance(CONTEXT_MODULE, $oldcm->id);
+    $newcontext = context_module::instance($newcm->id);
+    $oldcontext = context_module::instance($oldcm->id);
 
     // loop through all posts, better not use attachment flag ;-)
     if ($posts = $DB->get_records('hsuforum_posts', array('discussion'=>$discussion->id), '', 'id, attachment')) {
@@ -4064,7 +4066,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
         return $type !== 'separateimages' ? '' : array('', '');
     }
 
-    if (!$context = get_context_instance(CONTEXT_MODULE, $cm->id)) {
+    if (!$context = context_module::instance($cm->id)) {
         return $type !== 'separateimages' ? '' : array('', '');
     }
     $strattachment = get_string('attachment', 'hsuforum');
@@ -4095,7 +4097,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                 $output .= "<a href=\"$path\">$iconimage</a> ";
                 $output .= "<a href=\"$path\">".s($filename)."</a>";
                 if ($canexport) {
-                    $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), '/mod/hsuforum/locallib.php');
+                    $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_hsuforum');
                     $button->set_format_by_file($file);
                     $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                 }
@@ -4109,7 +4111,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     // Image attachments don't get printed as links
                     $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
                     if ($canexport) {
-                        $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), '/mod/hsuforum/locallib.php');
+                        $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_hsuforum');
                         $button->set_format_by_file($file);
                         $imagereturn .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
@@ -4117,12 +4119,22 @@ function hsuforum_print_attachments($post, $cm, $type) {
                     $output .= "<a href=\"$path\">$iconimage</a> ";
                     $output .= format_text("<a href=\"$path\">".s($filename)."</a>", FORMAT_HTML, array('context'=>$context));
                     if ($canexport) {
-                        $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), '/mod/hsuforum/locallib.php');
+                        $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_hsuforum');
                         $button->set_format_by_file($file);
                         $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
                     $output .= '<br />';
                 }
+            }
+
+            if (!empty($CFG->enableplagiarism)) {
+                require_once($CFG->libdir.'/plagiarismlib.php');
+                $output .= plagiarism_get_links(array('userid' => $post->userid,
+                    'file' => $file,
+                    'cmid' => $cm->id,
+                    'course' => $post->course,
+                    'hsuforum' => $post->forum));
+                $output .= '<br />';
             }
         }
     }
@@ -4348,7 +4360,7 @@ function hsuforum_add_attachment($post, $forum, $cm, $mform=null, &$message=null
         return true;   // Nothing to do
     }
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     $info = file_get_draft_area_info($post->attachments);
     $present = ($info['filecount']>0) ? '1' : '';
@@ -4377,7 +4389,7 @@ function hsuforum_add_new_post($post, $mform, &$message) {
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
     $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum));
     $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
-    $context    = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context    = context_module::instance($cm->id);
 
     $post->created    = $post->modified = time();
     $post->mailed     = "0";
@@ -4400,6 +4412,9 @@ function hsuforum_add_new_post($post, $mform, &$message) {
         hsuforum_tp_mark_post_read($post->userid, $post, $post->forum);
     }
 
+    // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
+    hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_add_new_post');
+
     return $post->id;
 }
 
@@ -4420,7 +4435,7 @@ function hsuforum_update_post($post, $mform, &$message) {
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
     $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum));
     $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
-    $context    = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context    = context_module::instance($cm->id);
 
     $post->modified = time();
 
@@ -4447,6 +4462,9 @@ function hsuforum_update_post($post, $mform, &$message) {
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
         hsuforum_tp_mark_post_read($post->userid, $post, $post->forum);
     }
+
+    // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
+    hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_update_post');
 
     return true;
 }
@@ -4505,7 +4523,7 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
 
     // TODO: Fix the calling code so that there always is a $cm when this function is called
     if (!empty($cm->id) && !empty($discussion->itemid)) {   // In "single simple discussions" this may not exist yet
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
         $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
                 mod_hsuforum_post_form::editor_options(), $post->message);
         $DB->set_field('hsuforum_posts', 'message', $text, array('id'=>$post->id));
@@ -4529,6 +4547,11 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
 
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
         hsuforum_tp_mark_post_read($post->userid, $post, $post->forum);
+    }
+
+    // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
+    if (!empty($cm->id)) {
+        hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_add_discussion');
     }
 
     return $post->discussion;
@@ -4606,7 +4629,7 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
     global $DB, $CFG;
     require_once($CFG->libdir.'/completionlib.php');
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     if ($children !== 'ignore' && ($childposts = $DB->get_records('hsuforum_posts', array('parent'=>$post->id)))) {
        if ($children) {
@@ -4654,6 +4677,33 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
         return true;
     }
     return false;
+}
+
+/**
+ * Sends post content to plagiarism plugin
+ * @param object $post Forum post object
+ * @param object $cm Course-module
+ * @param string $name
+ * @return bool
+*/
+function hsuforum_trigger_content_uploaded_event($post, $cm, $name) {
+    $context = context_module::instance($cm->id);
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($context->id, 'mod_hsuforum', 'attachment', $post->id, "timemodified", false);
+    $eventdata = new stdClass();
+    $eventdata->modulename   = 'hsuforum';
+    $eventdata->name         = $name;
+    $eventdata->cmid         = $cm->id;
+    $eventdata->itemid       = $post->id;
+    $eventdata->courseid     = $post->course;
+    $eventdata->userid       = $post->userid;
+    $eventdata->content      = $post->message;
+    if ($files) {
+        $eventdata->pathnamehashes = array_keys($files);
+    }
+    events_trigger('assessable_content_uploaded', $eventdata);
+
+    return true;
 }
 
 /**
@@ -4876,7 +4926,7 @@ function hsuforum_post_subscription($post, $forum) {
         return "";
 
     } elseif (($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE)
-        && !has_capability('moodle/course:manageactivities', get_context_instance(CONTEXT_COURSE, $forum->course), $USER->id)) {
+        && !has_capability('moodle/course:manageactivities', context_course::instance($forum->course), $USER->id)) {
         if ($subscribed) {
             $action = 'unsubscribe'; // sanity check, following MDL-14558
         } else {
@@ -5151,7 +5201,7 @@ function hsuforum_user_can_post_discussion($forum, $currentgroup=null, $unused=-
     }
 
     if (!$context) {
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
     }
 
     if ($currentgroup === null) {
@@ -5244,7 +5294,7 @@ function hsuforum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $cour
     }
 
     if (!$context) {
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
     }
 
     // normal users with temporary guest access can not post, suspended users can not post either
@@ -5286,44 +5336,69 @@ function hsuforum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $cour
     }
 }
 
-
 /**
- * checks to see if a user can view a particular post
+ * Checks to see if a user can view a particular post.
  *
- * @global object
- * @global object
- * @uses CONTEXT_MODULE
- * @uses SEPARATEGROUPS
+ * @deprecated since Moodle 2.4 use hsuforum_user_can_see_post() instead
+ *
  * @param object $post
  * @param object $course
  * @param object $cm
  * @param object $forum
  * @param object $discussion
  * @param object $user
+ * @return boolean
  */
-function hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion, $user=NULL){
+function hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion, $user=null){
+    debugging('hsuforum_user_can_view_post() is deprecated. Please use hsuforum_user_can_see_post() instead.', DEBUG_DEVELOPER);
+    return hsuforum_user_can_see_post($forum, $discussion, $post, $user, $cm);
+}
 
-    global $CFG, $USER;
+/**
+* Check to ensure a user can view a timed discussion.
+*
+* @param object $discussion
+* @param object $user
+* @param object $context
+* @return boolean returns true if they can view post, false otherwise
+*/
+function hsuforum_user_can_see_timed_discussion($discussion, $user, $context) {
+    global $CFG;
 
-    if (!$user){
-        $user = $USER;
-    }
-
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
-    if (!has_capability('mod/hsuforum:viewdiscussion', $modcontext)) {
-        return false;
-    }
-
-// If it's a grouped discussion, make sure the user is a member
-    if ($discussion->groupid > 0) {
-        $groupmode = groups_get_activity_groupmode($cm);
-        if ($groupmode == SEPARATEGROUPS) {
-            return groups_is_member($discussion->groupid) || has_capability('moodle/site:accessallgroups', $modcontext);
+    // Check that the user can view a discussion that is normally hidden due to access times.
+    if (!empty($CFG->hsuforum_enabletimedposts)) {
+        $time = time();
+        if (($discussion->timestart != 0 && $discussion->timestart > $time)
+            || ($discussion->timeend != 0 && $discussion->timeend < $time)) {
+            if (!has_capability('mod/hsuforum:viewhiddentimedposts', $context, $user->id)) {
+                return false;
+            }
         }
     }
+
     return true;
 }
 
+/**
+* Check to ensure a user can view a group discussion.
+*
+* @param object $discussion
+* @param object $cm
+* @param object $context
+* @return boolean returns true if they can view post, false otherwise
+*/
+function hsuforum_user_can_see_group_discussion($discussion, $cm, $context) {
+
+    // If it's a grouped discussion, make sure the user is a member.
+    if ($discussion->groupid > 0) {
+        $groupmode = groups_get_activity_groupmode($cm);
+        if ($groupmode == SEPARATEGROUPS) {
+            return groups_is_member($discussion->groupid) || has_capability('moodle/site:accessallgroups', $context);
+        }
+    }
+
+    return true;
+}
 
 /**
  * @global object
@@ -5355,8 +5430,19 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
             return false;
         }
     }
+    if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
+        print_error('invalidcoursemodule');
+    }
 
     if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+        return false;
+    }
+
+    if (!hsuforum_user_can_see_timed_discussion($discussion, $user, $context)) {
+        return false;
+    }
+
+    if (!hsuforum_user_can_see_group_discussion($discussion, $cm, $context)) {
         return false;
     }
 
@@ -5367,7 +5453,6 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
     }
     return true;
 }
-
 
 /**
  * @global object
@@ -5381,6 +5466,9 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
  */
 function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=NULL) {
     global $CFG, $USER, $DB;
+
+    // Context used throughout function.
+    $modcontext = context_module::instance($cm->id);
 
     // retrieve objects (yuk)
     if (is_numeric($forum)) {
@@ -5402,6 +5490,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
             return false;
         }
     }
+
     if (!isset($post->id) && isset($post->parent)) {
         $post->id = $post->parent;
     }
@@ -5417,8 +5506,8 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         $user = $USER;
     }
 
-    $canviewdiscussion = !empty($cm->cache->caps['mod/hsuforum:viewdiscussion']) || has_capability('mod/hsuforum:viewdiscussion', get_context_instance(CONTEXT_MODULE, $cm->id), $user->id);
-    if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), get_context_instance(CONTEXT_USER, $post->userid))) {
+    $canviewdiscussion = !empty($cm->cache->caps['mod/hsuforum:viewdiscussion']) || has_capability('mod/hsuforum:viewdiscussion', $modcontext, $user->id);
+    if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
         return false;
     }
 
@@ -5432,9 +5521,16 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         }
     }
 
+    if (!hsuforum_user_can_see_timed_discussion($discussion, $user, $modcontext)) {
+        return false;
+    }
+
+    if (!hsuforum_user_can_see_group_discussion($discussion, $cm, $modcontext)) {
+        return false;
+    }
+
     if ($forum->type == 'qanda') {
         $firstpost = hsuforum_get_firstpost_from_discussion($discussion->id);
-        $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
         $userfirstpost = hsuforum_get_user_posted_time($discussion->id, $user->id);
 
         return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)) ||
@@ -5481,7 +5577,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             print_error('invalidcoursemodule');
         }
     }
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     /** @var $renderer mod_hsuforum_renderer */
     $renderer = $PAGE->get_renderer('mod_hsuforum');
@@ -5680,10 +5776,10 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             if ($cantrack) {
                 echo '<th class="header replies" scope="col">'.get_string('unread', 'hsuforum');
                 if ($forumtracked) {
-                    echo '&nbsp;<a title="'.get_string('markallread', 'hsuforum').
+                    echo '<a title="'.get_string('markallread', 'hsuforum').
                          '" href="'.$CFG->wwwroot.'/mod/hsuforum/markposts.php?f='.
                          $forum->id.'&amp;mark=read&amp;returnpage=view.php">'.
-                         '<img src="'.$OUTPUT->pix_url('t/clear') . '" class="iconsmall" alt="'.get_string('markallread', 'hsuforum').'" /></a>';
+                         '<img src="'.$OUTPUT->pix_url('t/markasread') . '" class="iconsmall" alt="'.get_string('markallread', 'hsuforum').'" /></a>';
                 }
                 echo '</th>';
             }
@@ -5758,8 +5854,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 if ($discussion->replies) {
                     $link = true;
                 } else {
-                    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
-                    $link = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
+                    $modcontext = context_module::instance($cm->id);
+                    $link = hsuforum_user_can_see_discussion($forum, $discussion, $modcontext, $USER);
                 }
 
                 $discussion->forum = $forum->id;
@@ -5822,7 +5918,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
 
     $ownpost = (isloggedin() && $USER->id == $post->userid);
 
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
     if ($canreply === NULL) {
         $reply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
     } else {
@@ -5962,7 +6058,7 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
     if (!empty($posts[$parent->id]->children)) {
         $posts = $posts[$parent->id]->children;
 
-        $modcontext       = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $modcontext       = context_module::instance($cm->id);
         $canviewfullnames = has_capability('moodle/site:viewfullnames', $modcontext);
 
         foreach ($posts as $post) {
@@ -6104,7 +6200,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
     }
 
     $groupmode       = groups_get_activity_groupmode($cm, $course);
-    $cm_context      = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $cm_context      = context_module::instance($cm->id);
     $viewhiddentimed = has_capability('mod/hsuforum:viewhiddentimedposts', $cm_context);
     $accessallgroups = has_capability('moodle/site:accessallgroups', $cm_context);
 
@@ -6820,7 +6916,7 @@ function hsuforum_tp_count_hsuforum_unread_posts($cm, $course) {
         return $readcache[$course->id][$forumid];
     }
 
-    if (has_capability('moodle/site:accessallgroups', get_context_instance(CONTEXT_MODULE, $cm->id))) {
+    if (has_capability('moodle/site:accessallgroups', context_module::instance($cm->id))) {
         return $readcache[$course->id][$forumid];
     }
 
@@ -7154,27 +7250,6 @@ function hsuforum_get_post_actions() {
 }
 
 /**
- * this function returns all the separate forum ids, given a courseid
- *
- * @global object
- * @global object
- * @param int $courseid
- * @return array
- */
-function hsuforum_get_separate_modules($courseid) {
-
-    global $CFG,$DB;
-    $forummodule = $DB->get_record("modules", array("name" => "hsuforum"));
-
-    $sql = 'SELECT f.id, f.id FROM {hsuforum} f, {course_modules} cm WHERE
-           f.id = cm.instance AND cm.module =? AND cm.visible = 1 AND cm.course = ?
-           AND cm.groupmode ='.SEPARATEGROUPS;
-
-    return $DB->get_records_sql($sql, array($forummodule->id, $courseid));
-
-}
-
-/**
  * @global object
  * @global object
  * @global object
@@ -7206,7 +7281,7 @@ function hsuforum_check_throttling($forum, $cm=null) {
         }
     }
 
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
     if(has_capability('mod/hsuforum:postwithoutthrottling', $modcontext)) {
         return true;
     }
@@ -7339,7 +7414,7 @@ function hsuforum_reset_userdata($data) {
                 if (!$cm = get_coursemodule_from_instance('hsuforum', $forumid)) {
                     continue;
                 }
-                $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+                $context = context_module::instance($cm->id);
                 $fs->delete_area_files($context->id, 'mod_hsuforum', 'attachment');
                 $fs->delete_area_files($context->id, 'mod_hsuforum', 'post');
 
@@ -7386,7 +7461,7 @@ function hsuforum_reset_userdata($data) {
                 if (!$cm = get_coursemodule_from_instance('hsuforum', $forumid)) {
                     continue;
                 }
-                $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+                $context = context_module::instance($cm->id);
 
                 //remove ratings
                 $ratingdeloptions->contextid = $context->id;
@@ -7507,19 +7582,14 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
             if (!$cmid = add_course_module($mod)) {
                 print_error('cannotcreateinstanceforteacher', 'hsuforum');
             } else {
-                $mod->coursemodule = $cmid;
-                if (!$sectionid = add_mod_to_section($mod)) {
-                    print_error('cannotaddteacherforumto', 'hsuforum');
-                } else {
-                    $DB->set_field('course_modules', 'section', $sectionid, array('id' => $cmid));
-                }
+                $sectionid = course_add_cm_to_section($forum->course, $mod->coursemodule, 0);
             }
 
             // Change the forum type to general.
             $forum->type = 'general';
             $DB->update_record('hsuforum', $forum);
 
-            $context = get_context_instance(CONTEXT_MODULE, $cmid);
+            $context = context_module::instance($cmid);
 
             // Create overrides for default student and guest roles (prevent).
             foreach ($studentroles as $studentrole) {
@@ -7573,7 +7643,7 @@ function hsuforum_convert_to_roles($forum, $forummodid, $teacherroles=array(),
                 $cmid = $cm->id;
             }
         }
-        $context = get_context_instance(CONTEXT_MODULE, $cmid);
+        $context = context_module::instance($cmid);
 
         // $forum->open defines what students can do:
         //   0 = No discussions, no replies
@@ -7831,7 +7901,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
 
     $forumobject = $DB->get_record("hsuforum", array("id" => $PAGE->cm->instance));
     if (empty($PAGE->cm->context)) {
-        $PAGE->cm->context = get_context_instance(CONTEXT_MODULE, $PAGE->cm->instance);
+        $PAGE->cm->context = context_module::instance($PAGE->cm->instance);
     }
 
     // for some actions you need to be enrolled, beiing admin is not enough sometimes here
@@ -8048,6 +8118,7 @@ abstract class hsuforum_subscriber_selector_base extends user_selector_base {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hsuforum_potential_subscriber_selector extends hsuforum_subscriber_selector_base {
+    const MAX_USERS_PER_PAGE = 100;
 
     /**
      * If set to true EVERYONE in this course is force subscribed to this forum
@@ -8087,8 +8158,7 @@ class hsuforum_potential_subscriber_selector extends hsuforum_subscriber_selecto
     /**
      * Finds all potential users
      *
-     * Potential users are determined by checking for users with a capability
-     * determined in {@see hsuforum_get_potential_subscribers()}
+     * Potential subscribers are all enroled users who are not already subscribed.
      *
      * @param string $search
      * @return array
@@ -8096,28 +8166,57 @@ class hsuforum_potential_subscriber_selector extends hsuforum_subscriber_selecto
     public function find_users($search) {
         global $DB;
 
-        $availableusers = hsuforum_get_potential_subscribers($this->context, $this->currentgroup, $this->required_fields_sql('u'), 'u.firstname ASC, u.lastname ASC');
+        $whereconditions = array();
+        list($wherecondition, $params) = $this->search_sql($search, 'u');
+        if ($wherecondition) {
+            $whereconditions[] = $wherecondition;
+        }
 
-        if (empty($availableusers)) {
-            $availableusers = array();
-        } else if ($search) {
-            $search = strtolower($search);
-            foreach ($availableusers as $key=>$user) {
-                if (stripos($user->firstname, $search) === false && stripos($user->lastname, $search) === false) {
-                    unset($availableusers[$key]);
+        if (!$this->forcesubscribed) {
+            $existingids = array();
+            foreach ($this->existingsubscribers as $group) {
+                foreach ($group as $user) {
+                    $existingids[$user->id] = 1;
                 }
+            }
+            if ($existingids) {
+                list($usertest, $userparams) = $DB->get_in_or_equal(
+                        array_keys($existingids), SQL_PARAMS_NAMED, 'existing', false);
+                $whereconditions[] = 'u.id ' . $usertest;
+                $params = array_merge($params, $userparams);
             }
         }
 
-        // Unset any existing subscribers
-        if (count($this->existingsubscribers)>0 && !$this->forcesubscribed) {
-            foreach ($this->existingsubscribers as $group) {
-                foreach ($group as $user) {
-                    if (array_key_exists($user->id, $availableusers)) {
-                        unset($availableusers[$user->id]);
-                    }
-                }
+        if ($whereconditions) {
+            $wherecondition = 'WHERE ' . implode(' AND ', $whereconditions);
+        }
+
+        list($esql, $eparams) = get_enrolled_sql($this->context, '', $this->currentgroup, true);
+        $params = array_merge($params, $eparams);
+
+        $fields      = 'SELECT ' . $this->required_fields_sql('u');
+        $countfields = 'SELECT COUNT(u.id)';
+
+        $sql = " FROM {user} u
+                 JOIN ($esql) je ON je.id = u.id
+                      $wherecondition";
+
+        list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
+        $order = ' ORDER BY ' . $sort;
+
+        // Check to see if there are too many to show sensibly.
+        if (!$this->is_validating()) {
+            $potentialmemberscount = $DB->count_records_sql($countfields . $sql, $params);
+            if ($potentialmemberscount > self::MAX_USERS_PER_PAGE) {
+                return $this->too_many_results($search, $potentialmemberscount);
             }
+        }
+
+        // If not, show them.
+        $availableusers = $DB->get_records_sql($fields . $sql . $order, array_merge($params, $sortparams));
+
+        if (empty($availableusers)) {
+            return array();
         }
 
         if ($this->forcesubscribed) {
@@ -8164,16 +8263,16 @@ class hsuforum_existing_subscriber_selector extends hsuforum_subscriber_selector
 
         // only active enrolled or everybody on the frontpage
         list($esql, $eparams) = get_enrolled_sql($this->context, '', $this->currentgroup, true);
-        $params = array_merge($params, $eparams);
-
         $fields = $this->required_fields_sql('u');
+        list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
+        $params = array_merge($params, $eparams, $sortparams);
 
         $subscribers = $DB->get_records_sql("SELECT $fields
                                                FROM {user} u
                                                JOIN ($esql) je ON je.id = u.id
                                                JOIN {hsuforum_subscriptions} s ON s.userid = u.id
                                               WHERE $wherecondition AND s.forum = :forumid
-                                           ORDER BY u.lastname ASC, u.firstname ASC", $params);
+                                           ORDER BY $sort", $params);
 
         return array(get_string("existingsubscribers", 'hsuforum') => $subscribers);
     }
@@ -8379,7 +8478,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
     // Checkout whether or not the current user has capabilities over the requested
     // user and if so they have the capabilities required to view the requested
     // users content.
-    $usercontext = get_context_instance(CONTEXT_USER, $user->id, MUST_EXIST);
+    $usercontext = context_user::instance($user->id, MUST_EXIST);
     $hascapsonuser = !$iscurrentuser && $DB->record_exists('role_assignments', array('userid' => $USER->id, 'contextid' => $usercontext->id));
     $hascapsonuser = $hascapsonuser && has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), $usercontext);
 
@@ -8387,7 +8486,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
     // course. If the user doesn't have the appropraite access then we either throw an
     // error if a particular course was requested or we just skip over the course.
     foreach ($courses as $course) {
-        $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id, MUST_EXIST);
+        $coursecontext = context_course::instance($course->id, MUST_EXIST);
         if ($iscurrentuser || $hascapsonuser) {
             // If it is the current user, or the current user has capabilities to the
             // requested user then all we need to do is check the requested users

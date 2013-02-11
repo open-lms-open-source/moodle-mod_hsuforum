@@ -51,30 +51,17 @@
 
     require_course_login($course, true, $cm);
 
-/// Add ajax-related libs
-    $PAGE->requires->yui2_lib('event');
-    $PAGE->requires->yui2_lib('connection');
-    $PAGE->requires->yui2_lib('json');
-
     // move this down fix for MDL-6926
     require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
-    $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $modcontext = context_module::instance($cm->id);
     require_capability('mod/hsuforum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'hsuforum');
 
     if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
 
-        $rsstitle = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id))) . ': %fullname%';
+        $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': %fullname%';
         rss_add_http_header($modcontext, 'mod_hsuforum', $forum, $rsstitle);
-    }
-
-    if ($forum->type == 'news') {
-        if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
-            || $discussion->timestart <= time())
-            && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
-            print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
-        }
     }
 
 /// move discussion if requested
@@ -103,7 +90,7 @@
             print_error('cannotmovenotvisible', 'hsuforum', $return);
         }
 
-        require_capability('mod/hsuforum:startdiscussion', get_context_instance(CONTEXT_MODULE,$cmto->id));
+        require_capability('mod/hsuforum:startdiscussion', context_module::instance($cmto->id));
 
         if (!$forum->anonymous or $warned) {
             if (!hsuforum_move_attachments($discussion, $forum->id, $forumto->id)) {
@@ -147,9 +134,8 @@
         print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
     }
 
-
-    if (!hsuforum_user_can_view_post($post, $course, $cm, $forum, $discussion)) {
-        print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
+    if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+        print_error('noviewdiscussionspermission', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
     }
 
     if ($mark == 'read' or $mark == 'unread') {
@@ -221,7 +207,7 @@
     if (!empty($CFG->enableportfolios) && has_capability('mod/hsuforum:exportdiscussion', $modcontext)) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
-        $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), '/mod/hsuforum/locallib.php');
+        $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), 'mod_hsuforum');
         $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_hsuforum'));
         $buttonextraclass = '';
         if (empty($button)) {
@@ -249,16 +235,15 @@
         $modinfo = get_fast_modinfo($course);
         if (isset($modinfo->instances['hsuforum'])) {
             $forummenu = array();
-            $sections = get_all_sections($course->id);
             // Check forum types and eliminate simple discussions.
             $forumcheck = $DB->get_records('hsuforum', array('course' => $course->id),'', 'id, type');
             foreach ($modinfo->instances['hsuforum'] as $forumcm) {
                 if (!$forumcm->uservisible || !has_capability('mod/hsuforum:startdiscussion',
-                    get_context_instance(CONTEXT_MODULE,$forumcm->id))) {
+                    context_module::instance($forumcm->id))) {
                     continue;
                 }
                 $section = $forumcm->sectionnum;
-                $sectionname = get_section_name($course, $sections[$section]);
+                $sectionname = get_section_name($course, $section);
                 if (empty($forummenu[$section])) {
                     $forummenu[$section] = array($sectionname => array());
                 }
