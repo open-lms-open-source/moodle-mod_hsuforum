@@ -5506,7 +5506,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         $user = $USER;
     }
 
-    $canviewdiscussion = !empty($cm->cache->caps['mod/hsuforum:viewdiscussion']) || has_capability('mod/hsuforum:viewdiscussion', $modcontext, $user->id);
+    $canviewdiscussion = (isset($cm->cache) && !empty($cm->cache->caps['mod/hsuforum:viewdiscussion'])) || has_capability('mod/hsuforum:viewdiscussion', $modcontext, $user->id);
     if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
         return false;
     }
