@@ -34,7 +34,7 @@ M.mod_hsuforum.init_flags = function(Y) {
  * @author Mark Nielsen
  */
 M.mod_hsuforum.init_treeview = function(Y, id, url, nodes) {
-    var tree = new YAHOO.widget.TreeView(id, nodes);
+    var tree = new Y.YUI2.widget.TreeView(id, nodes);
 
     // This allows links to be clicked
     tree.subscribe('clickEvent', function() {
@@ -52,7 +52,7 @@ M.mod_hsuforum.init_treeview = function(Y, id, url, nodes) {
                 for (var i = 0, len = nodeList.length; i < len; i++) {
                     children = nodeList[i].children;
                     nodeList[i].children = [];
-                    var parent = new YAHOO.widget.HTMLNode(nodeList[i], nodeListParent, false);
+                    var parent = new Y.YUI2.widget.HTMLNode(nodeList[i], nodeListParent, false);
                     addNodes(children, parent);
                 }
             };
