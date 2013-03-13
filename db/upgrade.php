@@ -457,7 +457,16 @@ function xmldb_hsuforum_upgrade($oldversion) {
     // Moodle v2.4.0 release upgrade line
     // Put any upgrade step following this
 
-
+    // Forcefully assign mod/hsuforum:allowforcesubscribe to frontpage role, as we missed that when
+    // capability was introduced.
+    if ($oldversion < 2012112901) {
+        // If capability mod/hsuforum:allowforcesubscribe is defined then set it for frontpage role.
+        if (get_capability_info('mod/hsuforum:allowforcesubscribe')) {
+            assign_legacy_capabilities('mod/hsuforum:allowforcesubscribe', array('frontpage' => CAP_ALLOW));
+        }
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2012112901, 'hsuforum');
+    }
     return true;
 }
 

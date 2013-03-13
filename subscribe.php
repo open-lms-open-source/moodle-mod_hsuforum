@@ -113,6 +113,12 @@ if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $cont
             redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;
         case HSUFORUM_INITIALSUBSCRIBE : // 2
+            if ($forum->forcesubscribe <> HSUFORUM_INITIALSUBSCRIBE) {
+                $users = hsuforum_get_potential_subscribers($context, 0, 'u.id, u.email', '');
+                foreach ($users as $user) {
+                    hsuforum_subscribe($user->id, $forum->id);
+                }
+            }
             hsuforum_forcesubscribe($forum->id, HSUFORUM_INITIALSUBSCRIBE);
             redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
             break;

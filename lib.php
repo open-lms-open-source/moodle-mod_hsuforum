@@ -231,6 +231,14 @@ function hsuforum_update_instance($forum, $mform) {
 
     $DB->update_record('hsuforum', $forum);
 
+    $modcontext = context_module::instance($forum->coursemodule);
+    if (($forum->forcesubscribe == HSUFORUM_INITIALSUBSCRIBE) && ($oldforum->forcesubscribe <> $forum->forcesubscribe)) {
+        $users = hsuforum_get_potential_subscribers($modcontext, 0, 'u.id, u.email', '');
+        foreach ($users as $user) {
+            hsuforum_subscribe($user->id, $forum->id);
+        }
+    }
+
     hsuforum_grade_item_update($forum);
 
     return true;
@@ -761,6 +769,14 @@ function hsuforum_cron() {
                 $eventdata->fullmessagehtml  = $posthtml;
                 $eventdata->notification = 1;
 
+                // If hsuforum_replytouser is not set then send mail using the noreplyaddress.
+                if (empty($CFG->hsuforum_replytouser)) {
+                    // Clone userfrom as it is referenced by $users.
+                    $cloneduserfrom = clone($userfrom);
+                    $cloneduserfrom->email = $CFG->noreplyaddress;
+                    $eventdata->userfrom = $cloneduserfrom;
+                }
+
                 $smallmessagestrings = new stdClass();
                 $smallmessagestrings->user = fullname($postuser);
                 $smallmessagestrings->forumname = "$shortname: ".format_string($forum->name,true).": ".$discussion->name;
@@ -1066,9 +1082,9 @@ function hsuforum_cron() {
                 }
 
                 $attachment = $attachname='';
-                $usetrueaddress = true;
-                //directly email forum digests rather than sending them via messaging
-                $mailresult = email_to_user($userto, $site->shortname, $postsubject, $posttext, $posthtml, $attachment, $attachname, $usetrueaddress, $CFG->hsuforum_replytouser);
+                // Directly email forum digests rather than sending them via messaging, use the
+                // site shortname as 'from name', the noreply address will be used by email_to_user.
+                $mailresult = email_to_user($userto, $site->shortname, $postsubject, $posttext, $posthtml, $attachment, $attachname);
 
                 if (!$mailresult) {
                     mtrace("ERROR!");
@@ -2997,7 +3013,7 @@ function hsuforum_subscribed_users($course, $forum, $groupid=0, $context = null,
  */
 function hsuforum_get_course_forum($courseid, $type) {
 // How to set up special 1-per-course forums
-    global $CFG, $DB, $OUTPUT;
+    global $CFG, $DB, $OUTPUT, $USER;
 
     if ($forums = $DB->get_records_select("hsuforum", "course = ? AND type = ?", array($courseid, $type), "id ASC")) {
         // There should always only be ONE, but with the right combination of
@@ -3011,6 +3027,9 @@ function hsuforum_get_course_forum($courseid, $type) {
     $forum = new stdClass();
     $forum->course = $courseid;
     $forum->type = "$type";
+    if (!empty($USER->htmleditor)) {
+        $forum->introformat = $USER->htmleditor;
+    }
     switch ($forum->type) {
         case "news":
             $forum->name  = get_string("namenews", "hsuforum");
