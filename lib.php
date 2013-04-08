@@ -5667,7 +5667,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     echo $OUTPUT->box_start('mod_hsuforum_posts_container');
 
     if ($displayformat == 'header') {
-        echo '<table cellspacing="0" class="forumheaderlist">';
+        echo html_writer::start_tag('table', array(
+            'cellspacing' => '0',
+            'class' => 'forumheaderlist',
+            'summary' => get_string('discussionsummary', 'hsuforum', format_string($forum->name)),
+        ));
         echo '<thead>';
         echo '<tr>';
         echo '<th class="header topic" scope="col">'.get_string('discussion', 'hsuforum').'</th>';

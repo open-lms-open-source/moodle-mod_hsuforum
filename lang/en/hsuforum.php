@@ -517,3 +517,4 @@ $string['sortdiscussions'] = 'Sort forum discussions';
 $string['sortdiscussionsby'] = 'Sort forum discussions by';
 $string['orderdiscussionsby'] = 'Order forum discussions by';
 $string['displaydiscussionreplies'] = 'Display discussion replies';
+$string['discussionsummary'] = 'A table of all forum discussions for {$a}. The header First name last name is a merge of the user\'s firstname, lastname and picture.';
