@@ -147,8 +147,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 array('clicktoexpand', 'hsuforum'),
                 array('clicktocollapse', 'hsuforum'),
                 array('manualwarning', 'hsuforum'),
-                array('yes'),
-                array('no'),
+                array('subscribedtodiscussionx', 'hsuforum'),
+                array('notsubscribedtodiscussionx', 'hsuforum'),
             )
         );
     }
@@ -244,13 +244,24 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             ));
 
             $class = '';
+            $name  = format_string($discussion->name);
             if (!empty($discussion->subscriptionid)) {
-                $label = get_string('yes');
+                $label = get_string('subscribedtodiscussionx', 'hsuforum', $name);
                 $class = ' subscribed';
+                $pix   = 'check-yes';
             } else {
-                $label = get_string('no');
+                $label = get_string('notsubscribedtodiscussionx', 'hsuforum', $name);
+                $pix   = 'check-no';
             }
-            return html_writer::link($subscribeurl, $label, array('title' => get_string('changediscussionsubscription', 'hsuforum'), 'class' => 'hsuforum_discussion_subscribe'.$class));
+            $text  = html_writer::tag('span', $label, array('class' => 'accesshide'));
+            $text .= $this->output->pix_icon($pix, $label, 'hsuforum');
+
+            return html_writer::link($subscribeurl, $text, array(
+                'title' => $label,
+                'class' => 'hsuforum_discussion_subscribe'.$class,
+                'data-name' => $name,
+                'role' => 'button',
+            ));
         }
         return '';
     }

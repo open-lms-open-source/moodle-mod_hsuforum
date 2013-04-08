@@ -57,6 +57,7 @@
 .mod_hsuforum_posts_container .forumheaderlist .discussion .lastpost {white-space: nowrap;text-align: right;}
 .mod_hsuforum_posts_container .forumheaderlist .replies,
 .mod_hsuforum_posts_container .forumheaderlist .discussion .author {white-space: nowrap;}
+.mod_hsuforum_posts_container .forumheaderlist .subscribe {text-align: center}
 
 /** Styles for subscribers.php */
 #page-mod-hsuforum-subscribers .subscriberdiv,

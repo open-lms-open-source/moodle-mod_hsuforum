@@ -111,17 +111,34 @@ M.mod_hsuforum.init_subscribe = function(Y) {
         nodes.each(function(node) {
             node.delegate('click', function(e) {
                 var link = e.target;
+                if (e.target.test('img')) {
+                    link = e.target.ancestor('a');
+                }
+                if (!link) {
+                    return;
+                }
 
                 e.preventDefault();
                 e.stopPropagation();
 
                 M.mod_hsuforum.io(Y, link.get('href'), function() {
                     link.toggleClass('subscribed');
+                    var label, pix,
+                        name = link.getData('name'),
+                        span = link.one('span'),
+                        img = link.one('img');
                     if (link.hasClass('subscribed')) {
-                        link.setContent(M.str.moodle.yes);
+                        label = M.util.get_string('subscribedtodiscussionx', 'hsuforum', name);
+                        pix = 'check-yes';
                     } else {
-                        link.setContent(M.str.moodle.no);
+                        label = M.util.get_string('notsubscribedtodiscussionx', 'hsuforum', name);
+                        pix = 'check-no';
                     }
+                    span.set('text', label);
+                    link.setAttribute('title', label);
+                    img.setAttribute('src', M.util.image_url(pix, 'hsuforum'))
+                        .setAttribute('alt', label)
+                        .setAttribute('title', label);
                 });
             }, 'a.hsuforum_discussion_subscribe');
         });
