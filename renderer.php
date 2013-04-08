@@ -604,7 +604,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         require_once(__DIR__.'/lib/discussion/subscribe.php');
         $subscribe = new hsuforum_lib_discussion_subscribe($cm->cache->forum, $cm->cache->context);
         if ($link = $this->discussion_subscribe_link($discussion, $subscribe)) {
-            $infos[] = html_writer::tag('div', get_string('subscribedx', 'hsuforum', $link), array('class' => 'subscribe'));
+            $content  = html_writer::tag('div', get_string('subscribed', 'hsuforum').':&nbsp;', array('class' => 'subscribe_label'));
+            $content .= html_writer::tag('div', $link, array('class' => 'subscribe_toggle'));
+            $infos[] = html_writer::tag('div', $content, array('class' => 'subscribe'));
         }
         return html_writer::tag('div', implode('', $infos), array('class' => 'discussioninfo'));
     }
