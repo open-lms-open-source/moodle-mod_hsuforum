@@ -182,16 +182,26 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $flaghtml = array();
+        $postname = format_string($post->name);
         foreach ($flaglib->get_flags() as $flag) {
+            $isflagged = $flaglib->is_flagged($post->flags, $flag);
             $class = 'hsuforum_flag';
-            if ($flaglib->is_flagged($post->flags, $flag)) {
+            if ($isflagged) {
                 $class .= ' hsuforum_flag_active';
             }
+            if ($canedit) {
+                $alt = $flaglib->get_flag_action_label($flag, $postname, $isflagged);
+            } else {
+                $alt = $flaglib->get_flag_state_label($flag, $postname, $isflagged);
+            }
             $attributes = array('class' => $class);
-
-            $icon = new pix_icon("flag/$flag", $flaglib->get_flag_name($flag), 'hsuforum', array('class' => 'iconsmall'));
+            $icon       = $OUTPUT->pix_icon("flag/$flag", $alt, 'hsuforum', array('class' => 'iconsmall'));
 
             if ($canedit) {
+                $attributes['role'] = 'button';
+                $attributes['title'] = $alt;
+                $attributes['data-title'] = $flaglib->get_flag_action_label($flag, $postname, !$isflagged);
+
                 $url = new moodle_url('/mod/hsuforum/route.php', array(
                     'contextid'    => $context->id,
                     'action'       => 'flag',
@@ -200,9 +210,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     'flag'         => $flag,
                     'sesskey'      => sesskey()
                 ));
-                $flaghtml[] = $OUTPUT->action_icon($url, $icon, null, $attributes);
+                $text  = html_writer::tag('span', $alt, array('class' => 'accesshide')).$icon;
+                $flaghtml[] = html_writer::link($url, $text, $attributes);
             } else {
-                $flaghtml[] = html_writer::tag('span', $this->render($icon), $attributes);
+                $flaghtml[] = html_writer::tag('span', $icon, $attributes);
             }
         }
         return html_writer::tag('div', implode('', $flaghtml), array('class' => 'hsuforum_flags'));
