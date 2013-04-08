@@ -3945,10 +3945,11 @@ function hsuforum_search_form($course, $search='') {
     $output  = '<div class="forumsearch">';
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php" style="display:inline">';
     $output .= '<fieldset class="invisiblefieldset">';
+    $output .= '<legend class="accesshide">'.get_string('searchforums', 'hsuforum').'</legend>';
     $output .= $OUTPUT->help_icon('search');
     $output .= '<label class="accesshide" for="search" >'.get_string('search', 'hsuforum').'</label>';
     $output .= '<input id="search" name="search" type="text" size="18" value="'.s($search, true).'" alt="search" />';
-    $output .= '<label class="accesshide" for="searchforums" >'.get_string('searchforums', 'hsuforum').'</label>';
+    // $output .= '<label class="accesshide" for="searchforums" >'.get_string('searchforums', 'hsuforum').'</label>'; Mark - removed, redundant
     $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
     $output .= '</fieldset>';
