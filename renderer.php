@@ -352,13 +352,18 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function discussion_sorting(hsuforum_lib_discussion_sort $sort) {
-        global $OUTPUT, $PAGE;
+        global $PAGE;
 
-        $keyselect = $OUTPUT->single_select($PAGE->url, 'dsortkey', $sort->get_key_options_menu(), $sort->get_key(), array());
-        $dirselect = $OUTPUT->single_select($PAGE->url, 'dsortdirection', $sort->get_direction_options_menu(), $sort->get_direction(), array());
+        $keyselect = new single_select($PAGE->url, 'dsortkey', $sort->get_key_options_menu(), $sort->get_key(), array());
+        $keyselect->set_label(get_string('sortdiscussionsby', 'hsuforum'), array('class' => 'accesshide'));
 
-        $output  = html_writer::tag('div', $keyselect, array('class' => 'hsuforum_discussion_sort_key'));
-        $output .= html_writer::tag('div', $dirselect, array('class' => 'hsuforum_discussion_sort_direction'));
+        $dirselect = new single_select($PAGE->url, 'dsortdirection', $sort->get_direction_options_menu(), $sort->get_direction(), array());
+        $dirselect->set_label(get_string('orderdiscussionsby', 'hsuforum'), array('class' => 'accesshide'));
+
+        $output  = html_writer::tag('legend', get_string('sortdiscussions', 'hsuforum'), array('class' => 'accesshide'));
+        $output .= html_writer::tag('div', $this->output->render($keyselect), array('class' => 'hsuforum_discussion_sort_key'));
+        $output .= html_writer::tag('div', $this->output->render($dirselect), array('class' => 'hsuforum_discussion_sort_direction'));
+        $output  = html_writer::tag('fieldset', $output, array('class' => 'invisiblefieldset'));
 
         return html_writer::tag('div', $output, array('class' => 'hsuforum_discussion_sort'));
     }

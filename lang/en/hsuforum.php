@@ -513,3 +513,6 @@ $string['totalposts'] = 'Total posts';
 $string['completionusegradeerror'] = 'Cannot require grade because this forum is not graded.  Either remove this completion requirement or make this forum graded.';
 $string['splitprivatewarning'] = 'You are splitting a private reply. After splitting, this post will no longer be private.';
 $string['manualwarning'] = 'Activity grading is not yet supported. Grading is only available through the Course Gradebook.';
+$string['sortdiscussions'] = 'Sort forum discussions';
+$string['sortdiscussionsby'] = 'Sort forum discussions by';
+$string['orderdiscussionsby'] = 'Order forum discussions by';

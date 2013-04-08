@@ -126,6 +126,7 @@ span.unread {
 .hsuforum_discussion_controls {padding-bottom: 5px;}
 .hsuforum_highlightposter {font-weight: bold;}
 .hsuforum_discussion_sort .hsuforum_discussion_sort_key {float: left;}
+.hsuforum_discussion_sort .invisiblefieldset {display: block;}
 .hsuforumtopicnav {margin: 5px;}
 .hsuforumprevtopic {font-weight: bold; float:left;}
 .hsuforum_no_nexttopic .hsuforumprevtopic {float:none;}
