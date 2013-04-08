@@ -899,6 +899,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
                 $displaymode   = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
                 $select        = new single_select(new moodle_url("/mod/hsuforum/view.php", array('id'=> $cm->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
+                $select->set_label(get_string('displaydiscussionreplies', 'hsuforum'), array('class' => 'accesshide'));
                 $select->class = "forummode";
                 echo $OUTPUT->render($select);
             }

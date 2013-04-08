@@ -516,3 +516,4 @@ $string['manualwarning'] = 'Activity grading is not yet supported. Grading is on
 $string['sortdiscussions'] = 'Sort forum discussions';
 $string['sortdiscussionsby'] = 'Sort forum discussions by';
 $string['orderdiscussionsby'] = 'Order forum discussions by';
+$string['displaydiscussionreplies'] = 'Display discussion replies';
