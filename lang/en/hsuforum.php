@@ -169,7 +169,7 @@ $string['hsuforum:editanypost'] = 'Edit any post';
 $string['hsuforum:exportdiscussion'] = 'Export whole discussion';
 $string['hsuforum:exportownpost'] = 'Export own post';
 $string['hsuforum:exportpost'] = 'Export post';
-$string['forumintro'] = 'Forum introduction';
+$string['forumintro'] = 'Description';
 $string['hsuforum:managesubscriptions'] = 'Manage subscriptions';
 $string['hsuforum:movediscussions'] = 'Move discussions';
 $string['hsuforum:postwithoutthrottling'] = 'Exempt from post threshold';
@@ -187,7 +187,7 @@ $string['forumtrackednot'] = 'Unread posts are not being tracked';
 $string['forumtype'] = 'Forum type';
 $string['forumtype_help'] = 'There are 5 forum types:
 
-* A single simple discussion - A single discussion topic which everyone can reply to
+* A single simple discussion - A single discussion topic which everyone can reply to (cannot be used with separate groups)
 * Each person posts one discussion - Each student can post exactly one new discussion topic, which everyone can then reply to
 * Q and A forum - Students must first post their perspectives before viewing other students\' posts
 * Standard forum displayed in a blog-like format - An open forum where anyone can start a new discussion at any time, and in which discussion topics are displayed on one page with "Discuss this topic" links
