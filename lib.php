@@ -8920,3 +8920,56 @@ function hsuforum_cm_add_cache(&$cm) {
         $cm->cache->groups = groups_get_all_groups($cm->course, 0, $cm->groupingid);
     }
 }
+
+/**
+ * @param stdClass $options
+ * @return bool
+ * @throws comment_exception
+ */
+function mod_hsuforum_comment_validate(stdClass $options) {
+    global $USER, $DB;
+
+    if ($options->commentarea != 'userposts_comments') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if (!$user = $DB->get_record('user', array('id'=>$options->itemid))) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    $context = $options->context;
+
+    if (!$cm = get_coursemodule_from_id('hsuforum', $context->instanceid)) {
+        throw new comment_exception('invalidcontext');
+    }
+
+    if (!has_capability('mod/hsuforum:rate', $context)) {
+        if (!has_capability('mod/hsuforum:replypost', $context) or ($user->id != $USER->id)) {
+            throw new comment_exception('nopermissiontocomment');
+        }
+    }
+
+    return true;
+}
+
+function mod_hsuforum_comment_permissions(stdClass $options) {
+    global $USER, $DB;
+
+    if ($options->commentarea != 'userposts_comments') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if (!$user = $DB->get_record('user', array('id'=>$options->itemid))) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    $context = $options->context;
+
+    if (!$cm = get_coursemodule_from_id('hsuforum', $context->instanceid)) {
+        throw new comment_exception('invalidcontext');
+    }
+
+    if (!has_capability('mod/hsuforum:rate', $context)) {
+        if (!has_capability('mod/hsuforum:replypost', $context) or ($user->id != $USER->id)) {
+            return array('view' => false, 'post' => false);
+        }
+    }
+
+    return array('view' => true, 'post' => true);
+}

@@ -35,6 +35,17 @@ require_once($CFG->dirroot . '/mod/hsuforum/backup/moodle2/restore_hsuforum_step
 class restore_hsuforum_activity_task extends restore_activity_task {
 
     /**
+     * Given a comment area, return the itemname that contains the itemid mappings
+     */
+    public function get_comment_mapping_itemname($commentarea) {
+        if ($commentarea == 'userposts_comments') {
+            return 'user';
+        }
+
+        return $commentarea;
+    }
+
+    /**
      * Define (add) particular settings this activity can have
      */
     protected function define_my_settings() {
