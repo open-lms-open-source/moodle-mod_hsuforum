@@ -4293,6 +4293,9 @@ function hsuforum_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
 
     $areas = hsuforum_get_file_areas($course, $cm, $context);
 
+    // Try comment area first. SC INT-4387.
+    hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options);
+
     // filearea must contain a real area
     if (!isset($areas[$filearea])) {
         return false;
@@ -8972,4 +8975,61 @@ function mod_hsuforum_comment_permissions(stdClass $options) {
     }
 
     return array('view' => true, 'post' => true);
+}
+
+/**
+ * @param array $comments
+ * @param stdClass $options
+ * @return mixed
+ */
+function mod_hsuforum_comment_display($comments, $options) {
+    foreach ($comments as $comment) {
+        $comment->content = file_rewrite_pluginfile_urls($comment->content, 'pluginfile.php', $options->context->id,
+                'mod_hsuforum', 'comments', $comment->id);
+    }
+
+    return $comments;
+}
+
+/**
+ * @param $course
+ * @param $cm
+ * @param $context
+ * @param $filearea
+ * @param $args
+ * @param $forcedownload
+ * @param $options
+ * @return bool
+ */
+function hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options) {
+    global $DB, $USER;
+
+    // Make sure this is the comments area.
+    if ($filearea !== 'comments') {
+        return false;
+    }
+
+    // Get the comment record.
+    $commentid = (int)array_shift($args);
+    if (!$comment = $DB->get_record('comments', array('id'=>$commentid))) {
+        return false;
+    }
+
+    // Try to get the file.
+    $fs = get_file_storage();
+    $relativepath = implode('/', $args);
+    $fullpath = "/$context->id/mod_hsuforum/$filearea/$commentid/$relativepath";
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        return false;
+    }
+
+    // Check permissions.
+    if (!has_capability('mod/hsuforum:rate', $context)) {
+        if (!has_capability('mod/hsuforum:replypost', $context) or ($comment->itemid != $USER->id)) {
+            return false;
+        }
+    }
+
+    // finally send the file
+    send_stored_file($file, 86400, 0, true, $options);
 }
