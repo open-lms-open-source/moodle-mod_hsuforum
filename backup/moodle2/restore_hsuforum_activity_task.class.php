@@ -45,6 +45,17 @@ class restore_hsuforum_activity_task extends restore_activity_task {
         return $commentarea;
     }
 
+
+    /**
+     * @return stdClass
+     */
+    public function get_comment_file_annotation_info() {
+        return (object) array(
+            'component' => 'mod_hsuforum',
+            'filearea' => 'comments',
+        );
+    }
+
     /**
      * Define (add) particular settings this activity can have
      */
