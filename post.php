@@ -738,6 +738,17 @@ if ($fromform = $mform_post->get_data()) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
+            events_trigger('hsuforum_reply_add', (object) array(
+                'component'    => 'mod_hsuforum',
+                'postid'       => $fromform->id,
+                'discussionid' => $discussion->id,
+                'timestamp'    => time(),
+                'userid'       => $USER->id,
+                'forumid'      => $forum->id,
+                'cmid'         => $cm->id,
+                'courseid'     => $course->id,
+            ));
+
             redirect(hsuforum_go_back_to("$discussionurl#p$fromform->id"), $message.$subscribemessage, $timemessage);
 
         } else {
@@ -801,6 +812,16 @@ if ($fromform = $mform_post->get_data()) {
                 ($forum->completiondiscussions || $forum->completionposts)) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
+
+            events_trigger('hsuforum_discussion_add', (object) array(
+                'component'    => 'mod_hsuforum',
+                'discussionid' => $discussion->id,
+                'timestamp'    => time(),
+                'userid'       => $USER->id,
+                'forumid'      => $forum->id,
+                'cmid'         => $cm->id,
+                'courseid'     => $course->id,
+            ));
 
             redirect(hsuforum_go_back_to("view.php?f=$fromform->forum"), $message.$subscribemessage, $timemessage);
 
