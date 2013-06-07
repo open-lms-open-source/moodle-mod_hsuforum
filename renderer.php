@@ -903,7 +903,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $a = new stdClass();
             $a->blockafter = $forum->blockafter;
             $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
-            echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
+            echo $OUTPUT->notification(get_string('thisforumisthrottled', 'hsuforum', $a));
         }
 
         if ($forum->type == 'qanda' && !has_capability('moodle/course:manageactivities', $context)) {
