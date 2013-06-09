@@ -9033,3 +9033,45 @@ function hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $
     // finally send the file
     send_stored_file($file, 86400, 0, true, $options);
 }
+
+/**
+ * @param stdClass $comment
+ * @param stdClass $options
+ * @throws comment_exception
+ */
+function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
+    global $DB;
+
+    if ($options->commentarea != 'userposts_comments') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if (!$user = $DB->get_record('user', array('id'=>$options->itemid))) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    $context = $options->context;
+
+    if (!$cm = get_coursemodule_from_id('hsuforum', $context->instanceid)) {
+        throw new comment_exception('invalidcontext');
+    }
+
+    // Get all the users with the ability to rate.
+    $recipients = get_users_by_capability($context, 'mod/hsuforum:rate');
+
+    // Add the item user if they are different from commenter.
+    if ($comment->userid != $user->id and has_capability('mod/hsuforum:replypost', $context, $user)) {
+        $recipients[$user->id] = $user;
+    }
+
+    // Sender is the author of the comment.
+    $sender = $DB->get_record('user', array('id' => $comment->userid));
+
+    // Make sure that the commenter is not getting the message.
+    unset($recipients[$comment->userid]);
+
+    $gareaid = component_callback('local_joulegrader', 'area_from_context', array($context, 'hsuforum'));
+    $contexturl = new moodle_url('/local/joulegrader/view.php', array('courseid' => $cm->course,
+            'garea' => $gareaid, 'guser' => $user->id));
+
+    $params = array($comment, $recipients, $sender, $cm->name, $contexturl);
+    component_callback('local_mrooms', 'comment_send_messages', $params);
+}
