@@ -4312,6 +4312,9 @@ function hsuforum_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
 
     $areas = hsuforum_get_file_areas($course, $cm, $context);
 
+    // Try comment area first. SC INT-4387.
+    hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options);
+
     // filearea must contain a real area
     if (!isset($areas[$filearea])) {
         return false;
@@ -8938,4 +8941,156 @@ function hsuforum_cm_add_cache(&$cm) {
     if (!isset($cm->cache->groups)) {
         $cm->cache->groups = groups_get_all_groups($cm->course, 0, $cm->groupingid);
     }
+}
+
+/**
+ * @param stdClass $options
+ * @return bool
+ * @throws comment_exception
+ */
+function mod_hsuforum_comment_validate(stdClass $options) {
+    global $USER, $DB;
+
+    if ($options->commentarea != 'userposts_comments') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if (!$user = $DB->get_record('user', array('id'=>$options->itemid))) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    $context = $options->context;
+
+    if (!$cm = get_coursemodule_from_id('hsuforum', $context->instanceid)) {
+        throw new comment_exception('invalidcontext');
+    }
+
+    if (!has_capability('mod/hsuforum:rate', $context)) {
+        if (!has_capability('mod/hsuforum:replypost', $context) or ($user->id != $USER->id)) {
+            throw new comment_exception('nopermissiontocomment');
+        }
+    }
+
+    return true;
+}
+
+function mod_hsuforum_comment_permissions(stdClass $options) {
+    global $USER, $DB;
+
+    if ($options->commentarea != 'userposts_comments') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if (!$user = $DB->get_record('user', array('id'=>$options->itemid))) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    $context = $options->context;
+
+    if (!$cm = get_coursemodule_from_id('hsuforum', $context->instanceid)) {
+        throw new comment_exception('invalidcontext');
+    }
+
+    if (!has_capability('mod/hsuforum:rate', $context)) {
+        if (!has_capability('mod/hsuforum:replypost', $context) or ($user->id != $USER->id)) {
+            return array('view' => false, 'post' => false);
+        }
+    }
+
+    return array('view' => true, 'post' => true);
+}
+
+/**
+ * @param array $comments
+ * @param stdClass $options
+ * @return mixed
+ */
+function mod_hsuforum_comment_display($comments, $options) {
+    foreach ($comments as $comment) {
+        $comment->content = file_rewrite_pluginfile_urls($comment->content, 'pluginfile.php', $options->context->id,
+                'mod_hsuforum', 'comments', $comment->id);
+    }
+
+    return $comments;
+}
+
+/**
+ * @param $course
+ * @param $cm
+ * @param $context
+ * @param $filearea
+ * @param $args
+ * @param $forcedownload
+ * @param $options
+ * @return bool
+ */
+function hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, $options) {
+    global $DB, $USER;
+
+    // Make sure this is the comments area.
+    if ($filearea !== 'comments') {
+        return false;
+    }
+
+    // Get the comment record.
+    $commentid = (int)array_shift($args);
+    if (!$comment = $DB->get_record('comments', array('id'=>$commentid))) {
+        return false;
+    }
+
+    // Try to get the file.
+    $fs = get_file_storage();
+    $relativepath = implode('/', $args);
+    $fullpath = "/$context->id/mod_hsuforum/$filearea/$commentid/$relativepath";
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+        return false;
+    }
+
+    // Check permissions.
+    if (!has_capability('mod/hsuforum:rate', $context)) {
+        if (!has_capability('mod/hsuforum:replypost', $context) or ($comment->itemid != $USER->id)) {
+            return false;
+        }
+    }
+
+    // finally send the file
+    send_stored_file($file, 86400, 0, true, $options);
+}
+
+/**
+ * @param stdClass $comment
+ * @param stdClass $options
+ * @throws comment_exception
+ */
+function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
+    global $DB;
+
+    if ($options->commentarea != 'userposts_comments') {
+        throw new comment_exception('invalidcommentarea');
+    }
+    if (!$user = $DB->get_record('user', array('id'=>$options->itemid))) {
+        throw new comment_exception('invalidcommentitemid');
+    }
+    $context = $options->context;
+
+    if (!$cm = get_coursemodule_from_id('hsuforum', $context->instanceid)) {
+        throw new comment_exception('invalidcontext');
+    }
+
+    // Get all the users with the ability to rate.
+    $recipients = get_users_by_capability($context, 'mod/hsuforum:rate');
+
+    // Add the item user if they are different from commenter.
+    if ($comment->userid != $user->id and has_capability('mod/hsuforum:replypost', $context, $user)) {
+        $recipients[$user->id] = $user;
+    }
+
+    // Sender is the author of the comment.
+    $sender = $DB->get_record('user', array('id' => $comment->userid));
+
+    // Make sure that the commenter is not getting the message.
+    unset($recipients[$comment->userid]);
+
+    $gareaid = component_callback('local_joulegrader', 'area_from_context', array($context, 'hsuforum'));
+    $contexturl = new moodle_url('/local/joulegrader/view.php', array('courseid' => $cm->course,
+            'garea' => $gareaid, 'guser' => $user->id));
+
+    $params = array($comment, $recipients, $sender, $cm->name, $contexturl);
+    component_callback('local_mrooms', 'comment_send_messages', $params);
 }
