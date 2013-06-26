@@ -25,14 +25,10 @@ M.mod_hsuforum.init_flags = function(Y) {
                 M.mod_hsuforum.io(Y, link.get('href'), function() {
                     link.toggleClass('hsuforum_flag_active');
 
-                    // This is overkill....
-                    var img = link.one('img');
                     var span = link.one('span');
                     var oldtitle = link.getAttribute('title');
                     var newTitle = link.getData('title');
                     span.set('text', newTitle);
-                    img.setAttribute('alt', newTitle)
-                        .setAttribute('title', newTitle);
                     link.setAttribute('title', newTitle)
                         .setData('title', oldtitle);
 
@@ -136,9 +132,7 @@ M.mod_hsuforum.init_subscribe = function(Y) {
                     }
                     span.set('text', label);
                     link.setAttribute('title', label);
-                    img.setAttribute('src', M.util.image_url(pix, 'hsuforum'))
-                        .setAttribute('alt', label)
-                        .setAttribute('title', label);
+                    img.setAttribute('src', M.util.image_url(pix, 'hsuforum'));
                 });
             }, 'a.hsuforum_discussion_subscribe');
         });

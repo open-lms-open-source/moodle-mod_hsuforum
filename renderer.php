@@ -182,7 +182,14 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $flaghtml = array();
-        $postname = format_string($post->name);
+        if (!empty($post->name)) {
+            $postname = format_string($post->name);
+        } else {
+            $postname = $post->subject;
+            if (empty($post->subjectnoformat)) {
+                $postname = format_string($postname);
+            }
+        }
         foreach ($flaglib->get_flags() as $flag) {
             $isflagged = $flaglib->is_flagged($post->flags, $flag);
             $class = 'hsuforum_flag';
@@ -190,16 +197,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 $class .= ' hsuforum_flag_active';
             }
             if ($canedit) {
-                $alt = $flaglib->get_flag_action_label($flag, $postname, $isflagged);
+                $label = $flaglib->get_flag_action_label($flag, $postname, $isflagged);
             } else {
-                $alt = $flaglib->get_flag_state_label($flag, $postname, $isflagged);
+                $label = $flaglib->get_flag_state_label($flag, $postname, $isflagged);
             }
             $attributes = array('class' => $class);
-            $icon       = $OUTPUT->pix_icon("flag/$flag", $alt, 'hsuforum', array('class' => 'iconsmall'));
+            $icon       = $OUTPUT->pix_icon("flag/$flag", '', 'hsuforum', array('class' => 'iconsmall', 'role' => 'presentation'));
 
             if ($canedit) {
                 $attributes['role'] = 'button';
-                $attributes['title'] = $alt;
+                $attributes['title'] = $label;
                 $attributes['data-title'] = $flaglib->get_flag_action_label($flag, $postname, !$isflagged);
 
                 $url = new moodle_url('/mod/hsuforum/route.php', array(
@@ -210,7 +217,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     'flag'         => $flag,
                     'sesskey'      => sesskey()
                 ));
-                $text  = html_writer::tag('span', $alt, array('class' => 'accesshide')).$icon;
+                $text  = html_writer::tag('span', $label, array('class' => 'accesshide')).$icon;
                 $flaghtml[] = html_writer::link($url, $text, $attributes);
             } else {
                 $flaghtml[] = html_writer::tag('span', $icon, $attributes);
@@ -254,7 +261,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 $pix   = 'check-no';
             }
             $text  = html_writer::tag('span', $label, array('class' => 'accesshide'));
-            $text .= $this->output->pix_icon($pix, $label, 'hsuforum');
+            $text .= $this->output->pix_icon($pix, '', 'hsuforum', array('class' => 'iconsmall', 'role' => 'presentation'));
 
             return html_writer::link($subscribeurl, $text, array(
                 'title' => $label,
