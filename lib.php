@@ -836,19 +836,19 @@ function hsuforum_cron() {
 
     @set_time_limit(300); // terminate if not able to fetch all digests in 5 minutes
 
-    if (!isset($CFG->digestmailtimelast)) {    // To catch the first time
-        set_config('digestmailtimelast', 0);
+    if (!isset($CFG->hsuforum_digestmailtimelast)) {    // To catch the first time
+        set_config('hsuforum_digestmailtimelast', 0);
     }
 
     $timenow = time();
-    $digesttime = usergetmidnight($timenow, $sitetimezone) + ($CFG->digestmailtime * 3600);
+    $digesttime = usergetmidnight($timenow, $sitetimezone) + ($CFG->hsuforum_digestmailtime * 3600);
 
     // Delete any really old ones (normally there shouldn't be any)
     $weekago = $timenow - (7 * 24 * 3600);
     $DB->delete_records_select('hsuforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    if ($CFG->digestmailtimelast < $digesttime and $timenow > $digesttime) {
+    if ($CFG->hsuforum_digestmailtimelast < $digesttime and $timenow > $digesttime) {
 
         mtrace('Sending forum digests: '.userdate($timenow, '', $sitetimezone));
 
@@ -1099,8 +1099,8 @@ function hsuforum_cron() {
                 }
             }
         }
-    /// We have finishied all digest emails, update $CFG->digestmailtimelast
-        set_config('digestmailtimelast', $timenow);
+    /// We have finishied all digest emails, update $CFG->hsuforum_digestmailtimelast
+        set_config('hsuforum_digestmailtimelast', $timenow);
     }
 
     cron_setup_user();

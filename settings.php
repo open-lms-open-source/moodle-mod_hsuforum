@@ -76,7 +76,7 @@ if ($ADMIN->fulltree) {
                        get_string('configcleanreadtime', 'hsuforum'), 2, $options));
 
     // Default time (hour) to send digest email
-    $settings->add(new admin_setting_configselect('digestmailtime', get_string('digestmailtime', 'hsuforum'),
+    $settings->add(new admin_setting_configselect('hsuforum_digestmailtime', get_string('digestmailtime', 'hsuforum'),
                        get_string('configdigestmailtime', 'hsuforum'), 17, $options));
 
     if (empty($CFG->enablerssfeeds)) {

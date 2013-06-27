@@ -467,6 +467,25 @@ function xmldb_hsuforum_upgrade($oldversion) {
         // Forum savepoint reached.
         upgrade_mod_savepoint(true, 2012112901, 'hsuforum');
     }
+
+    if ($oldversion < 2012112902) {
+        // Forum and hsuforum were reading from the same $CFG values, create new ones for hsuforum.
+
+        $digestmailtime = 17; // Default in settings.php
+        if (!empty($CFG->digestmailtime)) {
+            $digestmailtime = $CFG->digestmailtime;
+        }
+        set_config('hsuforum_digestmailtime', $digestmailtime);
+
+        $digestmailtimelast = 0;
+        if (!empty($CFG->digestmailtimelast)) {
+            $digestmailtimelast = $CFG->digestmailtimelast;
+        }
+        set_config('hsuforum_digestmailtimelast', $digestmailtimelast);
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2012112902, 'hsuforum');
+    }
     return true;
 }
 
