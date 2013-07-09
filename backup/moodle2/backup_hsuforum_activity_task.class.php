@@ -50,6 +50,17 @@ class backup_hsuforum_activity_task extends backup_activity_task {
         $this->add_step(new backup_hsuforum_activity_structure_step('hsuforum_structure', 'hsuforum.xml'));
     }
 
+
+    /**
+     * @return stdClass
+     */
+    public function get_comment_file_annotation_info() {
+        return (object) array(
+            'component' => 'mod_hsuforum',
+            'filearea' => 'comments',
+        );
+    }
+
     /**
      * Encodes URLs to the index.php, view.php and discuss.php scripts
      *
