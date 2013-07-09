@@ -223,6 +223,7 @@
     // groups selector not needed here
     echo '<div class="discussioncontrol displaymode">';
     $select = new single_select(new moodle_url("/mod/hsuforum/discuss.php", array('d'=> $discussion->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
+    $select->set_label(get_string('displaydiscussionreplies', 'hsuforum'), array('class' => 'accesshide'));
     echo $OUTPUT->render($select);
     echo "</div>";
 

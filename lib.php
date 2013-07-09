@@ -3966,10 +3966,11 @@ function hsuforum_search_form($course, $search='') {
     $output  = '<div class="forumsearch">';
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php" style="display:inline">';
     $output .= '<fieldset class="invisiblefieldset">';
+    $output .= '<legend class="accesshide">'.get_string('searchforums', 'hsuforum').'</legend>';
     $output .= $OUTPUT->help_icon('search');
     $output .= '<label class="accesshide" for="search" >'.get_string('search', 'hsuforum').'</label>';
     $output .= '<input id="search" name="search" type="text" size="18" value="'.s($search, true).'" alt="search" />';
-    $output .= '<label class="accesshide" for="searchforums" >'.get_string('searchforums', 'hsuforum').'</label>';
+    // $output .= '<label class="accesshide" for="searchforums" >'.get_string('searchforums', 'hsuforum').'</label>'; Mark - removed, redundant
     $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
     $output .= '</fieldset>';
@@ -5784,7 +5785,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     echo $OUTPUT->box_start('mod_hsuforum_posts_container');
 
     if ($displayformat == 'header') {
-        echo '<table cellspacing="0" class="forumheaderlist">';
+        echo html_writer::start_tag('table', array(
+            'cellspacing' => '0',
+            'class' => 'forumheaderlist',
+            'summary' => get_string('discussionsummary', 'hsuforum', format_string($forum->name)),
+        ));
         echo '<thead>';
         echo '<tr>';
         echo '<th class="header topic" scope="col">'.get_string('discussion', 'hsuforum').'</th>';

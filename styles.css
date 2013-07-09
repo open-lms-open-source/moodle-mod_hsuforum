@@ -58,6 +58,7 @@
 .mod_hsuforum_posts_container .forumheaderlist .discussion .lastpost {white-space: nowrap;text-align: right;}
 .mod_hsuforum_posts_container .forumheaderlist .replies,
 .mod_hsuforum_posts_container .forumheaderlist .discussion .author {white-space: nowrap;}
+.mod_hsuforum_posts_container .forumheaderlist .subscribe {text-align: center}
 
 /** Styles for subscribers.php */
 #page-mod-hsuforum-subscribers .subscriberdiv,
@@ -128,6 +129,7 @@ span.unread {
 .hsuforum_discussion_controls {padding-bottom: 5px;}
 .hsuforum_highlightposter {font-weight: bold;}
 .hsuforum_discussion_sort .hsuforum_discussion_sort_key {float: left;}
+.hsuforum_discussion_sort .invisiblefieldset {display: block;}
 .hsuforumtopicnav {margin: 5px;}
 .hsuforumprevtopic {font-weight: bold; float:left;}
 .hsuforum_no_nexttopic .hsuforumprevtopic {float:none;}
@@ -149,6 +151,9 @@ span.unread {
 .hsuforum_nested_wrapper .discussioninfo {float:right; text-align: right; font-size: .8em; }
 .hsuforum_nested_wrapper .discussioninfo .unread {padding: 0;}
 .hsuforum_nested_wrapper .unread .discussioninfo {padding-right: 3px;}
+.hsuforum_nested_wrapper .subscribe .subscribe_label {float: left;}
+.hsuforum_nested_wrapper .subscribe .subscribe_toggle {float: right; margin-top: -1px;}
+.hsuforum_nested_wrapper .subscribe .subscribe_toggle img {height: 16px; width: 16px;}
 .hsuforum_nested_footer {border:1px solid #000; border-top: none; padding: 10px;}
 .hsuforum_nested_footer .commands {text-align:right; font-size: .8em;}
 .hsuforum_nested_footer .forum-post-rating {float:left;}

@@ -147,8 +147,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 array('clicktoexpand', 'hsuforum'),
                 array('clicktocollapse', 'hsuforum'),
                 array('manualwarning', 'hsuforum'),
-                array('yes'),
-                array('no'),
+                array('subscribedtodiscussionx', 'hsuforum'),
+                array('notsubscribedtodiscussionx', 'hsuforum'),
             )
         );
     }
@@ -182,16 +182,33 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $flaghtml = array();
+        if (!empty($post->name)) {
+            $postname = format_string($post->name);
+        } else {
+            $postname = $post->subject;
+            if (empty($post->subjectnoformat)) {
+                $postname = format_string($postname);
+            }
+        }
         foreach ($flaglib->get_flags() as $flag) {
+            $isflagged = $flaglib->is_flagged($post->flags, $flag);
             $class = 'hsuforum_flag';
-            if ($flaglib->is_flagged($post->flags, $flag)) {
+            if ($isflagged) {
                 $class .= ' hsuforum_flag_active';
             }
+            if ($canedit) {
+                $label = $flaglib->get_flag_action_label($flag, $postname, $isflagged);
+            } else {
+                $label = $flaglib->get_flag_state_label($flag, $postname, $isflagged);
+            }
             $attributes = array('class' => $class);
-
-            $icon = new pix_icon("flag/$flag", $flaglib->get_flag_name($flag), 'hsuforum', array('class' => 'iconsmall'));
+            $icon       = $OUTPUT->pix_icon("flag/$flag", '', 'hsuforum', array('class' => 'iconsmall', 'role' => 'presentation'));
 
             if ($canedit) {
+                $attributes['role'] = 'button';
+                $attributes['title'] = $label;
+                $attributes['data-title'] = $flaglib->get_flag_action_label($flag, $postname, !$isflagged);
+
                 $url = new moodle_url('/mod/hsuforum/route.php', array(
                     'contextid'    => $context->id,
                     'action'       => 'flag',
@@ -200,9 +217,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     'flag'         => $flag,
                     'sesskey'      => sesskey()
                 ));
-                $flaghtml[] = $OUTPUT->action_icon($url, $icon, null, $attributes);
+                $text  = html_writer::tag('span', $label, array('class' => 'accesshide')).$icon;
+                $flaghtml[] = html_writer::link($url, $text, $attributes);
             } else {
-                $flaghtml[] = html_writer::tag('span', $this->render($icon), $attributes);
+                $flaghtml[] = html_writer::tag('span', $icon, $attributes);
             }
         }
         return html_writer::tag('div', implode('', $flaghtml), array('class' => 'hsuforum_flags'));
@@ -233,13 +251,24 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             ));
 
             $class = '';
+            $name  = format_string($discussion->name);
             if (!empty($discussion->subscriptionid)) {
-                $label = get_string('yes');
+                $label = get_string('subscribedtodiscussionx', 'hsuforum', $name);
                 $class = ' subscribed';
+                $pix   = 'check-yes';
             } else {
-                $label = get_string('no');
+                $label = get_string('notsubscribedtodiscussionx', 'hsuforum', $name);
+                $pix   = 'check-no';
             }
-            return html_writer::link($subscribeurl, $label, array('title' => get_string('changediscussionsubscription', 'hsuforum'), 'class' => 'hsuforum_discussion_subscribe'.$class));
+            $text  = html_writer::tag('span', $label, array('class' => 'accesshide'));
+            $text .= $this->output->pix_icon($pix, '', 'hsuforum', array('class' => 'iconsmall', 'role' => 'presentation'));
+
+            return html_writer::link($subscribeurl, $text, array(
+                'title' => $label,
+                'class' => 'hsuforum_discussion_subscribe'.$class,
+                'data-name' => $name,
+                'role' => 'button',
+            ));
         }
         return '';
     }
@@ -352,13 +381,18 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function discussion_sorting(hsuforum_lib_discussion_sort $sort) {
-        global $OUTPUT, $PAGE;
+        global $PAGE;
 
-        $keyselect = $OUTPUT->single_select($PAGE->url, 'dsortkey', $sort->get_key_options_menu(), $sort->get_key(), array());
-        $dirselect = $OUTPUT->single_select($PAGE->url, 'dsortdirection', $sort->get_direction_options_menu(), $sort->get_direction(), array());
+        $keyselect = new single_select($PAGE->url, 'dsortkey', $sort->get_key_options_menu(), $sort->get_key(), array());
+        $keyselect->set_label(get_string('sortdiscussionsby', 'hsuforum'), array('class' => 'accesshide'));
 
-        $output  = html_writer::tag('div', $keyselect, array('class' => 'hsuforum_discussion_sort_key'));
-        $output .= html_writer::tag('div', $dirselect, array('class' => 'hsuforum_discussion_sort_direction'));
+        $dirselect = new single_select($PAGE->url, 'dsortdirection', $sort->get_direction_options_menu(), $sort->get_direction(), array());
+        $dirselect->set_label(get_string('orderdiscussionsby', 'hsuforum'), array('class' => 'accesshide'));
+
+        $output  = html_writer::tag('legend', get_string('sortdiscussions', 'hsuforum'), array('class' => 'accesshide'));
+        $output .= html_writer::tag('div', $this->output->render($keyselect), array('class' => 'hsuforum_discussion_sort_key'));
+        $output .= html_writer::tag('div', $this->output->render($dirselect), array('class' => 'hsuforum_discussion_sort_direction'));
+        $output  = html_writer::tag('fieldset', $output, array('class' => 'invisiblefieldset'));
 
         return html_writer::tag('div', $output, array('class' => 'hsuforum_discussion_sort'));
     }
@@ -577,7 +611,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         require_once(__DIR__.'/lib/discussion/subscribe.php');
         $subscribe = new hsuforum_lib_discussion_subscribe($cm->cache->forum, $cm->cache->context);
         if ($link = $this->discussion_subscribe_link($discussion, $subscribe)) {
-            $infos[] = html_writer::tag('div', get_string('subscribedx', 'hsuforum', $link), array('class' => 'subscribe'));
+            $content  = html_writer::tag('div', get_string('subscribed', 'hsuforum').':&nbsp;', array('class' => 'subscribe_label'));
+            $content .= html_writer::tag('div', $link, array('class' => 'subscribe_toggle'));
+            $infos[] = html_writer::tag('div', $content, array('class' => 'subscribe'));
         }
         return html_writer::tag('div', implode('', $infos), array('class' => 'discussioninfo'));
     }
@@ -894,6 +930,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
                 $displaymode   = get_user_preferences("hsuforum_displaymode", $CFG->hsuforum_displaymode);
                 $select        = new single_select(new moodle_url("/mod/hsuforum/view.php", array('id'=> $cm->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
+                $select->set_label(get_string('displaydiscussionreplies', 'hsuforum'), array('class' => 'accesshide'));
                 $select->class = "forummode";
                 echo $OUTPUT->render($select);
             }
