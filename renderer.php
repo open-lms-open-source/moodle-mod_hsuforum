@@ -754,7 +754,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
             require_once($CFG->libdir.'/portfoliolib.php');
             $button = new portfolio_add_button();
-            $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), '/mod/hsuforum/locallib.php');
+            $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), 'mod_hsuforum');
             list($attachments, $attachedimages) = hsuforum_print_attachments($post, $cm, 'separateimages');
             if (empty($attachments)) {
                 $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
