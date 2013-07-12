@@ -1,0 +1,176 @@
+/**
+ * Structure of a forum post
+ * div.forumpost(.read.unread)
+ *     div.header.row
+ *         div.picture.left
+ *         div.topic(.starter)
+ *             div.subject
+ *             div.author
+ *     div.row
+ *         div.side.left
+ *         div.content-mask
+ *             div.content
+ *                 div.attachments
+ *                 div.posting(.shortenedpost|.fullpost)
+ *                     // message
+ *                 div.attachedimages
+ *                     // attachedimages
+ *     div.row
+ *         div.left
+ *         div.options
+ *             div.commands
+ *             div.forum-post-rating
+ *             div.link
+ *             div.footer
+ */
+
+.forumpost {display: block;position:relative;margin:0 0 1em 0;padding:0;border:1px solid #000;max-width:100%;}
+.forumpost .row {width:100%;position:relative;}
+.forumpost .row .left {float:left;width: 43px;overflow:hidden;}
+.forumpost .row .left .grouppictures a {text-align:center;display:block;margin:6px 2px 0 2px;}
+.forumpost .row .left .grouppicture {width:20px;height:20px;}
+.forumpost .row .topic,
+.forumpost .row .content-mask,
+.forumpost .row .options {margin-left:43px;}
+.forumpost .picture img {margin:4px;}
+.forumpost .options .commands,
+.forumpost .content .attachments,
+.forumpost .options .footer,
+.forumpost .options .link {text-align:right;}
+.forumpost .options .forum-post-rating {float:left;}
+.forumpost .content .posting {overflow:auto;max-width:100%;}
+.forumpost .content .attachedimages img {max-width:100%;}
+
+.dir-rtl .forumpost .row .topic,
+.dir-rtl .forumpost .row .content-mask,
+.dir-rtl .forumpost .row .options {margin-right:43px;margin-left:0;}
+.dir-rtl .forumpost .row .left {float:right;}
+.dir-rtl.path-mod-hsuforum .indent {margin-right:30px;margin-left:0;}
+
+.path-mod-hsuforum .forumolddiscuss,
+#page-mod-hsuforum-search .c0 {text-align:right;}
+.mod_hsuforum_posts_container .indent {margin-left: 30px;}
+.mod_hsuforum_posts_container .forumheaderlist {width: 100%;border-width:1px;border-style:solid;border-collapse:separate;margin-top: 10px;}
+.mod_hsuforum_posts_container .forumheaderlist td {border-width:1px 0px 0px 1px;border-style:solid;}
+.mod_hsuforum_posts_container .forumheaderlist th.header.replies .iconsmall { margin: 0 .3em;}
+.mod_hsuforum_posts_container .forumheaderlist .picture {width: 35px;}
+.mod_hsuforum_posts_container .forumheaderlist .discussion .starter {vertical-align: middle;}
+.mod_hsuforum_posts_container .forumheaderlist .discussion .lastpost {white-space: nowrap;text-align: right;}
+.mod_hsuforum_posts_container .forumheaderlist .replies,
+.mod_hsuforum_posts_container .forumheaderlist .discussion .author {white-space: nowrap;}
+.mod_hsuforum_posts_container .forumheaderlist .subscribe {text-align: center}
+
+/** Styles for subscribers.php */
+#page-mod-hsuforum-subscribers .subscriberdiv,
+#page-mod-hsuforum-subscribers .subscribertable {width:100%;vertical-align:top;}
+#page-mod-hsuforum-subscribers .subscribertable tr td {vertical-align:top;}
+#page-mod-hsuforum-subscribers .subscribertable tr td.actions {width:16%;padding-top:3em;}
+#page-mod-hsuforum-subscribers .subscribertable tr td.actions .actionbutton {margin:0.3em 0;padding:0.5em 0;width:100%;}
+#page-mod-hsuforum-subscribers .subscribertable tr td.existing,
+#page-mod-hsuforum-subscribers .subscribertable tr td.potential {width:42%;}
+
+/** Styles for discussion subscribers */
+.path-mod-hsuforum .subscriberdiv,
+.path-mod-hsuforum .subscribertable {width:100%;vertical-align:top;}
+.path-mod-hsuforum .subscribertable tr td {vertical-align:top;}
+.path-mod-hsuforum .subscribertable tr td.actions {width:16%;padding-top:3em;}
+.path-mod-hsuforum .subscribertable tr td.actions .actionbutton {margin:0.3em 0;padding:0.5em 0;width:100%;}
+.path-mod-hsuforum .subscribertable tr td.existing,
+.path-mod-hsuforum .subscribertable tr td.potential {width:42%;}
+
+/** Styles for discuss.php **/
+#page-mod-hsuforum-discuss .discussioncontrols {width:100%;margin:5px;}
+#page-mod-hsuforum-discuss .discussioncontrols .discussioncontrol {width:33%;float:left;}
+#page-mod-hsuforum-discuss .discussioncontrol.exporttoportfolio {text-align:left;}
+#page-mod-hsuforum-discuss .discussioncontrol.displaymode {text-align:center;}
+#page-mod-hsuforum-discuss .discussioncontrol.movediscussion {float:right;width:auto;text-align:right;padding-right:10px;}
+#page-mod-hsuforum-discuss .discussioncontrol.movediscussion .movediscussionoption {}
+
+/** Styles for view.php **/
+.hsuforum_discussion_controls .forumaddnew {margin-bottom: 20px;}
+#page-mod-hsuforum-view .groupmenu {float: left;text-align:left;white-space: nowrap;}
+#page-mod-hsuforum-index .subscription,
+#page-mod-hsuforum-view .subscription {float: right;text-align:right;white-space: nowrap;margin: 5px 0;}
+
+/** Styles for search.php */
+#page-mod-hsuforum-search .introcontent {padding: 15px;font-weight:bold;}
+
+#page-mod-hsuforum-index .unread a:first-child,
+#page-mod-hsuforum-view .unread a:first-child {padding-right: 10px;}
+#page-mod-hsuforum-index .unread img,
+.mod_hsuforum_posts_container .forumheaderlist .unread img {margin-left: 5px;}
+.dir-rtl#page-mod-hsuforum-index .unread img,
+.dir-rtl .mod_hsuforum_posts_container .forumheaderlist .unread img {margin-right: 5px; margin-left: 0; }
+
+/** Unknown Styles ??? */
+#email .unsubscribelink {margin-top:20px;}
+
+/* Forumpost unread
+-------------------------*/
+#page-mod-hsuforum-view .unread,
+.forumpost.unread .row.header,
+.path-course-view .unread,
+span.unread {
+    background-color: #FFD;
+}
+.forumpost.unread .row.header {
+    border-bottom: 1px solid #DDD;
+}
+
+.hsuforum_viewposters th a {vertical-align: top;}
+.hsuforum_viewposters th .commands {display: inline;}
+.hsuforum_viewposters .col_userpic {width: 40px; text-align: center;}
+.hsuforum_flags {display: inline; padding-left:10px;}
+.hsuforum_flags {display: inline; padding-left:10px;}
+.hsuforum_flag {opacity:.2; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=20)"; filter:alpha(opacity=20); padding-right: 3px;}
+.hsuforum_flag_active {opacity:1; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";filter:alpha(opacity=100);}
+.hsuforum_discussion_controls .singleselect {float: right;}
+.hsuforum_discussion_controls .forumaddnew {float: left;}
+.hsuforum_discussion_controls {padding-bottom: 5px;}
+.hsuforum_highlightposter {font-weight: bold;}
+.hsuforum_discussion_sort .hsuforum_discussion_sort_key {float: left;}
+.hsuforum_discussion_sort .invisiblefieldset {display: block;}
+.hsuforumtopicnav {margin: 5px;}
+.hsuforumprevtopic {font-weight: bold; float:left;}
+.hsuforum_no_nexttopic .hsuforumprevtopic {float:none;}
+.hsuforumnexttopic {font-weight: bold; text-align:right;}
+.mod_hsuforum_posts_container .ygtvfocus {background-color: inherit;}
+.hsuforum_treeview_commands {margin-bottom: 10px;}
+.hsuforum_treeview_wrapper {display: none;}
+.jsenabled .hsuforum_treeview_wrapper {display: block;}
+.hsuforum_postincontext_dialog .yui3-widget-bd {overflow-y: scroll;}
+.hsuforum_postincontext_dialog .yui3-widget-bd .hsuforum_flags {display: none;}
+.hsuforum_counts {border:1px solid #000; text-align: center; margin-bottom: 20px; padding: 5px; }
+.hsuforum_count {display:inline; padding-left: 20px; padding-right: 20px;}
+
+.hsuforum_nested_discussion {margin-bottom: 10px;}
+.hsuforum_nested_body .content {padding: 5px; border-left:1px solid #000; border-right:1px solid #000;}
+.hsuforum_nested_wrapper .picture {float:left;}
+.hsuforum_nested_wrapper .subject {font-weight: bold;}
+.hsuforum_nested_header_content {padding-left:45px;}
+.hsuforum_nested_wrapper .discussioninfo {float:right; text-align: right; font-size: .8em; }
+.hsuforum_nested_wrapper .discussioninfo .unread {padding: 0;}
+.hsuforum_nested_wrapper .unread .discussioninfo {padding-right: 3px;}
+.hsuforum_nested_wrapper .subscribe .subscribe_label {float: left;}
+.hsuforum_nested_wrapper .subscribe .subscribe_toggle {float: right; margin-top: -1px;}
+.hsuforum_nested_wrapper .subscribe .subscribe_toggle img {height: 16px; width: 16px;}
+.hsuforum_nested_footer {border:1px solid #000; border-top: none; padding: 10px;}
+.hsuforum_nested_footer .commands {text-align:right; font-size: .8em;}
+.hsuforum_nested_footer .forum-post-rating {float:left;}
+.hsuforum_nested_header {cursor: pointer; border:1px solid #000; min-height: 45px; padding: 5px;}
+.hsuforum_nested_body {overflow: hidden; height: 0;}  /* Height zero for animation */
+.hsuforum_nested_posts {overflow: hidden;}
+.hsuforum_nested_post {margin-top: 10px;}
+.hsuforum_nested_wrapper .author {font-size: .8em; font-style: italic;}
+.hsuforum_nested_wrapper .lastpostby {font-size: .8em; font-style: italic;}
+.hsuforum_nested_wrapper {display: none;}
+.jsenabled .hsuforum_nested_wrapper {display: block;}
+
+#local-joulegrader .content .mod_hsuforum_posts_container,
+#local-joulegrader .content .mod_hsuforum_posts_container .content {text-align: left; margin-right: 0; overflow: hidden;}
+#local-joulegrader .content .mod_hsuforum_posts_container {margin-right: 10px; }
+
+.hsuforum_postincontext_dialog .yui3-widget-hd { cursor: move; }
+
+.path-mod-hsuforum #gradetype_warning.hidden { display: none; }
+.path-mod-hsuforum #gradetype_warning { color: #660000; padding-left: 5px; }
