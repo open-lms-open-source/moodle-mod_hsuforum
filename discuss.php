@@ -119,6 +119,7 @@
         set_user_preference('hsuforum_displaymode', $mode);
     }
 
+    $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
     $displaymode = hsuforum_get_layout_mode($forum);
 
     if ($parent) {
@@ -177,8 +178,15 @@
     }
     hsuforum_lib_discussion_nav::set_to_session($dnav);
 
-    /** @var $renderer mod_hsuforum_renderer */
-    $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
+
+    try {
+        /** @var $renderer \mod_hsuforum\render_interface */
+        $renderer = $PAGE->get_renderer('mod_hsuforum', $displayformat);
+    } catch (Exception $e) {
+        /** @var $renderer mod_hsuforum_renderer */
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+    }
 
     $PAGE->set_title("$course->shortname: ".format_string($discussion->name));
     $PAGE->set_heading($course->fullname);
@@ -221,11 +229,13 @@
     }
 
     // groups selector not needed here
-    echo '<div class="discussioncontrol displaymode">';
-    $select = new single_select(new moodle_url("/mod/hsuforum/discuss.php", array('d'=> $discussion->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
-    $select->set_label(get_string('displaydiscussionreplies', 'hsuforum'), array('class' => 'accesshide'));
-    echo $OUTPUT->render($select);
-    echo "</div>";
+    if ($displayformat != 'article') {
+        echo '<div class="discussioncontrol displaymode">';
+        $select = new single_select(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $discussion->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
+        $select->set_label(get_string('displaydiscussionreplies', 'hsuforum'), array('class' => 'accesshide'));
+        echo $OUTPUT->render($select);
+        echo "</div>";
+    }
 
     if ($forum->type != 'single'
                 && has_capability('mod/hsuforum:movediscussions', $modcontext)) {

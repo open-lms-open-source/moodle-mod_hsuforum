@@ -1,0 +1,7 @@
+{
+    "moodle-mod_hsuforum-livelog": {
+        "requires": [
+            "widget"
+        ]
+    }
+}

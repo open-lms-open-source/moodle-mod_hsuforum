@@ -48,6 +48,14 @@ class hsuforum_lib_discussion_nav implements Serializable {
     protected $discussionids = array();
 
     /**
+     * Keeps track of the position of each discussion
+     * that is loaded in the discussionids array.
+     *
+     * @var array
+     */
+    protected $posistions = array();
+
+    /**
      * @var hsuforum_lib_discussion_sort
      */
     protected $sort;
@@ -188,10 +196,16 @@ class hsuforum_lib_discussion_nav implements Serializable {
         $discussionids = array();
         $shifted       = false;
         $countdown     = -1;
+        $position      = 1;
 
         $rs = hsuforum_get_discussions($this->get_cm(), $this->get_sort()->get_sort_sql(), 'd.id');
         foreach ($rs as $discussion) {
-            $discussionids[] = (int) $discussion->id;
+            $id = (int) $discussion->id;
+            $discussionids[] = $id;
+
+            // Position tracking.
+            $this->posistions[$id] = $position;
+            $position++;
 
             if ($countdown != -1) {
                 $countdown--;
@@ -203,11 +217,12 @@ class hsuforum_lib_discussion_nav implements Serializable {
                 $countdown = round(self::MAX_IDS / 2);
             }
             if (count($discussionids) > self::MAX_IDS) {
-                array_shift($discussionids);
+                // Fancy way of removing the discussion from both arrays.
+                unset($this->posistions[array_shift($discussionids)]);
                 $shifted = true;
             }
         }
-        // We never shifted, meaining we are at the start still, mark with false
+        // We never shifted, meaning we are at the start still, mark with false
         if (!$shifted) {
             array_unshift($discussionids, false);
         }
@@ -295,6 +310,29 @@ class hsuforum_lib_discussion_nav implements Serializable {
     }
 
     /**
+     * Get the page that the discussion is on
+     *
+     * @param int $discussionid
+     * @param null|int $perpage Override the per page setting
+     * @return int
+     */
+    public function get_page($discussionid, $perpage = null) {
+        global $CFG;
+
+        if (is_null($perpage)) {
+            $perpage = $CFG->hsuforum_manydiscussions;
+        }
+        if ($this->find_discussionid_key($discussionid) === false) {
+            return 0; // Shouldn't happen, we should find valid ones.
+        }
+        if (!array_key_exists($discussionid, $this->posistions)) {
+            return 0; // Shouldn't happen, the above should have populated position.
+        }
+        // Subtract one because we start counting pages from zero.
+        return ceil($this->posistions[$discussionid] / $perpage) - 1;
+    }
+
+    /**
      * (PHP 5 &gt;= 5.1.0)<br/>
      * String representation of object
      *
@@ -305,6 +343,7 @@ class hsuforum_lib_discussion_nav implements Serializable {
         return serialize(array(
             'cmid' => $this->get_cmid(),
             'discussionids' => $this->get_discussionids(),
+            'positions' => $this->posistions,
         ));
     }
 
@@ -320,6 +359,11 @@ class hsuforum_lib_discussion_nav implements Serializable {
      */
     public function unserialize($serialized) {
         $data = unserialize($serialized);
+
+        // Positions is new, so don't use session if missing.
+        if (empty($data['positions'])) {
+            return;
+        }
         $this->set_cmid($data['cmid'])
              ->set_discussionids($data['discussionids']);
     }

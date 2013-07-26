@@ -24,6 +24,7 @@
 
 namespace mod_hsuforum\controller;
 
+use mod_hsuforum\response\response_interface;
 use mod_hsuforum_renderer;
 
 defined('MOODLE_INTERNAL') || die();
@@ -125,7 +126,7 @@ class kernel {
         ob_end_clean();
 
         if (!empty($response) and !empty($buffer)) {
-            throw new \coding_exception('Mixed return output and buffer output');
+            throw new \coding_exception('Mixed return output and buffer output', "Buffer: $buffer");
         } else if (!empty($buffer)) {
             $response = $buffer;
         }
@@ -136,12 +137,14 @@ class kernel {
      * Automatically wraps non-empty responses with
      * header/footer, etc.
      *
-     * @param string $response
+     * @param string|response_interface $response
      */
     public function send_response($response) {
         global $OUTPUT;
 
-        if (!empty($response)) {
+        if ($response instanceof response_interface) {
+            $response->send();
+        } else if (!empty($response)) {
             echo $OUTPUT->header();
             echo $response;
             echo $OUTPUT->footer();
