@@ -4174,8 +4174,8 @@ function hsuforum_print_attachments($post, $cm, $type) {
                 $output .= plagiarism_get_links(array('userid' => $post->userid,
                     'file' => $file,
                     'cmid' => $cm->id,
-                    'course' => $post->course,
-                    'hsuforum' => $post->forum));
+                    'course' => $cm->course,
+                    'hsuforum' => $cm->instance));
                 $output .= '<br />';
             }
         }
