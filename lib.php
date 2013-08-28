@@ -53,6 +53,10 @@ define ('HSUFORUM_GRADETYPE_NONE', 0);
 define ('HSUFORUM_GRADETYPE_MANUAL', 1);
 define ('HSUFORUM_GRADETYPE_RATING', 2);
 
+define('HSUFORUM_MAILED_PENDING', 0);
+define('HSUFORUM_MAILED_SUCCESS', 1);
+define('HSUFORUM_MAILED_ERROR', 2);
+
 if (!defined('HSUFORUM_CRON_USER_CACHE')) {
     /** Defines how many full user records are cached in forum cron. */
     define('HSUFORUM_CRON_USER_CACHE', 5000);
@@ -816,7 +820,7 @@ function hsuforum_cron() {
         foreach ($posts as $post) {
             mtrace($mailcount[$post->id]." users were sent post $post->id, '$post->subject'");
             if ($errorcount[$post->id]) {
-                $DB->set_field("hsuforum_posts", "mailed", "2", array("id" => "$post->id"));
+                $DB->set_field('hsuforum_posts', 'mailed', HSUFORUM_MAILED_ERROR, array('id' => $post->id));
             }
         }
     }
@@ -1577,7 +1581,7 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
                     $modinfo->groups = groups_get_user_groups($course->id); // load all my groups and cache it in modinfo
                 }
 
-                if (!array_key_exists($post->groupid, $modinfo->groups[0])) {
+                if (!in_array($post->groupid, $modinfo->get_groups($cm->groupingid))) {
                     continue;
                 }
             }
@@ -2261,26 +2265,31 @@ function hsuforum_get_ratings($context, $postid, $sort = "u.firstname ASC") {
 function hsuforum_get_unmailed_posts($starttime, $endtime, $now=null) {
     global $CFG, $DB;
 
-    $params = array($starttime, $endtime);
+    $params = array();
+    $params['mailed'] = HSUFORUM_MAILED_PENDING;
+    $params['ptimestart'] = $starttime;
+    $params['ptimeend'] = $endtime;
+    $params['mailnow'] = 1;
+
     if (!empty($CFG->hsuforum_enabletimedposts)) {
         if (empty($now)) {
             $now = time();
         }
-        $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
-        $params[] = $now;
-        $params[] = $now;
+        $timedsql = "AND (d.timestart < :dtimestart AND (d.timeend = 0 OR d.timeend > :dtimeend))";
+        $params['dtimestart'] = $now;
+        $params['dtimeend'] = $now;
     } else {
         $timedsql = "";
     }
 
     return $DB->get_records_sql("SELECT p.*, d.course, d.forum
-                              FROM {hsuforum_posts} p
-                                   JOIN {hsuforum_discussions} d ON d.id = p.discussion
-                             WHERE p.mailed = 0
-                                   AND p.created >= ?
-                                   AND (p.created < ? OR p.mailnow = 1)
-                                   $timedsql
-                          ORDER BY p.modified ASC", $params);
+                                 FROM {hsuforum_posts} p
+                                 JOIN {hsuforum_discussions} d ON d.id = p.discussion
+                                 WHERE p.mailed = :mailed
+                                 AND p.created >= :ptimestart
+                                 AND (p.created < :ptimeend OR p.mailnow = :mailnow)
+                                 $timedsql
+                                 ORDER BY p.modified ASC", $params);
 }
 
 /**
@@ -2294,24 +2303,31 @@ function hsuforum_get_unmailed_posts($starttime, $endtime, $now=null) {
  */
 function hsuforum_mark_old_posts_as_mailed($endtime, $now=null) {
     global $CFG, $DB;
+
     if (empty($now)) {
         $now = time();
     }
 
+    $params = array();
+    $params['mailedsuccess'] = HSUFORUM_MAILED_SUCCESS;
+    $params['now'] = $now;
+    $params['endtime'] = $endtime;
+    $params['mailnow'] = 1;
+    $params['mailedpending'] = HSUFORUM_MAILED_PENDING;
+
     if (empty($CFG->hsuforum_enabletimedposts)) {
         return $DB->execute("UPDATE {hsuforum_posts}
-                               SET mailed = '1'
-                             WHERE (created < ? OR mailnow = 1)
-                                   AND mailed = 0", array($endtime));
-
+                             SET mailed = :mailedsuccess
+                             WHERE (created < :endtime OR mailnow = :mailnow)
+                             AND mailed = :mailedpending", $params);
     } else {
         return $DB->execute("UPDATE {hsuforum_posts}
-                               SET mailed = '1'
+                             SET mailed = :mailedsuccess
                              WHERE discussion NOT IN (SELECT d.id
-                                                        FROM {hsuforum_discussions} d
-                                                       WHERE d.timestart > ?)
-                                   AND (created < ? OR mailnow = 1)
-                                   AND mailed = 0", array($now, $endtime));
+                                                      FROM {hsuforum_discussions} d
+                                                      WHERE d.timestart > :now)
+                             AND (created < :endtime OR mailnow = :mailnow)
+                             AND mailed = :mailedpending", $params);
     }
 }
 
@@ -3535,7 +3551,8 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         $postclass    = 'shortenedpost';
         $postcontent  = format_text(hsuforum_shorten_post($post->message), $post->messageformat, $options, $course->id);
         $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'hsuforum'));
-        $postcontent .= html_writer::tag('span', '('.get_string('numwords', 'moodle', count_words(strip_tags($post->message))).')...', array('class'=>'post-word-count'));
+        $postcontent .= html_writer::tag('div', '('.get_string('numwords', 'moodle', count_words($post->message)).')',
+            array('class'=>'post-word-count'));
     } else {
         // Prepare whole post
         $postclass    = 'fullpost';
@@ -3543,8 +3560,13 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         if (!empty($highlight)) {
             $postcontent = highlight($highlight, $postcontent);
         }
+        if (!empty($forum->displaywordcount)) {
+            $postcontent .= html_writer::tag('div', get_string('numwords', 'moodle', count_words($post->message)),
+                array('class'=>'post-word-count'));
+        }
         $postcontent .= html_writer::tag('div', $attachedimages, array('class'=>'attachedimages'));
     }
+
     // Output the post content
     $output .= html_writer::tag('div', $postcontent, array('class'=>'posting '.$postclass));
     $output .= html_writer::end_tag('div'); // Content
@@ -4369,10 +4391,10 @@ function hsuforum_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
  * @param object $forum
  * @param object $cm
  * @param mixed $mform
- * @param string $message
+ * @param string $unused
  * @return bool
  */
-function hsuforum_add_attachment($post, $forum, $cm, $mform=null, &$message=null) {
+function hsuforum_add_attachment($post, $forum, $cm, $mform=null, $unused=null) {
     global $DB;
 
     if (empty($mform)) {
@@ -4415,7 +4437,7 @@ function hsuforum_add_new_post($post, $mform, &$message) {
     $context    = context_module::instance($cm->id);
 
     $post->created    = $post->modified = time();
-    $post->mailed     = "0";
+    $post->mailed     = HSUFORUM_MAILED_PENDING;
     $post->userid     = $USER->id;
     $post->attachment = "";
 
@@ -4496,16 +4518,13 @@ function hsuforum_update_post($post, $mform, &$message) {
  * Given an object containing all the necessary data,
  * create a new discussion and return the id
  *
- * @global object
- * @global object
- * @global object
  * @param object $post
  * @param mixed $mform
- * @param string $message
+ * @param string $unused
  * @param int $userid
  * @return object
  */
-function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $userid=null) {
+function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid=null) {
     global $USER, $CFG, $DB;
 
     $timenow = time();
@@ -4526,7 +4545,7 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
     $post->userid        = $userid;
     $post->created       = $timenow;
     $post->modified      = $timenow;
-    $post->mailed        = 0;
+    $post->mailed        = HSUFORUM_MAILED_PENDING;
     $post->subject       = $discussion->name;
     $post->message       = $discussion->message;
     $post->messageformat = $discussion->messageformat;
@@ -4565,7 +4584,7 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
     $DB->set_field("hsuforum_posts", "discussion", $post->discussion, array("id"=>$post->id));
 
     if (!empty($cm->id)) {
-        hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
+        hsuforum_add_attachment($post, $forum, $cm, $mform, $unused);
     }
 
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
@@ -6204,12 +6223,10 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
     }
 
     if ($groupid) {
-        $groupselect = "AND gm.groupid = ?";
-        $groupjoin   = "JOIN {groups_members} gm ON  gm.userid=u.id";
+        $groupselect = "AND d.groupid = ?";
         $params[] = $groupid;
     } else {
         $groupselect = "";
-        $groupjoin   = "";
     }
 
     if (!$posts = $DB->get_records_sql("SELECT p.*, f.anonymous AS forumanonymous, f.type AS forumtype, d.forum, d.groupid,
@@ -6219,7 +6236,6 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
                                               JOIN {hsuforum_discussions} d ON d.id = p.discussion
                                               JOIN {hsuforum} f             ON f.id = d.forum
                                               JOIN {user} u              ON u.id = p.userid
-                                              $groupjoin
                                         WHERE p.created > ? AND f.id = ? AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                                               $userselect $groupselect
                                      ORDER BY p.id ASC", $params)) { // order by initial posting date
@@ -6255,7 +6271,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
                     continue;
                 }
 
-                if (!array_key_exists($post->groupid, $modinfo->groups[0])) {
+                if (!in_array($post->groupid, $modinfo->get_groups($cm->groupingid))) {
                     continue;
                 }
             }
@@ -6954,7 +6970,11 @@ function hsuforum_tp_count_hsuforum_unread_posts($cm, $course) {
         $modinfo->groups = groups_get_user_groups($course->id, $USER->id);
     }
 
-    $mygroups = $modinfo->groups[$cm->groupingid];
+    if (array_key_exists($cm->groupingid, $modinfo->groups)) {
+        $mygroups = $modinfo->groups[$cm->groupingid];
+    } else {
+        $mygroups = false; // Will be set below
+    }
 
     // add all groups posts
     if (empty($mygroups)) {
@@ -7277,51 +7297,45 @@ function hsuforum_get_post_actions() {
 }
 
 /**
- * Handles the situation where the user has reached the blocking or warning threshold.
- * The function will either echo out a message, or throw an exception depending on the
- * threshold reached (warning or blocked). If the forum passed is invalid false is
- * returned, otherwise if no restriction is needed true is returned.
+ * Returns a warning object if a user has reached the number of posts equal to
+ * the warning/blocking setting, or false if there is no warning to show.
  *
  * @param int|stdClass $forum the forum id or the forum object
  * @param stdClass $cm the course module
- * @param bool $display do we want to echo out the message?
- * @return bool returns false if $forum is invalid or true
- *         if there is no message to show.
+ * @return stdClass|bool returns an object with the warning information, else
+ *         returns false if no warning is required.
  */
-function hsuforum_check_throttling($forum, $cm = null, $display = true) {
-    global $USER, $CFG, $DB, $OUTPUT;
+function hsuforum_check_throttling($forum, $cm = null) {
+    global $CFG, $DB, $USER;
 
     if (is_numeric($forum)) {
-        $forum = $DB->get_record('hsuforum',array('id'=>$forum));
+        $forum = $DB->get_record('hsuforum', array('id' => $forum), '*', MUST_EXIST);
     }
 
     if (!is_object($forum)) {
         return false; // This is broken.
     }
 
+    if (!$cm) {
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course, false, MUST_EXIST);
+    }
+
     if (empty($forum->blockafter)) {
-        return true;
+        return false;
     }
 
     if (empty($forum->blockperiod)) {
-        return true;
-    }
-
-    if (!$cm) {
-        if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
-            print_error('invalidcoursemodule');
-        }
+        return false;
     }
 
     $modcontext = context_module::instance($cm->id);
     if (has_capability('mod/hsuforum:postwithoutthrottling', $modcontext)) {
-        return true;
+        return false;
     }
 
     // Get the number of posts in the last period we care about.
     $timenow = time();
     $timeafter = $timenow - $forum->blockperiod;
-
     $numposts = $DB->count_records_sql('SELECT COUNT(p.id) FROM {hsuforum_posts} p
                                         JOIN {hsuforum_discussions} d
                                         ON p.discussion = d.id WHERE d.forum = ?
@@ -7333,13 +7347,43 @@ function hsuforum_check_throttling($forum, $cm = null, $display = true) {
     $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
 
     if ($forum->blockafter <= $numposts) {
-        print_error('forumblockingtoomanyposts', 'error', $CFG->wwwroot.'/mod/hsuforum/view.php?f='.$forum->id, $a);
+        $warning = new stdClass();
+        $warning->canpost = false;
+        $warning->errorcode = 'forumblockingtoomanyposts';
+        $warning->module = 'error';
+        $warning->additional = $a;
+        $warning->link = $CFG->wwwroot . '/mod/hsuforum/view.php?f=' . $forum->id;
+
+        return $warning;
     }
 
     if ($forum->warnafter <= $numposts) {
-        if ($display) {
-            echo $OUTPUT->notification(get_string('forumblockingalmosttoomanyposts', 'hsuforum', $a));
-        }
+        $warning = new stdClass();
+        $warning->canpost = true;
+        $warning->errorcode = 'forumblockingalmosttoomanyposts';
+        $warning->module = 'hsuforum';
+        $warning->additional = $a;
+        $warning->link = null;
+
+        return $warning;
+    }
+}
+
+/**
+ * Throws an error if the user is no longer allowed to post due to having reached
+ * or exceeded the number of posts specified in 'Post threshold for blocking'
+ * setting.
+ *
+ * @since Moodle 2.5
+ * @param stdClass $thresholdwarning the warning information returned
+ *        from the function hsuforum_check_throttling.
+ */
+function hsuforum_check_blocking_threshold($thresholdwarning) {
+    if (!empty($thresholdwarning) && !$thresholdwarning->canpost) {
+        print_error($thresholdwarning->errorcode,
+                    $thresholdwarning->module,
+                    $thresholdwarning->link,
+                    $thresholdwarning->additional);
     }
 }
 
@@ -7430,7 +7474,7 @@ function hsuforum_reset_userdata($data) {
     if( $removeposts || !empty($data->reset_hsuforum_ratings) ) {
         $forumssql      = "$allforumssql $typesql";
         $forums = $forums = $DB->get_records_sql($forumssql, $params);
-        $rm = new rating_manager();;
+        $rm = new rating_manager();
         $ratingdeloptions = new stdClass;
         $ratingdeloptions->component = 'mod_hsuforum';
         $ratingdeloptions->ratingarea = 'post';
@@ -8151,8 +8195,6 @@ abstract class hsuforum_subscriber_selector_base extends user_selector_base {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hsuforum_potential_subscriber_selector extends hsuforum_subscriber_selector_base {
-    const MAX_USERS_PER_PAGE = 100;
-
     /**
      * If set to true EVERYONE in this course is force subscribed to this forum
      * @var bool
@@ -8240,7 +8282,7 @@ class hsuforum_potential_subscriber_selector extends hsuforum_subscriber_selecto
         // Check to see if there are too many to show sensibly.
         if (!$this->is_validating()) {
             $potentialmemberscount = $DB->count_records_sql($countfields . $sql, $params);
-            if ($potentialmemberscount > self::MAX_USERS_PER_PAGE) {
+            if ($potentialmemberscount > $this->maxusersperpage) {
                 return $this->too_many_results($search, $potentialmemberscount);
             }
         }

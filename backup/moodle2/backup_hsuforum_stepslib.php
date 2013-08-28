@@ -46,7 +46,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             'maxbytes', 'maxattachments', 'forcesubscribe', 'trackingtype',
             'rsstype', 'rssarticles', 'timemodified', 'warnafter',
             'blockafter', 'blockperiod', 'completiondiscussions', 'completionreplies',
-            'completionposts', 'anonymous', 'gradetype'));
+            'completionposts', 'anonymous', 'gradetype', 'displaywordcount'));
 
         $discussions = new backup_nested_element('discussions');
 
@@ -125,10 +125,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
             $discussionsub->set_source_table('hsuforum_subscriptions_disc', array('discussion' => backup::VAR_PARENTID));
 
             // Need posts ordered by id so parents are always before childs on restore
-            $post->set_source_sql("SELECT *
-                                     FROM {hsuforum_posts}
-                                    WHERE discussion = :discussion
-                                 ORDER BY id", array('discussion' => backup::VAR_PARENTID));
+            $post->set_source_table('hsuforum_posts', array('discussion' => backup::VAR_PARENTID), 'id ASC');
 
             $subscription->set_source_table('hsuforum_subscriptions', array('forum' => backup::VAR_PARENTID));
 

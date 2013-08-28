@@ -518,7 +518,15 @@ if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field
 
 require_once('post_form.php');
 
-$mform_post = new mod_hsuforum_post_form('post.php', array('course'=>$course, 'cm'=>$cm, 'coursecontext'=>$coursecontext, 'modcontext'=>$modcontext, 'forum'=>$forum, 'post'=>$post), 'post', '', array('id' => 'mformhsuforum'));
+$thresholdwarning = hsuforum_check_throttling($forum, $cm);
+$mform_post = new mod_hsuforum_post_form('post.php', array('course' => $course,
+                                                        'cm' => $cm,
+                                                        'coursecontext' => $coursecontext,
+                                                        'modcontext' => $modcontext,
+                                                        'forum' => $forum,
+                                                        'post' => $post,
+                                                        'thresholdwarning' => $thresholdwarning,
+                                                        'edit' => $edit), 'post', '', array('id' => 'mformhsuforum'));
 
 $draftitemid = file_get_submitted_draft_itemid('attachments');
 file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_hsuforum', 'attachment', empty($post->id)?null:$post->id, mod_hsuforum_post_form::attachment_options($forum));
@@ -694,10 +702,9 @@ if ($fromform = $mform_post->get_data()) {
 
     } else if ($fromform->discussion) { // Adding a new post to an existing discussion
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        hsuforum_check_throttling($forum, $cm, false);
+        hsuforum_check_blocking_threshold($thresholdwarning);
 
         unset($fromform->groupid);
-
         $message = '';
         $addpost = $fromform;
         $addpost->forum=$forum->id;
@@ -758,7 +765,7 @@ if ($fromform = $mform_post->get_data()) {
 
     } else { // Adding a new discussion.
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        hsuforum_check_throttling($forum, $cm, false);
+        hsuforum_check_blocking_threshold($thresholdwarning);
 
         if (!hsuforum_user_can_post_discussion($forum, $fromform->groupid, -1, $cm, $modcontext)) {
             print_error('cannotcreatediscussion', 'hsuforum');
@@ -905,13 +912,14 @@ if ($forum->type == 'qanda'
     echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
 }
 
-// If we are not editing a post we need to check the posting threshold.
-if (!$edit) {
-    hsuforum_check_throttling($forum, $cm);
+// If there is a warning message and we are not editing a post we need to handle the warning.
+if (!empty($thresholdwarning) && !$edit) {
+    // Here we want to throw an exception if they are no longer allowed to post.
+    hsuforum_check_blocking_threshold($thresholdwarning);
 }
 
 if (!empty($parent)) {
-    if (! $discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion))) {
+    if (!$discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion))) {
         print_error('notpartofdiscussion', 'hsuforum');
     }
 

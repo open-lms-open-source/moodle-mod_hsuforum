@@ -486,6 +486,22 @@ function xmldb_hsuforum_upgrade($oldversion) {
         // Forum savepoint reached.
         upgrade_mod_savepoint(true, 2012112902, 'hsuforum');
     }
+
+    if ($oldversion < 2013020500) {
+
+        // Define field displaywordcount to be added to forum.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('displaywordcount', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'completionposts');
+
+        // Conditionally launch add field displaywordcount.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2013020500, 'hsuforum');
+    }
+
     return true;
 }
 
