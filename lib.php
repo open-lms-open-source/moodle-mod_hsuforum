@@ -2788,7 +2788,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
     if (is_string($forumselect) and !empty($forumselect)) {
         $selectsql = $forumselect;
     } else {
-        $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend,
+        $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.assessed,
                            extra.replies, extra.lastpostid,$trackselect$subscribeselect
                            u.firstname, u.lastname, u.email, u.picture, u.imagealt $umfields";
     }

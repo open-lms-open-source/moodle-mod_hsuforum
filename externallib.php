@@ -224,20 +224,16 @@ class mod_hsuforum_external extends external_api {
             // Check if they can view full names.
             $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
             // Get the unreads array, this takes a forum id and returns data for all discussions.
-            $unreads = array();
             if ($cantrack = hsuforum_tp_can_track_forums($forum)) {
-                if ($forumtracked = hsuforum_tp_is_tracked($forum)) {
-                    $unreads = hsuforum_get_discussions_unread($cm);
-                }
+                $forumtracked = hsuforum_tp_is_tracked($forum);
             }
             // The forum function returns the replies for all the discussions in a given forum.
-            $replies = hsuforum_count_discussion_replies($id);
             // Get the discussions for this forum.
-            if ($discussions = $DB->get_records('hsuforum_discussions', array('forum' => $id))) {
+            if ($discussions = hsuforum_get_discussions($cm)) {
                 foreach ($discussions as $discussion) {
                     // If the forum is of type qanda and the user has not posted in the discussion
                     // we need to ensure that they have the required capability.
-                    if ($forum->type == 'qanda' && !hsuforum_user_has_posted($discussion->forum, $discussion->id, $USER->id)) {
+                    if ($forum->type == 'qanda' && !hsuforum_user_has_posted($forum->id, $discussion->discussion, $USER->id)) {
                         require_capability('mod/hsuforum:viewqandawithoutposting', $modcontext);
                     }
                     // If we don't have the users details then perform DB call.
@@ -245,13 +241,11 @@ class mod_hsuforum_external extends external_api {
                         $arrusers[$discussion->userid] = $DB->get_record('user', array('id' => $discussion->userid),
                             'firstname, lastname, email, picture, imagealt', MUST_EXIST);
                     }
-                    // Get the subject.
-                    $subject = $DB->get_field('hsuforum_posts', 'subject', array('id' => $discussion->firstpost), MUST_EXIST);
                     // Create object to return.
                     $return = new stdClass();
-                    $return->id = (int) $discussion->id;
-                    $return->course = $discussion->course;
-                    $return->forum = $discussion->forum;
+                    $return->id = (int) $discussion->discussion;
+                    $return->course = $cm->course;
+                    $return->forum = $forum->id;
                     $return->name = $discussion->name;
                     $return->userid = $discussion->userid;
                     $return->groupid = $discussion->groupid;
@@ -260,25 +254,23 @@ class mod_hsuforum_external extends external_api {
                     $return->usermodified = $discussion->usermodified;
                     $return->timestart = $discussion->timestart;
                     $return->timeend = $discussion->timeend;
-                    $return->firstpost = (int) $discussion->firstpost;
+                    $return->firstpost = (int) $discussion->id;
                     $return->firstuserfullname = fullname($arrusers[$discussion->userid], $canviewfullname);
                     $return->firstuserimagealt = $arrusers[$discussion->userid]->imagealt;
                     $return->firstuserpicture = $arrusers[$discussion->userid]->picture;
                     $return->firstuseremail = $arrusers[$discussion->userid]->email;
-                    $return->subject = $subject;
+                    $return->subject = $discussion->subject;
                     $return->numunread = '';
                     if ($cantrack && $forumtracked) {
-                        if (isset($unreads[$discussion->id])) {
-                            $return->numunread = (int) $unreads[$discussion->id];
-                        }
+                        $return->numunread = (int) $discussion->unread;
                     }
                     // Check if there are any replies to this discussion.
-                    if (!empty($replies[$discussion->id])) {
-                         $return->numreplies = (int) $replies[$discussion->id]->replies;
-                         $return->lastpost = (int) $replies[$discussion->id]->lastpostid;
+                    if (!is_null($discussion->replies)) {
+                        $return->numreplies = (int) $discussion->replies;
+                        $return->lastpost = (int) $discussion->lastpostid;
                      } else { // No replies, so the last post will be the first post.
                         $return->numreplies = 0;
-                        $return->lastpost = (int) $discussion->firstpost;
+                        $return->lastpost = (int) $discussion->id;
                      }
                     // Get the last post as well as the user who made it.
                     $lastpost = $DB->get_record('hsuforum_posts', array('id' => $return->lastpost), '*', MUST_EXIST);
@@ -295,6 +287,7 @@ class mod_hsuforum_external extends external_api {
                     $arrdiscussions[$return->id] = (array) $return;
                 }
             }
+            $discussions->close();
         }
 
         return $arrdiscussions;
