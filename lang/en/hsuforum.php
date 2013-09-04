@@ -46,7 +46,7 @@ $string['attachmentnopost'] = 'You cannot export attachments without a post id';
 $string['attachments'] = 'Attachments';
 $string['attachmentswordcount'] = 'Attachments and word count';
 $string['blockafter'] = 'Post threshold for blocking';
-$string['blockafter_help'] = 'This setting specifies the maximum number of posts which a user can post in the given time period. Users with the capability mod/hsuforum:postwithoutthrottling are exempt from post limits.';
+$string['blockafter_help'] = 'This setting specifies the maximum number of posts that a user can post in the given time period. Users with the capability mod/hsuforum:postwithoutthrottling are exempt from post limits.';
 $string['blockperiod'] = 'Time period for blocking';
 $string['blockperiod_help'] = 'Students can be blocked from posting more than a given number of posts in a given time period. Users with the capability mod/hsuforum:postwithoutthrottling are exempt from post limits.';
 $string['blockperioddisabled'] = 'Don\'t block';
@@ -100,7 +100,7 @@ $string['configlongpost'] = 'Any post over this length (in characters not includ
 $string['configmanydiscussions'] = 'Maximum number of discussions shown in a forum per page';
 $string['configmaxattachments'] = 'Default maximum number of attachments allowed per post.';
 $string['configmaxbytes'] = 'Default maximum size for all forum attachments on the site (subject to course limits and other local settings)';
-$string['configoldpostdays'] = 'Number of days old any post is considered read.';
+$string['configoldpostdays'] = 'Number of days old at which any post is considered read.';
 $string['configreplytouser'] = 'When a forum post is mailed out, should it contain the user\'s email address so that recipients can reply personally rather than via the forum? Even if set to \'Yes\' users can choose in their profile to keep their email address secret.';
 $string['configshortpost'] = 'Any post under this length (in characters not including HTML) is considered short (see below).';
 $string['configtrackreadposts'] = 'Set to \'yes\' if you want to track read/unread for each user.';
@@ -145,7 +145,7 @@ $string['edit'] = 'Edit';
 $string['editedby'] = 'Edited by {$a->name} - original submission {$a->date}';
 $string['editedpostupdated'] = '{$a}\'s post was updated';
 $string['editing'] = 'Editing';
-$string['emptymessage'] = 'Something was wrong with your post. Perhaps you left it blank, or the attachment was too big. Your changes have NOT been saved.';
+$string['emptymessage'] = 'Something was wrong with your post. Perhaps you left it blank or the attachment was too big. Your changes have NOT been saved.';
 $string['erroremptymessage'] = 'Post message cannot be empty';
 $string['erroremptysubject'] = 'Post subject cannot be empty.';
 $string['errorenrolmentrequired'] = 'You must be enrolled in this course to access this content';
@@ -190,8 +190,8 @@ $string['forumtrackednot'] = 'Unread posts are not being tracked';
 $string['forumtype'] = 'Forum type';
 $string['forumtype_help'] = 'There are 5 forum types:
 
-* A single simple discussion - A single discussion topic which everyone can reply to (cannot be used with separate groups)
-* Each person posts one discussion - Each student can post exactly one new discussion topic, which everyone can then reply to
+* A single simple discussion - A single discussion topic to which everyone can reply (cannot be used with separate groups)
+* Each person posts one discussion - Each student can post exactly one new discussion topic, to which everyone can then reply
 * Q and A forum - Students must first post their perspectives before viewing other students\' posts
 * Standard forum displayed in a blog-like format - An open forum where anyone can start a new discussion at any time, and in which discussion topics are displayed on one page with "Discuss this topic" links
 * Standard forum for general use - An open forum where anyone can start a new discussion at any time';
@@ -209,7 +209,7 @@ $string['generalforums'] = 'General forums';
 $string['inforum'] = 'in {$a}';
 $string['introblog'] = 'The posts in this forum were copied here automatically from blogs of users in this course because those blog entries are no longer available';
 $string['intronews'] = 'General news and announcements';
-$string['introsocial'] = 'An open forum for chatting about anything you want to';
+$string['introsocial'] = 'An open forum for chatting about anything you want';
 $string['introteacher'] = 'A forum for teacher-only notes and discussion';
 $string['invalidaccess'] = 'This page was not accessed correctly';
 $string['invaliddiscussionid'] = 'Discussion ID was incorrect or no longer exists';
@@ -242,7 +242,8 @@ $string['modeflatoldestfirst'] = 'Display replies flat, with oldest first';
 $string['modenested'] = 'Display replies in nested form';
 $string['modethreaded'] = 'Display replies in threaded form';
 $string['modulename'] = 'Advanced Forum';
-$string['modulename_help'] = 'The Advanced Forum activity module enables participants to have asynchronous discussions i.e. discussions that take place over an extended period of time.
+$string['modulename_help'] = 'The Advanced Forum activity module enables participants to have asynchronous discussions,
+i.e., discussions that take place over an extended period of time.
 
 There are several forum types to choose from, such as a standard forum where anyone can start a new discussion at any time; a forum where each student can post exactly one discussion; or a question and answer forum where students must first post before being able to view other students\' posts. A teacher can allow files to be attached to forum posts. Attached images are displayed in the forum post.
 
@@ -250,7 +251,7 @@ Participants can subscribe to a forum to receive notifications of new forum post
 
 Forum posts can be rated by teachers or students (peer evaluation). Ratings can be aggregated to form a final grade which is recorded in the gradebook.
 
-Forums have many uses, such as
+Forums have many uses, such as:
 
 * A social space for students to get to know each other
 * For course announcements (using a news forum with forced subscription)
@@ -259,7 +260,7 @@ Forums have many uses, such as
 * For teacher-only discussions (using a hidden forum)
 * A help centre where tutors and students can give advice
 * A one-on-one support area for private student-teacher communications (using a forum with separate groups and with one student per group)
-* For extension activities, for example ‘brain teasers’ for students to ponder and suggest solutions to';
+* For extension activities, for example ‘brain teasers’ for students to ponder and suggest solutions';
 $string['modulename_link'] = 'mod/hsuforum/view';
 $string['modulenameplural'] = 'Advanced Forums';
 $string['more'] = 'more';
@@ -391,7 +392,8 @@ $string['subscribersto'] = 'Subscribers to \'{$a}\'';
 $string['subscribestart'] = 'Send me email copies of posts to this forum';
 $string['subscribestop'] = 'I don\'t want email copies of posts to this forum';
 $string['subscription'] = 'Subscription';
-$string['subscription_help'] = 'If you are subscribed to a forum it means you will receive email copies of forum posts. Usually you can choose whether you wish to be subscribed, though sometimes subscription is forced so that everyone receives email copies of forum posts.';
+$string['subscription_help'] = 'If you are subscribed to a forum it means you will receive email copies of forum posts. Usually
+you can choose whether you wish to be subscribed, although sometimes subscription is forced so that everyone receives email copies of forum posts.';
 $string['subscriptionandtracking'] = 'Subscription and tracking';
 $string['subscriptionmode'] = 'Subscription mode';
 $string['subscriptionmode_help'] = 'When a participant is subscribed to a forum it means they will receive forum post notifications. There are 4 subscription mode options:
@@ -407,7 +409,7 @@ $string['subscriptionforced'] = 'Forced subscription';
 $string['subscriptionauto'] = 'Auto subscription';
 $string['subscriptiondisabled'] = 'Subscription disabled';
 $string['subscriptions'] = 'Subscriptions';
-$string['thisforumisthrottled'] = 'This forum has a limit to the number of forum postings you can make in a given time period - this is currently set at {$a->blockafter} posting(s) in {$a->blockperiod}';
+$string['thisforumisthrottled'] = 'This forum has a limit to the number of forum postings you can make in a given time period - this is currently set to {$a->blockafter} posting(s) in {$a->blockperiod}';
 $string['timedposts'] = 'Timed posts';
 $string['timestartenderror'] = 'Display end date cannot be earlier than the start date';
 $string['trackforum'] = 'Track unread posts';
@@ -508,7 +510,7 @@ $string['gradetype'] = 'Grade Type';
 $string['gradetype_help'] = 'The grade type is used to determine the method of grading.
 
 * None: the forum is not graded.
-* Manual: the forum has to be manually graded by the teacher via the grade book.
+* Manual: the forum has to be manually graded by the teacher via the gradebook.
 * Rating: use ratings for generating a grade.';
 $string['totalsubstantive'] = 'Substantive Posts: {$a}';
 $string['totalreplies'] = 'Replies: {$a}';
