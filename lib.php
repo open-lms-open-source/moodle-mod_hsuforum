@@ -1903,7 +1903,7 @@ function hsuforum_get_discussion_posts($discussion, $sort, $forumid) {
  * @param bool $tracking does user track the forum?
  * @return array of posts
  */
-function hsuforum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
+function hsuforum_get_all_discussion_posts($discussionid, $sort, $tracking=false, $conditions = array()) {
     global $CFG, $DB, $USER;
 
     $tr_sel  = "";
@@ -1921,12 +1921,19 @@ function hsuforum_get_all_discussion_posts($discussionid, $sort, $tracking=false
     $params[] = $discussionid;
     $params[] = $USER->id;
     $params[] = $USER->id;
+
+    $conditionsql = '';
+    foreach ($conditions as $field => $value) {
+        $conditionsql .= " AND $field = ?";
+        $params[] = $value;
+    }
     if (!$posts = $DB->get_records_sql("SELECT p.*, u.firstname, u.lastname, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {hsuforum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
                                       AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                                      $conditionsql
                                  ORDER BY $sort", $params)) {
         return array();
     }
@@ -7948,6 +7955,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $discussionid = optional_param('d', 0, PARAM_INT);
     $viewingdiscussion = ($PAGE->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
 
+    if (!is_guest($PAGE->cm->context)) {
+        $forumnode->add(get_string('export', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'export')), navigation_node::TYPE_SETTING, null, null, new pix_icon('i/export', get_string('export', 'hsuforum')));
+    }
     $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
 
     if ($canmanage) {
