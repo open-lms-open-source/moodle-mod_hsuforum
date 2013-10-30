@@ -780,57 +780,84 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     /**
      * @param $userid
      * @param $cm
+     * @param null|stdClass $showonlypreference
+     *
      * @return string
      * @author Mark Nielsen
      */
-    public function user_posts_overview($userid, $cm) {
+    public function user_posts_overview($userid, $cm, $showonlypreference = null) {
         global $PAGE;
 
         hsuforum_cm_add_cache($cm);
 
         require_once(__DIR__.'/lib/flag.php');
 
+        $showonlypreferencebutton = '';
+        if (!empty($showonlypreference) and !empty($showonlypreference->button) and !$cm->cache->forum->anonymous) {
+            $showonlypreferencebutton = $showonlypreference->button;
+        }
+
         $output    = '';
         $postcount = $discussioncount = $flagcount = 0;
         $flaglib   = new hsuforum_lib_flag();
         if ($posts = hsuforum_get_user_posts($cm->cache->forum->id, $userid, $cm->cache->context)) {
             $discussions = hsuforum_get_user_involved_discussions($cm->cache->forum->id, $userid);
+            if (!empty($showonlypreference) and !empty($showonlypreference->preference)) {
+                foreach ($discussions as $discussion) {
+                    if ($discussion->userid == $userid and array_key_exists($discussion->firstpost, $posts)) {
+                        $discussionpost = $posts[$discussion->firstpost];
 
-            foreach ($discussions as $discussion) {
-                if ($discussion->userid == $userid and array_key_exists($discussion->firstpost, $posts)) {
-                    $discussionpost = $posts[$discussion->firstpost];
-
-                    $discussioncount++;
-                    if ($flaglib->is_flagged($discussionpost->flags, 'substantive')) {
-                        $flagcount++;
-                    }
-                } else {
-                    if (!$discussionpost = hsuforum_get_post_full($discussion->firstpost)) {
-                        continue;
-                    }
-                }
-                if (!$cm->cache->forum->anonymous) {
-                    $output .= hsuforum_print_post($discussionpost, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, '');
-                    $output .= html_writer::start_tag('div', array('class' => 'indent'));
-                }
-                foreach ($posts as $post) {
-                    if ($post->discussion == $discussion->id and !empty($post->parent)) {
-                        $postcount++;
-                        if ($flaglib->is_flagged($post->flags, 'substantive')) {
+                        $discussioncount++;
+                        if ($flaglib->is_flagged($discussionpost->flags, 'substantive')) {
                             $flagcount++;
                         }
+                    } else {
+                        if (!$discussionpost = hsuforum_get_post_full($discussion->firstpost)) {
+                            continue;
+                        }
+                    }
+                    if (!$cm->cache->forum->anonymous) {
+                        $output .= hsuforum_print_post($discussionpost, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, '');
+                        $output .= html_writer::start_tag('div', array('class' => 'indent'));
+                    }
+                    foreach ($posts as $post) {
+                        if ($post->discussion == $discussion->id and !empty($post->parent)) {
+                            $postcount++;
+                            if ($flaglib->is_flagged($post->flags, 'substantive')) {
+                                $flagcount++;
+                            }
+                            $command = html_writer::link(
+                                new moodle_url('/mod/hsuforum/route.php', array('action' => 'postincontext', 'contextid' => $cm->cache->context->id, 'postid' => $post->id)),
+                                get_string('viewincontext', 'hsuforum'),
+                                array('class' => 'hsuforum_viewincontext', 'postid' => $post->id)
+                            );
+                            if (!$cm->cache->forum->anonymous) {
+                                $output .= hsuforum_print_post($post, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, $command);
+                            }
+                        }
+                    }
+                    if (!$cm->cache->forum->anonymous) {
+                        $output .= html_writer::end_tag('div');
+                    }
+                }
+            } else {
+                foreach ($posts as $post) {
+                    if (!empty($post->parent)) {
+                        $postcount++;
+                    } else {
+                        $discussioncount++;
+                    }
+                    if ($flaglib->is_flagged($post->flags, 'substantive')) {
+                        $flagcount++;
+                    }
+                    if (!$cm->cache->forum->anonymous) {
                         $command = html_writer::link(
                             new moodle_url('/mod/hsuforum/route.php', array('action' => 'postincontext', 'contextid' => $cm->cache->context->id, 'postid' => $post->id)),
                             get_string('viewincontext', 'hsuforum'),
                             array('class' => 'hsuforum_viewincontext', 'postid' => $post->id)
                         );
-                        if (!$cm->cache->forum->anonymous) {
-                            $output .= hsuforum_print_post($post, $discussion, $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, $command);
-                        }
+                        $output .= hsuforum_print_post($post, $discussions[$post->discussion], $cm->cache->forum, $cm, $cm->cache->course, false, false, false, '', '', true, false, false, true, $command);
                     }
-                }
-                if (!$cm->cache->forum->anonymous) {
-                    $output .= html_writer::end_tag('div');
                 }
             }
         }
@@ -853,7 +880,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             foreach ($counts as $count) {
                 $countshtml .= html_writer::tag('div', $count, array('class' => 'hsuforum_count'));
             }
-            $output = html_writer::tag('div', $countshtml, array('class' => 'hsuforum_counts')).$output;
+            $output = html_writer::tag('div', $countshtml, array('class' => 'hsuforum_counts')).$showonlypreferencebutton.$output;
             $output = html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container'));
         }
         return $output;
