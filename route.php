@@ -24,49 +24,54 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_hsuforum\controller\export_controller;
+use mod_hsuforum\controller\flag_controller;
+use mod_hsuforum\controller\kernel;
+use mod_hsuforum\controller\posters_controller;
+use mod_hsuforum\controller\posts_controller;
+use mod_hsuforum\controller\router;
+
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0) {
     define('AJAX_SCRIPT', true);
     define('NO_DEBUG_DISPLAY', true);
 }
 require_once(dirname(dirname(__DIR__)).'/config.php');
 require_once(__DIR__.'/lib.php');
-require_once(__DIR__.'/lib/controller/route.php');
-require_once(__DIR__.'/controller/posters.php');
-require_once(__DIR__.'/controller/flag.php');
-require_once(__DIR__.'/controller/posts.php');
+require_once(__DIR__.'/classes/controller/kernel.php');
+require_once(__DIR__.'/classes/controller/router.php');
+require_once(__DIR__.'/classes/controller/export_controller.php');
+require_once(__DIR__.'/classes/controller/posters_controller.php');
+require_once(__DIR__.'/classes/controller/flag_controller.php');
+require_once(__DIR__.'/classes/controller/posts_controller.php');
 
-global $COURSE, $PAGE, $OUTPUT, $CFG, $DB;  // For IDE...
+global $PAGE, $DB;
 
 $contextid = required_param('contextid', PARAM_INT);
-$action    = optional_param('action', 'view', PARAM_ACTION);
+$action    = optional_param('action', 'view', PARAM_ALPHAEXT);
 
-$context = context::instance_by_id($contextid);
-/** @var $coursecontext context_course */
-$coursecontext = $context->get_course_context();
+list($context, $course, $cm) = get_context_info_array($contextid);
 
-$cm       = get_coursemodule_from_id('hsuforum', $context->instanceid, $coursecontext->instanceid, false, MUST_EXIST);
+if (empty($cm)) {
+    throw new coding_exception("Failed to find course module record with contextid of $contextid");
+}
 $instance = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
 
-require_login($cm->course, true, $cm);
+require_login($course, true, $cm);
 
-$PAGE->set_title("$COURSE->shortname: $instance->name");
-$PAGE->set_heading($COURSE->fullname);
+$PAGE->set_title("$course->shortname: $instance->name");
+$PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($instance);
 $PAGE->set_context($context);
 $PAGE->set_url('/mod/hsuforum/route.php', array(
     'contextid' => $context->id,
-    'action' => $action,
+    'action'    => $action,
 ));
 
-$route = new hsuforum_lib_controller_route();
-$route->add_controller(new hsuforum_controller_posters());
-$route->add_controller(new hsuforum_controller_flag());
-$route->add_controller(new hsuforum_controller_posts());
+$router = new router();
+$router->add_controller(new posters_controller());
+$router->add_controller(new flag_controller());
+$router->add_controller(new posts_controller());
+$router->add_controller(new export_controller());
 
-$response = $route->action($action);
-
-if ($response) {
-    echo $OUTPUT->header();
-    echo $response;
-    echo $OUTPUT->footer();
-}
+$kernel = new kernel($router);
+$kernel->handle($action);

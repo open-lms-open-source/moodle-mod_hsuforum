@@ -24,10 +24,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__.'/abstract.php');
-require_once(dirname(__DIR__).'/lib/flag.php');
+namespace mod_hsuforum\controller;
 
-class hsuforum_controller_flag extends hsuforum_controller_abstract {
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__.'/controller_abstract.php');
+require_once(dirname(dirname(__DIR__)).'/lib/flag.php');
+
+class flag_controller extends controller_abstract {
     /**
      * Do any security checks needed for the passed action
      *
@@ -52,14 +56,14 @@ class hsuforum_controller_flag extends hsuforum_controller_abstract {
         $returnurl = required_param('returnurl', PARAM_LOCALURL);
 
         $flags    = $DB->get_field('hsuforum_posts', 'flags', array('id' => $postid), MUST_EXIST);
-        $flaglib  = new hsuforum_lib_flag();
+        $flaglib  = new \hsuforum_lib_flag();
         $newflags = $flaglib->toggle_flag($flags, $flag);
 
         if ($newflags != $flags) {
             $DB->set_field('hsuforum_posts', 'flags', $newflags, array('id' => $postid));
         }
         if (!AJAX_SCRIPT) {
-            redirect(new moodle_url($returnurl));
+            redirect(new \moodle_url($returnurl));
         }
     }
 }

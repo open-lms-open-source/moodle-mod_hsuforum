@@ -316,55 +316,9 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $replycount = hsuforum_count_replies($post);
 
     if (!empty($confirm) && confirm_sesskey()) {    // User has confirmed the delete
-        //check user capability to delete post.
-        $timepassed = time() - $post->created;
-        if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
-            print_error("cannotdeletepost", "hsuforum",
-                      hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-        }
-
-        if ($post->totalscore) {
-            notice(get_string('couldnotdeleteratings', 'rating'),
-                    hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-
-        } else if ($replycount && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
-            print_error("couldnotdeletereplies", "hsuforum",
-                    hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-
-        } else {
-            if (! $post->parent) {  // post is a discussion topic as well, so delete discussion
-                if ($forum->type == 'single') {
-                    notice("Sorry, but you are not allowed to delete that discussion!",
-                            hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-                }
-                hsuforum_delete_discussion($discussion, false, $course, $cm, $forum);
-
-                add_to_log($discussion->course, "hsuforum", "delete discussion",
-                           "view.php?id=$cm->id", "$forum->id", $cm->id);
-
-                redirect("view.php?f=$discussion->forum");
-
-            } else if (hsuforum_delete_post($post, has_capability('mod/hsuforum:deleteanypost', $modcontext),
-                $course, $cm, $forum)) {
-
-                if ($forum->type == 'single') {
-                    // Single discussion forums are an exception. We show
-                    // the forum itself since it only has one discussion
-                    // thread.
-                    $discussionurl = "view.php?f=$forum->id";
-                } else {
-                    $discussionurl = "discuss.php?d=$post->discussion";
-                }
-
-                add_to_log($discussion->course, "hsuforum", "delete post", $discussionurl, "$post->id", $cm->id);
-
-                redirect(hsuforum_go_back_to($discussionurl));
-            } else {
-                print_error('errorwhiledelete', 'hsuforum');
-            }
-        }
-
-
+        redirect(
+            hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $discussion, $post)
+        );
     } else { // User just asked to delete something
 
         hsuforum_set_return();

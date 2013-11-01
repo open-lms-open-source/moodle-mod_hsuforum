@@ -1907,7 +1907,7 @@ function hsuforum_get_discussion_posts($discussion, $sort, $forumid) {
  * @param bool $tracking does user track the forum?
  * @return array of posts
  */
-function hsuforum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
+function hsuforum_get_all_discussion_posts($discussionid, $sort, $tracking=false, $conditions = array()) {
     global $CFG, $DB, $USER;
 
     $tr_sel  = "";
@@ -1925,12 +1925,19 @@ function hsuforum_get_all_discussion_posts($discussionid, $sort, $tracking=false
     $params[] = $discussionid;
     $params[] = $USER->id;
     $params[] = $USER->id;
+
+    $conditionsql = '';
+    foreach ($conditions as $field => $value) {
+        $conditionsql .= " AND $field = ?";
+        $params[] = $value;
+    }
     if (!$posts = $DB->get_records_sql("SELECT p.*, u.firstname, u.lastname, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {hsuforum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
                                       AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                                      $conditionsql
                                  ORDER BY $sort", $params)) {
         return array();
     }
@@ -2252,6 +2259,45 @@ function hsuforum_get_ratings($context, $postid, $sort = "u.firstname ASC") {
 
     $rm = new rating_manager();
     return $rm->get_all_ratings_for_item($options);
+}
+
+/**
+ * Load ratings for a bunch of posts.
+ *
+ * @param context_module $context
+ * @param object $forum
+ * @param array $posts Ratings will be assigned to these items
+ * @param null|string $returnurl
+ * @param null|int $userid
+ */
+function hsuforum_get_ratings_for_posts(context_module $context, $forum, array $posts, $returnurl = null, $userid = null) {
+    global $CFG, $USER;
+
+    require_once($CFG->dirroot.'/rating/lib.php');
+
+    if ($forum->assessed == RATING_AGGREGATE_NONE) {
+        return;
+    }
+    if (empty($userid)) {
+        $userid = $USER->id;
+    }
+    if (empty($returnurl)) {
+        $returnurl = "$CFG->wwwroot/mod/hsuforum/view.php?id={$context->instanceid}";
+    }
+    $ratingoptions                   = new stdClass;
+    $ratingoptions->context          = $context;
+    $ratingoptions->component        = 'mod_hsuforum';
+    $ratingoptions->ratingarea       = 'post';
+    $ratingoptions->items            = $posts;
+    $ratingoptions->aggregate        = $forum->assessed;
+    $ratingoptions->scaleid          = $forum->scale;
+    $ratingoptions->userid           = $userid;
+    $ratingoptions->returnurl        = $returnurl;
+    $ratingoptions->assesstimestart  = $forum->assesstimestart;
+    $ratingoptions->assesstimefinish = $forum->assesstimefinish;
+
+    $rm = new rating_manager();
+    $rm->get_ratings($ratingoptions);
 }
 
 /**
@@ -2654,7 +2700,7 @@ function hsuforum_count_unrated_posts($discussionid, $userid) {
  * @param bool $userlastmodified
  * @param int $page
  * @param int $perpage
- * @return moodle_recordset
+ * @return moodle_recordset|array
  */
 function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forumselect=true, $limit=-1, $userlastmodified=false, $page=-1, $perpage=0, $returnrs = true) {
     global $CFG, $DB, $USER;
@@ -2789,7 +2835,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
         $selectsql = $forumselect;
     } else {
         $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.assessed,
-                           extra.replies, extra.lastpostid,$trackselect$subscribeselect
+                           d.firstpost, extra.replies, extra.lastpostid,$trackselect$subscribeselect
                            u.firstname, u.lastname, u.email, u.picture, u.imagealt $umfields";
     }
 
@@ -2824,7 +2870,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
  * @uses CONEXT_MODULE
  * @uses VISIBLEGROUPS
  * @param object $cm
- * @return array
+ * @return int
  */
 function hsuforum_get_discussions_count($cm) {
     global $CFG, $DB, $USER;
@@ -4599,6 +4645,63 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     return $post->discussion;
 }
 
+/**
+ * Verify and delete the post.  The post can be a discussion post.
+ *
+ * @param object $course
+ * @param object $cm
+ * @param object $forum
+ * @param context_module $modcontext
+ * @param object $discussion
+ * @param object $post
+ * @return string The URL to redirect to
+ */
+function hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $discussion, $post) {
+    global $CFG;
+
+    // Check user capability to delete post.
+    $timepassed = time() - $post->created;
+    if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
+        print_error("cannotdeletepost", "hsuforum",
+            hsuforum_go_back_to("discuss.php?d=$post->discussion"));
+    }
+    if ($post->totalscore) {
+        print_error('couldnotdeleteratings', 'rating',
+            hsuforum_go_back_to("discuss.php?d=$post->discussion"));
+    }
+    if (hsuforum_count_replies($post) && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
+        print_error("couldnotdeletereplies", "hsuforum",
+            hsuforum_go_back_to("discuss.php?d=$post->discussion"));
+    }
+    if (!$post->parent) { // post is a discussion topic as well, so delete discussion
+        if ($forum->type == 'single') {
+            print_error('cannnotdeletesinglediscussion', 'hsuforum',
+                hsuforum_go_back_to("discuss.php?d=$post->discussion"));
+        }
+        hsuforum_delete_discussion($discussion, false, $course, $cm, $forum);
+
+        add_to_log($discussion->course, "hsuforum", "delete discussion",
+            "view.php?id=$cm->id", "$forum->id", $cm->id);
+
+        return $CFG->wwwroot."/mod/hsuforum/view.php?id=$cm->id";
+
+    }
+    if (!hsuforum_delete_post($post, has_capability('mod/hsuforum:deleteanypost', $modcontext), $course, $cm, $forum)) {
+        print_error('errorwhiledelete', 'hsuforum');
+    }
+    if ($forum->type == 'single') {
+        // Single discussion forums are an exception. We show
+        // the forum itself since it only has one discussion
+        // thread.
+        $discussionurl = "view.php?f=$forum->id";
+    } else {
+        $discussionurl = "discuss.php?d=$post->discussion";
+    }
+
+    add_to_log($discussion->course, "hsuforum", "delete post", $discussionurl, "$post->id", $cm->id);
+
+    return hsuforum_go_back_to($discussionurl);
+}
 
 /**
  * Deletes a discussion and handles all associated cleanup.
@@ -5621,9 +5724,6 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     }
     $context = context_module::instance($cm->id);
 
-    /** @var $renderer mod_hsuforum_renderer */
-    $renderer = $PAGE->get_renderer('mod_hsuforum');
-
     $showdisplayformat = false;
     if (ajaxenabled() and $displayformat == 'header') {
         $displayformat = optional_param('displayformat', '', PARAM_ALPHA);
@@ -5660,8 +5760,15 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $perpage = $maxdiscussions;
     }
 
+    /** @var $renderer mod_hsuforum_renderer|\mod_hsuforum\render_interface */
+    if ($displayformat == 'article') {
+        $renderer = $PAGE->get_renderer('mod_hsuforum', 'article');
+    } else {
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+    }
+
     $fullpost = false;
-    if ($displayformat == 'plain' or $displayformat == 'nested') {
+    if (in_array($displayformat, array('plain', 'nested', 'article'))) {
         $fullpost = true;
     }
 
@@ -5734,6 +5841,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             'header' => get_string('default', 'hsuforum'),
             'tree'   => get_string('tree', 'hsuforum'),
             'nested' => get_string('nested', 'hsuforum'),
+            'article' => get_string('accessible', 'hsuforum'),
         ), $displayformat, array(), 'displayformatid');
 
         $display->set_label(get_string('discussiondisplay', 'hsuforum'));
@@ -5744,7 +5852,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
 // Get all the recent discussions we're allowed to see
 
-    $getuserlastmodified = ($displayformat == 'header' or $displayformat == 'nested' or $displayformat == 'tree');
+    $getuserlastmodified = in_array($displayformat, array('header', 'nested', 'tree', 'article'));
 
     $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
     if (!$discussions) {
@@ -5760,7 +5868,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         return;
     }
 
-    if ($displayformat == 'nested' and $forum->assessed != RATING_AGGREGATE_NONE) {
+    if (in_array($displayformat, array('nested', 'article')) and $forum->assessed != RATING_AGGREGATE_NONE) {
         $ratingoptions = new stdClass;
         $ratingoptions->context = $context;
         $ratingoptions->component = 'mod_hsuforum';
@@ -5778,12 +5886,15 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     }
 
 // If we want paging
+    $numdiscussions = null;
     if ($page != -1) {
         ///Get the number of discussions found
         $numdiscussions = hsuforum_get_discussions_count($cm);
 
         ///Show the paging bar
-        echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
+        if ($displayformat != 'article') {
+            echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
+        }
     } else {
         if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
             $olddiscussionlink = true;
@@ -5841,6 +5952,9 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo '<tbody>';
     }
 
+    // Can be used by some output formats.
+    $discussionlist = array();
+
     foreach ($discussions as $discussion) {
         if (empty($discussion->replies)) {
             $discussion->replies = 0;
@@ -5881,6 +5995,12 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
                 echo $renderer->nested_discussion($cm, $discussion);
                 break;
 
+            case 'article':
+                // Seems odd right?  But $discussion is actually more like the post than the discussion record.
+                $disc = hsuforum_extract_discussion($discussion, $forum);
+                $discussionlist[$disc->id] = array($disc, $discussion);
+                break;
+
             case 'header':
                 if ($groupmode > 0) {
                     if (isset($groups[$discussion->groupid])) {
@@ -5917,6 +6037,12 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo '</table>';
     } else if ($displayformat == 'tree') {
         echo $renderer->discussion_nodes($context, $nodes);
+    } else if ($displayformat == 'article') {
+        echo $renderer->discussions($cm, $discussionlist, array(
+            'total'   => $numdiscussions,
+            'page'    => $page,
+            'perpage' => $perpage,
+        ));
     } else if ($displayformat == 'nested') {
         echo html_writer::tag('noscript', $OUTPUT->notification(get_string('javascriptdisableddisplayformat', 'hsuforum')));
     }
@@ -5934,7 +6060,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     echo $OUTPUT->box_end(); // End mod_hsuforum_posts_container
 
-    if ($page != -1) { ///Show the paging bar
+    if ($page != -1 && $displayformat != 'article') { ///Show the paging bar
         echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
     }
 }
@@ -5958,10 +6084,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
  * @param bool $canrate
  */
 function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mode, $canreply=NULL, $canrate=false) {
-    global $USER, $CFG, $OUTPUT;
+    global $USER, $CFG, $OUTPUT, $PAGE;
 
     require_once($CFG->dirroot.'/rating/lib.php');
 
+    $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
     $ownpost = (isloggedin() && $USER->id == $post->userid);
 
     $modcontext = context_module::instance($cm->id);
@@ -6028,6 +6155,14 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
     $postread = !empty($post->postread);
 
     echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+
+    if ($displayformat == 'article') {
+        /** @var \mod_hsuforum\render_interface $renderer */
+        $renderer = $PAGE->get_renderer('mod_hsuforum', 'article');
+        echo $renderer->discussion_thread($cm, $discussion, $post, $posts, $reply);
+        echo $OUTPUT->box_end(); // End mod_hsuforum_posts_container
+        return;
+    }
 
     hsuforum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, false,
                          '', '', $postread, true, $forumtracked);
@@ -7992,6 +8127,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $discussionid = optional_param('d', 0, PARAM_INT);
     $viewingdiscussion = ($PAGE->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
 
+    if (!is_guest($PAGE->cm->context)) {
+        $forumnode->add(get_string('export', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'export')), navigation_node::TYPE_SETTING, null, null, new pix_icon('i/export', get_string('export', 'hsuforum')));
+    }
     $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
 
     if ($canmanage) {
@@ -8994,6 +9132,46 @@ function hsuforum_cm_add_cache(&$cm) {
     if (!isset($cm->cache->groups)) {
         $cm->cache->groups = groups_get_all_groups($cm->course, 0, $cm->groupingid);
     }
+}
+
+/**
+ * Highly specialized function to extract a discussion record
+ * from the hybrid object returned from hsuforum_get_discussions()
+ *
+ * @author Mark Nielsen
+ * @param stdClass $post Our post with discussion data embedded into it
+ * @param stdClass $forum The discussion's forum
+ * @return object
+ */
+function hsuforum_extract_discussion($post, $forum) {
+    $discussion = (object) array(
+        'id'           => $post->discussion,
+        'course'       => $forum->course,
+        'forum'        => $forum->id,
+        'name'         => $post->name,
+        'firstpost'    => $post->firstpost,
+        'userid'       => $post->userid,
+        'groupid'      => $post->groupid,
+        'timemodified' => $post->timemodified,
+        'usermodified' => $post->usermodified,
+        'timestart'    => $post->timestart,
+        'timeend'      => $post->timeend,
+    );
+
+    // Rest of these are "meta" items that might not always be there.
+    if (property_exists($post, 'subscriptionid')) {
+        $discussion->subscriptionid = $post->subscriptionid;
+    }
+    if (property_exists($post, 'replies')) {
+        $discussion->replies = $post->replies;
+    }
+    if (property_exists($post, 'unread')) {
+        $discussion->unread = $post->unread;
+    }
+    if (property_exists($post, 'lastpostid')) {
+        $discussion->lastpostid = $post->lastpostid;
+    }
+    return $discussion;
 }
 
 /**
