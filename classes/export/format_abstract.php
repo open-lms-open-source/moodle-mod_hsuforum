@@ -78,9 +78,10 @@ abstract class format_abstract {
      * @param int $date The timestamp
      * @param string $message The message
      * @param array $attachments Attachment file names
+     * @param string $private Yes if private reply
      * @return mixed
      */
-    abstract public function export_post($discussion, $subject, $author, $date, $message, $attachments);
+    abstract public function export_post($discussion, $subject, $author, $date, $message, $attachments, $private);
 
     /**
      * Close the export

@@ -46,6 +46,7 @@ class csv_format extends format_abstract {
             get_string('date', 'hsuforum'),
             get_string('message', 'hsuforum'),
             get_string('attachments', 'hsuforum'),
+            get_string('privatereply', 'hsuforum'),
         ));
     }
 
@@ -67,7 +68,7 @@ class csv_format extends format_abstract {
      * @return mixed
      */
     public function export_discussion($subject, $author, $date, $message, $attachments) {
-        $this->export_post($subject, $subject, $author, $date, $message, $attachments);
+        $this->export_post($subject, $subject, $author, $date, $message, $attachments, '');
     }
 
     /**
@@ -77,10 +78,11 @@ class csv_format extends format_abstract {
      * @param int $date The timestamp
      * @param string $message The message
      * @param array $attachments Attachment file names
+     * @param string $private Yes if private reply
      * @return mixed
      */
-    public function export_post($discussion, $subject, $author, $date, $message, $attachments) {
+    public function export_post($discussion, $subject, $author, $date, $message, $attachments, $private) {
         $userdate = userdate($date, get_string('strftimedatefullshort').' '.get_string('strftimetime'));
-        fputcsv($this->fp, array($discussion, $subject, $author, $userdate, $message, implode(' | ', $attachments)));
+        fputcsv($this->fp, array($discussion, $subject, $author, $userdate, $message, implode(' | ', $attachments), $private));
     }
 }

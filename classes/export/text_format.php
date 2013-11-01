@@ -63,7 +63,7 @@ class text_format extends format_abstract {
     public function export_discussion($subject, $author, $date, $message, $attachments) {
         $this->write_separator();
         fwrite($this->fp, get_string('discussion:x', 'hsuforum', $subject)."\n");
-        $this->export_post($subject, $subject, $author, $date, $message, $attachments);
+        $this->export_post($subject, $subject, $author, $date, $message, $attachments, '');
     }
 
     /**
@@ -73,14 +73,20 @@ class text_format extends format_abstract {
      * @param int $date The timestamp
      * @param string $message The message
      * @param array $attachments Attachment file names
+     * @param string $private Yes if private reply
      * @return mixed
      */
-    public function export_post($discussion, $subject, $author, $date, $message, $attachments) {
+    public function export_post($discussion, $subject, $author, $date, $message, $attachments, $private) {
         $userdate = userdate($date, get_string('strftimedatefullshort').' '.get_string('strftimetime'));
         $a = array('subject' => $subject, 'author' => $author, 'date' => $userdate);
 
+        if (!empty($private)) {
+            $heading = get_string('subjectbyprivateuserondate', 'hsuforum', $a);
+        } else {
+            $heading = get_string('subjectbyuserondate', 'hsuforum', $a);
+        }
         $this->write_separator();
-        fwrite($this->fp, get_string('subjectbyuserondate', 'hsuforum', $a)."\n\n");
+        fwrite($this->fp, $heading."\n\n");
         fwrite($this->fp, $message."\n");
 
         if (!empty($attachments)) {

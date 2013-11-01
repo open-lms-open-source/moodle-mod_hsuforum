@@ -132,7 +132,11 @@ class file_adapter implements adapter_interface {
             if ($post->id == $discussion->firstpost) {
                 $this->format->export_discussion($discname, $author, $post->created, $message, $attachments);
             } else {
-                $this->format->export_post($discname, format_string($post->subject), $author, $post->created, $message, $attachments);
+                $private = '';
+                if (!empty($post->privatereply)) {
+                    $private = get_string('yes');
+                }
+                $this->format->export_post($discname, format_string($post->subject), $author, $post->created, $message, $attachments, $private);
             }
         }
     }
@@ -230,8 +234,8 @@ class file_adapter implements adapter_interface {
     protected function create_file_name($name) {
         global $COURSE;
 
-        $filename  = format_string($COURSE->shortname).'_';
-        $filename .= trim(shorten_text(format_string($name), 30, false, ''));
+        $filename  = trim(shorten_text(format_string($COURSE->shortname), 50, true, '')).'_';
+        $filename .= trim(shorten_text(format_string($name), 100, false, ''));
         $filename .= '_'.userdate(time(), '%Y%m%d', false, false);
         $filename  = str_replace(' ', '_', $filename);
         $filename  = trim(clean_filename($filename), '_');

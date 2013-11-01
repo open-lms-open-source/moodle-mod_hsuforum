@@ -529,6 +529,7 @@ $string['notsubscribedtodiscussionx'] = 'You are not subscribed to "{$a}" discus
 $string['export'] = 'Export';
 $string['discussion:x'] = 'Discussion: {$a}';
 $string['subjectbyuserondate'] = '{$a->subject} by {$a->author} on {$a->date}';
+$string['subjectbyprivateuserondate'] = '{$a->subject} (private) by {$a->author} on {$a->date}';
 $string['attachments:x'] = 'Attachments: {$a}';
 $string['general'] = 'General';
 $string['postsfor'] = 'Posts for';
