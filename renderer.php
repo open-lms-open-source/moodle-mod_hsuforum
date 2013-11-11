@@ -1160,10 +1160,6 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         hsuforum_cm_add_cache($cm);
 
         $output = '';
-        if (!empty($options['total'])) {
-            $output = html_writer::tag('h2', get_string('xdiscussions', 'hsuforum', $options['total']),
-                array('class' => 'hsuforum-thread-count', 'data-count' => $options['total']));
-        }
         foreach ($discussions as $discussionpost) {
             list($discussion, $post) = $discussionpost;
             $output .= $this->discussion($cm, $discussion, $post);

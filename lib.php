@@ -5781,6 +5781,30 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         }
     }
 
+    // Get all the recent discussions we're allowed to see
+    $getuserlastmodified = in_array($displayformat, array('header', 'nested', 'tree', 'article'));
+    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
+
+    // If we want paging
+    $numdiscussions = null;
+    if ($page != -1) {
+        ///Get the number of discussions found
+        $numdiscussions = hsuforum_get_discussions_count($cm);
+
+        ///Show the paging bar
+        if ($displayformat != 'article') {
+            echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
+        }
+    } else {
+        if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
+            $olddiscussionlink = true;
+        }
+    }
+
+    if (!is_null($numdiscussions)) {
+        echo html_writer::tag('h2', get_string('xdiscussions', 'hsuforum', $numdiscussions),
+            array('class' => 'hsuforum-discussion-count', 'data-count' => $numdiscussions));
+    }
     echo $OUTPUT->box_start('hsuforum_discussion_controls clearfix');
 
     if ($canstart) {
@@ -5831,11 +5855,6 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     echo $OUTPUT->box_end(); // End discussion_controls
 
-// Get all the recent discussions we're allowed to see
-
-    $getuserlastmodified = in_array($displayformat, array('header', 'nested', 'tree', 'article'));
-
-    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
     if (!$discussions) {
         echo '<div class="forumnodiscuss">';
         if ($forum->type == 'news') {
@@ -5864,22 +5883,6 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
         $rm = new rating_manager();
         $discussions = $rm->get_ratings($ratingoptions);
-    }
-
-// If we want paging
-    $numdiscussions = null;
-    if ($page != -1) {
-        ///Get the number of discussions found
-        $numdiscussions = hsuforum_get_discussions_count($cm);
-
-        ///Show the paging bar
-        if ($displayformat != 'article') {
-            echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
-        }
-    } else {
-        if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
-            $olddiscussionlink = true;
-        }
     }
 
     $canviewparticipants = has_capability('moodle/course:viewparticipants',$context);

@@ -8,7 +8,7 @@ var SELECTORS = {
         ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
         DISCUSSIONS: '.hsuforum-threads-wrapper',
         DISCUSSION: '.hsuforum-thread-article',
-        DISCUSSION_COUNT: '.hsuforum-thread-count',
+        DISCUSSION_COUNT: '.hsuforum-discussion-count',
         DISCUSSION_CLOSE: '.hsuforum-thread-nav .close',
         DISCUSSION_NEXT: '.hsuforum-thread-nav .next',
         DISCUSSION_PREV: '.hsuforum-thread-nav .prev',
