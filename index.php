@@ -433,12 +433,12 @@ if (!isguestuser() && isloggedin()) {
 }
 
 if ($generalforums) {
-    echo $OUTPUT->heading(get_string('generalforums', 'hsuforum'));
+    echo $OUTPUT->heading(get_string('generalforums', 'hsuforum'), 2);
     echo html_writer::table($generaltable);
 }
 
 if ($learningforums) {
-    echo $OUTPUT->heading(get_string('learningforums', 'hsuforum'));
+    echo $OUTPUT->heading(get_string('learningforums', 'hsuforum'), 2);
     echo html_writer::table($learningtable);
 }
 

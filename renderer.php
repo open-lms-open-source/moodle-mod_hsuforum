@@ -940,6 +940,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
 
+        echo $OUTPUT->heading(format_string($forum->name), 2);
+
         /// find out current groups mode
         groups_print_activity_menu($cm, $PAGE->url);
         groups_get_activity_group($cm);
