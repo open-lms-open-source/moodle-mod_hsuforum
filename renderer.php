@@ -1136,12 +1136,12 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $output = html_writer::tag(
             'script',
             $this->quick_reply_template(array('reply' => 0)),
-            array('type' => 'text', 'id' => 'hsuforum-reply-template')
+            array('type' => 'text/template', 'id' => 'hsuforum-reply-template')
         );
         $output .= html_writer::tag(
             'script',
             $this->quick_add_discussion_template($cm),
-            array('type' => 'text', 'id' => 'hsuforum-discussion-template')
+            array('type' => 'text/template', 'id' => 'hsuforum-discussion-template')
         );
         return $output;
     }
@@ -1155,6 +1155,8 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
      * @return string
      */
     public function discussions($cm, array $discussions, array $options) {
+        hsuforum_cm_add_cache($cm);
+
         $output = '';
         if (!empty($options['total'])) {
             $output = html_writer::tag('h2', get_string('xdiscussions', 'hsuforum', $options['total']),
@@ -1176,11 +1178,10 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
                 'data-total'   => $options['total'],
             ));
         }
-        $output .= $this->article_assets($cm);
-
         return $this->notification_area().
             $this->output->container('', 'hsuforum-add-discussion-target').
-            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions', 'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1'));
+            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions', 'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1')).
+            $this->article_assets($cm);
     }
 
     /**
@@ -1255,6 +1256,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $data->subject  = $this->raw_post_subject($post);
         $data->message  = $this->post_message($post, $cm);
         $data->created  = userdate($post->created, $format);
+        $data->datetime = date(DATE_W3C, usertime($post->created));
         $data->modified = userdate($discussion->timemodified, $format);
         $data->unread   = $discussion->unread;
         $data->replies  = $discussion->replies;
@@ -1377,6 +1379,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $data->subject        = property_exists($post, 'breadcrumb') ? $post->breadcrumb : $this->raw_post_subject($post);
         $data->message        = $this->post_message($post, $cm);
         $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
+        $data->datetime       = date(DATE_W3C, usertime($post->created));
         $data->privatereply   = $post->privatereply;
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
@@ -1436,7 +1439,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
             <p class="hsuforum-thread-byline">
                 $byuser$group
                 <br />
-                <time class="hsuforum-thread-pubdate">$d->created</time>
+                <time datetime="$d->datetime" class="hsuforum-thread-pubdate">$d->created</time>
                 $unread
             </p>
 
@@ -1448,7 +1451,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         </div>
     </header>
     <div class="hsuforum-thread-content" tabindex="0">
-        <p>$d->message</p>
+        $d->message
     </div>
     $d->tools
     $d->posts
@@ -1506,9 +1509,9 @@ HTML;
 
         <div class="hsuforum-post-content">
             <strong class="hsuforum-post-title">$p->subject</strong>
-            <p>$p->message</p>
+            $p->message
         </div>
-        <time class="hsuforum-post-pubdate"><a href="$p->permalink" class="disable-router">$p->created</a></time>
+        <time datetime="$p->datetime" class="hsuforum-post-pubdate"><a href="$p->permalink" class="disable-router">$p->created</a></time>
 
         $p->tools
     </div>
@@ -1564,11 +1567,11 @@ HTML;
             <div class="hsuforum-post-body">
                 <label>
                     <span class="accesshide">$subject</span>
-                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" spellcheck="spellcheck" />
+                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" spellcheck="true" />
                 </label>
                 <label>
                     <span class="accesshide">$message ($required)</span>
-                    <textarea placeholder="$placeholder" name="message" class="form-control" required="required" spellcheck="spellcheck"></textarea>
+                    <textarea placeholder="$placeholder" name="message" class="form-control" required="required" spellcheck="true"></textarea>
                 </label>
 
                 <label>
@@ -1639,11 +1642,11 @@ HTML;
             <div class="hsuforum-post-body">
                 <label>
                     <span class="accesshide">$subject ($required)</span>
-                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" required="required" spellcheck="spellcheck" />
+                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" required="required" spellcheck="true" />
                 </label>
                 <label>
                     <span class="accesshide">$message ($required)</span>
-                    <textarea placeholder="$messageplaceholder" name="message" class="form-control" required="required" spellcheck="spellcheck"></textarea>
+                    <textarea placeholder="$messageplaceholder" name="message" class="form-control" required="required" spellcheck="true"></textarea>
                 </label>
 
                 <label>
