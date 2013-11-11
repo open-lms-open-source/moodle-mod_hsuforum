@@ -1,6 +1,7 @@
 var SELECTORS = {
         DISCUSSION_VIEW: '.hsuforum-thread-view',
         CONTAINER: '.mod_hsuforum_posts_container',
+        CONTAINER_LINKS: '.mod_hsuforum_posts_container a',
         LOAD_MORE: '.hsuforum-threads-load-more',
         LOAD_TARGET: '.hsuforum-threads-load-target',
         ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',

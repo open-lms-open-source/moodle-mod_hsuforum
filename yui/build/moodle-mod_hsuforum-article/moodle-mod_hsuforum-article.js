@@ -3,6 +3,7 @@ YUI.add('moodle-mod_hsuforum-article', function (Y, NAME) {
 var SELECTORS = {
         DISCUSSION_VIEW: '.hsuforum-thread-view',
         CONTAINER: '.mod_hsuforum_posts_container',
+        CONTAINER_LINKS: '.mod_hsuforum_posts_container a',
         LOAD_MORE: '.hsuforum-threads-load-more',
         LOAD_TARGET: '.hsuforum-threads-load-target',
         ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
@@ -705,22 +706,24 @@ Y.extend(ARTICLE, Y.Base,
             if (rootNode === null) {
                 return;
             }
-            var dom    = this.get('dom'),
-                form   = this.get('form'),
-                router = this.get('router');
+            var dom     = this.get('dom'),
+                form    = this.get('form'),
+                router  = this.get('router'),
+                addNode = Y.one(SELECTORS.ADD_DISCUSSION);
 
-            rootNode.delegate('click', this.handleViewNextDiscussion, SELECTORS.DISCUSSION_NEXT, this);
-            rootNode.delegate('click', router.handleRoute, 'a', router);
-            rootNode.delegate('submit', form.handleSubmitReplyTo, SELECTORS.FORM_REPLY, form);
-            rootNode.delegate('submit', form.handleSubmitAddDiscussion, SELECTORS.FORM_DISCUSSION, form);
-            rootNode.delegate('click', dom.handleViewRating, SELECTORS.RATE_POPUP, dom);
-            rootNode.delegate('click', function(e) {
+            // We bind to document otherwise screen readers read everything as clickable.
+            Y.delegate('click', this.handleViewNextDiscussion, document, SELECTORS.DISCUSSION_NEXT, this);
+            Y.delegate('click', router.handleRoute, document, SELECTORS.CONTAINER_LINKS, router);
+            Y.delegate('click', dom.handleViewRating, document, SELECTORS.RATE_POPUP, dom);
+            Y.delegate('click', function(e) {
                 // On discussion close, focus on the closed discussion.
                 e.target.ancestor(SELECTORS.DISCUSSION).focus();
                 this.get('liveLog').logText(M.str.mod_hsuforum.discussionclosed);
-            }, SELECTORS.DISCUSSION_CLOSE, this);
+            }, document, SELECTORS.DISCUSSION_CLOSE, this);
 
-            var addNode = Y.one(SELECTORS.ADD_DISCUSSION);
+            // Sumit handlers.
+            rootNode.delegate('submit', form.handleSubmitReplyTo, SELECTORS.FORM_REPLY, form);
+            rootNode.delegate('submit', form.handleSubmitAddDiscussion, SELECTORS.FORM_DISCUSSION, form);
             if (addNode instanceof Y.Node) {
                 addNode.on('submit', router.handleAddDiscussionRoute, router);
             }
@@ -738,9 +741,9 @@ Y.extend(ARTICLE, Y.Base,
             form.on(EVENTS.DISCUSSION_CREATED, this.handleLiveLog, this);
             form.on(EVENTS.POST_CREATED, this.handleLiveLog, this);
             dom.on(EVENTS.POST_DELETED, this.handleLiveLog, this);
-            rootNode.delegate('click', function() {
+            Y.delegate('click', function() {
                 this.get('liveLog').logText(M.str.mod_hsuforum.discussionloaded);
-            }, [SELECTORS.DISCUSSION_VIEW, SELECTORS.DISCUSSION_NEXT, SELECTORS.DISCUSSION_PREV].join(', '), this);
+            }, document, [SELECTORS.DISCUSSION_VIEW, SELECTORS.DISCUSSION_NEXT, SELECTORS.DISCUSSION_PREV].join(', '), this);
         },
 
         /**
