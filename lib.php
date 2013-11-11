@@ -5788,27 +5788,44 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     // If we want paging
     $numdiscussions = null;
     if ($page != -1) {
-        ///Get the number of discussions found
+        // Get the number of discussions found.
         $numdiscussions = hsuforum_get_discussions_count($cm);
-
-        ///Show the paging bar
-        if ($displayformat != 'article') {
-            echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
-        }
     } else {
         if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
             $olddiscussionlink = true;
         }
     }
 
+    if ($showdisplayformat) {
+        $display = new single_select($PAGE->url, 'displayformat', array(
+            'header'  => get_string('default', 'hsuforum'),
+            'tree'    => get_string('tree', 'hsuforum'),
+            'nested'  => get_string('nested', 'hsuforum'),
+            'article' => get_string('accessible', 'hsuforum'),
+        ), $displayformat, array(), 'displayformatid');
+
+        $display->set_label(get_string('discussiondisplay', 'hsuforum'));
+        $display->class .= ' hsuforum-display-format clearfix';
+        echo $OUTPUT->render($display);
+    }
+
+    if (!$canstart && (isguestuser() or !isloggedin() or $forum->type == 'news')) {
+        // no button and no info
+    } else if (!$canstart && $groupmode && has_capability('mod/hsuforum:startdiscussion', $context)) {
+        // inform users why they can not post new discussion
+        $message = ($currentgroup) ? 'cannotadddiscussion' : 'cannotadddiscussionall';
+        echo $OUTPUT->notification(get_string($message, 'hsuforum'), 'notifyproblem hsuforum-cannot-post');
+    }
+
+    echo $OUTPUT->container_start('clearfix');
+
     if (!is_null($numdiscussions)) {
         echo html_writer::tag('h2', get_string('xdiscussions', 'hsuforum', $numdiscussions),
             array('class' => 'hsuforum-discussion-count', 'data-count' => $numdiscussions));
     }
-    echo $OUTPUT->box_start('hsuforum_discussion_controls clearfix');
 
     if ($canstart) {
-        echo '<div class="singlebutton forumaddnew">';
+        echo '<div class="singlebutton forumaddnew hsuforum-add-discussion">';
         echo "<form id=\"newdiscussionform\" method=\"get\" action=\"$CFG->wwwroot/mod/hsuforum/post.php\">";
         echo '<div>';
         echo "<input type=\"hidden\" name=\"forum\" value=\"$forum->id\" />";
@@ -5828,32 +5845,23 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo '</div>';
         echo '</form>';
         echo "</div>\n";
-
-    } else if (isguestuser() or !isloggedin() or $forum->type == 'news') {
-        // no button and no info
-
-    } else if ($groupmode and has_capability('mod/hsuforum:startdiscussion', $context)) {
-        // inform users why they can not post new discussion
-        if ($currentgroup) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'));
-        } else {
-            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'));
-        }
     }
 
-    if ($showdisplayformat) {
-        $display = new single_select($PAGE->url, 'displayformat', array(
-            'header' => get_string('default', 'hsuforum'),
-            'tree'   => get_string('tree', 'hsuforum'),
-            'nested' => get_string('nested', 'hsuforum'),
-            'article' => get_string('accessible', 'hsuforum'),
-        ), $displayformat, array(), 'displayformatid');
+    echo $OUTPUT->container_end();
+    echo $OUTPUT->container_start('hsuforum-control-options clearfix');
 
-        $display->set_label(get_string('discussiondisplay', 'hsuforum'));
-        echo $OUTPUT->render($display);
+    groups_print_activity_menu($cm, $PAGE->url);
+
+    if ($forum->type != 'single') {
+        require_once(__DIR__.'/lib/discussion/sort.php');
+        $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
+        $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
+        $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
+        hsuforum_lib_discussion_sort::set_to_session($dsort);
+        echo $renderer->discussion_sorting($dsort);
     }
 
-    echo $OUTPUT->box_end(); // End discussion_controls
+    echo $OUTPUT->container_end();
 
     if (!$discussions) {
         echo '<div class="forumnodiscuss">';
@@ -5883,6 +5891,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
         $rm = new rating_manager();
         $discussions = $rm->get_ratings($ratingoptions);
+    }
+
+    // Show the paging bar.
+    if (!is_null($numdiscussions) && $displayformat != 'article') {
+        echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
     }
 
     $canviewparticipants = has_capability('moodle/course:viewparticipants',$context);

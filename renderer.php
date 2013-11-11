@@ -943,7 +943,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         echo $OUTPUT->heading(format_string($forum->name), 2);
 
         /// find out current groups mode
-        groups_print_activity_menu($cm, $PAGE->url);
         groups_get_activity_group($cm);
         groups_get_activity_groupmode($cm);
 
@@ -951,12 +950,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         hsuforum_lib_discussion_nav::set_to_session();
 
         $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
-        if ($forum->type != 'single') {
-            $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
-            $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
-            hsuforum_lib_discussion_sort::set_to_session($dsort);
-            echo $this->discussion_sorting($dsort);
-        }
 
         // If it's a simple single discussion forum, we need to print the display
         // mode control.
@@ -1051,7 +1044,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 if (!empty($forum->intro)) {
                     echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
                 }
-                echo '<br />';
                 if (!empty($showall)) {
                     hsuforum_print_latest_discussions($course, $forum, 0, 'header', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
                 } else {
