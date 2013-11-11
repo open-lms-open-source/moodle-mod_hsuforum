@@ -165,6 +165,8 @@ span.unread {
 .hsuforum_nested_wrapper .lastpostby {font-size: .8em; font-style: italic;}
 .hsuforum_nested_wrapper {display: none;}
 .jsenabled .hsuforum_nested_wrapper {display: block;}
+.hsuforum_nested_wrapper .content .attachments {margin-top: 10px;}
+.hsuforum_nested_wrapper .content .attachedimages img {max-width:100%;}
 
 #local-joulegrader .content .mod_hsuforum_posts_container,
 #local-joulegrader .content .mod_hsuforum_posts_container .content {text-align: left; margin-right: 0; overflow: hidden;}
@@ -300,6 +302,10 @@ span.unread {
     font-style:italic;
     font-size:0.9em;
     color:#444;
+}
+
+.hsuforum-thread-content .attachments {
+    margin-top: 10px;
 }
 
 .hsuforum-tools{
