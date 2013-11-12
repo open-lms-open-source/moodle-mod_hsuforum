@@ -5873,6 +5873,20 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             echo '('.get_string('nodiscussions', 'hsuforum').')';
         }
         echo "</div>\n";
+
+        if ($displayformat == 'article') {
+            // Load these incase the user adds a new discussion.
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_flags', null, false, $renderer->get_js_module());
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_subscribe', null, false, $renderer->get_js_module());
+
+            echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+            echo $renderer->discussions($cm, array(), array(
+                'total'   => 0,
+                'page'    => $page,
+                'perpage' => $perpage,
+            ));
+            echo $OUTPUT->box_end();
+        }
         return;
     }
 

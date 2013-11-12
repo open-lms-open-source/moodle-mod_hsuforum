@@ -1108,6 +1108,8 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
     }
 
     public function article_js() {
+        // For some reason, I need to require core_rating manually...
+        $this->page->requires->js_module('core_rating');
         $this->page->requires->yui_module(
             'moodle-mod_hsuforum-article',
             'M.mod_hsuforum.init_article',
@@ -1151,7 +1153,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
     public function discussions($cm, array $discussions, array $options) {
         hsuforum_cm_add_cache($cm);
 
-        $output = '';
+        $output = html_writer::tag('div', '', array('class' => 'hsuforum-new-discussion-target'));
         foreach ($discussions as $discussionpost) {
             list($discussion, $post) = $discussionpost;
             $output .= $this->discussion($cm, $discussion, $post);
@@ -1668,28 +1670,32 @@ HTML;
     protected function discussion_nav($cm, $discussion) {
         $dnav = $this->get_discussion_nav($cm);
 
-        $dnav->get_prev_discussionid($discussion->id);
-        $dnav->get_next_discussionid($discussion->id);
-
         $output = html_writer::link(
             new moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id, 'page' => $dnav->get_page($discussion->id))),
             get_string('closediscussion', 'hsuforum'),
             array('class' => 'close')
         );
-        if ($dnav->get_prev_discussionid($discussion->id)) {
-            $output .= html_writer::link(
-                new moodle_url('/mod/hsuforum/discuss.php', array('d' => $dnav->get_prev_discussionid($discussion->id))),
-                get_string('prevdiscussion', 'hsuforum'),
-                array('class' => 'prev')
-            );
+
+        $class = 'prev';
+        if (!$dnav->get_prev_discussionid($discussion->id)) {
+            $class .= ' hidden';
         }
-        if ($dnav->get_next_discussionid($discussion->id)) {
-            $output .= html_writer::link(
-                new moodle_url('/mod/hsuforum/discuss.php', array('d' => $dnav->get_next_discussionid($discussion->id))),
-                get_string('nextdiscussion', 'hsuforum'),
-                array('class' => 'next')
-            );
+        $output .= html_writer::link(
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => (int) $dnav->get_prev_discussionid($discussion->id))),
+            get_string('prevdiscussion', 'hsuforum'),
+            array('class' => $class)
+        );
+
+        $class = 'next';
+        if (!$dnav->get_next_discussionid($discussion->id)) {
+            $class .= ' hidden';
         }
+        $output .= html_writer::link(
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => (int) $dnav->get_next_discussionid($discussion->id))),
+            get_string('nextdiscussion', 'hsuforum'),
+            array('class' => $class)
+        );
+
         return html_writer::tag('nav', $output, array('class' => 'hsuforum-thread-nav'));
     }
 

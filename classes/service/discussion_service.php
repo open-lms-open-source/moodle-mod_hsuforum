@@ -93,6 +93,7 @@ class discussion_service {
             'discussionid'     => (int) $discussion->id,
             'livelog'          => $message,
             'notificationhtml' => $OUTPUT->notification($message, 'notifysuccess'),
+            'html'             => $this->render_discussion($discussion->id),
         ));
     }
 

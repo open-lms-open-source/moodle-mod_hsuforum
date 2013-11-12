@@ -39,6 +39,45 @@ Y.extend(DOM, Y.Base,
         },
 
         /**
+         * Force discussion navigation links to point to each
+         * other for the passed discussion, the previous discussion
+         * and then next discussion.
+         *
+         * @method _forceNavLinks
+         * @param {Integer} discussionId
+         * @private
+         */
+        _forceNavLinks: function(discussionId) {
+            var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', discussionId)),
+                prev = node.previous(SELECTORS.DISCUSSION),
+                next = node.next(SELECTORS.DISCUSSION);
+
+            var updateURL = function(link, discNode) {
+                var href = link.getAttribute('href').replace(/d=\d+/, 'd=' + discNode.getData('discussionid'));
+                link.setAttribute('href', href)
+                    .removeClass('hidden')
+                    .show();
+            };
+
+            if (prev !== null) {
+                // Force previous discussion to point to this discussion.
+                updateURL(prev.one(SELECTORS.DISCUSSION_NEXT), node);
+                updateURL(node.one(SELECTORS.DISCUSSION_PREV), prev);
+            } else {
+                // No previous discussion, hide prev link.
+                node.one(SELECTORS.DISCUSSION_PREV).hide();
+            }
+            if (next !== null) {
+                // Force next discussion to point to this discussion.
+                updateURL(next.one(SELECTORS.DISCUSSION_PREV), node);
+                updateURL(node.one(SELECTORS.DISCUSSION_NEXT), next);
+            } else {
+                // No next discussion, hide next link.
+                node.one(SELECTORS.DISCUSSION_NEXT).hide();
+            }
+        },
+
+        /**
          * Initialize thread JS features that are not handled by
          * delegates.
          */
@@ -182,7 +221,20 @@ Y.extend(DOM, Y.Base,
          */
         handleDiscussionCreated: function(e) {
             Y.log('Adding HTML for discussion: ' + e.discussionid, 'info', 'Dom');
+
+            // Add new discussion to the page.
+            Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
+
+            // Update navigation links.
+            this._forceNavLinks(e.discussionid);
+
+            // Add notification.
             this.displayNotification(e.notificationhtml);
+
+            // Remove no discussions message if on the page.
+            if (Y.one(SELECTORS.NO_DISCUSSIONS)) {
+                Y.one(SELECTORS.NO_DISCUSSIONS).remove();
+            }
 
             // Update number of discussions.
             var countNode = Y.one(SELECTORS.DISCUSSION_COUNT);
@@ -191,7 +243,6 @@ Y.extend(DOM, Y.Base,
                 countNode.setData('count', parseInt(countNode.getData('count'), 10) + 1);
                 countNode.setHTML(M.util.get_string('xdiscussions', 'mod_hsuforum', countNode.getData('count')));
             }
-            Y.one(SELECTORS.ADD_DISCUSSION_BUTTON).focus();
         },
 
         /**

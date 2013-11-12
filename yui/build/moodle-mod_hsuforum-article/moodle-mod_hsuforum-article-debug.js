@@ -1,50 +1,51 @@
 YUI.add('moodle-mod_hsuforum-article', function (Y, NAME) {
 
 var SELECTORS = {
-        DISCUSSION_VIEW: '.hsuforum-thread-view',
+        ADD_DISCUSSION: '#newdiscussionform',
+        ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
+        ALL_FORMS: '.hsuforum-reply-wrapper form',
         CONTAINER: '.mod_hsuforum_posts_container',
         CONTAINER_LINKS: '.mod_hsuforum_posts_container a',
-        LOAD_MORE: '.hsuforum-threads-load-more',
-        LOAD_TARGET: '.hsuforum-threads-load-target',
-        ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
-        DISCUSSIONS: '.hsuforum-threads-wrapper',
         DISCUSSION: '.hsuforum-thread-article',
-        DISCUSSION_COUNT: '.hsuforum-discussion-count',
+        DISCUSSIONS: '.hsuforum-threads-wrapper',
+        DISCUSSION_BY_ID: '.hsuforum-thread-article[data-discussionid="%d"]',
         DISCUSSION_CLOSE: '.hsuforum-thread-nav .close',
+        DISCUSSION_COUNT: '.hsuforum-discussion-count',
+        DISCUSSION_NAV_LINKS: '.hsuforum-thread-nav a',
         DISCUSSION_NEXT: '.hsuforum-thread-nav .next',
         DISCUSSION_PREV: '.hsuforum-thread-nav .prev',
-        DISCUSSION_NAV_LINKS: '.hsuforum-thread-nav a',
-        POST_TARGET: '.hsuforum-post-target',
-        POST_BY_ID: '.hsuforum-post-target[data-postid="%d"]',
-        DISCUSSION_BY_ID: '.hsuforum-thread-article[data-discussionid="%d"]',
-        POSTS: '.hsuforum-thread-replies',
-        PLACEHOLDER: '.thread-replies-placeholder',
-        VIEW_POSTS: '.hsuforum-view-posts',
-        REPLY_TEMPLATE: '#hsuforum-reply-template',
+        DISCUSSION_TARGET: '.hsuforum-new-discussion-target',
         DISCUSSION_TEMPLATE: '#hsuforum-discussion-template',
-        ALL_FORMS: '.hsuforum-reply-wrapper form',
+        DISCUSSION_VIEW: '.hsuforum-thread-view',
+        FORM_ADVANCED: '.hsuforum-use-advanced',
+        FORM_DISCUSSION: '.hsuforum-discussion',
         FORM_REPLY: '.hsuforum-reply',
         FORM_REPLY_WRAPPER: '.hsuforum-reply-wrapper',
-        FORM_DISCUSSION: '.hsuforum-discussion',
-        VALIDATION_ERRORS: '.hsuforum-validation-errors',
-        FORM_ADVANCED: '.hsuforum-use-advanced',
-        INPUT_REPLY: 'input[name="reply"]',
-        INPUT_MESSAGE: 'textarea[name="message"]',
-        INPUT_SUBJECT: 'input[name="subject"]',
         INPUT_FORUM: 'input[name="forum"]',
-        ADD_DISCUSSION: '#newdiscussionform',
-        ADD_DISCUSSION_BUTTON: '#newdiscussionform input[type="submit"]',
+        INPUT_MESSAGE: 'textarea[name="message"]',
+        INPUT_REPLY: 'input[name="reply"]',
+        INPUT_SUBJECT: 'input[name="subject"]',
+        LOAD_MORE: '.hsuforum-threads-load-more',
+        LOAD_TARGET: '.hsuforum-threads-load-target',
+        NO_DISCUSSIONS: '.forumnodiscuss',
         NOTIFICATION: '.hsuforum-notification',
         OPTIONS_TO_PROCESS: '.hsuforum-options-menu.unprocessed',
-        RATE_POPUP: '.forum-post-rating a',
+        PLACEHOLDER: '.thread-replies-placeholder',
+        POSTS: '.hsuforum-thread-replies',
+        POST_BY_ID: '.hsuforum-post-target[data-postid="%d"]',
+        POST_TARGET: '.hsuforum-post-target',
         RATE: '.forum-post-rating',
-        SEARCH_PAGE: '#page-mod-hsuforum-search'
+        RATE_POPUP: '.forum-post-rating a',
+        REPLY_TEMPLATE: '#hsuforum-reply-template',
+        SEARCH_PAGE: '#page-mod-hsuforum-search',
+        VALIDATION_ERRORS: '.hsuforum-validation-errors',
+        VIEW_POSTS: '.hsuforum-view-posts'
     },
     EVENTS = {
+        DISCUSSION_CREATED: 'discussion:created',
         POST_CREATED: 'post:created',
         POST_DELETE: 'post:delete',
-        POST_DELETED: 'post:deleted',
-        DISCUSSION_CREATED: 'discussion:created'
+        POST_DELETED: 'post:deleted'
     };
 
 M.mod_hsuforum = M.mod_hsuforum || {};
@@ -86,6 +87,45 @@ Y.extend(DOM, Y.Base,
             Y.all(SELECTORS.RATE).addClass('processed');
             // Initialize current menu options.
             this.initOptionMenus();
+        },
+
+        /**
+         * Force discussion navigation links to point to each
+         * other for the passed discussion, the previous discussion
+         * and then next discussion.
+         *
+         * @method _forceNavLinks
+         * @param {Integer} discussionId
+         * @private
+         */
+        _forceNavLinks: function(discussionId) {
+            var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', discussionId)),
+                prev = node.previous(SELECTORS.DISCUSSION),
+                next = node.next(SELECTORS.DISCUSSION);
+
+            var updateURL = function(link, discNode) {
+                var href = link.getAttribute('href').replace(/d=\d+/, 'd=' + discNode.getData('discussionid'));
+                link.setAttribute('href', href)
+                    .removeClass('hidden')
+                    .show();
+            };
+
+            if (prev !== null) {
+                // Force previous discussion to point to this discussion.
+                updateURL(prev.one(SELECTORS.DISCUSSION_NEXT), node);
+                updateURL(node.one(SELECTORS.DISCUSSION_PREV), prev);
+            } else {
+                // No previous discussion, hide prev link.
+                node.one(SELECTORS.DISCUSSION_PREV).hide();
+            }
+            if (next !== null) {
+                // Force next discussion to point to this discussion.
+                updateURL(next.one(SELECTORS.DISCUSSION_PREV), node);
+                updateURL(node.one(SELECTORS.DISCUSSION_NEXT), next);
+            } else {
+                // No next discussion, hide next link.
+                node.one(SELECTORS.DISCUSSION_NEXT).hide();
+            }
         },
 
         /**
@@ -232,7 +272,20 @@ Y.extend(DOM, Y.Base,
          */
         handleDiscussionCreated: function(e) {
             Y.log('Adding HTML for discussion: ' + e.discussionid, 'info', 'Dom');
+
+            // Add new discussion to the page.
+            Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
+
+            // Update navigation links.
+            this._forceNavLinks(e.discussionid);
+
+            // Add notification.
             this.displayNotification(e.notificationhtml);
+
+            // Remove no discussions message if on the page.
+            if (Y.one(SELECTORS.NO_DISCUSSIONS)) {
+                Y.one(SELECTORS.NO_DISCUSSIONS).remove();
+            }
 
             // Update number of discussions.
             var countNode = Y.one(SELECTORS.DISCUSSION_COUNT);
@@ -241,7 +294,6 @@ Y.extend(DOM, Y.Base,
                 countNode.setData('count', parseInt(countNode.getData('count'), 10) + 1);
                 countNode.setHTML(M.util.get_string('xdiscussions', 'mod_hsuforum', countNode.getData('count')));
             }
-            Y.one(SELECTORS.ADD_DISCUSSION_BUTTON).focus();
         },
 
         /**
@@ -748,6 +800,7 @@ Y.extend(ARTICLE, Y.Base,
             form.on(EVENTS.POST_CREATED, router.handleViewDiscussion, router);
 
             form.on(EVENTS.DISCUSSION_CREATED, dom.handleDiscussionCreated, dom);
+            form.on(EVENTS.DISCUSSION_CREATED, router.handleViewDiscussion, router);
 
             this.on(EVENTS.POST_DELETE, dom.handlePostDelete, dom);
             dom.on(EVENTS.POST_DELETED, router.handleViewDiscussion, router);

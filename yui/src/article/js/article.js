@@ -91,6 +91,7 @@ Y.extend(ARTICLE, Y.Base,
             form.on(EVENTS.POST_CREATED, router.handleViewDiscussion, router);
 
             form.on(EVENTS.DISCUSSION_CREATED, dom.handleDiscussionCreated, dom);
+            form.on(EVENTS.DISCUSSION_CREATED, router.handleViewDiscussion, router);
 
             this.on(EVENTS.POST_DELETE, dom.handlePostDelete, dom);
             dom.on(EVENTS.POST_DELETED, router.handleViewDiscussion, router);
