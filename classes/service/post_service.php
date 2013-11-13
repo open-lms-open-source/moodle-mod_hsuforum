@@ -24,6 +24,7 @@
 
 namespace mod_hsuforum\service;
 
+use mod_hsuforum\attachments;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use moodle_exception;
@@ -77,33 +78,102 @@ class post_service {
      * @return json_response
      */
     public function handle_reply($course, $cm, $forum, $context, $discussion, $parent, array $options) {
-        global $PAGE;
-
         $uploader = new upload_file(
-            $context, \mod_hsuforum_post_form::attachment_options($forum), 'attachment'
+            new attachments($context), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
         $post   = $this->create_post_object($discussion, $parent, $context, $options);
         $errors = $this->validate_post($course, $cm, $forum, $context, $discussion, $post, $uploader);
 
         if (!empty($errors)) {
-            /** @var \mod_hsuforum_renderer $renderer */
-            $renderer = $PAGE->get_renderer('mod_hsuforum');
-
-            return new json_response((object) array(
-                'errors' => true,
-                'html'   => $renderer->validation_errors($errors),
-            ));
+            return $this->create_error_response($errors);
         }
-        $this->save_post($post, $uploader);
+        $this->save_post($discussion, $post, $uploader);
         $this->trigger_post_created($course, $cm, $forum, $post);
 
         return new json_response((object) array(
+            'eventaction'  => 'postcreated',
             'discussionid' => (int) $discussion->id,
             'postid'       => (int) $post->id,
             'livelog'      => get_string('postcreated', 'hsuforum'),
             'html'         => $this->discussionservice->render_discussion($discussion->id),
         ));
+    }
+
+    /**
+     * Does all the grunt work for updating a post
+     *
+     * @param object $course
+     * @param object $cm
+     * @param object $forum
+     * @param \context_module $context
+     * @param object $discussion
+     * @param object $post
+     * @param array $deletefiles
+     * @param array $options These override default post values, EG: set the post message with this
+     * @return json_response
+     */
+    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles = array(), array $options) {
+
+        $this->require_can_edit_post($forum, $context, $discussion, $post);
+
+        $uploader = new upload_file(
+            new attachments($context, $deletefiles), \mod_hsuforum_post_form::attachment_options($forum)
+        );
+
+        // Apply updates to the post.
+        foreach ($options as $name => $value) {
+            if (property_exists($post, $name)) {
+                $post->$name = $value;
+            }
+        }
+        $post->itemid = empty($options['itemid']) ? 0 : $options['itemid'];
+
+        $errors = $this->validate_post($course, $cm, $forum, $context, $discussion, $post, $uploader);
+        if (!empty($errors)) {
+            return $this->create_error_response($errors);
+        }
+        $this->save_post($discussion, $post, $uploader);
+
+        // If the user has access to all groups and they are changing the group, then update the post.
+        if (empty($post->parent) && has_capability('mod/hsuforum:movediscussions', $context)) {
+            $this->db->set_field('hsuforum_discussions', 'groupid', $options['groupid'], array('id' => $discussion->id));
+        }
+
+        add_to_log($course->id, 'hsuforum', 'update post',
+            "discuss.php?d=$discussion->id#p$post->id&amp;parent=$post->id", $post->id, $cm->id);
+
+        return new json_response((object) array(
+            'eventaction'  => 'postupdated',
+            'discussionid' => (int) $discussion->id,
+            'postid'       => (int) $post->id,
+            'livelog'      => get_string('postwasupdated', 'hsuforum'),
+            'html'         => $this->discussionservice->render_discussion($discussion->id),
+        ));
+    }
+
+    /**
+     * Require that the current user can edit the post or
+     * discussion
+     *
+     * @param object $forum
+     * @param \context_module $context
+     * @param object $discussion
+     * @param object $post
+     */
+    public function require_can_edit_post($forum, \context_module $context, $discussion, $post) {
+        global $CFG, $USER;
+
+        if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
+            if (((time() - $post->created) > $CFG->maxeditingtime) and
+                !has_capability('mod/hsuforum:editanypost', $context)
+            ) {
+                print_error('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
+            }
+        }
+        if (($post->userid <> $USER->id) && !has_capability('mod/hsuforum:editanypost', $context)) {
+            print_error('cannoteditposts', 'hsuforum');
+        }
     }
 
     /**
@@ -157,14 +227,30 @@ class post_service {
      * @return moodle_exception[]
      */
     public function validate_post($course, $cm, $forum, $context, $discussion, $post, upload_file $uploader) {
+        global $USER;
+
         $errors = array();
         if (!hsuforum_user_can_post($forum, $discussion, null, $cm, $course, $context)) {
             $errors[] = new \moodle_exception('nopostforum', 'hsuforum');
         }
-        try {
-            hsuforum_check_throttling($forum, $cm, false);
-        } catch (\Exception $e) {
-            $errors[] = $e;
+        if (!empty($post->id)) {
+            if (!(($post->userid == $USER->id && (has_capability('mod/hsuforum:replypost', $context)
+                        || has_capability('mod/hsuforum:startdiscussion', $context))) ||
+                has_capability('mod/hsuforum:editanypost', $context))
+            ) {
+                $errors[] = new \moodle_exception('cannotupdatepost', 'hsuforum');
+            }
+        }
+        if (empty($post->id)) {
+            try {
+                hsuforum_check_throttling($forum, $cm, false);
+            } catch (\Exception $e) {
+                $errors[] = $e;
+            }
+        }
+        $subject = trim($post->subject);
+        if (empty($subject)) {
+            $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
         $message = trim($post->message);
         if (empty($message)) {
@@ -172,7 +258,7 @@ class post_service {
         }
         if ($uploader->was_file_uploaded()) {
             try {
-                $uploader->validate_files();
+                $uploader->validate_files(empty($post->id) ? 0 : $post->id);
             } catch (\Exception $e) {
                 $errors[] = $e;
             }
@@ -183,14 +269,23 @@ class post_service {
     /**
      * Save the post to the DB
      *
+     * @param object $discussion
      * @param object $post
      * @param upload_file $uploader
      */
-    public function save_post($post, upload_file $uploader) {
-        $post->id = hsuforum_add_new_post($post, null, $post->message);
-        $file = $uploader->process_file_upload($post->id);
-        if (!is_null($file)) {
-            $this->db->set_field('hsuforum_posts', 'attachment', 1, array('id' => $post->id));
+    public function save_post($discussion, $post, upload_file $uploader) {
+        $message = '';
+
+        // Because the following functions require these...
+        $post->forum     = $discussion->forum;
+        $post->course    = $discussion->course;
+        $post->timestart = $discussion->timestart;
+        $post->timeend   = $discussion->timeend;
+
+        if (!empty($post->id)) {
+            hsuforum_update_post($post, null, $message, $uploader);
+        } else {
+            hsuforum_add_new_post($post, null, $message, $uploader);
         }
     }
 
@@ -227,6 +322,22 @@ class post_service {
             'forumid'      => $forum->id,
             'cmid'         => $cm->id,
             'courseid'     => $course->id,
+        ));
+    }
+
+    /**
+     * @param array $errors
+     * @return json_response
+     */
+    public function create_error_response(array $errors) {
+        global $PAGE;
+
+        /** @var \mod_hsuforum_renderer $renderer */
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+
+        return new json_response((object) array(
+            'errors' => true,
+            'html'   => $renderer->validation_errors($errors),
         ));
     }
 }

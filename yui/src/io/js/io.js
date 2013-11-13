@@ -16,9 +16,9 @@ var Lang = Y.Lang,
  * @class Io
  * @extends Y.Base
  */
-var IO = function() {
+function IO() {
     IO.superclass.constructor.apply(this, arguments);
-};
+}
 
 IO.NAME = NAME;
 

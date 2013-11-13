@@ -4416,10 +4416,17 @@ function hsuforum_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
  * @param object $cm
  * @param mixed $mform
  * @param string $message
+ * @param \mod_hsuforum\upload_file $uploader
  * @return bool
  */
-function hsuforum_add_attachment($post, $forum, $cm, $mform=null, &$message=null) {
+function hsuforum_add_attachment($post, $forum, $cm, $mform=null, &$message=null, \mod_hsuforum\upload_file $uploader = null) {
     global $DB;
+
+    if ($uploader instanceof \mod_hsuforum\upload_file) {
+        $files = $uploader->process_file_upload($post->id);
+        $DB->set_field('hsuforum_posts', 'attachment', empty($files) ? 0 : 1, array('id' => $post->id));
+        return true;
+    }
 
     if (empty($mform)) {
         return false;
@@ -4450,9 +4457,10 @@ function hsuforum_add_attachment($post, $forum, $cm, $mform=null, &$message=null
  * @param object $post
  * @param mixed $mform
  * @param string $message
+ * @param \mod_hsuforum\upload_file $uploader
  * @return int
  */
-function hsuforum_add_new_post($post, $mform, &$message) {
+function hsuforum_add_new_post($post, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
@@ -4469,7 +4477,7 @@ function hsuforum_add_new_post($post, $mform, &$message) {
     $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options(), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
-    hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
+    hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
 
     // Update discussion modified date
     if (empty($post->privatereply)) {
@@ -4496,9 +4504,10 @@ function hsuforum_add_new_post($post, $mform, &$message) {
  * @param object $post
  * @param mixed $mform
  * @param string $message
+ * @param \mod_hsuforum\upload_file $uploader
  * @return bool
  */
-function hsuforum_update_post($post, $mform, &$message) {
+function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
@@ -4526,7 +4535,7 @@ function hsuforum_update_post($post, $mform, &$message) {
 
     $DB->update_record('hsuforum_discussions', $discussion);
 
-    hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
+    hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
 
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
         hsuforum_tp_mark_post_read($post->userid, $post, $post->forum);
@@ -4549,9 +4558,10 @@ function hsuforum_update_post($post, $mform, &$message) {
  * @param mixed $mform
  * @param string $message
  * @param int $userid
+ * @param \mod_hsuforum\upload_file $uploader
  * @return object
  */
-function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $userid=null) {
+function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $userid=null, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $timenow = time();
@@ -4611,7 +4621,7 @@ function hsuforum_add_discussion($discussion, $mform=null, &$message=null, $user
     $DB->set_field("hsuforum_posts", "discussion", $post->discussion, array("id"=>$post->id));
 
     if (!empty($cm->id)) {
-        hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
+        hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
     }
 
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
@@ -5821,7 +5831,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     if (!is_null($numdiscussions)) {
         echo html_writer::tag('h2', get_string('xdiscussions', 'hsuforum', $numdiscussions),
-            array('class' => 'hsuforum-discussion-count', 'data-count' => $numdiscussions));
+            array('class' => 'hsuforum-discussion-count', 'data-count' => $numdiscussions, 'tabindex' => '-1'));
     }
 
     if ($canstart) {

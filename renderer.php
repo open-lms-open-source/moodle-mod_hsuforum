@@ -1076,6 +1076,215 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         return $message;
     }
+
+    /**
+     * Get the simple edit discussion form
+     *
+     * @param object $cm
+     * @param int $postid
+     * @param array $data Template data
+     * @return string
+     */
+    public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
+        if (!empty($postid)) {
+            $params = array('edit' => $postid);
+            $legend = get_string('editingpost', 'hsuforum');
+        } else {
+            $params  = array('forum' => $cm->instance);
+            $legend = get_string('addyourdiscussion', 'hsuforum');
+        }
+        $context = context_module::instance($cm->id);
+
+        $data += array(
+            'itemid'        => 0,
+            'groupid'       => 0,
+            'messageformat' => FORMAT_HTML,
+        );
+        $actionurl = new moodle_url('/mod/hsuforum/route.php', array(
+            'action'        => (empty($postid)) ? 'add_discussion' : 'update_post',
+            'sesskey'       => sesskey(),
+            'edit'          => $postid,
+            'contextid'     => $context->id,
+            'itemid'        => $data['itemid'],
+            'messageformat' => $data['messageformat'],
+        ));
+
+        $extrahtml = '';
+        if (groups_get_activity_groupmode($cm)) {
+            $groupdata = groups_get_activity_allowed_groups($cm);
+            if (count($groupdata) > 1 && has_capability('mod/hsuforum:movediscussions', $context)) {
+                $groupinfo = array('0' => get_string('allparticipants'));
+                foreach ($groupdata as $grouptemp) {
+                    $groupinfo[$grouptemp->id] = $grouptemp->name;
+                }
+                $extrahtml = html_writer::tag('span', get_string('group'));
+                $extrahtml .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                $extrahtml = html_writer::tag('label', $extrahtml);
+            } else {
+                $actionurl->param('groupinfo', groups_get_activity_group($cm));
+            }
+        }
+        $data += array(
+            'postid'      => $postid,
+            'context'     => $context,
+            'actionurl'   => $actionurl,
+            'class'       => 'hsuforum-discussion',
+            'legend'      => $legend,
+            'extrahtml'   => $extrahtml,
+            'advancedurl' => new moodle_url('/mod/hsuforum/post.php', $params),
+        );
+        return $this->simple_edit_template($data);
+    }
+
+    /**
+     * Get the simple edit post form
+     *
+     * @param object $cm
+     * @param bool $isedit If we are editing or not
+     * @param int $postid If editing, then the ID of the post we are editing. If
+     *                    not editing, then the ID of the post we are replying to.
+     * @param array $data Template data
+     * @return string
+     */
+    public function simple_edit_post($cm, $isedit = false, $postid = 0, array $data = array()) {
+        if ($isedit) {
+            $param  = 'edit';
+            $legend = get_string('editingpost', 'hsuforum');
+        } else {
+            // It is a reply, AKA new post
+            $param  = 'reply';
+            $legend = get_string('addareply', 'hsuforum');
+        }
+        $context = context_module::instance($cm->id);
+
+        $data += array(
+            'itemid'        => 0,
+            'private'       => 0,
+            'messageformat' => FORMAT_HTML,
+        );
+        $actionurl = new moodle_url('/mod/hsuforum/route.php', array(
+            'action'        => ($isedit) ? 'update_post' : 'reply',
+            $param          => $postid,
+            'sesskey'       => sesskey(),
+            'contextid'     => $context->id,
+            'itemid'        => $data['itemid'],
+            'messageformat' => $data['messageformat'],
+        ));
+
+        $extrahtml = '';
+        if (has_capability('mod/hsuforum:allowprivate', $context)) {
+            $extrahtml = html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['private'])).
+                get_string('privatereply', 'hsuforum'));
+        }
+        $data += array(
+            'postid'      => ($isedit) ? $postid : 0,
+            'context'     => $context,
+            'actionurl'   => $actionurl,
+            'class'       => 'hsuforum-reply',
+            'legend'      => $legend,
+            'extrahtml'   => $extrahtml,
+            'advancedurl' => new moodle_url('/mod/hsuforum/post.php', array($param => $postid)),
+        );
+        return $this->simple_edit_template($data);
+    }
+
+    /**
+     * The simple edit template
+     *
+     * @param array $t The letter "t" is for template! Put template variables into here
+     * @return string
+     */
+    protected function simple_edit_template($t) {
+        global $USER;
+
+        $required = get_string('required');
+        $subjectlabeldefault = get_string('subject', 'hsuforum');
+        if (!array_key_exists('subjectrequired', $t) || $t['subjectrequired'] === true) {
+            $subjectlabeldefault .= " ($required)";
+        }
+
+        // Apply some sensible defaults.
+        $t += array(
+            'postid'             => 0,
+            'hidden'             => '',
+            'subject'            => '',
+            'subjectlabel'       => $subjectlabeldefault,
+            'subjectrequired'    => true,
+            'subjectplaceholder' => get_string('subjectplaceholder', 'hsuforum'),
+            'message'            => '',
+            'messagelabel'       => get_string('message', 'hsuforum')." ($required)",
+            'messageplaceholder' => get_string('messageplaceholder', 'hsuforum'),
+            'attachmentlabel'    => get_string('attachment', 'hsuforum'),
+            'submitlabel'        => get_string('submit', 'hsuforum'),
+            'cancellabel'        => get_string('cancel'),
+            'userpicture'        => $this->output->user_picture($USER, array('link' => false, 'size' => 100)),
+            'extrahtml'          => '',
+            'advancedlabel'      => get_string('useadvancededitor', 'hsuforum')
+        );
+
+        $t            = (object) $t;
+        $legend       = s($t->legend);
+        $subject      = s($t->subject);
+        $hidden       = html_writer::input_hidden_params($t->actionurl);
+        $actionurl    = $t->actionurl->out_omit_querystring();
+        $advancedurl  = s($t->advancedurl);
+        $messagelabel = s($t->messagelabel);
+        $files        = '';
+
+        $subjectrequired = '';
+        if ($t->subjectrequired) {
+            $subjectrequired = 'required="required"';
+        }
+        if (!empty($t->postid)) {
+            require_once(__DIR__.'/classes/attachments.php');
+            $attachments = new \mod_hsuforum\attachments($t->context);
+            foreach ($attachments->get_attachments($t->postid) as $file) {
+                $checkbox = html_writer::checkbox('deleteattachment[]', $file->get_filename(), false).
+                    get_string('deleteattachmentx', 'hsuforum', $file->get_filename());
+
+                $files .= html_writer::tag('label', $checkbox);
+            }
+            $files = html_writer::tag('legend', get_string('deleteattachments', 'hsuforum'), array('class' => 'accesshide')).$files;
+            $files = html_writer::tag('fieldset', $files);
+        }
+
+        return <<<HTML
+<div class="hsuforum-reply-wrapper">
+    <form method="post" role="region" aria-label="$legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
+        $hidden
+        <fieldset>
+            <legend>$t->legend</legend>
+            <div class="hsuforum-validation-errors" role="alert"></div>
+            <div class="hsuforum-post-figure">
+                $t->userpicture
+            </div>
+            <div class="hsuforum-post-body">
+                <label>
+                    <span class="accesshide">$t->subjectlabel</span>
+                    <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" />
+                </label>
+
+                <textarea name="message" class="hidden"></textarea>
+                <div data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="textarea">$t->message</div>
+
+                $files
+                <label>
+                    <span class="accesshide">$t->attachmentlabel</span>
+                    <input type="file" name="attachment[]" multiple="multiple" />
+                </label>
+
+                $t->extrahtml
+
+                <button type="submit">$t->submitlabel</button>
+                <a href="#" class="hsuforum-cancel disable-router">$t->cancellabel</a>
+                <a href="$advancedurl" class="hsuforum-use-advanced disable-router">$t->advancedlabel</a>
+            </div>
+        </fieldset>
+    </form>
+</div>
+HTML;
+
+    }
 }
 
 class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements render_interface {
@@ -1131,12 +1340,12 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $this->article_js();
         $output = html_writer::tag(
             'script',
-            $this->quick_reply_template(array('reply' => 0)),
+            $this->simple_edit_post($cm),
             array('type' => 'text/template', 'id' => 'hsuforum-reply-template')
         );
         $output .= html_writer::tag(
             'script',
-            $this->quick_add_discussion_template($cm),
+            $this->simple_edit_discussion($cm),
             array('type' => 'text/template', 'id' => 'hsuforum-discussion-template')
         );
         return $output;
@@ -1260,7 +1469,9 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $data->tools    = $this->toolbox($this->toolbox_commands($cm, $discussion, $post, $canreply), 'hsuforum-thread-tools');
 
         if ($canreply) {
-            $data->replyform = $this->quick_reply_template(array('reply' => $post->id));
+            $data->replyform = html_writer::tag(
+                'div', $this->simple_edit_post($cm, false, $post->id), array('class' => 'hsuforum-footer-reply')
+            );
         } else {
             $data->replyform = '';
         }
@@ -1509,153 +1720,6 @@ HTML;
     </div>
 </div>
 HTML;
-    }
-
-    protected function quick_reply_template($f) {
-        global $USER;
-
-        if (is_array($f)) {
-            $f = (object) $f;
-        }
-        $userpicture        = $this->output->user_picture($USER, array('link' => false, 'size' => 100));
-        $message            = get_string('message', 'hsuforum');
-        $attachment         = get_string('attachment', 'hsuforum');
-        $submit             = get_string('submit', 'hsuforum');
-        $useadvanced        = get_string('useadvancededitor', 'hsuforum');
-        $legend             = get_string('addareply', 'hsuforum');
-        $slegend            = s($legend);
-        $placeholder        = get_string('postareply', 'hsuforum');
-        $required           = get_string('required');
-        $subjectplaceholder = get_string('postsubjectplaceholder', 'hsuforum');
-        $subject            = get_string('subject', 'hsuforum');
-
-        $action = new moodle_url('/mod/hsuforum/route.php', array(
-            'action'        => 'reply',
-            'reply'         => $f->reply,
-            'sesskey'       => sesskey(),
-            'contextid'     => $this->page->context->id,
-            'messageformat' => FORMAT_MOODLE,
-        ));
-        $hidden = html_writer::input_hidden_params($action);
-        $actionurl = $action->out_omit_querystring();
-        $advancedurl = s(new moodle_url('/mod/hsuforum/post.php', array('reply' => $f->reply)));
-
-        $privatereply = '';
-        if (has_capability('mod/hsuforum:allowprivate', $this->page->context)) {
-            $privatereply = html_writer::tag('label', html_writer::checkbox('privatereply', 1, false).
-                get_string('privatereply', 'hsuforum'));
-        }
-
-        return <<<HTML
-<div class="hsuforum-reply-wrapper">
-    <form method="post" role="region" aria-label="$slegend" class="hsuforum-form hsuforum-reply" action="$actionurl" autocomplete="off">
-        $hidden
-        <fieldset>
-            <legend>$legend</legend>
-            <div class="hsuforum-validation-errors" role="alert"></div>
-            <div class="hsuforum-post-figure">
-                $userpicture
-            </div>
-            <div class="hsuforum-post-body">
-                <label>
-                    <span class="accesshide">$subject</span>
-                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" spellcheck="true" />
-                </label>
-                <label>
-                    <span class="accesshide">$message ($required)</span>
-                    <textarea placeholder="$placeholder" name="message" class="form-control" required="required" spellcheck="true"></textarea>
-                </label>
-
-                <label>
-                    <span class="accesshide">$attachment</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
-                </label>
-
-                $privatereply
-
-                <button type="submit">$submit</button>
-                <a href="$advancedurl" class="hsuforum-use-advanced disable-router">$useadvanced</a>
-            </div>
-        </fieldset>
-    </form>
-</div>
-HTML;
-
-    }
-
-    protected function quick_add_discussion_template($cm) {
-        global $USER;
-
-        $userpicture        = $this->output->user_picture($USER, array('link' => false, 'size' => 100));
-        $subject            = get_string('subject', 'hsuforum');
-        $message            = get_string('message', 'hsuforum');
-        $attachment         = get_string('attachment', 'hsuforum');
-        $submit             = get_string('submit', 'hsuforum');
-        $useadvanced        = get_string('useadvancededitor', 'hsuforum');
-        $legend             = get_string('addyourdiscussion', 'hsuforum');
-        $subjectplaceholder = get_string('discussionsubjectplaceholder', 'hsuforum');
-        $messageplaceholder = get_string('discussionmessageplaceholder', 'hsuforum');
-        $required           = get_string('required');
-
-        $action = new moodle_url('/mod/hsuforum/route.php', array(
-            'action'        => 'add_discussion',
-            'sesskey'       => sesskey(),
-            'contextid'     => $this->page->context->id,
-            'messageformat' => FORMAT_MOODLE,
-        ));
-        $hidden = html_writer::input_hidden_params($action);
-        $actionurl = $action->out_omit_querystring();
-        $advancedurl = s(new moodle_url('/mod/hsuforum/post.php', array('forum' => $cm->instance)));
-
-        $grouphtml = '';
-        if (groups_get_activity_groupmode($cm, $cm->cache->course)) {
-            $groupdata  = groups_get_activity_allowed_groups($cm);
-            if (count($groupdata) > 1 && has_capability('mod/hsuforum:movediscussions', $this->page->context)) {
-                $groupinfo = array('0' => get_string('allparticipants'));
-                foreach ($groupdata as $grouptemp) {
-                    $groupinfo[$grouptemp->id] = $grouptemp->name;
-                }
-                $grouphtml  = html_writer::tag('span', get_string('group'));
-                $grouphtml .= html_writer::select($groupinfo, 'groupinfo', '', false);
-                $grouphtml  = html_writer::tag('label', $grouphtml);
-            }
-        }
-
-        return <<<HTML
-<div class="hsuforum-reply-wrapper">
-    <form method="post" class="hsuforum-form hsuforum-discussion" action="$actionurl" autocomplete="off">
-        $hidden
-        <fieldset>
-            <legend>$legend</legend>
-            <div class="hsuforum-validation-errors" role="alert"></div>
-            <div class="hsuforum-post-figure">
-                $userpicture
-            </div>
-            <div class="hsuforum-post-body">
-                <label>
-                    <span class="accesshide">$subject ($required)</span>
-                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" required="required" spellcheck="true" />
-                </label>
-                <label>
-                    <span class="accesshide">$message ($required)</span>
-                    <textarea placeholder="$messageplaceholder" name="message" class="form-control" required="required" spellcheck="true"></textarea>
-                </label>
-
-                <label>
-                    <span class="accesshide">$attachment</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
-                </label>
-
-                $grouphtml
-
-                <button type="submit">$submit</button>
-                <a href="$advancedurl" class="hsuforum-use-advanced disable-router">$useadvanced</a>
-            </div>
-        </fieldset>
-    </form>
-</div>
-HTML;
-
     }
 
     protected function get_post_user_url($cm, $postuser) {

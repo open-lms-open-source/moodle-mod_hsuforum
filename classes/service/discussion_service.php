@@ -24,6 +24,7 @@
 
 namespace mod_hsuforum\service;
 
+use mod_hsuforum\attachments;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use moodle_exception;
@@ -69,7 +70,7 @@ class discussion_service {
         global $PAGE, $OUTPUT;
 
         $uploader = new upload_file(
-            $context, \mod_hsuforum_post_form::attachment_options($forum), 'attachment'
+            new attachments($context), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
         $discussion = $this->create_discussion_object($forum, $context, $options);
@@ -90,6 +91,7 @@ class discussion_service {
         $message = get_string('postaddedsuccess', 'hsuforum');
 
         return new json_response((object) array(
+            'eventaction'      => 'discussioncreated',
             'discussionid'     => (int) $discussion->id,
             'livelog'          => $message,
             'notificationhtml' => $OUTPUT->notification($message, 'notifysuccess'),

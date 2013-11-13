@@ -29,10 +29,49 @@ ARTICLE.ATTRS = {
      */
     contextId: { value: undefined },
 
+    /**
+     * Used for REST calls
+     *
+     * @attribute io
+     * @type M.mod_hsuforum.Io
+     * @readOnly
+     */
     io: { readOnly: true },
+
+    /**
+     * Used primarily for updating the DOM
+     *
+     * @attribute dom
+     * @type M.mod_hsuforum.Dom
+     * @readOnly
+     */
     dom: { readOnly: true },
+
+    /**
+     * Used for routing URLs within the same page
+     *
+     * @attribute router
+     * @type M.mod_hsuforum.Router
+     * @readOnly
+     */
     router: { readOnly: true },
+
+    /**
+     * Displays, hides and submits forms
+     *
+     * @attribute form
+     * @type M.mod_hsuforum.Form
+     * @readOnly
+     */
     form: { readOnly: true },
+
+    /**
+     * Maintains an aria live log
+     *
+     * @attribute liveLog
+     * @type M.mod_hsuforum.init_livelog
+     * @readOnly
+     */
     liveLog: { readOnly: true }
 };
 
@@ -53,6 +92,7 @@ Y.extend(ARTICLE, Y.Base,
 
         /**
          * Bind all event listeners
+         * @method bind
          */
         bind: function() {
             if (Y.one(SELECTORS.SEARCH_PAGE) !== null) {
@@ -71,6 +111,7 @@ Y.extend(ARTICLE, Y.Base,
 
             // We bind to document otherwise screen readers read everything as clickable.
             Y.delegate('click', this.handleViewNextDiscussion, document, SELECTORS.DISCUSSION_NEXT, this);
+            Y.delegate('click', form.handleCancelForm, document, SELECTORS.LINK_CANCEL, form);
             Y.delegate('click', router.handleRoute, document, SELECTORS.CONTAINER_LINKS, router);
             Y.delegate('click', dom.handleViewRating, document, SELECTORS.RATE_POPUP, dom);
             Y.delegate('click', function(e) {
@@ -79,34 +120,51 @@ Y.extend(ARTICLE, Y.Base,
                 this.get('liveLog').logText(M.str.mod_hsuforum.discussionclosed);
             }, document, SELECTORS.DISCUSSION_CLOSE, this);
 
-            // Sumit handlers.
-            rootNode.delegate('submit', form.handleSubmitReplyTo, SELECTORS.FORM_REPLY, form);
-            rootNode.delegate('submit', form.handleSubmitAddDiscussion, SELECTORS.FORM_DISCUSSION, form);
+            Y.delegate('click', function() {
+                // On discussion open, log that it was loaded
+                this.get('liveLog').logText(M.str.mod_hsuforum.discussionloaded);
+            }, document, [SELECTORS.DISCUSSION_VIEW, SELECTORS.DISCUSSION_NEXT, SELECTORS.DISCUSSION_PREV].join(', '), this);
+
+            // Submit handlers.
+            rootNode.delegate('submit', form.handleFormSubmit, SELECTORS.FORM, form);
             if (addNode instanceof Y.Node) {
                 addNode.on('submit', router.handleAddDiscussionRoute, router);
             }
 
-            // Inter-module "relations" - so scandalous!
-            form.on(EVENTS.POST_CREATED, dom.handlePostCreated, dom);
+            // On post created, update HTML, URL and log.
+            form.on(EVENTS.POST_CREATED, dom.handleUpdateDiscussion, dom);
             form.on(EVENTS.POST_CREATED, router.handleViewDiscussion, router);
-
-            form.on(EVENTS.DISCUSSION_CREATED, dom.handleDiscussionCreated, dom);
-            form.on(EVENTS.DISCUSSION_CREATED, router.handleViewDiscussion, router);
-
-            this.on(EVENTS.POST_DELETE, dom.handlePostDelete, dom);
-            dom.on(EVENTS.POST_DELETED, router.handleViewDiscussion, router);
-
-            // Live logging.
-            form.on(EVENTS.DISCUSSION_CREATED, this.handleLiveLog, this);
             form.on(EVENTS.POST_CREATED, this.handleLiveLog, this);
-            dom.on(EVENTS.POST_DELETED, this.handleLiveLog, this);
-            Y.delegate('click', function() {
-                this.get('liveLog').logText(M.str.mod_hsuforum.discussionloaded);
-            }, document, [SELECTORS.DISCUSSION_VIEW, SELECTORS.DISCUSSION_NEXT, SELECTORS.DISCUSSION_PREV].join(', '), this);
+
+            // On post updated, update HTML and URL and log.
+            form.on(EVENTS.POST_UPDATED, dom.handleUpdateDiscussion, dom);
+            form.on(EVENTS.POST_UPDATED, router.handleViewDiscussion, router);
+            form.on(EVENTS.POST_UPDATED, this.handleLiveLog, this);
+
+            // On discussion created, update HTML, display notification, update URL and log it.
+            form.on(EVENTS.DISCUSSION_CREATED, dom.handleUpdateDiscussion, dom);
+            form.on(EVENTS.DISCUSSION_CREATED, dom.handleDiscussionCreated, dom);
+            form.on(EVENTS.DISCUSSION_CREATED, dom.handleNotification, dom);
+            form.on(EVENTS.DISCUSSION_CREATED, router.handleViewDiscussion, router);
+            form.on(EVENTS.DISCUSSION_CREATED, this.handleLiveLog, this);
+
+            // On discussion delete, update HTML (may redirect!), display notification and log it.
+            this.on(EVENTS.DISCUSSION_DELETED, dom.handleDiscussionDeleted, dom);
+            this.on(EVENTS.DISCUSSION_DELETED, dom.handleNotification, dom);
+            this.on(EVENTS.DISCUSSION_DELETED, this.handleLiveLog, this);
+
+            // On post deleted, update HTML, URL and log.
+            this.on(EVENTS.POST_DELETED, dom.handleUpdateDiscussion, dom);
+            this.on(EVENTS.POST_DELETED, router.handleViewDiscussion, router);
+            this.on(EVENTS.POST_DELETED, this.handleLiveLog, this);
+
+            // On form cancel, update the URL to view the discussion/post.
+            form.on(EVENTS.FORM_CANCELED, router.handleViewDiscussion, router);
         },
 
         /**
          * Inspects event object for livelog and logs it if found
+         * @method handleLiveLog
          * @param e
          */
         handleLiveLog: function(e) {
@@ -117,6 +175,8 @@ Y.extend(ARTICLE, Y.Base,
 
         /**
          * View a discussion
+         *
+         * @method viewDiscussion
          * @param discussionid
          * @param [postid]
          */
@@ -128,9 +188,10 @@ Y.extend(ARTICLE, Y.Base,
                 return;
             }
             this.get('dom').ensurePostsExist(node, function() {
-                this.collapseAllDiscussions();
-                this.expandDiscussion(node);
-
+                if (!node.hasClass(CSS.DISCUSSION_EXPANDED)) {
+                    this.collapseAllDiscussions();
+                    this.expandDiscussion(node);
+                }
                 if (!Y.Lang.isUndefined(postid)) {
                     var postNode = Y.one(SELECTORS.POST_BY_ID.replace('%d', postid));
                     if (postNode === null || postNode.hasAttribute('data-isdiscussion')) {
@@ -148,6 +209,8 @@ Y.extend(ARTICLE, Y.Base,
          * Load more discussions when navigating
          * to the next discussion and there are
          * none.
+         *
+         * @method handleViewNextDiscussion
          * @param e
          */
         handleViewNextDiscussion: function(e) {
@@ -170,6 +233,8 @@ Y.extend(ARTICLE, Y.Base,
 
         /**
          * Load a page of discussions.
+         *
+         * @method loadPage
          * @param page
          * @param {Function} [fn]
          * @param [context]
@@ -246,6 +311,8 @@ Y.extend(ARTICLE, Y.Base,
 
         /**
          * Expand a discussion
+         *
+         * @method expandDiscussion
          * @param discussionNode
          */
         expandDiscussion: function(discussionNode) {
@@ -255,24 +322,28 @@ Y.extend(ARTICLE, Y.Base,
                 discussion.setAttribute('aria-hidden', 'true');
             });
             discussionNode.setAttribute('aria-hidden', 'false');
-            discussionNode.addClass('hsuforum-thread-article-expanded');
+            discussionNode.addClass(CSS.DISCUSSION_EXPANDED);
             this.get('form').attachFormWarnings();
         },
 
         /**
          * Collapse all discussions
+         *
+         * @method collapseAllDiscussions
          */
         collapseAllDiscussions: function() {
             Y.log('Collapsing all discussions', 'info', 'Article');
             var discussions = Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION);
             discussions.each(function(discussion) {
-                discussion.removeClass('hsuforum-thread-article-expanded');
+                discussion.removeClass(CSS.DISCUSSION_EXPANDED);
                 discussion.setAttribute('aria-hidden', 'false');
             });
         },
 
         /**
          * Determine if we can load more discussions
+         *
+         * @method canLoadMoreDiscussions
          * @returns {boolean}
          */
         canLoadMoreDiscussions: function() {
@@ -283,14 +354,46 @@ Y.extend(ARTICLE, Y.Base,
             return loadNode.getStyle('display') !== 'none';
         },
 
-        confirmDelete: function(postId) {
+        /**
+         * Confirm deletion of a post
+         *
+         * @method confirmDeletePost
+         * @param {Integer} postId
+         */
+        confirmDeletePost: function(postId) {
             var node = Y.one(SELECTORS.POST_BY_ID.replace('%d', postId));
             if (node === null) {
                 return;
             }
             if (window.confirm(M.str.mod_hsuforum.deletesure) === true) {
-                this.fire(EVENTS.POST_DELETE, {postid: postId});
+                this.deletePost(postId)
             }
+        },
+
+        /**
+         * Delete a post
+         *
+         * @method deletePost
+         * @param {Integer} postId
+         */
+        deletePost: function(postId) {
+            var node = Y.one(SELECTORS.POST_BY_ID.replace('%d', postId));
+            if (node === null) {
+                return;
+            }
+            Y.log('Deleting post: ' + postId);
+
+            this.get('io').send({
+                postid: postId,
+                sesskey: M.cfg.sesskey,
+                action: 'delete_post'
+            }, function(data) {
+                if (node.hasAttribute('data-isdiscussion')) {
+                    this.fire(EVENTS.DISCUSSION_DELETED, data);
+                } else {
+                    this.fire(EVENTS.POST_DELETED, data);
+                }
+            }, this);
         }
     }
 );
