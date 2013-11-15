@@ -5830,7 +5830,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     echo $OUTPUT->container_start('clearfix');
 
     if (!is_null($numdiscussions)) {
-        echo html_writer::tag('h2', get_string('xdiscussions', 'hsuforum', $numdiscussions),
+        echo html_writer::tag('h3', get_string('xdiscussions', 'hsuforum', $numdiscussions),
             array('class' => 'hsuforum-discussion-count', 'data-count' => $numdiscussions, 'tabindex' => '-1'));
     }
 

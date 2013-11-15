@@ -1510,7 +1510,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
                 hsuforum_tp_mark_post_read($USER->id, $parent, $cm->cache->forum->id);
             }
         }
-        $output  = html_writer::tag('h4', get_string('xreplies', 'hsuforum', $count), array('role' => 'heading', 'aria-level' => '4'));
+        $output  = html_writer::tag('h5', get_string('xreplies', 'hsuforum', $count), array('role' => 'heading', 'aria-level' => '5'));
         if (!empty($count)) {
             $output .= html_writer::tag('ol', $items, array('class' => 'hsuforum-thread-replies-list'));
         }
@@ -1646,9 +1646,9 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
                 $unread
             </p>
 
-            <h3 id="thread_title_{$d->id}" role="heading" aria-level="3" class="hsuforum-thread-title">
+            <h4 id="thread_title_{$d->id}" role="heading" aria-level="4" class="hsuforum-thread-title">
                 <a class="hsuforum-thread-view" href="$d->viewurl">$d->subject</a>
-            </h3>
+            </h4>
 
             <p class="hsuforum-thread-replies-meta">$meta</p>
         </div>
@@ -1706,9 +1706,9 @@ HTML;
 
     <div class="hsuforum-post-body">
         $unread
-        <h5 role="heading" aria-level="5" class="hsuforum-post-byline">
+        <h6 role="heading" aria-level="6" class="hsuforum-post-byline">
             $byuser
-        </h5>
+        </h6>
 
         <div class="hsuforum-post-content">
             <strong class="hsuforum-post-title">$p->subject</strong>
