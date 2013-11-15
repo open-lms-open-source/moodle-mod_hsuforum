@@ -61,13 +61,15 @@ Y.extend(IO, Y.Base,
             try {
                 data = Y.JSON.parse(response.responseText);
             } catch (e) {
-                e.zIndex = 10000;
-                new M.core.exception(e);
+                Y.log(e, 'error', 'Io');
+                alert(e.name + ": " + e.message);
                 return;
             }
             if (Lang.isValue(data.error)) {
-                data.zIndex = 10000;
-                new M.core.ajaxException(data);
+                Y.log('Error message: ' + data.error, 'error', 'Io');
+                Y.log('Debug info: ' + data.debuginfo, 'error', 'Io');
+                Y.log("Stack trace:\n" + data.stacktrace, 'error', 'Io');
+                alert(data.error);
             } else {
                 args.fn.call(args.context, data);
             }
