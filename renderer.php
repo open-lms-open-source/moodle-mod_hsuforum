@@ -1261,7 +1261,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             <div class="hsuforum-post-body">
                 <label>
                     <span class="accesshide">$t->subjectlabel</span>
-                    <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" />
+                    <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
                 </label>
 
                 <textarea name="message" class="hidden"></textarea>
