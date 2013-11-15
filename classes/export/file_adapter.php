@@ -130,13 +130,13 @@ class file_adapter implements adapter_interface {
             $message = html_to_text($message);
 
             if ($post->id == $discussion->firstpost) {
-                $this->format->export_discussion($discname, $author, $post->created, $message, $attachments);
+                $this->format->export_discussion($post->id, $discname, $author, $post->created, $message, $attachments);
             } else {
                 $private = '';
                 if (!empty($post->privatereply)) {
                     $private = get_string('yes');
                 }
-                $this->format->export_post($discname, format_string($post->subject), $author, $post->created, $message, $attachments, $private);
+                $this->format->export_post($post->id, $discname, format_string($post->subject), $author, $post->created, $message, $attachments, $private);
             }
         }
     }
