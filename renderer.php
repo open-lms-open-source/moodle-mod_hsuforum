@@ -1177,13 +1177,14 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 get_string('privatereply', 'hsuforum'));
         }
         $data += array(
-            'postid'      => ($isedit) ? $postid : 0,
-            'context'     => $context,
-            'actionurl'   => $actionurl,
-            'class'       => 'hsuforum-reply',
-            'legend'      => $legend,
-            'extrahtml'   => $extrahtml,
-            'advancedurl' => new moodle_url('/mod/hsuforum/post.php', array($param => $postid)),
+            'postid'          => ($isedit) ? $postid : 0,
+            'context'         => $context,
+            'actionurl'       => $actionurl,
+            'class'           => 'hsuforum-reply',
+            'legend'          => $legend,
+            'extrahtml'       => $extrahtml,
+            'subjectrequired' => $isedit,
+            'advancedurl'     => new moodle_url('/mod/hsuforum/post.php', array($param => $postid)),
         );
         return $this->simple_edit_template($data);
     }
