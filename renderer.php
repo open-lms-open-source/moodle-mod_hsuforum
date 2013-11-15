@@ -701,13 +701,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $cm->cache->context->id, 'mod_hsuforum', 'post', $post->id);
 
-        $postcontent  = format_text($message, $post->messageformat, $options, $cm->course);
+        $postcontent = format_text($message, $post->messageformat, $options, $cm->course);
+        if (!empty($attachments)) {
+            $postcontent .= html_writer::tag('div', $attachments, array('class' => 'attachments'));
+        }
         $postcontent .= html_writer::tag('div', $attachedimages, array('class' => 'attachedimages'));
         $postcontent  = html_writer::tag('div', $postcontent, array('class' => 'posting'));
 
-        if (!empty($attachments)) {
-            $postcontent = html_writer::tag('div', $attachments, array('class' => 'attachments')).$postcontent;
-        }
         return html_writer::tag('div', $postcontent, array('class' => 'content'));
     }
 
@@ -940,8 +940,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
 
+        echo $OUTPUT->heading(format_string($forum->name), 2);
+
         /// find out current groups mode
-        groups_print_activity_menu($cm, $PAGE->url);
         groups_get_activity_group($cm);
         groups_get_activity_groupmode($cm);
 
@@ -949,12 +950,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         hsuforum_lib_discussion_nav::set_to_session();
 
         $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
-        if ($forum->type != 'single') {
-            $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
-            $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
-            hsuforum_lib_discussion_sort::set_to_session($dsort);
-            echo $this->discussion_sorting($dsort);
-        }
 
         // If it's a simple single discussion forum, we need to print the display
         // mode control.
@@ -1049,7 +1044,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 if (!empty($forum->intro)) {
                     echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
                 }
-                echo '<br />';
                 if (!empty($showall)) {
                     hsuforum_print_latest_discussions($course, $forum, 0, 'header', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
                 } else {
@@ -1081,6 +1075,215 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             ));
         }
         return $message;
+    }
+
+    /**
+     * Get the simple edit discussion form
+     *
+     * @param object $cm
+     * @param int $postid
+     * @param array $data Template data
+     * @return string
+     */
+    public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
+        if (!empty($postid)) {
+            $params = array('edit' => $postid);
+            $legend = get_string('editingpost', 'hsuforum');
+        } else {
+            $params  = array('forum' => $cm->instance);
+            $legend = get_string('addyourdiscussion', 'hsuforum');
+        }
+        $context = context_module::instance($cm->id);
+
+        $data += array(
+            'itemid'        => 0,
+            'groupid'       => 0,
+            'messageformat' => FORMAT_HTML,
+        );
+        $actionurl = new moodle_url('/mod/hsuforum/route.php', array(
+            'action'        => (empty($postid)) ? 'add_discussion' : 'update_post',
+            'sesskey'       => sesskey(),
+            'edit'          => $postid,
+            'contextid'     => $context->id,
+            'itemid'        => $data['itemid'],
+            'messageformat' => $data['messageformat'],
+        ));
+
+        $extrahtml = '';
+        if (groups_get_activity_groupmode($cm)) {
+            $groupdata = groups_get_activity_allowed_groups($cm);
+            if (count($groupdata) > 1 && has_capability('mod/hsuforum:movediscussions', $context)) {
+                $groupinfo = array('0' => get_string('allparticipants'));
+                foreach ($groupdata as $grouptemp) {
+                    $groupinfo[$grouptemp->id] = $grouptemp->name;
+                }
+                $extrahtml = html_writer::tag('span', get_string('group'));
+                $extrahtml .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                $extrahtml = html_writer::tag('label', $extrahtml);
+            } else {
+                $actionurl->param('groupinfo', groups_get_activity_group($cm));
+            }
+        }
+        $data += array(
+            'postid'      => $postid,
+            'context'     => $context,
+            'actionurl'   => $actionurl,
+            'class'       => 'hsuforum-discussion',
+            'legend'      => $legend,
+            'extrahtml'   => $extrahtml,
+            'advancedurl' => new moodle_url('/mod/hsuforum/post.php', $params),
+        );
+        return $this->simple_edit_template($data);
+    }
+
+    /**
+     * Get the simple edit post form
+     *
+     * @param object $cm
+     * @param bool $isedit If we are editing or not
+     * @param int $postid If editing, then the ID of the post we are editing. If
+     *                    not editing, then the ID of the post we are replying to.
+     * @param array $data Template data
+     * @return string
+     */
+    public function simple_edit_post($cm, $isedit = false, $postid = 0, array $data = array()) {
+        if ($isedit) {
+            $param  = 'edit';
+            $legend = get_string('editingpost', 'hsuforum');
+        } else {
+            // It is a reply, AKA new post
+            $param  = 'reply';
+            $legend = get_string('addareply', 'hsuforum');
+        }
+        $context = context_module::instance($cm->id);
+
+        $data += array(
+            'itemid'        => 0,
+            'private'       => 0,
+            'messageformat' => FORMAT_HTML,
+        );
+        $actionurl = new moodle_url('/mod/hsuforum/route.php', array(
+            'action'        => ($isedit) ? 'update_post' : 'reply',
+            $param          => $postid,
+            'sesskey'       => sesskey(),
+            'contextid'     => $context->id,
+            'itemid'        => $data['itemid'],
+            'messageformat' => $data['messageformat'],
+        ));
+
+        $extrahtml = '';
+        if (has_capability('mod/hsuforum:allowprivate', $context)) {
+            $extrahtml = html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['private'])).
+                get_string('privatereply', 'hsuforum'));
+        }
+        $data += array(
+            'postid'      => ($isedit) ? $postid : 0,
+            'context'     => $context,
+            'actionurl'   => $actionurl,
+            'class'       => 'hsuforum-reply',
+            'legend'      => $legend,
+            'extrahtml'   => $extrahtml,
+            'advancedurl' => new moodle_url('/mod/hsuforum/post.php', array($param => $postid)),
+        );
+        return $this->simple_edit_template($data);
+    }
+
+    /**
+     * The simple edit template
+     *
+     * @param array $t The letter "t" is for template! Put template variables into here
+     * @return string
+     */
+    protected function simple_edit_template($t) {
+        global $USER;
+
+        $required = get_string('required');
+        $subjectlabeldefault = get_string('subject', 'hsuforum');
+        if (!array_key_exists('subjectrequired', $t) || $t['subjectrequired'] === true) {
+            $subjectlabeldefault .= " ($required)";
+        }
+
+        // Apply some sensible defaults.
+        $t += array(
+            'postid'             => 0,
+            'hidden'             => '',
+            'subject'            => '',
+            'subjectlabel'       => $subjectlabeldefault,
+            'subjectrequired'    => true,
+            'subjectplaceholder' => get_string('subjectplaceholder', 'hsuforum'),
+            'message'            => '',
+            'messagelabel'       => get_string('message', 'hsuforum')." ($required)",
+            'messageplaceholder' => get_string('messageplaceholder', 'hsuforum'),
+            'attachmentlabel'    => get_string('attachment', 'hsuforum'),
+            'submitlabel'        => get_string('submit', 'hsuforum'),
+            'cancellabel'        => get_string('cancel'),
+            'userpicture'        => $this->output->user_picture($USER, array('link' => false, 'size' => 100)),
+            'extrahtml'          => '',
+            'advancedlabel'      => get_string('useadvancededitor', 'hsuforum')
+        );
+
+        $t            = (object) $t;
+        $legend       = s($t->legend);
+        $subject      = s($t->subject);
+        $hidden       = html_writer::input_hidden_params($t->actionurl);
+        $actionurl    = $t->actionurl->out_omit_querystring();
+        $advancedurl  = s($t->advancedurl);
+        $messagelabel = s($t->messagelabel);
+        $files        = '';
+
+        $subjectrequired = '';
+        if ($t->subjectrequired) {
+            $subjectrequired = 'required="required"';
+        }
+        if (!empty($t->postid)) {
+            require_once(__DIR__.'/classes/attachments.php');
+            $attachments = new \mod_hsuforum\attachments($t->context);
+            foreach ($attachments->get_attachments($t->postid) as $file) {
+                $checkbox = html_writer::checkbox('deleteattachment[]', $file->get_filename(), false).
+                    get_string('deleteattachmentx', 'hsuforum', $file->get_filename());
+
+                $files .= html_writer::tag('label', $checkbox);
+            }
+            $files = html_writer::tag('legend', get_string('deleteattachments', 'hsuforum'), array('class' => 'accesshide')).$files;
+            $files = html_writer::tag('fieldset', $files);
+        }
+
+        return <<<HTML
+<div class="hsuforum-reply-wrapper">
+    <form method="post" role="region" aria-label="$legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
+        $hidden
+        <fieldset>
+            <legend>$t->legend</legend>
+            <div class="hsuforum-validation-errors" role="alert"></div>
+            <div class="hsuforum-post-figure">
+                $t->userpicture
+            </div>
+            <div class="hsuforum-post-body">
+                <label>
+                    <span class="accesshide">$t->subjectlabel</span>
+                    <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
+                </label>
+
+                <textarea name="message" class="hidden"></textarea>
+                <div data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="textarea">$t->message</div>
+
+                $files
+                <label>
+                    <span class="accesshide">$t->attachmentlabel</span>
+                    <input type="file" name="attachment[]" multiple="multiple" />
+                </label>
+
+                $t->extrahtml
+
+                <button type="submit">$t->submitlabel</button>
+                <a href="#" class="hsuforum-cancel disable-router">$t->cancellabel</a>
+                <a href="$advancedurl" class="hsuforum-use-advanced disable-router">$t->advancedlabel</a>
+            </div>
+        </fieldset>
+    </form>
+</div>
+HTML;
+
     }
 }
 
@@ -1114,6 +1317,8 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
     }
 
     public function article_js() {
+        // For some reason, I need to require core_rating manually...
+        $this->page->requires->js_module('core_rating');
         $this->page->requires->yui_module(
             'moodle-mod_hsuforum-article',
             'M.mod_hsuforum.init_article',
@@ -1135,13 +1340,13 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $this->article_js();
         $output = html_writer::tag(
             'script',
-            $this->quick_reply_template(array('reply' => 0)),
-            array('type' => 'text', 'id' => 'hsuforum-reply-template')
+            $this->simple_edit_post($cm),
+            array('type' => 'text/template', 'id' => 'hsuforum-reply-template')
         );
         $output .= html_writer::tag(
             'script',
-            $this->quick_add_discussion_template($cm),
-            array('type' => 'text', 'id' => 'hsuforum-discussion-template')
+            $this->simple_edit_discussion($cm),
+            array('type' => 'text/template', 'id' => 'hsuforum-discussion-template')
         );
         return $output;
     }
@@ -1155,11 +1360,9 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
      * @return string
      */
     public function discussions($cm, array $discussions, array $options) {
-        $output = '';
-        if (!empty($options['total'])) {
-            $output = html_writer::tag('h2', get_string('xdiscussions', 'hsuforum', $options['total']),
-                array('class' => 'hsuforum-thread-count', 'data-count' => $options['total']));
-        }
+        hsuforum_cm_add_cache($cm);
+
+        $output = html_writer::tag('div', '', array('class' => 'hsuforum-new-discussion-target'));
         foreach ($discussions as $discussionpost) {
             list($discussion, $post) = $discussionpost;
             $output .= $this->discussion($cm, $discussion, $post);
@@ -1176,11 +1379,10 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
                 'data-total'   => $options['total'],
             ));
         }
-        $output .= $this->article_assets($cm);
-
         return $this->notification_area().
             $this->output->container('', 'hsuforum-add-discussion-target').
-            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions', 'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1'));
+            html_writer::tag('section', $output, array('role' => 'region', 'aria-label' => get_string('discussions', 'hsuforum'), 'class' => 'hsuforum-threads-wrapper', 'tabindex' => '-1')).
+            $this->article_assets($cm);
     }
 
     /**
@@ -1255,6 +1457,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $data->subject  = $this->raw_post_subject($post);
         $data->message  = $this->post_message($post, $cm);
         $data->created  = userdate($post->created, $format);
+        $data->datetime = date(DATE_W3C, usertime($post->created));
         $data->modified = userdate($discussion->timemodified, $format);
         $data->unread   = $discussion->unread;
         $data->replies  = $discussion->replies;
@@ -1266,7 +1469,9 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $data->tools    = $this->toolbox($this->toolbox_commands($cm, $discussion, $post, $canreply), 'hsuforum-thread-tools');
 
         if ($canreply) {
-            $data->replyform = $this->quick_reply_template(array('reply' => $post->id));
+            $data->replyform = html_writer::tag(
+                'div', $this->simple_edit_post($cm, false, $post->id), array('class' => 'hsuforum-footer-reply')
+            );
         } else {
             $data->replyform = '';
         }
@@ -1305,7 +1510,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
                 hsuforum_tp_mark_post_read($USER->id, $parent, $cm->cache->forum->id);
             }
         }
-        $output  = html_writer::tag('h4', get_string('xreplies', 'hsuforum', $count), array('role' => 'heading', 'aria-level' => '4'));
+        $output  = html_writer::tag('h5', get_string('xreplies', 'hsuforum', $count), array('role' => 'heading', 'aria-level' => '5'));
         if (!empty($count)) {
             $output .= html_writer::tag('ol', $items, array('class' => 'hsuforum-thread-replies-list'));
         }
@@ -1377,6 +1582,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $data->subject        = property_exists($post, 'breadcrumb') ? $post->breadcrumb : $this->raw_post_subject($post);
         $data->message        = $this->post_message($post, $cm);
         $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
+        $data->datetime       = date(DATE_W3C, usertime($post->created));
         $data->privatereply   = $post->privatereply;
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
@@ -1436,19 +1642,19 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
             <p class="hsuforum-thread-byline">
                 $byuser$group
                 <br />
-                <time class="hsuforum-thread-pubdate">$d->created</time>
+                <time datetime="$d->datetime" class="hsuforum-thread-pubdate">$d->created</time>
                 $unread
             </p>
 
-            <h3 id="thread_title_{$d->id}" role="heading" aria-level="3" class="hsuforum-thread-title">
+            <h4 id="thread_title_{$d->id}" role="heading" aria-level="4" class="hsuforum-thread-title">
                 <a class="hsuforum-thread-view" href="$d->viewurl">$d->subject</a>
-            </h3>
+            </h4>
 
             <p class="hsuforum-thread-replies-meta">$meta</p>
         </div>
     </header>
     <div class="hsuforum-thread-content" tabindex="0">
-        <p>$d->message</p>
+        $d->message
     </div>
     $d->tools
     $d->posts
@@ -1500,167 +1706,20 @@ HTML;
 
     <div class="hsuforum-post-body">
         $unread
-        <h5 role="heading" aria-level="5" class="hsuforum-post-byline">
+        <h6 role="heading" aria-level="6" class="hsuforum-post-byline">
             $byuser
-        </h5>
+        </h6>
 
         <div class="hsuforum-post-content">
             <strong class="hsuforum-post-title">$p->subject</strong>
-            <p>$p->message</p>
+            $p->message
         </div>
-        <time class="hsuforum-post-pubdate"><a href="$p->permalink" class="disable-router">$p->created</a></time>
+        <time datetime="$p->datetime" class="hsuforum-post-pubdate"><a href="$p->permalink" class="disable-router">$p->created</a></time>
 
         $p->tools
     </div>
 </div>
 HTML;
-    }
-
-    protected function quick_reply_template($f) {
-        global $USER;
-
-        if (is_array($f)) {
-            $f = (object) $f;
-        }
-        $userpicture        = $this->output->user_picture($USER, array('link' => false, 'size' => 100));
-        $message            = get_string('message', 'hsuforum');
-        $attachment         = get_string('attachment', 'hsuforum');
-        $submit             = get_string('submit', 'hsuforum');
-        $useadvanced        = get_string('useadvancededitor', 'hsuforum');
-        $legend             = get_string('addareply', 'hsuforum');
-        $slegend            = s($legend);
-        $placeholder        = get_string('postareply', 'hsuforum');
-        $required           = get_string('required');
-        $subjectplaceholder = get_string('postsubjectplaceholder', 'hsuforum');
-        $subject            = get_string('subject', 'hsuforum');
-
-        $action = new moodle_url('/mod/hsuforum/route.php', array(
-            'action'        => 'reply',
-            'reply'         => $f->reply,
-            'sesskey'       => sesskey(),
-            'contextid'     => $this->page->context->id,
-            'messageformat' => FORMAT_MOODLE,
-        ));
-        $hidden = html_writer::input_hidden_params($action);
-        $actionurl = $action->out_omit_querystring();
-        $advancedurl = s(new moodle_url('/mod/hsuforum/post.php', array('reply' => $f->reply)));
-
-        $privatereply = '';
-        if (has_capability('mod/hsuforum:allowprivate', $this->page->context)) {
-            $privatereply = html_writer::tag('label', html_writer::checkbox('privatereply', 1, false).
-                get_string('privatereply', 'hsuforum'));
-        }
-
-        return <<<HTML
-<div class="hsuforum-reply-wrapper">
-    <form method="post" role="region" aria-label="$slegend" class="hsuforum-form hsuforum-reply" action="$actionurl" autocomplete="off">
-        $hidden
-        <fieldset>
-            <legend>$legend</legend>
-            <div class="hsuforum-validation-errors" role="alert"></div>
-            <div class="hsuforum-post-figure">
-                $userpicture
-            </div>
-            <div class="hsuforum-post-body">
-                <label>
-                    <span class="accesshide">$subject</span>
-                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" spellcheck="spellcheck" />
-                </label>
-                <label>
-                    <span class="accesshide">$message ($required)</span>
-                    <textarea placeholder="$placeholder" name="message" class="form-control" required="required" spellcheck="spellcheck"></textarea>
-                </label>
-
-                <label>
-                    <span class="accesshide">$attachment</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
-                </label>
-
-                $privatereply
-
-                <button type="submit">$submit</button>
-                <a href="$advancedurl" class="hsuforum-use-advanced disable-router">$useadvanced</a>
-            </div>
-        </fieldset>
-    </form>
-</div>
-HTML;
-
-    }
-
-    protected function quick_add_discussion_template($cm) {
-        global $USER;
-
-        $userpicture        = $this->output->user_picture($USER, array('link' => false, 'size' => 100));
-        $subject            = get_string('subject', 'hsuforum');
-        $message            = get_string('message', 'hsuforum');
-        $attachment         = get_string('attachment', 'hsuforum');
-        $submit             = get_string('submit', 'hsuforum');
-        $useadvanced        = get_string('useadvancededitor', 'hsuforum');
-        $legend             = get_string('addyourdiscussion', 'hsuforum');
-        $subjectplaceholder = get_string('discussionsubjectplaceholder', 'hsuforum');
-        $messageplaceholder = get_string('discussionmessageplaceholder', 'hsuforum');
-        $required           = get_string('required');
-
-        $action = new moodle_url('/mod/hsuforum/route.php', array(
-            'action'        => 'add_discussion',
-            'sesskey'       => sesskey(),
-            'contextid'     => $this->page->context->id,
-            'messageformat' => FORMAT_MOODLE,
-        ));
-        $hidden = html_writer::input_hidden_params($action);
-        $actionurl = $action->out_omit_querystring();
-        $advancedurl = s(new moodle_url('/mod/hsuforum/post.php', array('forum' => $cm->instance)));
-
-        $grouphtml = '';
-        if (groups_get_activity_groupmode($cm, $cm->cache->course)) {
-            $groupdata  = groups_get_activity_allowed_groups($cm);
-            if (count($groupdata) > 1 && has_capability('mod/hsuforum:movediscussions', $this->page->context)) {
-                $groupinfo = array('0' => get_string('allparticipants'));
-                foreach ($groupdata as $grouptemp) {
-                    $groupinfo[$grouptemp->id] = $grouptemp->name;
-                }
-                $grouphtml  = html_writer::tag('span', get_string('group'));
-                $grouphtml .= html_writer::select($groupinfo, 'groupinfo', '', false);
-                $grouphtml  = html_writer::tag('label', $grouphtml);
-            }
-        }
-
-        return <<<HTML
-<div class="hsuforum-reply-wrapper">
-    <form method="post" class="hsuforum-form hsuforum-discussion" action="$actionurl" autocomplete="off">
-        $hidden
-        <fieldset>
-            <legend>$legend</legend>
-            <div class="hsuforum-validation-errors" role="alert"></div>
-            <div class="hsuforum-post-figure">
-                $userpicture
-            </div>
-            <div class="hsuforum-post-body">
-                <label>
-                    <span class="accesshide">$subject ($required)</span>
-                    <input type="text" placeholder="$subjectplaceholder" name="subject" class="form-control" required="required" spellcheck="spellcheck" />
-                </label>
-                <label>
-                    <span class="accesshide">$message ($required)</span>
-                    <textarea placeholder="$messageplaceholder" name="message" class="form-control" required="required" spellcheck="spellcheck"></textarea>
-                </label>
-
-                <label>
-                    <span class="accesshide">$attachment</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
-                </label>
-
-                $grouphtml
-
-                <button type="submit">$submit</button>
-                <a href="$advancedurl" class="hsuforum-use-advanced disable-router">$useadvanced</a>
-            </div>
-        </fieldset>
-    </form>
-</div>
-HTML;
-
     }
 
     protected function get_post_user_url($cm, $postuser) {
@@ -1675,28 +1734,32 @@ HTML;
     protected function discussion_nav($cm, $discussion) {
         $dnav = $this->get_discussion_nav($cm);
 
-        $dnav->get_prev_discussionid($discussion->id);
-        $dnav->get_next_discussionid($discussion->id);
-
         $output = html_writer::link(
             new moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id, 'page' => $dnav->get_page($discussion->id))),
             get_string('closediscussion', 'hsuforum'),
             array('class' => 'close')
         );
-        if ($dnav->get_prev_discussionid($discussion->id)) {
-            $output .= html_writer::link(
-                new moodle_url('/mod/hsuforum/discuss.php', array('d' => $dnav->get_prev_discussionid($discussion->id))),
-                get_string('prevdiscussion', 'hsuforum'),
-                array('class' => 'prev')
-            );
+
+        $class = 'prev';
+        if (!$dnav->get_prev_discussionid($discussion->id)) {
+            $class .= ' hidden';
         }
-        if ($dnav->get_next_discussionid($discussion->id)) {
-            $output .= html_writer::link(
-                new moodle_url('/mod/hsuforum/discuss.php', array('d' => $dnav->get_next_discussionid($discussion->id))),
-                get_string('nextdiscussion', 'hsuforum'),
-                array('class' => 'next')
-            );
+        $output .= html_writer::link(
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => (int) $dnav->get_prev_discussionid($discussion->id))),
+            get_string('prevdiscussion', 'hsuforum'),
+            array('class' => $class)
+        );
+
+        $class = 'next';
+        if (!$dnav->get_next_discussionid($discussion->id)) {
+            $class .= ' hidden';
         }
+        $output .= html_writer::link(
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => (int) $dnav->get_next_discussionid($discussion->id))),
+            get_string('nextdiscussion', 'hsuforum'),
+            array('class' => $class)
+        );
+
         return html_writer::tag('nav', $output, array('class' => 'hsuforum-thread-nav'));
     }
 

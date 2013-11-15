@@ -24,6 +24,8 @@
 
 namespace mod_hsuforum;
 
+require_once(__DIR__.'/attachments.php');
+
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -35,34 +37,23 @@ defined('MOODLE_INTERNAL') || die();
  */
 class upload_file {
     /**
-     * @var \context_module
+     * @var attachments
      */
-    protected $context;
+    protected $attachments;
 
     /**
+     * File upload options
+     *
      * @var array
      */
     protected $options;
 
     /**
+     * File upload element name
+     *
      * @var string
      */
     protected $element;
-
-    /**
-     * @var string
-     */
-    protected $component = 'mod_hsuforum';
-
-    /**
-     * @var string
-     */
-    protected $filearea = 'attachment';
-
-    /**
-     * @var string
-     */
-    protected $filepath = '/';
 
     /**
      * PHP upload errors to Moodle strings
@@ -80,14 +71,14 @@ class upload_file {
     );
 
     /**
-     * @param \context_module $context
-     * @param array $options
-     * @param string $element
+     * @param attachments $attachments
+     * @param array $options File upload options
+     * @param string $element File upload element name
      */
-    public function __construct(\context_module $context, array $options, $element) {
-        $this->options = $options;
-        $this->element = $element;
-        $this->context = $context;
+    public function __construct(attachments $attachments, array $options, $element = 'attachment') {
+        $this->options     = $options;
+        $this->element     = $element;
+        $this->attachments = $attachments;
     }
 
     /**
@@ -114,14 +105,18 @@ class upload_file {
      *
      * @param $postid
      * @param null|int $license
-     * @return null|\stored_file
+     * @return \stored_file[]
      */
     public function process_file_upload($postid, $license = null) {
-        if (!$this->was_file_uploaded()) {
-            return null;
+        if ($this->was_file_uploaded()) {
+            $this->validate_files($postid);
+            $this->save_files($postid, $license);
         }
-        $this->validate_files();
-        return $this->save_files($postid, $license);
+        // This only deletes attachments that the user selected to delete.
+        $this->attachments->delete_attachments($postid);
+
+        return $this->attachments->get_attachments($postid);
+
     }
 
     /**
@@ -146,14 +141,20 @@ class upload_file {
      *
      * @throws \moodle_exception
      */
-    public function validate_files() {
+    public function validate_files($postid = 0) {
         if (!isset($_FILES[$this->element])) {
             throw new moodle_exception('nofile');
         }
         $files    = $this->get_files();
         $maxfiles = $this->options['maxfiles'];
-        if ($maxfiles != -1 && count($files) > $maxfiles) {
-            throw new moodle_exception('err_maxfiles', 'form', '', $maxfiles);
+        if ($maxfiles != -1) {
+            $total = count($files);
+            if (!empty($postid)) {
+                $total += count($this->attachments->get_attachments($postid));
+            }
+            if ($total > $maxfiles) {
+               throw new moodle_exception('err_maxfiles', 'form', '', $maxfiles);
+            }
         }
         foreach ($files as $file) {
             $this->validate_file($file);
@@ -226,72 +227,10 @@ class upload_file {
     /**
      * @param int $postid
      * @param null|int $license
-     * @return \stored_file[]
      */
     protected function save_files($postid, $license = null) {
-        $stored = array();
         foreach ($this->get_files() as $file) {
-            $stored[] = $this->save_file($file, $postid, $license);
-        }
-        return $stored;
-    }
-
-    /**
-     * @param array $file
-     * @param int $postid
-     * @param null|int $license
-     * @return \stored_file
-     */
-    protected function save_file(array $file, $postid, $license = null) {
-        global $CFG, $USER;
-
-        if ($license == null) {
-            $license = $CFG->sitedefaultlicense;
-        }
-        $record            = new \stdClass();
-        $record->filearea  = $this->filearea;
-        $record->component = $this->component;
-        $record->filepath  = $this->filepath;
-        $record->itemid    = $postid;
-        $record->license   = $license;
-        $record->author    = fullname($USER, true);
-        $record->contextid = $this->context->id;
-        $record->userid    = $USER->id;
-        $record->source    = clean_param($file['name'], PARAM_FILE);
-        $record->filename  = $this->get_unused_filename($record, $record->source);
-
-        return get_file_storage()->create_file_from_pathname($record, $file['tmp_name']);
-    }
-
-    /**
-     * Get a name for the file that does not conflict with any other files
-     *
-     * @param object $record File record
-     * @param string $filename The file name to use
-     * @return string
-     */
-    protected function get_unused_filename($record, $filename) {
-        $fs    = get_file_storage();
-        $count = 2;
-        while($fs->file_exists($record->contextid, $record->component, $record->filearea, $record->itemid, $record->filepath, $filename)) {
-            $filename = $this->append_suffix($filename, '_'.$count);
-        }
-        return $filename;
-    }
-
-    /**
-     * Append suffix to file name
-     *
-     * @param string $filename
-     * @param string $suffix
-     * @return string
-     */
-    protected function append_suffix($filename, $suffix) {
-        $pathinfo = pathinfo($filename);
-        if (empty($pathinfo['extension'])) {
-            return $filename.$suffix;
-        } else {
-            return $pathinfo['filename'].$suffix.'.'.$pathinfo['extension'];
+            $this->attachments->add_attachment($file['name'], $file['tmp_name'], $postid, $license);
         }
     }
 }

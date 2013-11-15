@@ -31,6 +31,12 @@ DOM.ATTRS = {
 
 Y.extend(DOM, Y.Base,
     {
+        /**
+         * Flag currently displayed rating widgets as processed
+         * and initialize existing menus.
+         *
+         * @method initializer
+         */
         initializer: function() {
             // Any ratings initially on the page will already be processed.
             Y.all(SELECTORS.RATE).addClass('processed');
@@ -39,8 +45,49 @@ Y.extend(DOM, Y.Base,
         },
 
         /**
+         * Force discussion navigation links to point to each
+         * other for the passed discussion, the previous discussion
+         * and then next discussion.
+         *
+         * @method _forceNavLinks
+         * @param {Integer} discussionId
+         * @private
+         */
+        _forceNavLinks: function(discussionId) {
+            var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', discussionId)),
+                prev = node.previous(SELECTORS.DISCUSSION),
+                next = node.next(SELECTORS.DISCUSSION);
+
+            var updateURL = function(link, discNode) {
+                var href = link.getAttribute('href').replace(/d=\d+/, 'd=' + discNode.getData('discussionid'));
+                link.setAttribute('href', href)
+                    .removeClass('hidden')
+                    .show();
+            };
+
+            if (prev !== null) {
+                // Force previous discussion to point to this discussion.
+                updateURL(prev.one(SELECTORS.DISCUSSION_NEXT), node);
+                updateURL(node.one(SELECTORS.DISCUSSION_PREV), prev);
+            } else {
+                // No previous discussion, hide prev link.
+                node.one(SELECTORS.DISCUSSION_PREV).hide();
+            }
+            if (next !== null) {
+                // Force next discussion to point to this discussion.
+                updateURL(next.one(SELECTORS.DISCUSSION_PREV), node);
+                updateURL(node.one(SELECTORS.DISCUSSION_NEXT), next);
+            } else {
+                // No next discussion, hide next link.
+                node.one(SELECTORS.DISCUSSION_NEXT).hide();
+            }
+        },
+
+        /**
          * Initialize thread JS features that are not handled by
          * delegates.
+         *
+         * @method initFeatures
          */
         initFeatures: function() {
             this.initOptionMenus();
@@ -49,6 +96,8 @@ Y.extend(DOM, Y.Base,
 
         /**
          * Wire up ratings that have been dynamically added to the page.
+         *
+         * @method initRatings
          */
         initRatings: function() {
             Y.all(SELECTORS.RATE).each(function(node) {
@@ -64,6 +113,8 @@ Y.extend(DOM, Y.Base,
 
         /**
          * Initialize option menus.
+         *
+         * @method initOptionMenus
          */
         initOptionMenus: function() {
             Y.all(SELECTORS.OPTIONS_TO_PROCESS).each(function(node) {
@@ -87,6 +138,7 @@ Y.extend(DOM, Y.Base,
          * For dynamically loaded ratings, we need to handle the view
          * ratings pop-up manually.
          *
+         * @method handleViewRating
          * @param e
          */
         handleViewRating: function(e) {
@@ -103,6 +155,9 @@ Y.extend(DOM, Y.Base,
         },
 
         /**
+         * Mark a post as read
+         *
+         * @method markPostAsRead
          * @param {Integer} postid
          * @param {Function} fn
          * @param {Object} context Specifies what 'this' refers to.
@@ -115,6 +170,12 @@ Y.extend(DOM, Y.Base,
         },
 
         /**
+         * Makes sure posts are loaded on the page when viewing
+         * a discussion.
+         *
+         * Also marks the discussion as read if necessary.
+         *
+         * @method ensurePostsExist
          * @param node
          * @param {Function} fn
          * @param {Object} context Specifies what 'this' refers to.
@@ -147,7 +208,28 @@ Y.extend(DOM, Y.Base,
         },
 
         /**
+         * Can change the discussion count displayed to the user.
+         *
+         * Method name is misleading, you can also decrement it
+         * by passing negative numbers.
+         *
+         * @method incrementDiscussionCount
+         * @param {Integer} increment
+         */
+        incrementDiscussionCount: function(increment) {
+            // Update number of discussions.
+            var countNode = Y.one(SELECTORS.DISCUSSION_COUNT);
+            if (countNode !== null) {
+                // Increment the count and update display.
+                countNode.setData('count', parseInt(countNode.getData('count'), 10) + increment);
+                countNode.setHTML(M.util.get_string('xdiscussions', 'mod_hsuforum', countNode.getData('count')));
+            }
+        },
+
+        /**
          * Display a notification
+         *
+         * @method displayNotification
          * @param {String} html
          */
         displayNotification: function(html) {
@@ -160,72 +242,93 @@ Y.extend(DOM, Y.Base,
         },
 
         /**
-         * Post created event handler
+         * Displays a notification from an event
          *
-         * Grab HTML from the event and insert it.
-         *
+         * @method handleNotification
          * @param e
          */
-        handlePostCreated: function (e) {
-            Y.log('Post created, updating HTML for discussion: ' + e.discussionid, 'info', 'Dom');
+        handleNotification: function(e) {
+            if (Y.Lang.isString(e.notificationhtml) && e.notificationhtml.trim().length > 0) {
+                this.displayNotification(e.notificationhtml);
+            }
+        },
+
+        /**
+         * Update discussion HTML
+         *
+         * @method handleUpdateDiscussion
+         * @param e
+         */
+        handleUpdateDiscussion: function (e) {
+            Y.log('Updating discussion HTML: ' + e.discussionid, 'info', 'Dom');
             var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', e.discussionid));
-            node.replace(e.html);
+            if (node) {
+                // Updating existing discussion.
+                node.replace(e.html);
+            } else {
+                // Adding new discussion.
+                Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
+            }
+            this._forceNavLinks(e.discussionid);
         },
 
         /**
          * Discussion created event handler
          *
-         * Grab HTML from the event and insert it.
-         * Also update discussion count.
+         * Some extra tasks needed on discussion created
          *
-         * @param e
+         * @method handleDiscussionCreated
          */
-        handleDiscussionCreated: function(e) {
-            Y.log('Adding HTML for discussion: ' + e.discussionid, 'info', 'Dom');
-            this.displayNotification(e.notificationhtml);
+        handleDiscussionCreated: function() {
+            // Remove no discussions message if on the page.
+            if (Y.one(SELECTORS.NO_DISCUSSIONS)) {
+                Y.one(SELECTORS.NO_DISCUSSIONS).remove();
+            }
 
             // Update number of discussions.
-            var countNode = Y.one(SELECTORS.DISCUSSION_COUNT);
-            if (countNode !== null) {
-                // Increment the count and update display.
-                countNode.setData('count', parseInt(countNode.getData('count'), 10) + 1);
-                countNode.setHTML(M.util.get_string('xdiscussions', 'mod_hsuforum', countNode.getData('count')));
-            }
-            Y.one(SELECTORS.ADD_DISCUSSION_BUTTON).focus();
+            this.incrementDiscussionCount(1);
         },
 
         /**
-         * Delete post and update view
+         * Either redirect because we are viewing a single discussion
+         * that has just been deleted OR remove the discussion
+         * from the page and update navigation links on the
+         * surrounding discussions.
          *
-         * @method handlePostDelete
+         * @method handleDiscussionDeleted
          * @param e
          */
-        handlePostDelete: function(e) {
+        handleDiscussionDeleted: function(e) {
             var node = Y.one(SELECTORS.POST_BY_ID.replace('%d', e.postid));
-            if (node === null) {
+            if (node === null || !node.hasAttribute('data-isdiscussion')) {
                 return;
             }
-            Y.log('Deleting post: ' + e.postid);
+            if (Y.one(SELECTORS.DISCUSSIONS)) {
+                var prev = node.previous(SELECTORS.DISCUSSION),
+                    next = node.next(SELECTORS.DISCUSSION);
 
-            this.get('io').send({
-                postid: e.postid,
-                sesskey: M.cfg.sesskey,
-                action: 'delete_post'
-            }, function(data) {
-                if (node.hasAttribute('data-isdiscussion')) {
-                    // Redirect for now because discussions need to be re-rendered due to navigation.
-                    window.location.href = data.redirecturl;
-                } else {
-                    var discNode = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', node.getData('discussionid')));
-                    discNode.replace(data.html);
-                    this.fire(EVENTS.POST_DELETED, data);
+                node.remove(true);
+
+                // Update number of discussions.
+                this.incrementDiscussionCount(-1);
+                Y.one(SELECTORS.DISCUSSION_COUNT).focus();
+
+                if (prev) {
+                    this._forceNavLinks(prev.getData('discussionid'));
                 }
-            }, this);
+                if (next) {
+                    this._forceNavLinks(next.getData('discussionid'));
+                }
+            } else {
+                // Redirect because we are viewing a single discussion.
+                window.location.href = e.redirecturl;
+            }
         },
 
         /**
          * Load more discussions onto the page
          *
+         * @method loadMoreDiscussions
          * @param {Integer} page
          * @param {Integer} perpage
          * @param {Function} fn

@@ -24,6 +24,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use mod_hsuforum\controller\edit_controller;
 use mod_hsuforum\controller\export_controller;
 use mod_hsuforum\controller\flag_controller;
 use mod_hsuforum\controller\kernel;
@@ -43,6 +44,7 @@ require_once(__DIR__.'/classes/controller/export_controller.php');
 require_once(__DIR__.'/classes/controller/posters_controller.php');
 require_once(__DIR__.'/classes/controller/flag_controller.php');
 require_once(__DIR__.'/classes/controller/posts_controller.php');
+require_once(__DIR__.'/classes/controller/edit_controller.php');
 
 global $PAGE, $DB;
 
@@ -72,6 +74,7 @@ $router->add_controller(new posters_controller());
 $router->add_controller(new flag_controller());
 $router->add_controller(new posts_controller());
 $router->add_controller(new export_controller());
+$router->add_controller(new edit_controller());
 
 $kernel = new kernel($router);
 $kernel->handle($action);

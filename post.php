@@ -332,6 +332,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
                       hsuforum_go_back_to("discuss.php?d=$post->discussion"));
             }
             echo $OUTPUT->header();
+            echo $OUTPUT->heading(format_string($forum->name), 2);
             echo $OUTPUT->confirm(get_string("deletesureplural", "hsuforum", $replycount+1),
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
@@ -345,6 +346,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             }
         } else {
             echo $OUTPUT->header();
+            echo $OUTPUT->heading(format_string($forum->name), 2);
             echo $OUTPUT->confirm(get_string("deletesure", "hsuforum", $replycount),
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
@@ -428,7 +430,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_title(format_string($discussion->name).": ".format_string($post->subject));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('pruneheading', 'hsuforum'));
+        echo $OUTPUT->heading(format_string($forum->name), 2);
+        echo $OUTPUT->heading(get_string('pruneheading', 'forum'), 3);
         if (!empty($post->privatereply)) {
             echo $OUTPUT->notification(get_string('splitprivatewarning', 'hsuforum'));
         }
@@ -850,6 +853,7 @@ $PAGE->set_title("$course->shortname: $strdiscussionname ".format_string($toppos
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($forum->name), 2);
 
 // checkup
 if (!empty($parent) && !hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {

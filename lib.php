@@ -4438,10 +4438,17 @@ function hsuforum_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
  * @param object $cm
  * @param mixed $mform
  * @param string $unused
+ * @param \mod_hsuforum\upload_file $uploader
  * @return bool
  */
-function hsuforum_add_attachment($post, $forum, $cm, $mform=null, $unused=null) {
+function hsuforum_add_attachment($post, $forum, $cm, $mform=null, $unused=null, \mod_hsuforum\upload_file $uploader = null) {
     global $DB;
+
+    if ($uploader instanceof \mod_hsuforum\upload_file) {
+        $files = $uploader->process_file_upload($post->id);
+        $DB->set_field('hsuforum_posts', 'attachment', empty($files) ? 0 : 1, array('id' => $post->id));
+        return true;
+    }
 
     if (empty($mform)) {
         return false;
@@ -4472,9 +4479,10 @@ function hsuforum_add_attachment($post, $forum, $cm, $mform=null, $unused=null) 
  * @param object $post
  * @param mixed $mform
  * @param string $message
+ * @param \mod_hsuforum\upload_file $uploader
  * @return int
  */
-function hsuforum_add_new_post($post, $mform, &$message) {
+function hsuforum_add_new_post($post, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
@@ -4491,7 +4499,7 @@ function hsuforum_add_new_post($post, $mform, &$message) {
     $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options(), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
-    hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
+    hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
 
     // Update discussion modified date
     if (empty($post->privatereply)) {
@@ -4518,9 +4526,10 @@ function hsuforum_add_new_post($post, $mform, &$message) {
  * @param object $post
  * @param mixed $mform
  * @param string $message
+ * @param \mod_hsuforum\upload_file $uploader
  * @return bool
  */
-function hsuforum_update_post($post, $mform, &$message) {
+function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
@@ -4548,7 +4557,7 @@ function hsuforum_update_post($post, $mform, &$message) {
 
     $DB->update_record('hsuforum_discussions', $discussion);
 
-    hsuforum_add_attachment($post, $forum, $cm, $mform, $message);
+    hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
 
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
         hsuforum_tp_mark_post_read($post->userid, $post, $post->forum);
@@ -4568,9 +4577,10 @@ function hsuforum_update_post($post, $mform, &$message) {
  * @param mixed $mform
  * @param string $unused
  * @param int $userid
+ * @param \mod_hsuforum\upload_file $uploader
  * @return object
  */
-function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid=null) {
+function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid=null, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $timenow = time();
@@ -4630,7 +4640,7 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     $DB->set_field("hsuforum_posts", "discussion", $post->discussion, array("id"=>$post->id));
 
     if (!empty($cm->id)) {
-        hsuforum_add_attachment($post, $forum, $cm, $mform, $unused);
+        hsuforum_add_attachment($post, $forum, $cm, $mform, $unused, $uploader);
     }
 
     if (hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
@@ -5800,10 +5810,51 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         }
     }
 
-    echo $OUTPUT->box_start('hsuforum_discussion_controls clearfix');
+    // Get all the recent discussions we're allowed to see
+    $getuserlastmodified = in_array($displayformat, array('header', 'nested', 'tree', 'article'));
+    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
+
+    // If we want paging
+    $numdiscussions = null;
+    if ($page != -1) {
+        // Get the number of discussions found.
+        $numdiscussions = hsuforum_get_discussions_count($cm);
+    } else {
+        if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
+            $olddiscussionlink = true;
+        }
+    }
+
+    if ($showdisplayformat) {
+        $display = new single_select($PAGE->url, 'displayformat', array(
+            'header'  => get_string('default', 'hsuforum'),
+            'tree'    => get_string('tree', 'hsuforum'),
+            'nested'  => get_string('nested', 'hsuforum'),
+            'article' => get_string('accessible', 'hsuforum'),
+        ), $displayformat, array(), 'displayformatid');
+
+        $display->set_label(get_string('discussiondisplay', 'hsuforum'));
+        $display->class .= ' hsuforum-display-format clearfix';
+        echo $OUTPUT->render($display);
+    }
+
+    if (!$canstart && (isguestuser() or !isloggedin() or $forum->type == 'news')) {
+        // no button and no info
+    } else if (!$canstart && $groupmode && has_capability('mod/hsuforum:startdiscussion', $context)) {
+        // inform users why they can not post new discussion
+        $message = ($currentgroup) ? 'cannotadddiscussion' : 'cannotadddiscussionall';
+        echo $OUTPUT->notification(get_string($message, 'hsuforum'), 'notifyproblem hsuforum-cannot-post');
+    }
+
+    echo $OUTPUT->container_start('clearfix');
+
+    if (!is_null($numdiscussions)) {
+        echo html_writer::tag('h3', get_string('xdiscussions', 'hsuforum', $numdiscussions),
+            array('class' => 'hsuforum-discussion-count', 'data-count' => $numdiscussions, 'tabindex' => '-1'));
+    }
 
     if ($canstart) {
-        echo '<div class="singlebutton forumaddnew">';
+        echo '<div class="singlebutton forumaddnew hsuforum-add-discussion">';
         echo "<form id=\"newdiscussionform\" method=\"get\" action=\"$CFG->wwwroot/mod/hsuforum/post.php\">";
         echo '<div>';
         echo "<input type=\"hidden\" name=\"forum\" value=\"$forum->id\" />";
@@ -5823,38 +5874,24 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo '</div>';
         echo '</form>';
         echo "</div>\n";
-
-    } else if (isguestuser() or !isloggedin() or $forum->type == 'news') {
-        // no button and no info
-
-    } else if ($groupmode and has_capability('mod/hsuforum:startdiscussion', $context)) {
-        // inform users why they can not post new discussion
-        if ($currentgroup) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'));
-        } else {
-            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'));
-        }
     }
 
-    if ($showdisplayformat) {
-        $display = new single_select($PAGE->url, 'displayformat', array(
-            'header' => get_string('default', 'hsuforum'),
-            'tree'   => get_string('tree', 'hsuforum'),
-            'nested' => get_string('nested', 'hsuforum'),
-            'article' => get_string('accessible', 'hsuforum'),
-        ), $displayformat, array(), 'displayformatid');
+    echo $OUTPUT->container_end();
+    echo $OUTPUT->container_start('hsuforum-control-options clearfix');
 
-        $display->set_label(get_string('discussiondisplay', 'hsuforum'));
-        echo $OUTPUT->render($display);
+    groups_print_activity_menu($cm, $PAGE->url);
+
+    if ($forum->type != 'single') {
+        require_once(__DIR__.'/lib/discussion/sort.php');
+        $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
+        $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
+        $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
+        hsuforum_lib_discussion_sort::set_to_session($dsort);
+        echo $renderer->discussion_sorting($dsort);
     }
 
-    echo $OUTPUT->box_end(); // End discussion_controls
+    echo $OUTPUT->container_end();
 
-// Get all the recent discussions we're allowed to see
-
-    $getuserlastmodified = in_array($displayformat, array('header', 'nested', 'tree', 'article'));
-
-    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
     if (!$discussions) {
         echo '<div class="forumnodiscuss">';
         if ($forum->type == 'news') {
@@ -5865,6 +5902,20 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             echo '('.get_string('nodiscussions', 'hsuforum').')';
         }
         echo "</div>\n";
+
+        if ($displayformat == 'article') {
+            // Load these incase the user adds a new discussion.
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_flags', null, false, $renderer->get_js_module());
+            $PAGE->requires->js_init_call('M.mod_hsuforum.init_subscribe', null, false, $renderer->get_js_module());
+
+            echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+            echo $renderer->discussions($cm, array(), array(
+                'total'   => 0,
+                'page'    => $page,
+                'perpage' => $perpage,
+            ));
+            echo $OUTPUT->box_end();
+        }
         return;
     }
 
@@ -5885,20 +5936,9 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $discussions = $rm->get_ratings($ratingoptions);
     }
 
-// If we want paging
-    $numdiscussions = null;
-    if ($page != -1) {
-        ///Get the number of discussions found
-        $numdiscussions = hsuforum_get_discussions_count($cm);
-
-        ///Show the paging bar
-        if ($displayformat != 'article') {
-            echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
-        }
-    } else {
-        if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
-            $olddiscussionlink = true;
-        }
+    // Show the paging bar.
+    if (!is_null($numdiscussions) && $displayformat != 'article') {
+        echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
     }
 
     $canviewparticipants = has_capability('moodle/course:viewparticipants',$context);

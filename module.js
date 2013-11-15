@@ -8,34 +8,27 @@ M.mod_hsuforum = M.mod_hsuforum || {};
  * @author Mark Nielsen
  */
 M.mod_hsuforum.init_flags = function(Y) {
-    var nodes = Y.all('.mod_hsuforum_posts_container');
-    if (nodes) {
-        nodes.each(function(node) {
-            node.delegate('click', function(e) {
-                var link = e.target;
-                if (e.target.test('img')) {
-                    link = e.target.ancestor('a.hsuforum_flag');
-                }
-                if (!link) {
-                    return;
-                }
-                e.preventDefault();
-                e.stopPropagation();
-
-                M.mod_hsuforum.io(Y, link.get('href'), function() {
-                    link.toggleClass('hsuforum_flag_active');
-
-                    var span = link.one('span');
-                    var oldtitle = link.getAttribute('title');
-                    var newTitle = link.getData('title');
-                    span.set('text', newTitle);
-                    link.setAttribute('title', newTitle)
-                        .setData('title', oldtitle);
-
-                });
-            }, 'a.hsuforum_flag');
-        });
+    if (Y.all('.mod_hsuforum_posts_container').isEmpty()) {
+        return;
     }
+    // We bind to document otherwise screen readers read everything as clickable.
+    Y.delegate('click', function(e) {
+        var link = e.currentTarget;
+        e.preventDefault();
+        e.stopPropagation();
+
+        M.mod_hsuforum.io(Y, link.get('href'), function() {
+            link.toggleClass('hsuforum_flag_active');
+
+            var span = link.one('span');
+            var oldtitle = link.getAttribute('title');
+            var newTitle = link.getData('title');
+            span.set('text', newTitle);
+            link.setAttribute('title', newTitle)
+                .setData('title', oldtitle);
+
+        });
+    }, document, 'a.hsuforum_flag');
 };
 
 /**
@@ -102,41 +95,33 @@ M.mod_hsuforum.init_treeview = function(Y, id, url, nodes) {
  * @author Mark Nielsen
  */
 M.mod_hsuforum.init_subscribe = function(Y) {
-    var nodes = Y.all('.mod_hsuforum_posts_container');
-    if (nodes) {
-        nodes.each(function(node) {
-            node.delegate('click', function(e) {
-                var link = e.target;
-                if (e.target.test('img')) {
-                    link = e.target.ancestor('a');
-                }
-                if (!link) {
-                    return;
-                }
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                M.mod_hsuforum.io(Y, link.get('href'), function() {
-                    link.toggleClass('subscribed');
-                    var label, pix,
-                        name = link.getData('name'),
-                        span = link.one('span'),
-                        img = link.one('img');
-                    if (link.hasClass('subscribed')) {
-                        label = M.util.get_string('subscribedtodiscussionx', 'hsuforum', name);
-                        pix = 'check-yes';
-                    } else {
-                        label = M.util.get_string('notsubscribedtodiscussionx', 'hsuforum', name);
-                        pix = 'check-no';
-                    }
-                    span.set('text', label);
-                    link.setAttribute('title', label);
-                    img.setAttribute('src', M.util.image_url(pix, 'hsuforum'));
-                });
-            }, 'a.hsuforum_discussion_subscribe');
-        });
+    if (Y.all('.mod_hsuforum_posts_container').isEmpty()) {
+        return;
     }
+    // We bind to document otherwise screen readers read everything as clickable.
+    Y.delegate('click', function(e) {
+        var link = e.currentTarget;
+        e.preventDefault();
+        e.stopPropagation();
+
+        M.mod_hsuforum.io(Y, link.get('href'), function() {
+            link.toggleClass('subscribed');
+            var label, pix,
+                name = link.getData('name'),
+                span = link.one('span'),
+                img = link.one('img');
+            if (link.hasClass('subscribed')) {
+                label = M.util.get_string('subscribedtodiscussionx', 'hsuforum', name);
+                pix = 'check-yes';
+            } else {
+                label = M.util.get_string('notsubscribedtodiscussionx', 'hsuforum', name);
+                pix = 'check-no';
+            }
+            span.set('text', label);
+            link.setAttribute('title', label);
+            img.setAttribute('src', M.util.image_url(pix, 'hsuforum'));
+        });
+    }, document, 'a.hsuforum_discussion_subscribe');
 };
 
 /**

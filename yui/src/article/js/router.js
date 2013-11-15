@@ -14,7 +14,10 @@
  */
 var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     /**
-     * Init
+     * Disable discussion navigation links when viewing a
+     * single discussion.
+     *
+     * @method initializer
      */
     initializer: function() {
         // If viewing a single discussion, disable router on nav links.
@@ -29,6 +32,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * Handles collapsing open discussions and
      * the paging of discussions.
      *
+     * @method view
      * @param req
      */
     view: function(req) {
@@ -44,6 +48,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     /**
      * View a discussion
      *
+     * @method discussion
      * @param {Object} req
      */
     discussion: function(req) {
@@ -53,6 +58,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     /**
      * Post editing
      *
+     * @method post
      * @param {Object} req
      */
     post: function(req) {
@@ -61,8 +67,10 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         } else if (!Y.Lang.isUndefined(req.query.forum)) {
             this.get('article').get('form').showAddDiscussionForm(req.query.forum);
         } else if (!Y.Lang.isUndefined(req.query['delete'])) {
-            this.get('article').confirmDelete(req.query['delete']);
-        } else if (!Y.Lang.isUndefined(req.query.edit) || !Y.Lang.isUndefined(req.query.prune)) {
+            this.get('article').confirmDeletePost(req.query['delete']);
+        } else if (!Y.Lang.isUndefined(req.query.edit)) {
+            this.get('article').get('form').showEditForm(req.query.edit);
+        } else if (!Y.Lang.isUndefined(req.query.prune)) {
             window.location.href = M.cfg.wwwroot + this.get('root') + req.path + '?' + Y.QueryString.stringify(req.query);
         }
     },
@@ -84,6 +92,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
 
     /**
      * Route a URL if possible
+     *
      * @method routeUrl
      * @param {String} url
      * @returns {boolean}
@@ -101,6 +110,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     /**
      * Add discussion button handler
      *
+     * @method handleAddDiscussionRoute
      * @param e
      */
     handleAddDiscussionRoute: function(e) {
@@ -119,6 +129,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * Usually done after the discussion was added
      * or updated.
      *
+     * @method handleViewDiscussion
      * @param e
      */
     handleViewDiscussion: function(e) {
@@ -133,6 +144,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * Middleware: before executing a route, hide
      * all of the open forms.
      *
+     * @method hideForms
      * @param req
      * @param res
      * @param next
@@ -143,12 +155,34 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     }
 }, {
     ATTRS: {
+        /**
+         * Used for responding to routing actions
+         *
+         * @attribute article
+         * @type M.mod_hsuforum.Article
+         * @required
+         */
         article: { value: null },
 
+        /**
+         * Root URL
+         *
+         * @attribute root
+         * @type String
+         * @default '/mod/hsuforum'
+         * @required
+         */
         root: {
             value: '/mod/hsuforum'
         },
 
+        /**
+         * Default routes
+         *
+         * @attribute routes
+         * @type Array
+         * @required
+         */
         routes: {
             value: [
                 { path: '/view.php', callbacks: ['hideForms', 'view'] },
