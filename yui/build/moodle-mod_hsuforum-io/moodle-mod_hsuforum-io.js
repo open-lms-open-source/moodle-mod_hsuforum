@@ -61,13 +61,11 @@ Y.extend(IO, Y.Base,
             try {
                 data = Y.JSON.parse(response.responseText);
             } catch (e) {
-                e.zIndex = 10000;
-                new M.core.exception(e);
+                alert(e.name + ": " + e.message);
                 return;
             }
             if (Lang.isValue(data.error)) {
-                data.zIndex = 10000;
-                new M.core.ajaxException(data);
+                alert(data.error);
             } else {
                 args.fn.call(args.context, data);
             }

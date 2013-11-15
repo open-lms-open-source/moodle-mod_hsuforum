@@ -582,3 +582,4 @@ $string['editingpost'] = 'Editing post';
 $string['deleteattachmentx'] = 'Delete {$a}';
 $string['deleteattachments'] = 'Delete attachments';
 $string['postwasupdated'] = 'The post was updated';
+$string['id'] = 'ID';

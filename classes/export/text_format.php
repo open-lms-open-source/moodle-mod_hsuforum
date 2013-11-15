@@ -53,6 +53,7 @@ class text_format extends format_abstract {
     }
 
     /**
+     * @param int $id Post ID
      * @param string $subject Discussion subject
      * @param string $author Author name ready for printing
      * @param int $date The timestamp
@@ -60,13 +61,14 @@ class text_format extends format_abstract {
      * @param array $attachments Attachment file names
      * @return mixed
      */
-    public function export_discussion($subject, $author, $date, $message, $attachments) {
+    public function export_discussion($id, $subject, $author, $date, $message, $attachments) {
         $this->write_separator();
         fwrite($this->fp, get_string('discussion:x', 'hsuforum', $subject)."\n");
-        $this->export_post($subject, $subject, $author, $date, $message, $attachments, '');
+        $this->export_post($id, $subject, $subject, $author, $date, $message, $attachments, '');
     }
 
     /**
+     * @param int $id Post ID
      * @param string $discussion Discussion subject
      * @param string $subject Post subject
      * @param string $author Author name ready for printing
@@ -76,7 +78,7 @@ class text_format extends format_abstract {
      * @param string $private Yes if private reply
      * @return mixed
      */
-    public function export_post($discussion, $subject, $author, $date, $message, $attachments, $private) {
+    public function export_post($id, $discussion, $subject, $author, $date, $message, $attachments, $private) {
         $userdate = userdate($date, get_string('strftimedatefullshort').' '.get_string('strftimetime'));
         $a = array('subject' => $subject, 'author' => $author, 'date' => $userdate);
 
