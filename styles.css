@@ -41,6 +41,7 @@
 .forumpost .options .forum-post-rating {float:left;}
 .forumpost .content .posting {overflow:auto;max-width:100%;}
 .forumpost .content .attachedimages img {max-width:100%;}
+.mod_hsuforum_posts_container .posting .post-word-count,
 .forumpost .post-word-count { font-size: .85em; font-style: italic; }
 .forumpost .shortenedpost .post-word-count { display: inline; padding: 0 .3em; }
 

@@ -702,10 +702,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $cm->cache->context->id, 'mod_hsuforum', 'post', $post->id);
 
         $postcontent = format_text($message, $post->messageformat, $options, $cm->course);
+        if (!empty($cm->cache->forum->displaywordcount)) {
+            $postcontent .= html_writer::tag('div', get_string('numwords', 'moodle', count_words($post->message)),
+                array('class' => 'post-word-count'));
+        }
         if (!empty($attachments)) {
             $postcontent .= html_writer::tag('div', $attachments, array('class' => 'attachments'));
         }
-        $postcontent .= html_writer::tag('div', $attachedimages, array('class' => 'attachedimages'));
+        if (!empty($attachedimages)) {
+            $postcontent .= html_writer::tag('div', $attachedimages, array('class' => 'attachedimages'));
+        }
         $postcontent  = html_writer::tag('div', $postcontent, array('class' => 'posting'));
 
         return html_writer::tag('div', $postcontent, array('class' => 'content'));
