@@ -1678,15 +1678,25 @@ HTML;
                 $parent = $p->fullname;
             }
             if (!empty($p->privatereply)) {
+                $icon = html_writer::tag('span', '', array(
+                    'class'       => 'hsuforum-in-private-reply-to',
+                    'aria-hidden' => 'true',
+                    'title'       => get_string('inprivatereplyto', 'hsuforum'),
+                ));
                 $byuser = get_string('postbyxinprivatereplytox', 'hsuforum', array(
                     'author' => $byuser,
-                    'icon'   => '<span class="hsuforum-in-private-reply-to" aria-hidden="true"></span>',
+                    'icon'   => $icon,
                     'parent' => $parent,
                 ));
             } else {
+                $icon = html_writer::tag('span', '', array(
+                    'class'       => 'hsuforum-in-reply-to',
+                    'aria-hidden' => 'true',
+                    'title'       => get_string('inreplyto', 'hsuforum'),
+                ));
                 $byuser = get_string('postbyxinreplytox', 'hsuforum', array(
                     'author' => $byuser,
-                    'icon'   => '<span class="hsuforum-in-reply-to" aria-hidden="true"></span>',
+                    'icon'   => $icon,
                     'parent' => $parent,
                 ));
             }

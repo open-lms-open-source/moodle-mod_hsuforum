@@ -565,6 +565,8 @@ $string['xunread'] = '{$a} unread';
 $string['tools'] = 'Tools';
 $string['postbyxinreplytox'] = 'Post by {$a->author} {$a->icon} <span class="accesshide">in reply to</span> {$a->parent}';
 $string['postbyxinprivatereplytox'] = 'Post by {$a->author} {$a->icon} <span class="accesshide">in private reply to</span> {$a->parent}';
+$string['inreplyto'] = 'in reply to';
+$string['inprivatereplyto'] = 'in private reply to';
 $string['prevdiscussion'] = 'Previous discussion';
 $string['nextdiscussion'] = 'Next discussion';
 $string['closediscussion'] = 'Close discussion';
