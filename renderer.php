@@ -1293,7 +1293,6 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
      * @var hsuforum_lib_discussion_nav
      */
     protected $discussionnav;
-
     /**
      * Override to prevent output
      */
@@ -1537,7 +1536,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
             if ($post->parent != $parent->id) {
                 continue;
             }
-            $html = $this->post($cm, $discussion, $post, $canreply, $parent);
+            $html = $this->post($cm, $discussion, $post, $canreply, $parent, array(), $depth);
             if (!empty($html)) {
                 $count++;
                 $output .= html_writer::tag('li', $html, array('class' => "hsuforum-post clearfix depth$depth", 'data-depth' => $depth, 'tabindex' => '-1'));
@@ -1559,9 +1558,10 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
      * @param bool $canreply
      * @param null|object $parent Optional, parent post
      * @param array $commands Override default post commands
+     * @param int $depth Depth of the post
      * @return string
      */
-    public function post($cm, $discussion, $post, $canreply = false, $parent = null, array $commands = array()) {
+    public function post($cm, $discussion, $post, $canreply = false, $parent = null, array $commands = array(), $depth = 0) {
         global $USER;
 
         hsuforum_cm_add_cache($cm);
@@ -1592,6 +1592,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         $data->parentfullname = '';
         $data->parentuserurl  = '';
         $data->tools          = $this->toolbox($commands, 'hsuforum-post-tools');
+        $data->depth          = $depth;
 
         // Mark post as read. $CFG->hsuforum_usermarksread not yet implemented.
         if ($data->unread) {
@@ -1600,18 +1601,20 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         if (!empty($parent)) {
             $parentuser = hsuforum_extract_postuser($parent, $cm->cache->forum, $cm->cache->context);
             $parentuser->user_picture->size = 100;
-
             $data->parentfullname = $parentuser->fullname;
-            $data->parentuserurl  = $this->get_post_user_url($cm, $parentuser);;
+            $data->parentuserurl = $this->get_post_user_url($cm, $parentuser);
         }
         return $this->post_template($data);
     }
 
     public function discussion_template($d) {
-        $meta = get_string('discussionmeta', 'hsuforum', array(
-            'replies' => $d->replies,
-            'updated' => $d->modified,
-        ));
+        $meta = '';
+        if(!empty($d->replies)) {
+            $meta = get_string('discussionmeta', 'hsuforum', array(
+                'replies' => $d->replies,
+                'updated' => $d->modified,
+            ));
+        }
         if (!empty($d->userurl)) {
             $byuser = html_writer::link($d->userurl, $d->fullname, array('class' => 'hsuforum-thread-author'));
         } else {
@@ -1628,11 +1631,14 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         if (!empty($d->group)) {
             $group = " | $d->group";
         }
-
+        
+        if (!empty($meta)) {
+            $meta = '<p class="hsuforum-thread-replies-meta">'.$meta.'</p>';
+        }
         return <<<HTML
 <article id="p{$d->postid}" role="article" class="hsuforum-thread-article hsuforum-post-target clearfix" tabindex="0"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs
-     aria-hidden="false" aria-labelledby="thread_title_{$d->id}">
+     aria-hidden="false" aria-expanded="false" aria-labelledby="thread_title_{$d->id}">
 
     <header class="hsuforum-thread-header clearfix">
         <div class="hsuforum-thread-figure">
@@ -1651,7 +1657,8 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
                 <a class="hsuforum-thread-view" href="$d->viewurl">$d->subject</a>
             </h4>
 
-            <p class="hsuforum-thread-replies-meta">$meta</p>
+            $meta
+            
         </div>
     </header>
     <div class="hsuforum-thread-content" tabindex="0">
@@ -1665,50 +1672,54 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
 HTML;
     }
 
+
+    
+    /**
+     * Return html for individual post
+     *
+     * 3 use cases:
+     *  1. Standard post
+     *  2. Reply to user
+     *  3. Private reply to user
+     *
+     * @param array $p
+     */    
     public function post_template($p) {
+        $icon = "&#64;";
+        $byuser = $p->fullname;
         if (!empty($p->userurl)) {
             $byuser = html_writer::link($p->userurl, $p->fullname);
-        } else {
-            $byuser = $p->fullname;
         }
+        $byline = get_string('postbyx', 'hsuforum', $byuser);
+
         if (!empty($p->parentfullname)) {
+            $parent = $icon.$p->parentfullname;
             if (!empty($p->parentuserurl)) {
-                $parent = html_writer::link($p->parentuserurl, $p->parentfullname);
-            } else {
-                $parent = $p->fullname;
+                $parent = html_writer::link($p->parentuserurl, $icon.$p->parentfullname);
             }
-            if (!empty($p->privatereply)) {
-                $icon = html_writer::tag('span', '', array(
-                    'class'       => 'hsuforum-in-private-reply-to',
-                    'aria-hidden' => 'true',
-                    'title'       => get_string('inprivatereplyto', 'hsuforum'),
-                ));
-                $byuser = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                    'author' => $byuser,
-                    'icon'   => $icon,
-                    'parent' => $parent,
-                ));
-            } else {
-                $icon = html_writer::tag('span', '', array(
-                    'class'       => 'hsuforum-in-reply-to',
-                    'aria-hidden' => 'true',
-                    'title'       => get_string('inreplyto', 'hsuforum'),
-                ));
-                $byuser = get_string('postbyxinreplytox', 'hsuforum', array(
-                    'author' => $byuser,
-                    'icon'   => $icon,
-                    'parent' => $parent,
-                ));
-            }
-        } else {
-            $byuser = get_string('byx', 'hsuforum', $byuser);
         }
+        // Post is a reply.
+        if($p->depth) {
+            $byline = get_string('postbyxinreplytox', 'hsuforum', array(
+                    'author' => $byuser,
+                    'parent' => $parent
+                ));
+         }
+        // Post is private reply.
+        if (!empty($p->privatereply)) {
+            
+            $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
+                    'author' => $byuser,
+                    'parent' => $parent
+                ));
+        }
+
         $author = s(strip_tags($p->fullname));
         $unread = '';
         if ($p->unread) {
             $unread = html_writer::tag('span', get_string('unread', 'hsuforum'), array('class' => 'hsuforum-unreadcount'));
         }
-
+        
         return <<<HTML
 <div class="hsuforum-post-wrapper hsuforum-post-target" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true">
     <div class="hsuforum-post-figure">
@@ -1718,7 +1729,7 @@ HTML;
     <div class="hsuforum-post-body">
         $unread
         <h6 role="heading" aria-level="6" class="hsuforum-post-byline">
-            $byuser
+            $byline
         </h6>
 
         <div class="hsuforum-post-content">

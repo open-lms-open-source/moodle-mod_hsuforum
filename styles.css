@@ -255,6 +255,8 @@ span.unread {
 
 .hsuforum-post,
 .hsuforum-thread-article,
+.hsuforum-thread-tools,
+.hsuforum-reply,
 .addpost,
 .hsuforum-thread-content,
 .hsuforum-thread-replies,
@@ -275,6 +277,7 @@ span.unread {
 .hsuforum-thread-article {
     border:1px solid #dadada;
     margin:0.5em 0;
+    background-color:white;
 }
 .hsuforum-post,
 .hsuforum-thread-article {
@@ -312,9 +315,10 @@ span.unread {
 }
 
 .hsuforum-thread-replies-meta {
-    font-style:italic;
-    font-size:0.9em;
-    color:#444;
+    clear: both;
+    color: #666;
+    padding: 0.5em 0;
+    font-size: 0.9em;
 }
 
 .hsuforum-thread-content .attachments {
@@ -330,7 +334,8 @@ span.unread {
     border-top: 1px solid #dadada;
     border-bottom: 1px solid #dadada;
     margin-top:1em;
-    padding:0.5em 0;
+    padding-top:0.5em;
+    padding-bottom:0.5em;
 }
 
 .hsuforum-tools div {
@@ -406,6 +411,7 @@ span.unread {
     padding: 0.5em;
     resize: both;
     margin-bottom: 10px;
+    background-color:white;
 }
 
 .hsuforum-form .hidden {
@@ -437,6 +443,7 @@ span.unread {
 */
 
 /* threads n posts don't need lr padding on large screen */
+/*
 .hsuforum-post,
 .hsuforum-thread-article,
 .addpost,
@@ -444,6 +451,7 @@ span.unread {
 .hsuforum-thread-replies{
     padding:1.5em 0;
 }
+*/
 
 /* GRID ME UP */
 .hsuforum-thread-figure,
@@ -472,12 +480,7 @@ span.unread {
     width:100%;
 }
 
-.hsuforum-thread-replies-meta {
-    padding-right:3%;
-    width:33.3%;
-    margin-top:-2em;
-    float:right;
-}
+
 
 /* two col layout */
 /*

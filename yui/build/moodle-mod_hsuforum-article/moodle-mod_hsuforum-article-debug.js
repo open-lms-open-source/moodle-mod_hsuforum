@@ -1194,16 +1194,16 @@ Y.extend(ARTICLE, Y.Base,
             Y.log('Expanding discussion: ' + discussionNode.getData('discussionid'), 'info', 'Article');
             var discussions = Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION);
             discussions.each(function(discussion) {
-                discussion.setAttribute('aria-hidden', 'true');
+                discussion.setAttribute('aria-hidden', 'true').setAttribute('aria-expanded', 'false');
             });
-            discussionNode.setAttribute('aria-hidden', 'false');
+            discussionNode.setAttribute('aria-hidden', 'false').setAttribute('aria-expanded', 'true').scrollIntoView(true);
+            
             discussionNode.addClass(CSS.DISCUSSION_EXPANDED);
             this.get('form').attachFormWarnings();
         },
 
         /**
          * Collapse all discussions
-         *
          * @method collapseAllDiscussions
          */
         collapseAllDiscussions: function() {
@@ -1211,7 +1211,7 @@ Y.extend(ARTICLE, Y.Base,
             var discussions = Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION);
             discussions.each(function(discussion) {
                 discussion.removeClass(CSS.DISCUSSION_EXPANDED);
-                discussion.setAttribute('aria-hidden', 'false');
+                discussion.setAttribute('aria-hidden', 'false').setAttribute('aria-expanded', 'false');
             });
         },
 
@@ -1241,7 +1241,7 @@ Y.extend(ARTICLE, Y.Base,
                 return;
             }
             if (window.confirm(M.str.mod_hsuforum.deletesure) === true) {
-                this.deletePost(postId)
+                this.deletePost(postId);
             }
         },
 
