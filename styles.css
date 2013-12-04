@@ -184,7 +184,6 @@ span.unread {
 .path-mod-hsuforum #gradetype_warning { color: #660000; padding-left: 5px; }
 
 #page-mod-hsuforum-discuss .hsuforum-thread-replies-meta,
-#page-mod-hsuforum-discuss .hsuforum-thread-view,
 #page-mod-hsuforum-discuss .hsuforum-thread-nav .close,
 .hsuforum-footer-reply .hsuforum-cancel,
 .hsuforum-threads-wrapper .hsuforum-tools,
@@ -244,9 +243,13 @@ span.unread {
 /* -------------------------  ACC FORUM VIEW  -------------------------*/
 
 /* borderbox reset */
+.block_flexpagemod_hsuforum *,
+.block_flexpagemod_hsuforum *:before,
+.block_flexpagemod_hsuforum  *:after,
 .path-mod-hsuforum *, .path-mod-hsuforum *:before, .path-mod-hsuforum *:after {
   -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
  }
+
 
 /* consistant padding */
 .hsuforum-thread-figure,
@@ -262,14 +265,12 @@ span.unread {
 .hsuforum-thread-tools,
 .hsuforum-reply,
 .addpost,
-.hsuforum-thread-content,
 .hsuforum-thread-replies,
 .hsuforum-thread-nav{
     padding:1em 3%;
 }
 
 /* content width for readability */
-.hsuforum-thread-content,
 .hsuforum-thread-tools,
 .hsuforum-thread-replies,
 .hsuforum-reply-wrapper{
@@ -278,6 +279,10 @@ span.unread {
 }
 
 /* threads n posts */
+.hsuforum-thread-content {
+	margin-left:33.3%;
+	padding:1em 0;
+}
 .hsuforum-thread-article {
     border:1px solid #dadada;
     margin:0.5em 0;
@@ -290,11 +295,33 @@ span.unread {
 
 .hsuforum-thread-replies-list {
     list-style:none;
+    margin:0;
 }
+.hsuforum-post {
+	border-top: 2px dotted #CCC;
+	margin-top: 1em;
+}
+.hsuforum-thread-replies-list
+.hsuforum-post:before{
+content: attr(data-count);
+position: absolute;
+top: -1em;
+left: 0%;
+border-radius: 100%;
+background-color: #ddd;
+color: #FFF;
+text-align: center;
+height: 2em;
+width: 2em;
+line-height: 2;
+}
+
 /* user image */
+article .hsuforum-thread-figure .userpicture.img-circle,
 .hsuforum-form .userpicture,
 .hsuforum-post .userpicture,
 .hsuforum-thread-article .userpicture {
+    width:100px;
     max-width:100%;
     height:auto;
     border-radius:50%;
@@ -303,19 +330,24 @@ span.unread {
 }
 
 /* all imgs responsive */
-.hsuforum-threads-wrapper img {
+.hsuforum-thread-article img {
     max-width:100%;
     height:auto;
 }
 
 /* unread posts flag */
 .hsuforum-unreadcount {
-    position: absolute;
-    right:-1px;
-    top:-1px;
-    background-color: orange;
-    color: white !important;
-    padding: 0.2em 2%;
+position: absolute;
+right: 0.5em;
+top: 0em;
+background-color: #FFA500;
+color: #FFF !important;
+padding: 0.2em 2%;
+border-radius: 2px;
+}
+.hsuforum-post
+.hsuforum-unreadcount {
+	top:-1em;
 }
 
 .hsuforum-thread-replies-meta {
@@ -335,8 +367,7 @@ span.unread {
 }
 
 .hsuforum-tools{
-    border-top: 1px solid #dadada;
-    border-bottom: 1px solid #dadada;
+    color:#ccc;
     margin-top:1em;
     padding-top:0.5em;
     padding-bottom:0.5em;
@@ -410,7 +441,7 @@ span.unread {
 }
 
 .hsuforum-form .textarea {
-    height: 8em;
+    min-height: 8em;
     overflow: auto;
     padding: 0.5em;
     resize: both;
@@ -469,14 +500,13 @@ span.unread {
     width:66.66%;
 }
 
-.hsuforum-post[data-depth] {margin-left:19.99%;} /* max depth catch all */
-.hsuforum-post[data-depth="0"] {margin-left:0%;}
-.hsuforum-post[data-depth="1"] {margin-left:3.33%;}
-.hsuforum-post[data-depth="2"] {margin-left:6.66%;}
-.hsuforum-post[data-depth="3"] {margin-left:9.99%;}
-.hsuforum-post[data-depth="4"] {margin-left:13.33%;}
-.hsuforum-post[data-depth="5"] {margin-left:16.66%;}
-
+.hsuforum-post[data-depth] .hsuforum-post-wrapper{margin-left:19.99%;} /* max depth catch all */
+.hsuforum-post[data-depth="0"] .hsuforum-post-wrapper{margin-left:0%;}
+.hsuforum-post[data-depth="1"] .hsuforum-post-wrapper{margin-left:3.33%;}
+.hsuforum-post[data-depth="2"] .hsuforum-post-wrapper{margin-left:6.66%;}
+.hsuforum-post[data-depth="3"] .hsuforum-post-wrapper{margin-left:9.99%;}
+.hsuforum-post[data-depth="4"] .hsuforum-post-wrapper{margin-left:13.33%;}
+.hsuforum-post[data-depth="5"] .hsuforum-post-wrapper{margin-left:16.66%;}
 
 /* inscrease form with */
 .hsuforum-form input[type=text],
