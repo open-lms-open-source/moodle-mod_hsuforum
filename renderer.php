@@ -758,7 +758,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      */
     public function post_get_commands($post, $discussion, $cm, $canreply) {
         global $CFG, $USER;
-
         hsuforum_cm_add_cache($cm);
 
         $discussionlink = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
@@ -797,7 +796,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             throw new coding_exception('Must set post\'s privatereply property!');
         }
         if ($canreply and empty($post->privatereply)) {
-            $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply);
+            $replytitle = get_string('replybuttontitle', 'hsuforum', array(
+                    'firstname' => $post->firstname,
+                    'lastname' => $post->lastname
+                ));
+            $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply, 'title'=> $replytitle);
         }
 
         if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
@@ -817,7 +820,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         foreach ($commands as $key => $command) {
             if (is_array($command)) {
-                $commands[$key] = html_writer::link($command['url'], $command['text']);
+                $commands[$key] = html_writer::link($command['url'], $command['text'], array('title'=>$command['title']));
             }
         }
         return $commands;
@@ -1545,7 +1548,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
             $html = $this->post($cm, $discussion, $post, $canreply, $parent, array(), $depth);
             if (!empty($html)) {
                 $count++;
-                $output .= html_writer::tag('li', $html, array('class' => "hsuforum-post clearfix depth$depth", 'data-depth' => $depth, 'tabindex' => '-1'));
+                $output .= html_writer::tag('li', $html, array('class' => "hsuforum-post clearfix depth$depth", 'data-depth' => $depth, 'tabindex' => '-1', 'data-count' => $count));
 
                 if (!empty($post->children)) {
                     $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
@@ -1765,7 +1768,7 @@ HTML;
         $output = html_writer::link(
             new moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id, 'page' => $dnav->get_page($discussion->id))),
             get_string('closediscussion', 'hsuforum'),
-            array('class' => 'close')
+            array('class' => 'hsuforum_thread_close')
         );
 
         $class = 'prev';
