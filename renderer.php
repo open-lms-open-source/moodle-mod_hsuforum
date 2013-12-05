@@ -1325,14 +1325,19 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
         return $this->discussionnav;
     }
 
-    public function article_js() {
+    public function article_js($context = null) {
+        if (!$context instanceof \context) {
+            $contextid = $this->page->context->id;
+        } else {
+            $contextid = $context->id;
+        }
         // For some reason, I need to require core_rating manually...
         $this->page->requires->js_module('core_rating');
         $this->page->requires->yui_module(
             'moodle-mod_hsuforum-article',
             'M.mod_hsuforum.init_article',
             array(array(
-                'contextId' => $this->page->context->id,
+                'contextId' => $contextid,
             ))
         );
         $this->page->requires->strings_for_js(array(
@@ -1346,7 +1351,8 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
     }
 
     public function article_assets($cm) {
-        $this->article_js();
+        $context = context_module::instance($cm->id);
+        $this->article_js($context);
         $output = html_writer::tag(
             'script',
             $this->simple_edit_post($cm),
