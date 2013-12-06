@@ -43,9 +43,10 @@ Y.extend(DOM, Y.Base,
             // Initialize current menu options.
             this.initOptionMenus();
             // Show load more button
-            Y.one(SELECTORS.LOAD_MORE).setStyle('display', 'block');
-            
-            
+            var loadNode = Y.one(SELECTORS.LOAD_MORE);
+            if (loadNode != null) {
+                loadNode.setStyle('display', 'block');
+            }
         },
 
         /**
