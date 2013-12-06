@@ -1392,6 +1392,7 @@ class mod_hsuforum_article_renderer extends mod_hsuforum_renderer implements ren
                 'class'        => 'hsuforum-threads-load-more',
                 'data-perpage' => $options['perpage'],
                 'data-total'   => $options['total'],
+                'role' => 'button'
             ));
         }
         return $this->notification_area().

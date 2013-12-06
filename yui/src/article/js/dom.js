@@ -42,6 +42,10 @@ Y.extend(DOM, Y.Base,
             Y.all(SELECTORS.RATE).addClass('processed');
             // Initialize current menu options.
             this.initOptionMenus();
+            // Show load more button
+            Y.one(SELECTORS.LOAD_MORE).setStyle('display', 'block');
+            
+            
         },
 
         /**

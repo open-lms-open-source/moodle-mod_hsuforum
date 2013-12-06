@@ -103,6 +103,10 @@ Y.extend(DOM, Y.Base,
             Y.all(SELECTORS.RATE).addClass('processed');
             // Initialize current menu options.
             this.initOptionMenus();
+            // Show load more button
+            Y.one(SELECTORS.LOAD_MORE).setStyle('display', 'block');
+            
+            
         },
 
         /**
@@ -1103,7 +1107,6 @@ Y.extend(ARTICLE, Y.Base,
          */
         loadPage: function(page, fn, context) {
             var loadNode = Y.one(SELECTORS.LOAD_MORE);
-
             if (loadNode === null) {
                 return;
             }
@@ -1131,10 +1134,10 @@ Y.extend(ARTICLE, Y.Base,
                         if (displayCount >= total) {
                             loadNode.hide();
                         } else {
-                            loadNode.show();
+                            // loadNode.show();
+                            loadNode.setStyle('display', 'block');
                         }
-                        Y.all(SELECTORS.DISCUSSION).item(displayCount - perpage).focus();
-
+                        Y.all(SELECTORS.DISCUSSION).item(displayCount + 1 - perpage).scrollIntoView(true).focus();
                         if (fn) {
                             fn.call(context);
                         }

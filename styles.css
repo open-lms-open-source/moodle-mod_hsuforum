@@ -317,10 +317,10 @@ line-height: 2;
 }
 
 /* user image */
-article .hsuforum-thread-figure .userpicture.img-circle,
-.hsuforum-form .userpicture,
-.hsuforum-post .userpicture,
-.hsuforum-thread-article .userpicture {
+.content .hsuforum-thread-figure img.userpicture,
+.content .hsuforum-post-figure img.userpicture,
+.hsuforum-thread-figure img.userpicture,
+.hsuforum-post-figure img.userpicture{
     width:100px;
     max-width:100%;
     height:auto;
@@ -461,6 +461,15 @@ border-radius: 2px;
 .hsuforum-form button {
     clear:both;
 }
+.hsuforum-threads-load-more {
+	display:block;
+	display:none; /*hide till js loaded */
+	background-color:white;
+	text-align:center;
+	padding:1em 0;
+	margin:1em 0;
+}
+
 .hsuforum-use-advanced {
     clear:both;
     float:right;
