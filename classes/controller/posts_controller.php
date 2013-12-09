@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * View Posters Controller
+ * Post and Discussion Viewing Controller
  *
  * @package    mod
  * @subpackage hsuforum
@@ -24,10 +24,33 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__.'/abstract.php');
-require_once(dirname(__DIR__).'/lib.php');
+namespace mod_hsuforum\controller;
 
-class hsuforum_controller_posts extends hsuforum_controller_abstract {
+use coding_exception;
+use mod_hsuforum\response\json_response;
+use mod_hsuforum\service\discussion_service;
+use moodle_url;
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once(__DIR__.'/controller_abstract.php');
+
+class posts_controller extends controller_abstract {
+    /**
+     * @var discussion_service
+     */
+    protected $discussionservice;
+
+    public function init($action) {
+        parent::init($action);
+
+        require_once(dirname(__DIR__).'/response/json_response.php');
+        require_once(dirname(__DIR__).'/service/discussion_service.php');
+        require_once(dirname(dirname(__DIR__)).'/lib.php');
+
+        $this->discussionservice = new discussion_service();
+    }
+
     /**
      * Do any security checks needed for the passed action
      *
@@ -43,7 +66,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
                 }
                 break;
             default:
-                require_capability('mod/hsuforum:viewdiscussion', $PAGE->context, NULL, true, 'noviewdiscussionspermission', 'hsuforum');
+                require_capability('mod/hsuforum:viewdiscussion', $PAGE->context, null, true, 'noviewdiscussionspermission', 'hsuforum');
         }
     }
 
@@ -81,7 +104,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
 
         if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
             foreach ($posts[$post->id]->children as $post) {
-                if ($node = $this->get_renderer()->post_to_node($cm, $discussion, $post)) {
+                if ($node = $this->renderer->post_to_node($cm, $discussion, $post)) {
                     $nodes[] = $node;
                 }
             }
@@ -95,62 +118,89 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
      * @throws coding_exception
      */
     public function postsnested_action() {
-        global $PAGE, $DB, $CFG, $COURSE, $USER;
-
         if (!AJAX_SCRIPT) {
             throw new coding_exception('This is an AJAX action and you cannot access it directly');
         }
-        require_once($CFG->dirroot.'/rating/lib.php');
-
         $discussionid = required_param('discussionid', PARAM_INT);
-        $discussion   = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
-        $forum        = $PAGE->activityrecord;
-        $course       = $COURSE;
-        $cm           = $PAGE->cm;
-        $context      = $PAGE->context;
 
-        if ($forum->type == 'news') {
-            if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
-                || $discussion->timestart <= time())
-                && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
-                print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
-            }
-        }
-        if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
-            print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
-        }
-        if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
-            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
-        }
+        list($cm, $discussion, $posts, $canreply) = $this->discussionservice->get_posts($discussionid);
 
-        $forumtracked = hsuforum_tp_is_tracked($forum);
-        $posts        = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort(HSUFORUM_MODE_NESTED), $forumtracked);
-        $output       = '';
-        $canreply     = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
-
-        if ($forum->assessed != RATING_AGGREGATE_NONE) {
-            $ratingoptions = new stdClass;
-            $ratingoptions->context = $context;
-            $ratingoptions->component = 'mod_hsuforum';
-            $ratingoptions->ratingarea = 'post';
-            $ratingoptions->items = $posts;
-            $ratingoptions->aggregate = $forum->assessed;
-            $ratingoptions->scaleid = $forum->scale;
-            $ratingoptions->userid = $USER->id;
-            $ratingoptions->returnurl = "$CFG->wwwroot/mod/hsuforum/view.php?id=$cm->id";
-            $ratingoptions->assesstimestart = $forum->assesstimestart;
-            $ratingoptions->assesstimefinish = $forum->assesstimefinish;
-
-            $rm = new rating_manager();
-            $posts = $rm->get_ratings($ratingoptions);
-        }
-        if (!empty($posts[$post->id]) and !empty($posts[$post->id]->children)) {
-            foreach ($posts[$post->id]->children as $post) {
-                if ($postoutput = $this->get_renderer()->nested_post($cm, $discussion, $post, $canreply)) {
+        $output = '';
+        if (!empty($posts[$discussion->firstpost]) and !empty($posts[$discussion->firstpost]->children)) {
+            foreach ($posts[$discussion->firstpost]->children as $post) {
+                if ($postoutput = $this->renderer->nested_post($cm, $discussion, $post, $canreply)) {
                     $output .= $postoutput;
                 }
             }
         }
+        echo json_encode((object) array(
+            'html' => $output,
+        ));
+    }
+
+    /**
+     * @throws coding_exception
+     */
+    public function posts_html_action() {
+        global $PAGE;
+
+        if (!AJAX_SCRIPT) {
+            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+        }
+        $discussionid  = required_param('discussionid', PARAM_INT);
+        $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
+
+        /** @var $renderer \mod_hsuforum\render_interface */
+        $renderer = $PAGE->get_renderer('mod_hsuforum', $displayformat);
+
+        list($cm, $discussion, $posts, $canreply) = $this->discussionservice->get_posts($discussionid);
+
+        echo json_encode((object) array(
+            'html' => $renderer->posts($cm, $discussion, $posts, $canreply),
+        ));
+    }
+
+    public function discussion_html_action() {
+        if (!AJAX_SCRIPT) {
+            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+        }
+        $discussionid = required_param('discussionid', PARAM_INT);
+
+        echo json_encode((object) array(
+            'html' => $this->discussionservice->render_discussion($discussionid),
+        ));
+    }
+
+    /**
+     * Load another page of discussions
+     *
+     * @throws \coding_exception
+     */
+    public function discussions_html_action() {
+        global $PAGE;
+
+        require_once(dirname(dirname(__DIR__)).'/lib/discussion/sort.php');
+
+        if (!AJAX_SCRIPT) {
+            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+        }
+        $page          = required_param('page', PARAM_INT);
+        $perpage       = required_param('perpage', PARAM_INT);
+        $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
+
+        /** @var $renderer \mod_hsuforum\render_interface */
+        $renderer = $PAGE->get_renderer('mod_hsuforum', $displayformat);
+        $dsort    = \hsuforum_lib_discussion_sort::get_from_session($PAGE->activityrecord, $PAGE->context);
+        $posts    = hsuforum_get_discussions($PAGE->cm, $dsort->get_sort_sql(), true, -1, false, $page, $perpage, false);
+        hsuforum_get_ratings_for_posts($PAGE->context, $PAGE->activityrecord, $posts);
+
+        $output = '';
+        foreach ($posts as $post) {
+            $output .= $renderer->discussion(
+                $PAGE->cm, hsuforum_extract_discussion($post, $PAGE->activityrecord), $post
+            );
+        }
+
         echo json_encode((object) array(
             'html' => $output,
         ));
@@ -189,10 +239,10 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         }
 
         $posts  = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort(HSUFORUM_MODE_NESTED), false);
-        $output = $this->get_renderer()->post_in_context($cm, $discussion, $posts[$post->id]);
+        $output = $this->renderer->post_in_context($cm, $discussion, $posts[$post->id]);
 
         echo json_encode((object) array(
-            'html' => html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container')),
+            'html' => \html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container')),
         ));
     }
 
@@ -231,6 +281,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         if (hsuforum_tp_is_tracked($forum)) {
             hsuforum_tp_add_read_record($USER->id, $post->id);
         }
+        return new json_response(array('postid' => $postid, 'discussionid' => $discussion->id));
     }
 
     /**
@@ -241,12 +292,12 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
 
         require_sesskey();
 
-        require_once(dirname(__DIR__).'/lib/discussion/subscribe.php');
+        require_once(dirname(dirname(__DIR__)).'/lib/discussion/subscribe.php');
 
         $discussionid = required_param('discussionid', PARAM_INT);
         $returnurl    = required_param('returnurl', PARAM_LOCALURL);
 
-        $subscribe = new hsuforum_lib_discussion_subscribe($PAGE->activityrecord, $PAGE->context);
+        $subscribe = new \hsuforum_lib_discussion_subscribe($PAGE->activityrecord, $PAGE->context);
 
         if ($subscribe->is_subscribed($discussionid)) {
             $subscribe->unsubscribe($discussionid);
@@ -261,12 +312,12 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
     public function discsubscribers_action() {
         global $OUTPUT, $USER, $DB, $COURSE, $PAGE;
 
-        require_once(dirname(__DIR__).'/repository/discussion.php');
-        require_once(dirname(__DIR__).'/lib/userselector/discussion/existing.php');
-        require_once(dirname(__DIR__).'/lib/userselector/discussion/potential.php');
+        require_once(dirname(dirname(__DIR__)).'/repository/discussion.php');
+        require_once(dirname(dirname(__DIR__)).'/lib/userselector/discussion/existing.php');
+        require_once(dirname(dirname(__DIR__)).'/lib/userselector/discussion/potential.php');
 
         $discussionid = required_param('discussionid', PARAM_INT);
-        $edit         = optional_param('edit', -1, PARAM_BOOL); // Turn editing on and off
+        $edit         = optional_param('edit', -1, PARAM_BOOL); // Turn editing on and off.
 
         $url = $PAGE->url;
         $url->param('discussionid', $discussionid);
@@ -280,7 +331,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         $course     = $COURSE;
         $cm         = $PAGE->cm;
         $context    = $PAGE->context;
-        $repo       = new hsuforum_repository_discussion();
+        $repo       = new \hsuforum_repository_discussion();
 
         if (hsuforum_is_forcesubscribed($forum)) {
             throw new coding_exception('Cannot manage discussion subscriptions when subscription is forced');
@@ -288,8 +339,8 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
 
         $currentgroup = groups_get_activity_group($cm);
         $options = array('forum'=>$forum, 'discussion' => $discussion, 'currentgroup'=>$currentgroup, 'context'=>$context);
-        $existingselector = new hsuforum_userselector_discussion_existing('existingsubscribers', $options);
-        $subscriberselector = new hsuforum_userselector_discussion_potential('potentialsubscribers', $options);
+        $existingselector = new \hsuforum_userselector_discussion_existing('existingsubscribers', $options);
+        $subscriberselector = new \hsuforum_userselector_discussion_potential('potentialsubscribers', $options);
 
         if (data_submitted()) {
             require_sesskey();
@@ -318,7 +369,7 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
 
         $strsubscribers = get_string('discussionsubscribers', 'hsuforum');
 
-        // This works but it doesn't make a good navbar, would have to change the settings menu...
+        // This works but it doesn't make a good navbar, would have to change the settings menu.
         // $PAGE->settingsnav->find('discsubscribers', navigation_node::TYPE_SETTING)->make_active();
 
         $PAGE->navbar->add(shorten_text(format_string($discussion->name)), new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
@@ -345,9 +396,9 @@ class hsuforum_controller_posts extends hsuforum_controller_abstract {
         }
         $output = $OUTPUT->heading($strsubscribers);
         if (empty($USER->subscriptionsediting)) {
-            $output .= $this->get_renderer()->subscriber_overview(current($existingselector->find_users('')), $discussion->name, $course);
+            $output .= $this->renderer->subscriber_overview(current($existingselector->find_users('')), $discussion->name, $course);
         } else {
-            $output .= $this->get_renderer()->subscriber_selection_form($existingselector, $subscriberselector);
+            $output .= $this->renderer->subscriber_selection_form($existingselector, $subscriberselector);
         }
         return $output;
     }

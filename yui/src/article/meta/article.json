@@ -1,0 +1,16 @@
+{
+    "moodle-mod_hsuforum-article": {
+        "requires": [
+            "base",
+            "node",
+            "event",
+            "router",
+            "yui2-menu",
+            "core_rating",
+            "querystring",
+            "moodle-mod_hsuforum-io",
+            "moodle-mod_hsuforum-livelog",
+            "moodle-core-formchangechecker"
+        ]
+    }
+}

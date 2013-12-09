@@ -15,56 +15,51 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Abstract Controller
+ * Controller Abstract
  *
- * @package    mod
- * @subpackage hsuforum
- * @copyright  Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @author     Mark Nielsen
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_hsuforum
+ * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-abstract class hsuforum_controller_abstract {
+namespace mod_hsuforum\controller;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Controllers handle requests.  Any methods that end with "_action"
+ * can be routed to via the URL.  See the router for how this happens.
+ *
+ * @package   mod_hsuforum
+ * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class controller_abstract {
     /**
-     * @var mod_hsuforum_renderer
+     * @var \mod_hsuforum_renderer
      */
     protected $renderer;
 
-    public function __construct() {
-        global $PAGE;
-
-        $this->set_renderer(
-            $PAGE->get_renderer('mod_hsuforum')
-        );
-    }
-
     /**
      * @param \mod_hsuforum_renderer $renderer
-     * @return hsuforum_controller_abstract
+     * @return controller_abstract
      */
-    public function set_renderer(mod_hsuforum_renderer $renderer) {
+    public function set_renderer(\mod_hsuforum_renderer $renderer) {
         $this->renderer = $renderer;
         return $this;
     }
 
     /**
-     * @return \mod_hsuforum_renderer
-     */
-    public function get_renderer() {
-        return $this->renderer;
-    }
-
-    /**
      * Generate a new URL to this page
      *
-     * @param array $extraparams
-     * @return moodle_url
+     * @param array $params
+     * @return \moodle_url
      */
-    public function new_url($extraparams = array()) {
+    public function new_url($params = array()) {
         global $PAGE;
 
         $url = $PAGE->url;
-        $url->params($extraparams);
+        $url->params($params);
         return $url;
     }
 
@@ -72,7 +67,8 @@ abstract class hsuforum_controller_abstract {
      * Initialize the controller before the given
      * action is invoked.
      *
-     * @param string $action
+     * @param string $action This is the action that is about to be invoked
+     * @throws \moodle_exception
      */
     public function init($action) {
         $this->require_capability($action);

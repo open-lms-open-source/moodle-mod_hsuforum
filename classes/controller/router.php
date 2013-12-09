@@ -15,20 +15,40 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Routes the action parameter to controller methods
+ * Controller Router
  *
- * @package    mod
- * @subpackage hsuforum
- * @copyright  Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @author     Mark Nielsen
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_hsuforum
+ * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class hsuforum_lib_controller_route {
+namespace mod_hsuforum\controller;
+
+use coding_exception;
+use SplObjectStorage;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Matches an action to a controller method.
+ * Can work with multiple controllers, first controller
+ * that matches the action wins.
+ *
+ * @package   mod_hsuforum
+ * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class router {
     /**
-     * @var hsuforum_controller_abstract[]
+     * Holds all the controller objects
+     *
+     * @var SplObjectStorage
      */
-    protected $controllers = array();
+    protected $controllers;
+
+    public function __construct() {
+        $this->controllers = new SplObjectStorage();
+    }
 
     /**
      * Add a controller to the router
@@ -36,14 +56,16 @@ class hsuforum_lib_controller_route {
      * The router routes actions to the controllers
      * by first come, first serve.
      *
-     * @param hsuforum_controller_abstract $controller
+     * @param object $controller
+     * @return $this
      */
-    public function add_controller(hsuforum_controller_abstract $controller) {
-        $this->controllers[] = $controller;
+    public function add_controller($controller) {
+        $this->controllers->attach($controller);
+        return $this;
     }
 
     /**
-     * @return array|hsuforum_controller_abstract[]
+     * @return SplObjectStorage
      */
     public function get_controllers() {
         return $this->controllers;
@@ -56,20 +78,19 @@ class hsuforum_lib_controller_route {
      * by first come, first serve.
      *
      * @param $action
-     * @return string|void|boolean|null
+     * @return array The controller and method to execute
      * @throws coding_exception
      */
-    public function action($action) {
+    public function route_action($action) {
         $method = "{$action}_action";
-        foreach ($this->get_controllers() as $controller) {
-            $reflection = new ReflectionClass($controller);
+        foreach ($this->controllers as $controller) {
+            $reflection = new \ReflectionClass($controller);
             if (!$reflection->hasMethod($method)) {
                 continue;
             } else if ($reflection->getMethod($method)->isPublic() !== true) {
                 throw new coding_exception("The controller callback is not public: $method");
             }
-            $controller->init($action);
-            return $controller->$method();
+            return array($controller, $method);
         }
         throw new coding_exception("Unable to handle request for $method");
     }
