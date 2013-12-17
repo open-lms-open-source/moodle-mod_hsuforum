@@ -758,6 +758,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      */
     public function post_get_commands($post, $discussion, $cm, $canreply) {
         global $CFG, $USER;
+
         hsuforum_cm_add_cache($cm);
 
         $discussionlink = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
@@ -797,10 +798,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         if ($canreply and empty($post->privatereply)) {
             $replytitle = get_string('replybuttontitle', 'hsuforum', array(
-                    'firstname' => $post->firstname,
-                    'lastname' => $post->lastname
-                ));
-            $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply, 'title'=> $replytitle);
+                'firstname' => $post->firstname,
+                'lastname'  => $post->lastname
+            ));
+            $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply, 'title' => $replytitle);
         }
 
         if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
@@ -820,7 +821,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         foreach ($commands as $key => $command) {
             if (is_array($command)) {
-                $commands[$key] = html_writer::link($command['url'], $command['text'], array('title'=>$command['title']));
+                $attributes = array();
+                if (array_key_exists('title', $command)) {
+                    $attributes = array('title' => $command['title']);
+                }
+                $commands[$key] = html_writer::link($command['url'], $command['text'], $attributes);
             }
         }
         return $commands;
