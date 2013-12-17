@@ -5826,6 +5826,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     }
 
     if ($showdisplayformat) {
+        if ($displayformat != 'article') {
+            $url = clone($PAGE->url);
+            $url->param('displayformat', 'article');
+            echo html_writer::link($url, get_string('switchtoaccessible', 'hsuforum'), array('class' => 'accesshide'));
+        }
         $display = new single_select($PAGE->url, 'displayformat', array(
             'header'  => get_string('default', 'hsuforum'),
             'tree'    => get_string('tree', 'hsuforum'),
@@ -5835,7 +5840,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
         $display->set_label(get_string('discussiondisplay', 'hsuforum'));
         $display->class .= ' hsuforum-display-format clearfix';
-        echo $OUTPUT->render($display);
+        echo html_writer::tag('div', $OUTPUT->render($display), array('aria-hidden' => 'true'));
     }
 
     if (!$canstart && (isguestuser() or !isloggedin() or $forum->type == 'news')) {
