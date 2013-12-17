@@ -105,7 +105,7 @@ Y.extend(DOM, Y.Base,
             this.initOptionMenus();
             // Show load more button
             var loadNode = Y.one(SELECTORS.LOAD_MORE);
-            if (loadNode != null) {
+            if (loadNode !== null) {
                 loadNode.setStyle('display', 'block');
             }
         },
@@ -1138,9 +1138,10 @@ Y.extend(ARTICLE, Y.Base,
                             // loadNode.show();
                             loadNode.setStyle('display', 'block');
                         }
-                        Y.all(SELECTORS.DISCUSSION).item(displayCount + 1 - perpage).scrollIntoView(true).focus();
                         if (fn) {
                             fn.call(context);
+                        } else {
+                            Y.all(SELECTORS.DISCUSSION).item(displayCount + 1 - perpage).scrollIntoView(true).focus();
                         }
                     }, this);
                 }
@@ -1179,13 +1180,16 @@ Y.extend(ARTICLE, Y.Base,
          * @param discussionNode
          */
         expandDiscussion: function(discussionNode) {
-            var discussions = Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION);
-            discussions.each(function(discussion) {
-                discussion.setAttribute('aria-hidden', 'true').setAttribute('aria-expanded', 'false');
-            });
-            discussionNode.setAttribute('aria-hidden', 'false').setAttribute('aria-expanded', 'true').scrollIntoView(true);
-            
-            discussionNode.addClass(CSS.DISCUSSION_EXPANDED);
+
+            Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION)
+                .setAttribute('aria-hidden', 'true')
+                .setAttribute('aria-expanded', 'false');
+
+            discussionNode.addClass(CSS.DISCUSSION_EXPANDED)
+                .setAttribute('aria-hidden', 'false')
+                .setAttribute('aria-expanded', 'true')
+                .scrollIntoView(true);
+
             this.get('form').attachFormWarnings();
         },
 
@@ -1194,11 +1198,11 @@ Y.extend(ARTICLE, Y.Base,
          * @method collapseAllDiscussions
          */
         collapseAllDiscussions: function() {
-            var discussions = Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION);
-            discussions.each(function(discussion) {
-                discussion.removeClass(CSS.DISCUSSION_EXPANDED);
-                discussion.setAttribute('aria-hidden', 'false').setAttribute('aria-expanded', 'false');
-            });
+
+            Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION)
+                .removeClass(CSS.DISCUSSION_EXPANDED)
+                .setAttribute('aria-hidden', 'false')
+                .setAttribute('aria-expanded', 'false');
         },
 
         /**
