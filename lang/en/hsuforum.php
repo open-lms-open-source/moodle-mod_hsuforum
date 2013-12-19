@@ -587,4 +587,4 @@ $string['deleteattachmentx'] = 'Delete {$a}';
 $string['deleteattachments'] = 'Delete attachments';
 $string['postwasupdated'] = 'The post was updated';
 $string['id'] = 'ID';
-$string['switchtoaccessible'] = 'Switch to the accessible view.';
+$string['switchtoaccessible'] = 'Switch to the accessible view';
