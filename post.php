@@ -316,55 +316,9 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $replycount = hsuforum_count_replies($post);
 
     if (!empty($confirm) && confirm_sesskey()) {    // User has confirmed the delete
-        //check user capability to delete post.
-        $timepassed = time() - $post->created;
-        if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
-            print_error("cannotdeletepost", "hsuforum",
-                      hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-        }
-
-        if ($post->totalscore) {
-            notice(get_string('couldnotdeleteratings', 'rating'),
-                    hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-
-        } else if ($replycount && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
-            print_error("couldnotdeletereplies", "hsuforum",
-                    hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-
-        } else {
-            if (! $post->parent) {  // post is a discussion topic as well, so delete discussion
-                if ($forum->type == 'single') {
-                    notice("Sorry, but you are not allowed to delete that discussion!",
-                            hsuforum_go_back_to("discuss.php?d=$post->discussion"));
-                }
-                hsuforum_delete_discussion($discussion, false, $course, $cm, $forum);
-
-                add_to_log($discussion->course, "hsuforum", "delete discussion",
-                           "view.php?id=$cm->id", "$forum->id", $cm->id);
-
-                redirect("view.php?f=$discussion->forum");
-
-            } else if (hsuforum_delete_post($post, has_capability('mod/hsuforum:deleteanypost', $modcontext),
-                $course, $cm, $forum)) {
-
-                if ($forum->type == 'single') {
-                    // Single discussion forums are an exception. We show
-                    // the forum itself since it only has one discussion
-                    // thread.
-                    $discussionurl = "view.php?f=$forum->id";
-                } else {
-                    $discussionurl = "discuss.php?d=$post->discussion";
-                }
-
-                add_to_log($discussion->course, "hsuforum", "delete post", $discussionurl, "$post->id", $cm->id);
-
-                redirect(hsuforum_go_back_to($discussionurl));
-            } else {
-                print_error('errorwhiledelete', 'hsuforum');
-            }
-        }
-
-
+        redirect(
+            hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $discussion, $post)
+        );
     } else { // User just asked to delete something
 
         hsuforum_set_return();
@@ -378,6 +332,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
                       hsuforum_go_back_to("discuss.php?d=$post->discussion"));
             }
             echo $OUTPUT->header();
+            echo $OUTPUT->heading(format_string($forum->name), 2);
             echo $OUTPUT->confirm(get_string("deletesureplural", "hsuforum", $replycount+1),
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
@@ -391,6 +346,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             }
         } else {
             echo $OUTPUT->header();
+            echo $OUTPUT->heading(format_string($forum->name), 2);
             echo $OUTPUT->confirm(get_string("deletesure", "hsuforum", $replycount),
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
@@ -474,7 +430,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_title(format_string($discussion->name).": ".format_string($post->subject));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('pruneheading', 'hsuforum'));
+        echo $OUTPUT->heading(format_string($forum->name), 2);
+        echo $OUTPUT->heading(get_string('pruneheading', 'forum'), 3);
         if (!empty($post->privatereply)) {
             echo $OUTPUT->notification(get_string('splitprivatewarning', 'hsuforum'));
         }
@@ -518,7 +475,15 @@ if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field
 
 require_once('post_form.php');
 
-$mform_post = new mod_hsuforum_post_form('post.php', array('course'=>$course, 'cm'=>$cm, 'coursecontext'=>$coursecontext, 'modcontext'=>$modcontext, 'forum'=>$forum, 'post'=>$post), 'post', '', array('id' => 'mformhsuforum'));
+$thresholdwarning = hsuforum_check_throttling($forum, $cm);
+$mform_post = new mod_hsuforum_post_form('post.php', array('course' => $course,
+                                                        'cm' => $cm,
+                                                        'coursecontext' => $coursecontext,
+                                                        'modcontext' => $modcontext,
+                                                        'forum' => $forum,
+                                                        'post' => $post,
+                                                        'thresholdwarning' => $thresholdwarning,
+                                                        'edit' => $edit), 'post', '', array('id' => 'mformhsuforum'));
 
 $draftitemid = file_get_submitted_draft_itemid('attachments');
 file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_hsuforum', 'attachment', empty($post->id)?null:$post->id, mod_hsuforum_post_form::attachment_options($forum));
@@ -694,10 +659,9 @@ if ($fromform = $mform_post->get_data()) {
 
     } else if ($fromform->discussion) { // Adding a new post to an existing discussion
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        hsuforum_check_throttling($forum, $cm, false);
+        hsuforum_check_blocking_threshold($thresholdwarning);
 
         unset($fromform->groupid);
-
         $message = '';
         $addpost = $fromform;
         $addpost->forum=$forum->id;
@@ -758,7 +722,7 @@ if ($fromform = $mform_post->get_data()) {
 
     } else { // Adding a new discussion.
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        hsuforum_check_throttling($forum, $cm, false);
+        hsuforum_check_blocking_threshold($thresholdwarning);
 
         if (!hsuforum_user_can_post_discussion($forum, $fromform->groupid, -1, $cm, $modcontext)) {
             print_error('cannotcreatediscussion', 'hsuforum');
@@ -889,6 +853,7 @@ $PAGE->set_title("$course->shortname: $strdiscussionname ".format_string($toppos
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($forum->name), 2);
 
 // checkup
 if (!empty($parent) && !hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
@@ -905,13 +870,14 @@ if ($forum->type == 'qanda'
     echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
 }
 
-// If we are not editing a post we need to check the posting threshold.
-if (!$edit) {
-    hsuforum_check_throttling($forum, $cm);
+// If there is a warning message and we are not editing a post we need to handle the warning.
+if (!empty($thresholdwarning) && !$edit) {
+    // Here we want to throw an exception if they are no longer allowed to post.
+    hsuforum_check_blocking_threshold($thresholdwarning);
 }
 
 if (!empty($parent)) {
-    if (! $discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion))) {
+    if (!$discussion = $DB->get_record('hsuforum_discussions', array('id' => $parent->discussion))) {
         print_error('notpartofdiscussion', 'hsuforum');
     }
 

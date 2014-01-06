@@ -1,0 +1,14 @@
+{
+    "name": "moodle-mod_hsuforum-article",
+    "builds": {
+        "moodle-mod_hsuforum-article": {
+            "jsfiles": [
+                "common.js",
+                "dom.js",
+                "router.js",
+                "form.js",
+                "article.js"
+            ]
+        }
+    }
+}

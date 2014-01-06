@@ -143,12 +143,14 @@ $searchterms = explode(' ', $searchterms);
 $searchform = hsuforum_search_form($course, $search);
 
 $PAGE->navbar->add($strsearch, new moodle_url('/mod/hsuforum/search.php', array('id'=>$course->id)));
-$PAGE->navbar->add(s($search, true));
+$PAGE->navbar->add($strsearchresults);
 if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string("nopostscontaining", "hsuforum", $search));
+    echo $OUTPUT->heading($strforums, 2);
+    echo $OUTPUT->heading($strsearchresults, 3);
+    echo $OUTPUT->heading(get_string("noposts", "forum"), 4);
 
     if (!$individualparams) {
         $words = $search;
@@ -171,6 +173,14 @@ $ratingoptions->userid = $USER->id;
 $ratingoptions->returnurl = $PAGE->url->out(false);
 $rm = new rating_manager();
 
+$displayformat = get_user_preferences('hsuforum_displayformat', 'header');
+/** @var \mod_hsuforum\render_interface|mod_hsuforum_article_renderer $renderer */
+$renderer = null;
+if ($displayformat == 'article') {
+    $renderer = $PAGE->get_renderer('mod_hsuforum', 'article');
+    $renderer->article_js();
+}
+
 $PAGE->set_title($strsearchresults);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_button($searchform);
@@ -191,7 +201,8 @@ echo '<a href="search.php?id='.$course->id.
                          '">'.get_string('advancedsearch','hsuforum').'...</a>';
 echo '</div>';
 
-echo $OUTPUT->heading("$strsearchresults: $totalcount");
+echo $OUTPUT->heading($strforums, 2);
+echo $OUTPUT->heading("$strsearchresults: $totalcount", 3);
 
 $url = new moodle_url('search.php', array('search' => $search, 'id' => $course->id, 'perpage' => $perpage));
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
@@ -239,8 +250,12 @@ foreach ($posts as $post) {
         }
     }
 
-    $post->subject = $fullsubject;
-    $post->subjectnoformat = true;
+    if ($displayformat == 'article') {
+        $post->breadcrumb = $fullsubject;
+    } else {
+        $post->subject = $fullsubject;
+        $post->subjectnoformat = true;
+    }
 
     //add the ratings information to the post
     //Unfortunately seem to have do this individually as posts may be from different forums
@@ -286,6 +301,20 @@ foreach ($posts as $post) {
 
     // Prepare a link to the post in context, to be displayed after the forum post.
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
+
+    if ($renderer instanceof \mod_hsuforum\render_interface) {
+        // Prime the cache a little with big hitters.
+        if (!property_exists($cm, 'cache')) {
+            $cm->cache = new stdClass;
+            $cm->cache->forum = $forum;
+            $cm->cache->course = $course;
+        }
+        $commands = $renderer->toolbox_commands($cm, $discussion, $post, false);
+        $commands['seeincontext'] = $fulllink;
+
+        echo $OUTPUT->container($renderer->post($cm, $discussion, $post, false, null, $commands), 'hsuforum-post clearfix');
+        continue;
+    }
 
     // Now pring the post.
     hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false,

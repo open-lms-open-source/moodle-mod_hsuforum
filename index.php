@@ -225,7 +225,7 @@ if ($generalforums) {
         }
 
         $forum->intro = shorten_text(format_module_intro('hsuforum', $forum, $cm->id), $CFG->hsuforum_shortpost);
-        $forumname = format_string($forum->name, true);;
+        $forumname = format_string($forum->name, true);
 
         if ($cm->visible) {
             $style = '';
@@ -363,7 +363,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                 $printsection = '';
             }
 
-            $forumname = format_string($forum->name,true);;
+            $forumname = format_string($forum->name,true);
 
             if ($cm->visible) {
                 $style = '';
@@ -433,12 +433,12 @@ if (!isguestuser() && isloggedin()) {
 }
 
 if ($generalforums) {
-    echo $OUTPUT->heading(get_string('generalforums', 'hsuforum'));
+    echo $OUTPUT->heading(get_string('generalforums', 'hsuforum'), 2);
     echo html_writer::table($generaltable);
 }
 
 if ($learningforums) {
-    echo $OUTPUT->heading(get_string('learningforums', 'hsuforum'));
+    echo $OUTPUT->heading(get_string('learningforums', 'hsuforum'), 2);
     echo html_writer::table($learningtable);
 }
 

@@ -47,8 +47,12 @@ if ($ADMIN->fulltree) {
                        get_string('configmanydiscussions', 'hsuforum'), 100, PARAM_INT));
 
     if (isset($CFG->maxbytes)) {
+        $maxbytes = 0;
+        if (isset($CFG->hsuforum_maxbytes)) {
+            $maxbytes = $CFG->hsuforum_maxbytes;
+        }
         $settings->add(new admin_setting_configselect('hsuforum_maxbytes', get_string('maxattachmentsize', 'hsuforum'),
-                           get_string('configmaxbytes', 'hsuforum'), 512000, get_max_upload_sizes($CFG->maxbytes)));
+                           get_string('configmaxbytes', 'hsuforum'), 512000, get_max_upload_sizes($CFG->maxbytes, 0, 0, $maxbytes)));
     }
 
     // Default number of attachments allowed per post in all forums

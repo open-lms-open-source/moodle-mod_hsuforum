@@ -41,24 +41,44 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
         $mform->addElement('text', 'name', get_string('forumname', 'hsuforum'), array('size'=>'64'));
         if (!empty($CFG->formatstringstriptags)) {
-        $mform->setType('name', PARAM_TEXT);
+            $mform->setType('name', PARAM_TEXT);
         } else {
             $mform->setType('name', PARAM_CLEANHTML);
         }
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $hsuforum_types = hsuforum_get_hsuforum_types();
+        $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
 
-        asort($hsuforum_types);
-        $mform->addElement('select', 'type', get_string('forumtype', 'hsuforum'), $hsuforum_types);
+        $forumtypes = hsuforum_get_hsuforum_types();
+        collatorlib::asort($forumtypes, collatorlib::SORT_STRING);
+        $mform->addElement('select', 'type', get_string('forumtype', 'hsuforum'), $forumtypes);
         $mform->addHelpButton('type', 'forumtype', 'hsuforum');
         $mform->setDefault('type', 'general');
 
         $mform->addElement('advcheckbox', 'anonymous', get_string('anonymous', 'hsuforum'));
         $mform->addHelpButton('anonymous', 'anonymous', 'hsuforum');
 
-        $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
+        // Attachments and word count.
+        $mform->addElement('header', 'attachmentswordcounthdr', get_string('attachmentswordcount', 'hsuforum'));
+
+        $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes, 0, $CFG->hsuforum_maxbytes);
+        $choices[1] = get_string('uploadnotallowed');
+        $mform->addElement('select', 'maxbytes', get_string('maxattachmentsize', 'hsuforum'), $choices);
+        $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'hsuforum');
+        $mform->setDefault('maxbytes', $CFG->hsuforum_maxbytes);
+
+        $choices = array(0,1,2,3,4,5,6,7,8,9,10,20,50,100);
+        $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'hsuforum'), $choices);
+        $mform->addHelpButton('maxattachments', 'maxattachments', 'hsuforum');
+        $mform->setDefault('maxattachments', $CFG->hsuforum_maxattachments);
+
+        $mform->addElement('selectyesno', 'displaywordcount', get_string('displaywordcount', 'hsuforum'));
+        $mform->addHelpButton('displaywordcount', 'displaywordcount', 'hsuforum');
+        $mform->setDefault('displaywordcount', 0);
+
+        // Subscription and tracking.
+        $mform->addElement('header', 'subscriptionandtrackinghdr', get_string('subscriptionandtracking', 'hsuforum'));
 
         $options = array();
         $options[HSUFORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'hsuforum');
@@ -75,21 +95,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addElement('select', 'trackingtype', get_string('trackingtype', 'hsuforum'), $options);
         $mform->addHelpButton('trackingtype', 'trackingtype', 'hsuforum');
 
-        $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes);
-        $choices[1] = get_string('uploadnotallowed');
-        $choices[0] = get_string('courseuploadlimit') . ' ('.display_size($COURSE->maxbytes).')';
-        $mform->addElement('select', 'maxbytes', get_string('maxattachmentsize', 'hsuforum'), $choices);
-        $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'hsuforum');
-        $mform->setDefault('maxbytes', $CFG->hsuforum_maxbytes);
-
-        $choices = array(0,1,2,3,4,5,6,7,8,9,10,20,50,100);
-        $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'hsuforum'), $choices);
-        $mform->addHelpButton('maxattachments', 'maxattachments', 'hsuforum');
-        $mform->setDefault('maxattachments', $CFG->hsuforum_maxattachments);
-
         if ($CFG->enablerssfeeds && isset($CFG->hsuforum_enablerssfeeds) && $CFG->hsuforum_enablerssfeeds) {
 //-------------------------------------------------------------------------------
-            $mform->addElement('header', '', get_string('rss'));
+            $mform->addElement('header', 'rssheader', get_string('rss'));
             $choices = array();
             $choices[0] = get_string('none');
             $choices[1] = get_string('discussions', 'hsuforum');
@@ -117,7 +125,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         }
 
 //-------------------------------------------------------------------------------
-        $mform->addElement('header', '', get_string('blockafter', 'hsuforum'));
+        $mform->addElement('header', 'blockafterheader', get_string('blockafter', 'hsuforum'));
         $options = array();
         $options[0] = get_string('blockperioddisabled','hsuforum');
         $options[60*60*24]   = '1 '.get_string('day');
@@ -136,7 +144,6 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addRule('blockafter', null, 'numeric', null, 'client');
         $mform->addHelpButton('blockafter', 'blockafter', 'hsuforum');
         $mform->disabledIf('blockafter', 'blockperiod', 'eq', 0);
-
 
         $mform->addElement('text', 'warnafter', get_string('warnafter', 'hsuforum'));
         $mform->setType('warnafter', PARAM_INT);

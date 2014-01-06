@@ -1,0 +1,10 @@
+{
+    "moodle-mod_hsuforum-io": {
+        "requires": [
+            "base",
+            "io-base",
+            "json-parse",
+            "moodle-core-notification"
+        ]
+    }
+}
