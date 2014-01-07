@@ -797,10 +797,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             throw new coding_exception('Must set post\'s privatereply property!');
         }
         if ($canreply and empty($post->privatereply)) {
-            $replytitle = get_string('replybuttontitle', 'hsuforum', array(
-                'firstname' => $post->firstname,
-                'lastname'  => $post->lastname
-            ));
+            $postuser   = hsuforum_extract_postuser($post, $cm->cache->forum, $cm->cache->context);
+            $replytitle = get_string('replybuttontitle', 'hsuforum', $postuser->fullname);
             $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply, 'title' => $replytitle);
         }
 
