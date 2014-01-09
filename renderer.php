@@ -798,7 +798,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         if ($canreply and empty($post->privatereply)) {
             $postuser   = hsuforum_extract_postuser($post, $cm->cache->forum, $cm->cache->context);
-            $replytitle = get_string('replybuttontitle', 'hsuforum', $postuser->fullname);
+            $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply, 'title' => $replytitle);
         }
 
