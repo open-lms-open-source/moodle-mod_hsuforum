@@ -970,7 +970,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function view($course, $cm, $forum, context_module $context) {
-        global $CFG, $USER, $DB, $OUTPUT, $PAGE;
+        global $CFG, $USER, $DB, $OUTPUT;
 
         require_once(__DIR__.'/lib/discussion/sort.php');
         require_once(__DIR__.'/lib/discussion/nav.php');
@@ -981,9 +981,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         echo $OUTPUT->heading(format_string($forum->name), 2);
 
-        /// find out current groups mode
-        groups_get_activity_group($cm);
-        groups_get_activity_groupmode($cm);
+        // Update activity group mode changes here.
+        groups_get_activity_group($cm, true);
 
         // Unset session
         hsuforum_lib_discussion_nav::set_to_session();
