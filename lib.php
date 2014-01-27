@@ -5684,15 +5684,6 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         return false;
     }
 
-    if ($forum->type == 'qanda') {
-        $firstpost = hsuforum_get_firstpost_from_discussion($discussion->id);
-        $userfirstpost = hsuforum_get_user_posted_time($discussion->id, $user->id);
-
-        return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)) ||
-                $firstpost->id == $post->id || $post->userid == $user->id || $firstpost->userid == $user->id ||
-                has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id));
-    }
-
     if (!property_exists($post, 'privatereply')) {
         throw new coding_exception('Must set post\'s privatereply property!');
     }
@@ -5700,6 +5691,15 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         if ($post->userid != $user->id and $post->privatereply != $user->id) {
             return false;
         }
+    }
+
+    if ($forum->type == 'qanda') {
+        $firstpost = hsuforum_get_firstpost_from_discussion($discussion->id);
+        $userfirstpost = hsuforum_get_user_posted_time($discussion->id, $user->id);
+
+        return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)) ||
+                $firstpost->id == $post->id || $post->userid == $user->id || $firstpost->userid == $user->id ||
+                has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id));
     }
     return true;
 }

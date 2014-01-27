@@ -797,10 +797,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             throw new coding_exception('Must set post\'s privatereply property!');
         }
         if ($canreply and empty($post->privatereply)) {
-            $replytitle = get_string('replybuttontitle', 'hsuforum', array(
-                'firstname' => $post->firstname,
-                'lastname'  => $post->lastname
-            ));
+            $postuser   = hsuforum_extract_postuser($post, $cm->cache->forum, $cm->cache->context);
+            $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply, 'title' => $replytitle);
         }
 
@@ -972,7 +970,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function view($course, $cm, $forum, context_module $context) {
-        global $CFG, $USER, $DB, $OUTPUT, $PAGE;
+        global $CFG, $USER, $DB, $OUTPUT;
 
         require_once(__DIR__.'/lib/discussion/sort.php');
         require_once(__DIR__.'/lib/discussion/nav.php');
@@ -983,9 +981,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         echo $OUTPUT->heading(format_string($forum->name), 2);
 
-        /// find out current groups mode
-        groups_get_activity_group($cm);
-        groups_get_activity_groupmode($cm);
+        // Update activity group mode changes here.
+        groups_get_activity_group($cm, true);
 
         // Unset session
         hsuforum_lib_discussion_nav::set_to_session();
