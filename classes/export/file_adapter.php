@@ -127,7 +127,7 @@ class file_adapter implements adapter_interface {
 
             $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $this->cm->cache->context->id, 'mod_hsuforum', 'post', $post->id);
             $message = format_text($message, $post->messageformat, $options, $this->cm->course);
-            $message = \textlib::specialtoascii(html_to_text($message));
+            $message = \core_text::specialtoascii(html_to_text($message));
 
             if ($post->id == $discussion->firstpost) {
                 $this->format->export_discussion($post->id, $discname, $author, $post->created, $message, $attachments);
