@@ -473,8 +473,6 @@ if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field
     $forum->maxattachments = 3;
 }
 
-require_once('post_form.php');
-
 $thresholdwarning = hsuforum_check_throttling($forum, $cm);
 $mform_post = new mod_hsuforum_post_form('post.php', array('course' => $course,
                                                         'cm' => $cm,
@@ -527,8 +525,9 @@ if (hsuforum_is_subscribed($USER->id, $forum->id)) {
     $subscribe = !empty($USER->autosubscribe);
 }
 
+$postid = empty($post->id) ? null : $post->id;
 $draftid_editor = file_get_submitted_draft_itemid('message');
-$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', empty($post->id) ? null : $post->id, mod_hsuforum_post_form::editor_options(), $post->message);
+$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', $postid, mod_hsuforum_post_form::editor_options($modcontext, $postid), $post->message);
 $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'general'=>$heading,
                                     'subject'=>$post->subject,
@@ -767,7 +766,7 @@ if ($fromform = $mform_post->get_data()) {
             }
 
             if ($subscribemessage = hsuforum_post_subscription($discussion, $forum)) {
-                $timemessage = 4;
+                $timemessage = 6;
             }
 
             // Update completion status

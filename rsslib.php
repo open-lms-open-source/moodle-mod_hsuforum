@@ -180,9 +180,10 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 
     $forumsort = "d.timemodified DESC";
     $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.reveal AS postreveal, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
+    $userpicturefields = user_picture::fields('u', null, 'userid');
 
-    $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend,
-                   u.firstname as userfirstname, u.lastname as userlastname, u.email, u.picture, u.imagealt
+    $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid,
+                   d.timestart, d.timeend, $userpicturefields
               FROM {hsuforum_discussions} d
                    JOIN {hsuforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
@@ -223,18 +224,22 @@ function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
         $newsince = '';
     }
 
+    $usernamefields = get_all_user_name_fields(true, 'u');
     $sql = "SELECT p.id AS postid,
                  d.id AS discussionid,
                  d.name AS discussionname,
+                 d.groupid,
+                 d.timestart,
+                 d.timeend,
                  u.id AS userid,
-                 u.firstname AS userfirstname,
-                 u.lastname AS userlastname,
+                 $usernamefields
                  p.reveal AS postreveal,
                  p.subject AS postsubject,
                  p.message AS postmessage,
                  p.created AS postcreated,
                  p.messageformat AS postformat,
-                 p.messagetrust AS posttrust
+                 p.messagetrust AS posttrust,
+                 p.parent as postparent
             FROM {hsuforum_discussions} d,
                {hsuforum_posts} p,
                {user} u
@@ -315,14 +320,27 @@ function hsuforum_rss_feed_contents($forum, $sql, $params, $context) {
     $items = array();
     foreach ($recs as $rec) {
         $item = new stdClass();
-        $user = new stdClass();
 
-        if ($isdiscussion && !hsuforum_user_can_see_discussion($forum, $rec->discussionid, $context)) {
+        $discussion = new stdClass();
+        $discussion->id = $rec->discussionid;
+        $discussion->groupid = $rec->groupid;
+        $discussion->timestart = $rec->timestart;
+        $discussion->timeend = $rec->timeend;
+
+        $post = null;
+        if (!$isdiscussion) {
+            $post = new stdClass();
+            $post->id = $rec->postid;
+            $post->parent = $rec->postparent;
+            $post->userid = $rec->userid;
+        }
+
+        if ($isdiscussion && !hsuforum_user_can_see_discussion($forum, $discussion, $context)) {
             // This is a discussion which the user has no permission to view
             $item->title = get_string('forumsubjecthidden', 'hsuforum');
             $message = get_string('forumbodyhidden', 'hsuforum');
             $item->author = get_string('forumauthorhidden', 'hsuforum');
-        } else if (!$isdiscussion && !hsuforum_user_can_see_post($forum, $rec->discussionid, $rec->postid, $USER, $cm)) {
+        } else if (!$isdiscussion && !hsuforum_user_can_see_post($forum, $discussion, $post, $USER, $cm)) {
             // This is a post which the user has no permission to view
             $item->title = get_string('forumsubjecthidden', 'hsuforum');
             $message = get_string('forumbodyhidden', 'hsuforum');
@@ -337,9 +355,7 @@ function hsuforum_rss_feed_contents($forum, $sql, $params, $context) {
                 //we should have an item title by now but if we dont somehow then substitute something somewhat meaningful
                 $item->title = format_string($forum->name.' '.userdate($rec->postcreated,get_string('strftimedatetimeshort', 'langconfig')));
             }
-            $user->firstname = $rec->userfirstname;
-            $user->lastname = $rec->userlastname;
-            $user = hsuforum_anonymize_user($user, $forum, (object) array('id' => $rec->postid, 'reveal' => $rec->postreveal));
+            $user = hsuforum_anonymize_user($rec, $forum, (object) array('id' => $rec->postid, 'reveal' => $rec->postreveal));
             $item->author = fullname($user);
             $message = file_rewrite_pluginfile_urls($rec->postmessage, 'pluginfile.php', $context->id,
                      'mod_hsuforum', 'post', $rec->postid);

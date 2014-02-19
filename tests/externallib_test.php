@@ -175,7 +175,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $record = new stdClass();
         $record->course = $course2->id;
         $record->type = 'qanda';
-        $record->trackingtype = HSUFORUM_TRACKING_ON;
+        $record->trackingtype = HSUFORUM_TRACKING_FORCED;
         $forum2 = self::getDataGenerator()->create_module('hsuforum', $record);
 
         // Third forum where we will only have one discussion with no replies.

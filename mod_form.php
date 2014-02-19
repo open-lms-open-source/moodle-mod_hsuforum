@@ -51,7 +51,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
 
         $forumtypes = hsuforum_get_hsuforum_types();
-        collatorlib::asort($forumtypes, collatorlib::SORT_STRING);
+        core_collator::asort($forumtypes, core_collator::SORT_STRING);
         $mform->addElement('select', 'type', get_string('forumtype', 'hsuforum'), $forumtypes);
         $mform->addHelpButton('type', 'forumtype', 'hsuforum');
         $mform->setDefault('type', 'general');
@@ -91,9 +91,16 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $options = array();
         $options[HSUFORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'hsuforum');
         $options[HSUFORUM_TRACKING_OFF] = get_string('trackingoff', 'hsuforum');
-        $options[HSUFORUM_TRACKING_ON] = get_string('trackingon', 'hsuforum');
+        if ($CFG->hsuforum_allowforcedreadtracking) {
+            $options[HSUFORUM_TRACKING_FORCED] = get_string('trackingon', 'hsuforum');
+        }
         $mform->addElement('select', 'trackingtype', get_string('trackingtype', 'hsuforum'), $options);
         $mform->addHelpButton('trackingtype', 'trackingtype', 'hsuforum');
+        $default = $CFG->hsuforum_trackingtype;
+        if ((!$CFG->hsuforum_allowforcedreadtracking) && ($default == HSUFORUM_TRACKING_FORCED)) {
+            $default = HSUFORUM_TRACKING_OPTIONAL;
+        }
+        $mform->setDefault('trackingtype', $default);
 
         if ($CFG->enablerssfeeds && isset($CFG->hsuforum_enablerssfeeds) && $CFG->hsuforum_enablerssfeeds) {
 //-------------------------------------------------------------------------------

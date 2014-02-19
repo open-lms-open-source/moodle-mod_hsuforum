@@ -502,6 +502,36 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2013020500, 'hsuforum');
     }
 
+    // Moodle v2.5.0 release upgrade line.
+    // Put any upgrade step following this.
+    if ($oldversion < 2014021900) {
+        // Define table hsuforum_digests to be created.
+        $table = new xmldb_table('hsuforum_digests');
+
+        // Adding fields to table hsuforum_digests.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('forum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('maildigest', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '-1');
+
+        // Adding keys to table hsuforum_digests.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+        $table->add_key('userid', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
+        $table->add_key('forum', XMLDB_KEY_FOREIGN, array('forum'), 'forum', array('id'));
+        $table->add_key('forumdigest', XMLDB_KEY_UNIQUE, array('forum', 'userid', 'maildigest'));
+
+        // Conditionally launch create table for hsuforum_digests.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2014021900, 'hsuforum');
+    }
+
+    // Moodle v2.6.0 release upgrade line.
+    // Put any upgrade step following this.
+
     return true;
 }
 
