@@ -6482,25 +6482,17 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
         $tmpactivity->content->subject    = format_string($post->subject);
         $tmpactivity->content->parent     = $post->parent;
 
-        $postuser = new stdClass();
-        $postuser->id = $post->userid;
-        $postuser->firstname = $post->firstname;
-        $postuser->lastname = $post->lastname;
-        $postuser->picture = $post->picture;
-        $postuser->imagealt = $post->imagealt;
-        $postuser->email = $post->email;
-
-        $postuser = hsuforum_anonymize_user($postuser, (object) array(
-            'id' => $post->forum,
-            'course' => $courseid,
-            'anonymous' => $post->forumanonymous
-        ), $post);
-
         $tmpactivity->user = new stdClass();
         $additionalfields = array('id' => 'userid', 'picture', 'imagealt', 'email');
         $additionalfields = explode(',', user_picture::fields());
         $tmpactivity->user = username_load_fields_from_object($tmpactivity->user, $post, null, $additionalfields);
         $tmpactivity->user->id = $post->userid;
+
+        $tmpactivity->user = hsuforum_anonymize_user($tmpactivity->user, (object) array(
+            'id'        => $post->forum,
+            'course'    => $courseid,
+            'anonymous' => $post->forumanonymous
+        ), $post);
 
         $activities[$index++] = $tmpactivity;
     }
