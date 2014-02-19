@@ -8937,8 +8937,10 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
 }
 
 /**
- * @param $user
- * @param null $forum
+ * @param object $user
+ * @param object $forum
+ * @param object $post
+ * @throws coding_exception
  * @return stdClass
  * @author Mark Nielsen
  */
@@ -8960,6 +8962,10 @@ function hsuforum_anonymize_user($user, $forum, $post) {
             'id' => $guest->id,
             'firstname' => get_string('anonymousfirstname', 'hsuforum'),
             'lastname' => get_string('anonymouslastname', 'hsuforum'),
+            'firstnamephonetic' => get_string('anonymousfirstnamephonetic', 'hsuforum'),
+            'lastnamephonetic' => get_string('anonymouslastnamephonetic', 'hsuforum'),
+            'middlename' => get_string('anonymousmiddlename', 'hsuforum'),
+            'alternatename' => get_string('anonymousalternatename', 'hsuforum'),
             'picture' => 0,
             'email' => $guest->email,
             'imagealt' => '',
@@ -8967,6 +8973,13 @@ function hsuforum_anonymize_user($user, $forum, $post) {
         );
         $anonymous->fullname = fullname($anonymous, true);
         $anonymous->imagealt = $anonymous->fullname;
+
+        // Prevent accidental reveal of user.
+        foreach(get_all_user_name_fields() as $field) {
+            if (!property_exists($anonymous, $field)) {
+                $anonymous->$field = '';
+            }
+        }
     }
     $return = clone($user);
     foreach ($anonymous as $name => $value) {
