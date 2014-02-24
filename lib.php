@@ -576,7 +576,7 @@ function hsuforum_cron() {
 
             // caching subscribed users of each discussion
             if (!isset($discussionsubscribers[$discussionid])) {
-                $modcontext = get_context_instance(CONTEXT_MODULE, $coursemodules[$forumid]->id);
+                $modcontext = context_module::instance($coursemodules[$forumid]->id);
                 if ($subusers = $discussionrepo->get_subscribed_users($forums[$forumid], $discussions[$discussionid], $modcontext, 0, null, array(), 'u.email ASC')) {
                     // Get a list of the users subscribed to discussions in the hsuforum.
                     foreach ($subusers as $postuser) {

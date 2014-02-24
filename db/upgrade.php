@@ -162,7 +162,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
                         $DB->update_record('hsuforum_posts', $post);
                         continue;
                     }
-                    $context = get_context_instance(CONTEXT_MODULE, $post->cmid);
+                    $context = context_module::instance($post->cmid);
 
                     $filearea = 'attachment';
                     $filename = clean_param(pathinfo($filepath, PATHINFO_BASENAME), PARAM_FILE);
