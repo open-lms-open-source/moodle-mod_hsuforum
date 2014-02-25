@@ -52,7 +52,6 @@ class form_service {
     }
 
     public function prepare_message_for_edit($cm, $post) {
-        require_once(dirname(dirname(__DIR__)).'/post_form.php');
 
         $this->append_edited_by($post);
 
@@ -60,7 +59,7 @@ class form_service {
         $post    = trusttext_pre_edit($post, 'message', $context);
         $itemid  = file_get_submitted_draft_itemid('message');
         $message = file_prepare_draft_area($itemid, $context->id, 'mod_hsuforum', 'post',
-            $post->id, \mod_hsuforum_post_form::editor_options(), $post->message);
+            $post->id, \mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
 
         return array($message, $itemid);
     }
