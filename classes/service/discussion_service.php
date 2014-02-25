@@ -229,7 +229,7 @@ class discussion_service {
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
         $forum      = $PAGE->activityrecord;
         $course     = $COURSE;
-        $cm         = $PAGE->cm;
+        $cm         = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $course->id, false, MUST_EXIST); // Cannot use cm_info because it is read only.
         $context    = $PAGE->context;
 
         if ($forum->type == 'news') {

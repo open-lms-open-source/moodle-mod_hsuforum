@@ -301,8 +301,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function post_to_node($cm, $discussion, $post, $skipcansee = false) {
-        global $PAGE;
-
         hsuforum_cm_add_cache($cm);
 
         // Sometimes we must skip this check because $discussion isn't the actual discussion record, it's some sort of monster!
@@ -335,7 +333,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $html = "<span><span class=\"$class\">".
                 html_writer::link($url, format_string($post->subject,true)).'&nbsp;'.
                 $author.'</span>'.
-                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $cm->cache->context).
+                $this->post_flags($post, $cm->cache->context).
                 "</span>";
 
         $leaf = true;
