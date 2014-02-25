@@ -8893,7 +8893,10 @@ function hsuforum_extract_postuser($post, $forum, context_module $context) {
     $postuser     = new stdClass();
     $postuser->id = $post->userid;
 
-    $fields = array('firstname', 'lastname', 'imagealt', 'picture', 'email');
+    $fields = array_merge(
+        get_all_user_name_fields(),
+        array('imagealt', 'picture', 'email')
+    );
     foreach ($fields as $field) {
         if (property_exists($post, $field)) {
             $postuser->$field = $post->$field;
