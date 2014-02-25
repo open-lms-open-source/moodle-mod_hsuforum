@@ -518,10 +518,8 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @returns {boolean}
      */
     routeUrl: function(url) {
-        var path = this.removeRoot(url);
-
-        if (this.hasRoute(path)) {
-            this.save(path);
+        if (this.hasRoute(url)) {
+            this.save(this.removeRoot(url));
             return true;
         }
         return false;
