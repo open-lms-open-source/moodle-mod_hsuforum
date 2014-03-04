@@ -59,7 +59,6 @@ $string['cannotaddsubscriber'] = 'Could not add subscriber with id {$a} to this 
 $string['cannotaddteacherforumto'] = 'Could not add converted teacher forum instance to section 0 in the course';
 $string['cannotcreatediscussion'] = 'Could not create new discussion';
 $string['cannotcreateinstanceforteacher'] = 'Could not create new course module instance for the teacher forum';
-$string['cannotdeleteforummodule'] = 'You can not delete the forum module.';
 $string['cannotdeletepost'] = 'You can\'t delete this post!';
 $string['cannoteditposts'] = 'You can\'t edit other people\'s posts!';
 $string['cannotfinddiscussion'] = 'Could not find the discussion in this forum';
@@ -103,6 +102,7 @@ $string['configmaxbytes'] = 'Default maximum size for all forum attachments on t
 $string['configoldpostdays'] = 'Number of days old any post is considered read.';
 $string['configreplytouser'] = 'When a forum post is mailed out, should it contain the user\'s email address so that recipients can reply personally rather than via the forum? Even if set to \'Yes\' users can choose in their profile to keep their email address secret.';
 $string['configshortpost'] = 'Any post under this length (in characters not including HTML) is considered short (see below).';
+$string['configtrackingtype'] = 'Default setting for read tracking.';
 $string['configtrackreadposts'] = 'Set to \'yes\' if you want to track read/unread for each user.';
 $string['configusermarksread'] = 'If \'yes\', the user must manually mark a post as read. If \'no\', when the post is viewed it is marked as read.';
 $string['confirmsubscribe'] = 'Do you really want to subscribe to forum \'{$a}\'?';
@@ -116,7 +116,8 @@ $string['deletedpost'] = 'The post has been deleted';
 $string['deletedposts'] = 'Those posts have been deleted';
 $string['deletesure'] = 'Are you sure you want to delete this post?';
 $string['deletesureplural'] = 'Are you sure you want to delete this post and all replies? ({$a} posts)';
-$string['digestmailheader'] = 'This is your daily digest of new posts from the {$a->sitename} forums. To change your forum email preferences, go to {$a->userprefs}.';
+$string['digestmailheader'] = 'This is your daily digest of new posts from the {$a->sitename} forums. To change your default forum email preferences, go to {$a->userprefs}.';
+$string['digestmailpost'] = 'Change your forum digest preferences';
 $string['digestmailprefs'] = 'your user profile';
 $string['digestmailsubject'] = '{$a}: forum digest';
 $string['digestmailtime'] = 'Hour to send digest emails';
@@ -145,17 +146,37 @@ $string['edit'] = 'Edit';
 $string['editedby'] = 'Edited by {$a->name} - original submission {$a->date}';
 $string['editedpostupdated'] = '{$a}\'s post was updated';
 $string['editing'] = 'Editing';
+$string['emaildigestcompleteshort'] = 'Complete posts';
+$string['emaildigestdefault'] = 'Default ({$a})';
+$string['emaildigestoffshort'] = 'No digest';
+$string['emaildigestsubjectsshort'] = 'Subjects only';
+$string['emaildigesttype'] = 'Email digest options';
+$string['emaildigesttype_help'] = 'The type of notification that you will receive for each forum.
+
+* Default - follow the digest setting found in your user profile. If you update your profile, then that change will be reflected here too;
+* No digest - you will receive one e-mail per forum post;
+* Digest - complete posts - you will receive one digest e-mail per day containing the complete contents of each forum post;
+* Digest - subjects only - you will receive one digest e-mail per day containing just the subject of each forum post.
+';
+$string['emaildigestupdated'] = 'The e-mail digest option was changed to \'{$a->maildigesttitle}\' for the forum \'{$a->forum}\'. {$a->maildigestdescription}';
+$string['emaildigestupdated_default'] = 'Your default profile setting of \'{$a->maildigesttitle}\' was used for the forum \'{$a->forum}\'. {$a->maildigestdescription}.';
+$string['emaildigest_0'] = 'You will receive one e-mail per forum post.';
+$string['emaildigest_1'] = 'You will receive one digest e-mail per day containing the complete contents of each forum post.';
+$string['emaildigest_2'] = 'You will receive one digest e-mail per day containing the subject of each forum post.';
 $string['emptymessage'] = 'Something was wrong with your post. Perhaps you left it blank, or the attachment was too big. Your changes have NOT been saved.';
 $string['erroremptymessage'] = 'Post message cannot be empty';
 $string['erroremptysubject'] = 'Post subject cannot be empty.';
 $string['errorenrolmentrequired'] = 'You must be enrolled in this course to access this content';
 $string['errorwhiledelete'] = 'An error occurred while deleting record.';
+$string['event_assessable_uploaded'] = 'Some content has been posted.';
 $string['everyonecanchoose'] = 'Everyone can choose to be subscribed';
 $string['everyonecannowchoose'] = 'Everyone can now choose to be subscribed';
 $string['everyoneisnowsubscribed'] = 'Everyone is now subscribed to this forum';
 $string['everyoneissubscribed'] = 'Everyone is subscribed to this forum';
 $string['existingsubscribers'] = 'Existing subscribers';
 $string['exportdiscussion'] = 'Export whole discussion';
+$string['forcedreadtracking'] = 'Allow forced read tracking';
+$string['forcedreadtracking_desc'] = 'Allows forums to be set to forced read tracking. Will result in decreased performance for some users, particularly on courses with many forums and posts. When off, any forums previously set to Forced are treated as optional.';
 $string['forcessubscribe'] = 'This forum forces everyone to be subscribed';
 $string['forum'] = 'Forum';
 $string['hsuforum:addinstance'] = 'Add a new forum';
@@ -206,6 +227,7 @@ $string['hsuforum:viewposters'] = 'View forum posters';
 $string['hsuforum:allowprivate'] = 'Allow user to respond privately';
 $string['generalforum'] = 'Standard forum for general use';
 $string['generalforums'] = 'General forums';
+$string['hiddenforumpost'] = 'Hidden forum post';
 $string['inforum'] = 'in {$a}';
 $string['introblog'] = 'The posts in this forum were copied here automatically from blogs of users in this course because those blog entries are no longer available';
 $string['intronews'] = 'General news and announcements';
@@ -213,6 +235,7 @@ $string['introsocial'] = 'An open forum for chatting about anything you want to'
 $string['introteacher'] = 'A forum for teacher-only notes and discussion';
 $string['invalidaccess'] = 'This page was not accessed correctly';
 $string['invaliddiscussionid'] = 'Discussion ID was incorrect or no longer exists';
+$string['invaliddigestsetting'] = 'An invalid mail digest setting was provided';
 $string['invalidforcesubscribe'] = 'Invalid force subscription mode';
 $string['invalidforumid'] = 'Forum ID was incorrect';
 $string['invalidparentpostid'] = 'Parent post ID was incorrect';
@@ -320,6 +343,7 @@ $string['pluginname'] = 'Advanced Forum';
 $string['postadded'] = '<p>Your post was successfully added.</p> <p>You have {$a} to edit it if you want to make any changes.</p>';
 $string['postaddedsuccess'] = 'Your post was successfully added.';
 $string['postaddedtimeleft'] = 'You have {$a} to edit it if you want to make any changes.';
+$string['postbyuser'] = '{$a->post} by {$a->user}';
 $string['postincontext'] = 'See this post in context';
 $string['postmailinfo'] = 'This is a copy of a message posted on the {$a} website.
 
@@ -351,6 +375,7 @@ $string['replyforum'] = 'Reply to forum';
 $string['replytouser'] = 'Use email address in reply';
 $string['resetforums'] = 'Delete posts from';
 $string['resetforumsall'] = 'Delete all posts';
+$string['resetdigests'] = 'Delete all per-user forum digest preferences';
 $string['resetsubscriptions'] = 'Delete all forum subscriptions';
 $string['resettrackprefs'] = 'Delete all forum tracking preferences';
 $string['rsssubscriberssdiscussions'] = 'RSS feed of discussions';
@@ -413,16 +438,14 @@ $string['timestartenderror'] = 'Display end date cannot be earlier than the star
 $string['trackforum'] = 'Track unread posts';
 $string['tracking'] = 'Track';
 $string['trackingoff'] = 'Off';
-$string['trackingon'] = 'On';
+$string['trackingon'] = 'Forced';
 $string['trackingoptional'] = 'Optional';
 $string['trackingtype'] = 'Read tracking for this forum?';
-$string['trackingtype_help'] = 'If enabled, participants can track read and unread messages in the forum and in discussions.
+$string['trackingtype_help'] = 'If enabled, participants can track read and unread posts in the forum and in discussions. There are three options:
 
-There are three options:
-
-* Optional - Participants can choose whether to turn tracking on or off
-* On - Tracking is always on
-* Off - Tracking is always off';
+* Optional - Participants can choose whether to turn tracking on or off via a link in the administration block. Forum tracking must also be enabled in the user\'s profile settings.
+* Forced - Tracking is always on, regardless of user setting. Available depending on administrative setting.
+* Off - Read and unread posts are not tracked.';
 $string['unread'] = 'Unread';
 $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';
@@ -447,6 +470,10 @@ $string['anonymous'] = 'Enable anonymous posting';
 $string['anonymous_help'] = 'If enabled, then the author\'s name for each post will be suppressed when viewing the forum.';
 $string['anonymousfirstname'] = 'Anonymous';
 $string['anonymouslastname'] = 'User';
+$string['anonymousfirstnamephonetic'] = 'Anonymous';
+$string['anonymouslastnamephonetic'] = 'User';
+$string['anonymousmiddlename'] = '';
+$string['anonymousalternatename'] = 'Anonymous';
 $string['reveal'] = 'Reveal yourself in this post';
 $string['reveal_help'] = 'If checked, then your name will be shown in the post and you will no longer be anonymous.';
 $string['hsuforum:revealpost'] = 'Reveal yourself in an anonymous forum';

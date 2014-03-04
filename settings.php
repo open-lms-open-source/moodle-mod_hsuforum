@@ -59,9 +59,21 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('hsuforum_maxattachments', get_string('maxattachments', 'hsuforum'),
                        get_string('configmaxattachments', 'hsuforum'), 9, PARAM_INT));
 
+    // Default Read Tracking setting.
+    $options = array();
+    $options[HSUFORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'hsuforum');
+    $options[HSUFORUM_TRACKING_OFF] = get_string('trackingoff', 'hsuforum');
+    $options[HSUFORUM_TRACKING_FORCED] = get_string('trackingon', 'hsuforum');
+    $settings->add(new admin_setting_configselect('hsuforum_trackingtype', get_string('trackingtype', 'hsuforum'),
+                       get_string('configtrackingtype', 'hsuforum'), HSUFORUM_TRACKING_OPTIONAL, $options));
+
     // Default whether user needs to mark a post as read
     $settings->add(new admin_setting_configcheckbox('hsuforum_trackreadposts', get_string('trackforum', 'hsuforum'),
                        get_string('configtrackreadposts', 'hsuforum'), 1));
+
+    // Default whether user needs to mark a post as read.
+    $settings->add(new admin_setting_configcheckbox('hsuforum_allowforcedreadtracking', get_string('forcedreadtracking', 'hsuforum'),
+                       get_string('forcedreadtracking_desc', 'hsuforum'), 0));
 
     // Default number of days that a post is considered old
     $settings->add(new admin_setting_configtext('hsuforum_oldpostdays', get_string('oldpostdays', 'hsuforum'),

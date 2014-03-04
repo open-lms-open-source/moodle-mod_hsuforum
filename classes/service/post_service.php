@@ -34,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__DIR__).'/response/json_response.php');
 require_once(dirname(__DIR__).'/upload_file.php');
 require_once(dirname(dirname(__DIR__)).'/lib.php');
-require_once(dirname(dirname(__DIR__)).'/post_form.php');
 
 /**
  * @package   mod_hsuforum

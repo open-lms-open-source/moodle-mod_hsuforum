@@ -134,4 +134,4 @@ M.mod_hsuforum = M.mod_hsuforum || {};
 M.mod_hsuforum.Io = IO;
 
 
-}, '@VERSION@', {"requires": ["base", "io-base", "json-parse", "moodle-core-notification"]});
+}, '@VERSION@', {"requires": ["base", "io-base", "io-form", "io-upload-iframe", "json-parse", "moodle-core-notification"]});

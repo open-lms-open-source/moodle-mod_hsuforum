@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Meta course enrolment plugin event handler definition.
+ * Forum event handler definition.
  *
  * @package mod_hsuforum
  * @category event
@@ -25,19 +25,16 @@
  * @author Mark Nielsen
  */
 
-/* List of handlers */
-$handlers = array (
-    'role_assigned' => array (
-        'handlerfile'      => '/mod/hsuforum/lib.php',
-        'handlerfunction'  => 'hsuforum_user_role_assigned',
-        'schedule'         => 'instant',
-        'internal'         => 1,
+// List of observers.
+$observers = array(
+
+    array(
+        'eventname'   => '\core\event\user_enrolment_deleted',
+        'callback'    => 'mod_hsuforum_observer::user_enrolment_deleted',
     ),
 
-    'user_unenrolled' => array (
-        'handlerfile'      => '/mod/hsuforum/lib.php',
-        'handlerfunction'  => 'hsuforum_user_unenrolled',
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname' => '\core\event\role_assigned',
+        'callback' => 'mod_hsuforum_observer::role_assigned'
     ),
 );
