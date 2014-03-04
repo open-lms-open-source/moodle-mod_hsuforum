@@ -25,6 +25,7 @@
 namespace mod_hsuforum\service;
 
 use mod_hsuforum\attachments;
+use mod_hsuforum\event\discussion_created;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use moodle_exception;
@@ -85,7 +86,7 @@ class discussion_service {
             ));
         }
         $this->save_discussion($discussion, $uploader);
-        $this->trigger_discussion_created($course, $cm, $forum, $discussion);
+        $this->trigger_discussion_created($course, $context, $cm, $forum, $discussion);
 
         $message = get_string('postaddedsuccess', 'hsuforum');
 
@@ -186,11 +187,12 @@ class discussion_service {
      * Log, update completion info and trigger event
      *
      * @param object $course
+     * @param \context_module $context
      * @param object $cm
      * @param object $forum
      * @param object $discussion
      */
-    public function trigger_discussion_created($course, $cm, $forum, $discussion) {
+    public function trigger_discussion_created($course, \context_module $context, $cm, $forum, $discussion) {
         global $CFG;
 
         require_once($CFG->libdir.'/completionlib.php');
@@ -205,15 +207,13 @@ class discussion_service {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
 
-        events_trigger('hsuforum_discussion_add', (object) array(
-            'component'    => 'mod_hsuforum',
-            'discussionid' => $discussion->id,
-            'timestamp'    => time(),
-            'userid'       => $discussion->userid,
-            'forumid'      => $forum->id,
-            'cmid'         => $cm->id,
-            'courseid'     => $course->id,
+        $event = discussion_created::create(array(
+            'objectid' => $discussion->id,
+            'courseid' => $course->id,
+            'context'  => $context,
         ));
+        $event->add_record_snapshot('hsuforum_discussions', $discussion);
+        $event->trigger();
     }
 
     /**
