@@ -5,8 +5,7 @@
             "io-base",
             "io-form",
             "io-upload-iframe",
-            "json-parse",
-            "moodle-core-notification"
+            "json-parse"
         ]
     }
 }
