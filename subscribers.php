@@ -108,7 +108,7 @@ if (has_capability('mod/hsuforum:managesubscriptions', $context)) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('forum', 'hsuforum').' '.$strsubscribers);
 if (empty($USER->subscriptionsediting)) {
-    echo $forumoutput->subscriber_overview(hsuforum_subscribed_users($course, $forum, $currentgroup, $context), $forum->name, $course);
+    echo $forumoutput->subscriber_overview(hsuforum_subscribed_users($course, $forum, $currentgroup, $context), $forum->name, $forum, $course);
 } else if (hsuforum_is_forcesubscribed($forum)) {
     $subscriberselector->set_force_subscribed(true);
     echo $forumoutput->subscribed_users($subscriberselector);

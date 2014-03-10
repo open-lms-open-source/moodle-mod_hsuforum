@@ -396,7 +396,7 @@ class posts_controller extends controller_abstract {
         }
         $output = $OUTPUT->heading($strsubscribers);
         if (empty($USER->subscriptionsediting)) {
-            $output .= $this->renderer->subscriber_overview(current($existingselector->find_users('')), $discussion->name, $course);
+            $output .= $this->renderer->subscriber_overview(current($existingselector->find_users('')), $discussion->name, $forum, $course);
         } else {
             $output .= $this->renderer->subscriber_selection_form($existingselector, $subscriberselector);
         }

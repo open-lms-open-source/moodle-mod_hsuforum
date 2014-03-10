@@ -86,14 +86,20 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      *
      * @param array $users
      * @param string $entityname
+     * @param object $forum
      * @param object $course
      * @return string
      */
-    public function subscriber_overview($users, $entityname, $course) {
+    public function subscriber_overview($users, $entityname, $forum, $course) {
         $output = '';
+        $modinfo = get_fast_modinfo($course);
         if (!$users || !is_array($users) || count($users)===0) {
             $output .= $this->output->heading(get_string("nosubscribers", "hsuforum"));
+        } else if (!isset($modinfo->instances['hsuforum'][$forum->id])) {
+            $output .= $this->output->heading(get_string("invalidmodule", "error"));
         } else {
+            $cm = $modinfo->instances['hsuforum'][$forum->id];
+            $canviewemail = in_array('email', get_extra_user_fields(context_module::instance($cm->id)));
             $output .= $this->output->heading(get_string("subscribersto","hsuforum", "'".format_string($entityname)."'"));
             $table = new html_table();
             $table->cellpadding = 5;
@@ -101,7 +107,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $table->tablealign = 'center';
             $table->data = array();
             foreach ($users as $user) {
-                $table->data[] = array($this->output->user_picture($user, array('courseid'=>$course->id)), fullname($user), $user->email);
+                $info = array($this->output->user_picture($user, array('courseid'=>$course->id)), fullname($user));
+                if ($canviewemail) {
+                    array_push($info, $user->email);
+                }
+                $table->data[] = $info;
             }
             $output .= html_writer::table($table);
         }
