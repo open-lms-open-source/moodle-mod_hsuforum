@@ -3690,7 +3690,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
     $output .= html_writer::tag('div', implode(' | ', $commandhtml), array('class'=>'commands'));
 
     // Output link to post if required
-    if ($link) {
+    if ($link && hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
         if ($post->replies == 1) {
             $replystring = get_string('repliesone', 'hsuforum', $post->replies);
         } else {

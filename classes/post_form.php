@@ -168,7 +168,7 @@ class mod_hsuforum_post_form extends moodleform {
             $groupdata = groups_get_activity_allowed_groups($cm);
             $groupcount = count($groupdata);
             $modulecontext = context_module::instance($cm->id);
-            $contextcheck = has_capability('mod/hsuforum:movediscussions', $modulecontext) && empty($post->parent) && $groupcount > 1;
+            $contextcheck = has_capability('mod/hsuforum:movediscussions', $modulecontext) && empty($post->parent) && $groupcount;
             if ($contextcheck) {
                 $groupinfo = array('0' => get_string('allparticipants'));
                 foreach ($groupdata as $grouptemp) {
