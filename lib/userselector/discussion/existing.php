@@ -27,13 +27,6 @@
 require_once(__DIR__.'/abstract.php');
 
 class hsuforum_userselector_discussion_existing extends hsuforum_userselector_discussion_abstract {
-
-    public function __construct($name, $options) {
-        parent::__construct($name, $options);
-
-        $this->extrafields = explode(',', user_picture::fields());
-    }
-
     /**
      * Get file path to this class
      *
