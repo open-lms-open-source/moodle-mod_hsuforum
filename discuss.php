@@ -188,7 +188,7 @@
         $renderer = $PAGE->get_renderer('mod_hsuforum');
     }
 
-    $PAGE->set_title("$course->shortname: ".format_string($discussion->name));
+    $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);
     $PAGE->set_button($searchform);
     echo $OUTPUT->header();

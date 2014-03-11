@@ -427,7 +427,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_context($modcontext);
         $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
-        $PAGE->set_title(format_string($discussion->name).": ".format_string($post->subject));
+        $PAGE->set_title("$discussion->name: $post->subject");
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading(format_string($forum->name), 2);
@@ -831,7 +831,7 @@ if ($forum->type == 'single') {
     $strdiscussionname = '';
 } else {
     // Show the discussion name in the breadcrumbs.
-    $strdiscussionname = format_string($discussion->name).':';
+    $strdiscussionname = $discussion->name.':';
 }
 
 $forcefocus = empty($reply) ? NULL : 'message';
@@ -848,7 +848,7 @@ if ($edit) {
     $PAGE->navbar->add(get_string('edit', 'hsuforum'));
 }
 
-$PAGE->set_title("$course->shortname: $strdiscussionname ".format_string($toppost->subject));
+$PAGE->set_title("$course->shortname: $strdiscussionname $toppost->subject");
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
