@@ -9005,9 +9005,9 @@ function hsuforum_extract_postuser($post, $forum, context_module $context) {
  * Given a user, return post user that is ready for display (EG:
  * anonymous is enforced as well as highlighting)
  *
- * @param $user
- * @param $post
- * @param $forum
+ * @param object $user
+ * @param object $post
+ * @param object $forum
  * @param context_module $context
  * @return stdClass
  */
@@ -9028,8 +9028,10 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
 }
 
 /**
- * @param $user
- * @param null $forum
+ * @param object $user
+ * @param object $forum
+ * @param object $post
+ * @throws coding_exception
  * @return stdClass
  * @author Mark Nielsen
  */
