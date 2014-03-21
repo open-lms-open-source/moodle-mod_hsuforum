@@ -3497,7 +3497,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php#mformforum', array('reply'=>$post->id)), 'text'=>$str->reply);
     }
 
-    if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
+    if ($CFG->enableportfolios && empty($forum->anonymous) && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
         $p = array('postid' => $post->id);
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
@@ -4164,7 +4164,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
     $imagereturn = '';
     $output = '';
 
-    $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/hsuforum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/hsuforum:exportownpost', $context)));
+    $canexport = !empty($CFG->enableportfolios) && empty($forum->anonymous) && (has_capability('mod/hsuforum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/hsuforum:exportownpost', $context)));
 
     if ($canexport) {
         require_once($CFG->libdir.'/portfoliolib.php');
@@ -5279,7 +5279,7 @@ function hsuforum_user_has_posted_discussion($forumid, $userid) {
 function hsuforum_discussions_user_has_posted_in($forumid, $userid) {
     global $CFG, $DB;
 
-    $haspostedsql = "SELECT d.id AS id,
+    $haspostedsql = "SELECT DISTINCT d.id AS id,
                             d.*
                        FROM {hsuforum_posts} p,
                             {hsuforum_discussions} d

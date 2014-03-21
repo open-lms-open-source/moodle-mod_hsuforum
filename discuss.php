@@ -213,7 +213,7 @@
 /// Print the controls across the top
     echo '<div class="discussioncontrols clearfix">';
 
-    if (!empty($CFG->enableportfolios) && has_capability('mod/hsuforum:exportdiscussion', $modcontext)) {
+    if (!empty($CFG->enableportfolios) && has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), 'mod_hsuforum');
