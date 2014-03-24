@@ -634,7 +634,14 @@ if ($fromform = $mform_post->get_data()) {
             $message .= '<br />'.get_string("postupdated", "hsuforum");
         } else {
             $realuser = $DB->get_record('user', array('id' => $realpost->userid));
-            $message .= '<br />'.get_string("editedpostupdated", "hsuforum", fullname($realuser));
+            $freshpost = $DB->get_record('hsuforum_posts', array('id' => $fromform->id));
+
+            if ($realuser && $freshpost) {
+                $postuser = hsuforum_get_postuser($realuser, $freshpost, $forum, $modcontext);
+                $message .= '<br />'.get_string('editedpostupdated', 'hsuforum', $postuser->fullname);
+            } else {
+                $message .= '<br />'.get_string('postupdated', 'hsuforum');
+            }
         }
 
         if ($subscribemessage = hsuforum_post_subscription($fromform, $forum)) {
