@@ -5839,9 +5839,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         ), $displayformat, array(), 'displayformatid');
 
         $display->set_label(get_string('discussiondisplay', 'hsuforum'));
-        $display->class     .= ' hsuforum-display-format clearfix';
-        $display->attributes = array('tabindex' => '-1');
-        echo html_writer::tag('div', $OUTPUT->render($display), array('aria-hidden' => 'true'));
+        $display->class .= ' hsuforum-display-format clearfix';
+        echo $OUTPUT->render($display);
     }
 
     if (!$canstart && (isguestuser() or !isloggedin() or $forum->type == 'news')) {
