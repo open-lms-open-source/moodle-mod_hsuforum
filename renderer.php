@@ -810,7 +810,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $commands['reply'] = array('url' => new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)), 'text' => $cm->cache->str->reply, 'title' => $replytitle);
         }
 
-        if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
+        if ($CFG->enableportfolios && empty($cm->cache->forum->anonymous) && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
             require_once($CFG->libdir.'/portfoliolib.php');
             $button = new portfolio_add_button();
             $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), 'mod_hsuforum');
