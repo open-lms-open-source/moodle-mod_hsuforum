@@ -6393,6 +6393,22 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
     $modinfo = get_fast_modinfo($course);
 
     $cm = $modinfo->cms[$cmid];
+
+    // Cannot report on recent activity on anonymous forums as we could reveal user's identity.
+    $anonymous = $DB->get_field('hsuforum', 'anonymous', array('id' => $cm->instance), MUST_EXIST);
+    if (!empty($anonymous)) {
+        $tmpactivity             = new stdClass();
+        $tmpactivity->type       = 'hsuforum';
+        $tmpactivity->cmid       = $cm->id;
+        $tmpactivity->name       = format_string($cm->name, true);;
+        $tmpactivity->sectionnum = $cm->sectionnum;
+        $tmpactivity->timestamp  = time();
+        $tmpactivity->content    = get_string('anonymousrecentactivity', 'hsuforum');
+
+        $activities[$index++] = $tmpactivity;
+        return;
+    }
+
     $params = array($timestart, $cm->instance, $USER->id, $USER->id);
 
     if ($userid) {
@@ -6516,6 +6532,11 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
 function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
     global $CFG, $OUTPUT;
 
+    // This handles anonymous forums.
+    if (is_string($activity->content)) {
+        echo $OUTPUT->box($activity->content, 'forum-recent anonymous');
+        return;
+    }
     if ($activity->content->parent) {
         $class = 'reply';
     } else {

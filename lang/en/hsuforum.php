@@ -588,3 +588,4 @@ $string['deleteattachments'] = 'Delete attachments';
 $string['postwasupdated'] = 'The post was updated';
 $string['id'] = 'ID';
 $string['switchtoaccessible'] = 'Switch to the accessible view';
+$string['anonymousrecentactivity'] = 'There may have been recent activity in this forum, but the details cannot be displayed because the forum is anonymous.';
