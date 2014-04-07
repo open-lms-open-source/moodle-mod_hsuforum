@@ -617,3 +617,4 @@ $string['id'] = 'ID';
 $string['switchtoaccessible'] = 'Switch to the accessible view';
 $string['event_discussion_created'] = 'Forum discussion created';
 $string['event_post_created'] = 'Forum post created';
+$string['anonymousrecentactivity'] = 'There may have been recent activity in this forum, but the details cannot be displayed because the forum is anonymous.';
