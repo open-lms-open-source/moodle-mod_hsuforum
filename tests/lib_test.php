@@ -607,4 +607,118 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals(true, isset($result[$forumoptional->id]));
         $this->assertEquals(true, isset($result[$forumforce->id]));
     }
+
+    /**
+     * Test subscription using automatic subscription on create.
+     */
+    public function test_forum_auto_subscribe_on_create() {
+        global $CFG;
+
+        $this->resetAfterTest();
+
+        $usercount = 5;
+        $course = $this->getDataGenerator()->create_course();
+        $users = array();
+
+        for($i = 0; $i < $usercount; $i++) {
+            $user = $this->getDataGenerator()->create_user();
+            $users[] = $user;
+            $this->getDataGenerator()->enrol_user($user->id, $course->id);
+        }
+
+        $options = array('course' => $course->id, 'forcesubscribe' => HSUFORUM_INITIALSUBSCRIBE); // Automatic Subscription.
+        $forum = $this->getDataGenerator()->create_module('hsuforum', $options);
+
+        $result = hsuforum_subscribed_users($course, $forum);
+        $this->assertEquals($usercount, count($result));
+        foreach ($users as $user) {
+            $this->assertTrue(hsuforum_is_subscribed($user->id, $forum));
+        }
+    }
+
+    /**
+     * Test subscription using forced subscription on create.
+     */
+    public function test_forum_forced_subscribe_on_create() {
+        global $CFG;
+
+        $this->resetAfterTest();
+
+        $usercount = 5;
+        $course = $this->getDataGenerator()->create_course();
+        $users = array();
+
+        for($i = 0; $i < $usercount; $i++) {
+            $user = $this->getDataGenerator()->create_user();
+            $users[] = $user;
+            $this->getDataGenerator()->enrol_user($user->id, $course->id);
+        }
+
+        $options = array('course' => $course->id, 'forcesubscribe' => HSUFORUM_FORCESUBSCRIBE); // Forced subscription.
+        $forum = $this->getDataGenerator()->create_module('hsuforum', $options);
+
+        $result = hsuforum_subscribed_users($course, $forum);
+        $this->assertEquals($usercount, count($result));
+        foreach ($users as $user) {
+            $this->assertTrue(hsuforum_is_subscribed($user->id, $forum));
+        }
+    }
+
+    /**
+     * Test subscription using optional subscription on create.
+     */
+    public function test_forum_optional_subscribe_on_create() {
+        global $CFG;
+
+        $this->resetAfterTest();
+
+        $usercount = 5;
+        $course = $this->getDataGenerator()->create_course();
+        $users = array();
+
+        for($i = 0; $i < $usercount; $i++) {
+            $user = $this->getDataGenerator()->create_user();
+            $users[] = $user;
+            $this->getDataGenerator()->enrol_user($user->id, $course->id);
+        }
+
+        $options = array('course' => $course->id, 'forcesubscribe' => HSUFORUM_CHOOSESUBSCRIBE); // Subscription optional.
+        $forum = $this->getDataGenerator()->create_module('hsuforum', $options);
+
+        $result = hsuforum_subscribed_users($course, $forum);
+        // No subscriptions by default.
+        $this->assertEquals(0, count($result));
+        foreach ($users as $user) {
+            $this->assertFalse(hsuforum_is_subscribed($user->id, $forum));
+        }
+    }
+
+    /**
+     * Test subscription using disallow subscription on create.
+     */
+    public function test_forum_disallow_subscribe_on_create() {
+        global $CFG;
+
+        $this->resetAfterTest();
+
+        $usercount = 5;
+        $course = $this->getDataGenerator()->create_course();
+        $users = array();
+
+        for($i = 0; $i < $usercount; $i++) {
+            $user = $this->getDataGenerator()->create_user();
+            $users[] = $user;
+            $this->getDataGenerator()->enrol_user($user->id, $course->id);
+        }
+
+        $options = array('course' => $course->id, 'forcesubscribe' => HSUFORUM_DISALLOWSUBSCRIBE); // Subscription prevented.
+        $forum = $this->getDataGenerator()->create_module('hsuforum', $options);
+
+        $result = hsuforum_subscribed_users($course, $forum);
+        // No subscriptions by default.
+        $this->assertEquals(0, count($result));
+        foreach ($users as $user) {
+            $this->assertFalse(hsuforum_is_subscribed($user->id, $forum));
+        }
+    }
 }
