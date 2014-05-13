@@ -62,6 +62,7 @@
         }
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
+        $PAGE->set_context(context_module::instance($cm->id));
         require_course_login($course, true, $cm);
         $strforums = get_string("modulenameplural", "hsuforum");
         $strforum = get_string("modulename", "hsuforum");
@@ -79,6 +80,7 @@
         }
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
+        $PAGE->set_context(context_module::instance($cm->id));
         require_course_login($course, true, $cm);
         $strforums = get_string("modulenameplural", "hsuforum");
         $strforum = get_string("modulename", "hsuforum");
@@ -91,7 +93,6 @@
     }
 
     $context = context_module::instance($cm->id);
-    $PAGE->set_context($context);
 
     if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
