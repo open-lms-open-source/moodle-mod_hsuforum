@@ -594,10 +594,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     public function discussion_lastpostby($cm, $discussion) {
         hsuforum_cm_add_cache($cm);
 
-        $usermodified            = new stdClass();
-        $usermodified->id        = $discussion->usermodified;
-        $usermodified->firstname = $discussion->umfirstname;
-        $usermodified->lastname  = $discussion->umlastname;
+        $usermodified     = new stdClass();
+        $usermodified->id = $discussion->usermodified;
+
+        username_load_fields_from_object($usermodified, $discussion, 'um');
 
         $lastpost         = new stdClass;
         $lastpost->id     = $discussion->lastpostid;

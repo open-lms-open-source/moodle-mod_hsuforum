@@ -6306,10 +6306,11 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                     echo "</div>\n";
                     continue;
                 }
-                $postuser = new stdClass;
-                $postuser->id        = $post->userid;
-                $postuser->firstname = $post->firstname;
-                $postuser->lastname  = $post->lastname;
+                $postuser     = new stdClass;
+                $postuser->id = $post->userid;
+
+                username_load_fields_from_object($postuser, $post);
+
                 $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
 
                 $by = new stdClass();
