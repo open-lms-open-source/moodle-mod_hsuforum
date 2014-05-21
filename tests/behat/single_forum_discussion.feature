@@ -35,7 +35,7 @@ Feature: Single simple forum discussion type
     Given I log out
     And I log in as "student1"
     And I follow "Course 1"
-    When I reply "Single discussion forum name" post from "Single discussion forum name" forum with:
+    When I reply "Single discussion forum name" post from "Single discussion forum name" advanced forum with:
       | Subject | Reply to single discussion subject |
       | Message | Reply to single discussion message |
     Then I should not see "Add a new discussion topic"

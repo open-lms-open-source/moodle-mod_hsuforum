@@ -30,7 +30,7 @@ Feature: Students can edit or delete their forum posts within a set time limit
     And I log out
     And I follow "Course 1"
     And I log in as "student1"
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Forum post subject |
       | Message | This is the body |
 

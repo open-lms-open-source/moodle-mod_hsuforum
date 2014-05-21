@@ -22,13 +22,13 @@ Feature: Teachers can edit or delete any forum post
     And I add a "Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Teacher post subject |
       | Message | Teacher post message |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    And I reply "Teacher post subject" post from "Test forum name" forum with:
+    And I reply "Teacher post subject" post from "Test forum name" advanced forum with:
       | Subject | Student post subject |
       | Message | Student post message |
 

@@ -23,13 +23,13 @@ Feature: Students can choose from 4 discussion display options and their choice 
     And I add a new discussion to "Test forum name" forum with:
       | Subject | Discussion 1 |
       | Message | Discussion contents 1, first message |
-    And I reply "Discussion 1" post from "Test forum name" forum with:
+    And I reply "Discussion 1" post from "Test forum name" advanced forum with:
       | Subject | Reply 1 to discussion 1 |
       | Message | Discussion contents 1, second message |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Discussion 2 |
       | Message | Discussion contents 2, first message |
-    And I reply "Discussion 2" post from "Test forum name" forum with:
+    And I reply "Discussion 2" post from "Test forum name" advanced forum with:
       | Subject | Reply 1 to discussion 2 |
       | Message | Discussion contents 2, second message |
     And I log out
@@ -38,31 +38,31 @@ Feature: Students can choose from 4 discussion display options and their choice 
 
   @javascript
   Scenario: Display replies flat, with oldest first
-    Given I reply "Discussion 1" post from "Test forum name" forum with:
+    Given I reply "Discussion 1" post from "Test forum name" advanced forum with:
       | Subject | Reply 2 to discussion 1 |
       | Message | Discussion contents 1, third message |
     When I select "Display replies flat, with oldest first" from "mode"
     Then I should see "Discussion contents 1, first message" in the "div.firstpost.starter" "css_element"
     And I should see "Discussion contents 1, second message" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ') and not(contains(@class, 'starter'))]" "xpath_element"
-    And I reply "Discussion 2" post from "Test forum name" forum with:
+    And I reply "Discussion 2" post from "Test forum name" advanced forum with:
       | Subject | Reply 2 to discussion 2 |
       | Message | Discussion contents 2, third message |
-    And the "Display mode" field should match "Display replies flat, with oldest first" value
+    And the "Display discussion replies" field should match "Display replies flat, with oldest first" value
     And I should see "Discussion contents 2, first message" in the "div.firstpost.starter" "css_element"
     And I should see "Discussion contents 2, second message" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ') and not(contains(@class, 'starter'))]" "xpath_element"
 
   @javascript
   Scenario: Display replies flat, with newest first
-    Given I reply "Discussion 1" post from "Test forum name" forum with:
+    Given I reply "Discussion 1" post from "Test forum name" advanced forum with:
       | Subject | Reply 2 to discussion 1 |
       | Message | Discussion contents 1, third message |
     When I select "Display replies flat, with newest first" from "mode"
     Then I should see "Discussion contents 1, first message" in the "div.firstpost.starter" "css_element"
     And I should see "Discussion contents 1, third message" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ') and not(contains(@class, 'starter'))]" "xpath_element"
-    And I reply "Discussion 2" post from "Test forum name" forum with:
+    And I reply "Discussion 2" post from "Test forum name" advanced forum with:
       | Subject | Reply 2 to discussion 2 |
       | Message | Discussion contents 2, third message |
-    And the "Display mode" field should match "Display replies flat, with newest first" value
+    And the "Display discussion replies" field should match "Display replies flat, with newest first" value
     And I should see "Discussion contents 2, first message" in the "div.firstpost.starter" "css_element"
     And I should see "Discussion contents 2, third message" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ') and not(contains(@class, 'starter'))]" "xpath_element"
 
@@ -75,7 +75,7 @@ Feature: Students can choose from 4 discussion display options and their choice 
     And I should see "Reply 1 to discussion 1" in the "span.forumthread" "css_element"
     And I follow "Test forum name"
     And I follow "Discussion 2"
-    And the "Display mode" field should match "Display replies in threaded form" value
+    And the "Display discussion replies" field should match "Display replies in threaded form" value
     And I should see "Discussion contents 2, first message"
     And I should see "Reply 1 to discussion 2" in the "span.forumthread" "css_element"
 
@@ -88,6 +88,6 @@ Feature: Students can choose from 4 discussion display options and their choice 
     And I should see "Discussion contents 1, second message" in the "div.indent div.forumpost" "css_element"
     And I follow "Test forum name"
     And I follow "Discussion 2"
-    And the "Display mode" field should match "Display replies in nested form" value
+    And the "mode" field should match "Display replies in nested form" value
     And I should see "Discussion contents 2, first message" in the "div.firstpost.starter" "css_element"
     And I should see "Discussion contents 2, second message" in the "div.indent div.forumpost" "css_element"
