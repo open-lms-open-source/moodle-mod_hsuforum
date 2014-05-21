@@ -27,7 +27,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
       | Read tracking | Off |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -44,7 +44,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
       | Read tracking | Optional |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -70,7 +70,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
       | Read tracking | Optional |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -83,7 +83,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
   @javascript
   Scenario: Tracking forum posts forced with user tracking on
     Given I set the following administration settings values:
-      | Allow forced read tracking | 1 |
+      | hsuforum_allowforcedreadtracking | 1 |
     And I follow "Home"
     And I follow "Course 1"
     Given I add a "Forum" to section "1" and I fill the form with:
@@ -91,7 +91,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
       | Read tracking | Force |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -107,7 +107,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
   @javascript
   Scenario: Tracking forum posts forced with user tracking off
     Given I set the following administration settings values:
-      | Allow forced read tracking | 1 |
+      | hsuforum_allowforcedreadtracking | 1 |
     And I follow "Home"
     And I follow "Course 1"
     Given I add a "Forum" to section "1" and I fill the form with:
@@ -115,7 +115,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
       | Read tracking | Force |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -131,7 +131,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
   @javascript
   Scenario: Tracking forum posts forced (with force disabled) with user tracking on
     Given I set the following administration settings values:
-      | Allow forced read tracking | 1 |
+      | hsuforum_allowforcedreadtracking | 1 |
     And I follow "Home"
     And I follow "Course 1"
     Given I add a "Forum" to section "1" and I fill the form with:
@@ -139,11 +139,11 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
       | Read tracking | Force |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I set the following administration settings values:
-      | Allow forced read tracking | 0 |
+      | hsuforum_allowforcedreadtracking | 0 |
     And I log out
     When I log in as "student1"
     And I follow "Course 1"
@@ -163,7 +163,7 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
   @javascript
   Scenario: Tracking forum posts forced (with force disabled) with user tracking off
     Given I set the following administration settings values:
-      | Allow forced read tracking | 1 |
+      | hsuforum_allowforcedreadtracking | 1 |
     And I follow "Home"
     And I follow "Course 1"
     Given I add a "Forum" to section "1" and I fill the form with:
@@ -171,11 +171,11 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
       | Read tracking | Force |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I set the following administration settings values:
-      | Allow forced read tracking | 0 |
+      | hsuforum_allowforcedreadtracking | 0 |
     And I log out
     When I log in as "student2"
     And I follow "Course 1"
