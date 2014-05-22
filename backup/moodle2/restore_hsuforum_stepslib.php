@@ -174,7 +174,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data = (object)$data;
         $oldid = $data->id;
 
-        $data->forum = $this->get_new_parentid('forum');
+        $data->forum = $this->get_new_parentid('hsuforum');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('hsuforum_digests', $data);
