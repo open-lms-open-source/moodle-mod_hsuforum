@@ -3497,7 +3497,7 @@ function hsuforum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost
         $commands[] = array('url'=>new moodle_url('/mod/hsuforum/post.php#mformforum', array('reply'=>$post->id)), 'text'=>$str->reply);
     }
 
-    if ($CFG->enableportfolios && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
+    if ($CFG->enableportfolios && empty($forum->anonymous) && ($cm->cache->caps['mod/hsuforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/hsuforum:exportownpost']))) {
         $p = array('postid' => $post->id);
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
@@ -4164,7 +4164,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
     $imagereturn = '';
     $output = '';
 
-    $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/hsuforum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/hsuforum:exportownpost', $context)));
+    $canexport = !empty($CFG->enableportfolios) && empty($forum->anonymous) && (has_capability('mod/hsuforum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/hsuforum:exportownpost', $context)));
 
     if ($canexport) {
         require_once($CFG->libdir.'/portfoliolib.php');
@@ -5279,7 +5279,7 @@ function hsuforum_user_has_posted_discussion($forumid, $userid) {
 function hsuforum_discussions_user_has_posted_in($forumid, $userid) {
     global $CFG, $DB;
 
-    $haspostedsql = "SELECT d.id AS id,
+    $haspostedsql = "SELECT DISTINCT d.id AS id,
                             d.*
                        FROM {hsuforum_posts} p,
                             {hsuforum_discussions} d
@@ -5839,9 +5839,8 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         ), $displayformat, array(), 'displayformatid');
 
         $display->set_label(get_string('discussiondisplay', 'hsuforum'));
-        $display->class     .= ' hsuforum-display-format clearfix';
-        $display->attributes = array('tabindex' => '-1');
-        echo html_writer::tag('div', $OUTPUT->render($display), array('aria-hidden' => 'true'));
+        $display->class .= ' hsuforum-display-format clearfix';
+        echo $OUTPUT->render($display);
     }
 
     if (!$canstart && (isguestuser() or !isloggedin() or $forum->type == 'news')) {
@@ -6394,6 +6393,22 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
     $modinfo = get_fast_modinfo($course);
 
     $cm = $modinfo->cms[$cmid];
+
+    // Cannot report on recent activity on anonymous forums as we could reveal user's identity.
+    $anonymous = $DB->get_field('hsuforum', 'anonymous', array('id' => $cm->instance), MUST_EXIST);
+    if (!empty($anonymous)) {
+        $tmpactivity             = new stdClass();
+        $tmpactivity->type       = 'hsuforum';
+        $tmpactivity->cmid       = $cm->id;
+        $tmpactivity->name       = format_string($cm->name, true);;
+        $tmpactivity->sectionnum = $cm->sectionnum;
+        $tmpactivity->timestamp  = time();
+        $tmpactivity->content    = get_string('anonymousrecentactivity', 'hsuforum');
+
+        $activities[$index++] = $tmpactivity;
+        return;
+    }
+
     $params = array($timestart, $cm->instance, $USER->id, $USER->id);
 
     if ($userid) {
@@ -6517,6 +6532,11 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
 function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
     global $CFG, $OUTPUT;
 
+    // This handles anonymous forums.
+    if (is_string($activity->content)) {
+        echo $OUTPUT->box($activity->content, 'forum-recent anonymous');
+        return;
+    }
     if ($activity->content->parent) {
         $class = 'reply';
     } else {
@@ -9005,9 +9025,9 @@ function hsuforum_extract_postuser($post, $forum, context_module $context) {
  * Given a user, return post user that is ready for display (EG:
  * anonymous is enforced as well as highlighting)
  *
- * @param $user
- * @param $post
- * @param $forum
+ * @param object $user
+ * @param object $post
+ * @param object $forum
  * @param context_module $context
  * @return stdClass
  */
@@ -9028,8 +9048,10 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
 }
 
 /**
- * @param $user
- * @param null $forum
+ * @param object $user
+ * @param object $forum
+ * @param object $post
+ * @throws coding_exception
  * @return stdClass
  * @author Mark Nielsen
  */
