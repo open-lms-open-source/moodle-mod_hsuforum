@@ -5916,7 +5916,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             $PAGE->requires->js_init_call('M.mod_hsuforum.init_flags', null, false, $renderer->get_js_module());
             $PAGE->requires->js_init_call('M.mod_hsuforum.init_subscribe', null, false, $renderer->get_js_module());
 
-            echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+            echo $OUTPUT->box_start('mod_hsuforum_posts_container article');
             echo $renderer->discussions($cm, array(), array(
                 'total'   => 0,
                 'page'    => $page,
@@ -5960,7 +5960,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $forumtracked = false;
     }
 
-    echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+    echo $OUTPUT->box_start("mod_hsuforum_posts_container $displayformat");
 
     if ($displayformat == 'header') {
         echo html_writer::start_tag('table', array(
@@ -6202,7 +6202,7 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $mo
 
     $postread = !empty($post->postread);
 
-    echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+    echo $OUTPUT->box_start("mod_hsuforum_posts_container $displayformat");
 
     if ($displayformat == 'article') {
         /** @var \mod_hsuforum\render_interface $renderer */
@@ -6306,10 +6306,11 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                     echo "</div>\n";
                     continue;
                 }
-                $postuser = new stdClass;
-                $postuser->id        = $post->userid;
-                $postuser->firstname = $post->firstname;
-                $postuser->lastname  = $post->lastname;
+                $postuser     = new stdClass;
+                $postuser->id = $post->userid;
+
+                username_load_fields_from_object($postuser, $post);
+
                 $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
 
                 $by = new stdClass();

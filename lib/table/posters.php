@@ -35,7 +35,7 @@ class hsuforum_lib_table_posters extends table_sql {
         $this->define_columns(array('userpic', 'fullname', 'total', 'posts', 'replies', 'substantive'));
         $this->define_headers(array('', get_string('fullnameuser'), get_string('totalposts', 'hsuforum'), get_string('posts', 'hsuforum'), get_string('replies', 'hsuforum'), get_string('substantive', 'hsuforum')));
 
-        $fields = user_picture::fields('u', null, 'id', 'picture');
+        $fields = user_picture::fields('u', null, 'id');
         $params = array('forumid' => $PAGE->activityrecord->id);
 
         if (!has_capability('mod/hsuforum:viewposters', $PAGE->context)) {
@@ -45,7 +45,7 @@ class hsuforum_lib_table_posters extends table_sql {
             $usersql = '';
         }
         $this->set_sql(
-            "$fields, u.firstname, u.lastname, COUNT(*) AS total, SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS posts,
+            "$fields, COUNT(*) AS total, SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS posts,
              SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replies, SUM(CASE WHEN p.flags LIKE '%substantive%' THEN 1 ELSE 0 END) AS substantive",
             '{hsuforum_posts} p, {hsuforum_discussions} d, {hsuforum} f, {user} u',
             "u.id = p.userid AND p.discussion = d.id AND d.forum = f.id AND f.id = :forumid$usersql GROUP BY p.userid",
@@ -63,6 +63,6 @@ class hsuforum_lib_table_posters extends table_sql {
 
     public function col_userpic($row) {
         global $OUTPUT;
-        return $OUTPUT->user_picture(user_picture::unalias($row, null, 'id', 'picture'));
+        return $OUTPUT->user_picture(user_picture::unalias($row, null, 'id'));
     }
 }

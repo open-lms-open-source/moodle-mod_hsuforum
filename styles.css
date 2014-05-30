@@ -242,15 +242,15 @@ span.unread {
 /* -------------------------  ACC FORUM VIEW  -------------------------*/
 
 /* borderbox reset */
-.block_flexpagemod_hsuforum *,
-.block_flexpagemod_hsuforum *:before,
-.block_flexpagemod_hsuforum  *:after,
-.path-mod-hsuforum *, .path-mod-hsuforum *:before, .path-mod-hsuforum *:after {
-  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
- }
+.mod_hsuforum_posts_container.article *,
+.mod_hsuforum_posts_container.article *:before,
+.mod_hsuforum_posts_container.article *:after {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
 
-
-/* consistant padding */
+/* consistent padding */
 .hsuforum-thread-figure,
 .hsuforum-post-figure
 .hsuforum-thread-body,

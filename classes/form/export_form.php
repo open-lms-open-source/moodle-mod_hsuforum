@@ -139,8 +139,10 @@ class export_form extends \moodleform {
     public function get_discussion_users() {
         global $USER, $DB;
 
+        $fields = get_all_user_name_fields(true, 'u');
+
         return $DB->get_recordset_sql("
-            SELECT DISTINCT d.id discussionid, u.id, u.firstname, u.lastname
+            SELECT DISTINCT d.id discussionid, u.id, $fields
               FROM {hsuforum_discussions} d
               JOIN {hsuforum_posts} p ON d.id = p.discussion
               JOIN {user} u ON p.userid = u.id
