@@ -28,7 +28,8 @@ class mod_hsuforum_flexpage extends block_flexpagemod_lib_mod {
     public function module_block_setup() {
         global $CFG, $COURSE, $DB, $PAGE;
 
-        $cm      = $this->get_cm();
+        // Cannot use cm_info because it is read only.
+        $cm      = get_coursemodule_from_id('hsuforum', $this->get_cm()->id, $COURSE->id, false, MUST_EXIST);
         $forum   = $DB->get_record('hsuforum', array('id' => $cm->instance));
         $context = context_module::instance($cm->id);
 

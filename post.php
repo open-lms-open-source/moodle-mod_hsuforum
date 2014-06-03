@@ -427,7 +427,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_context($modcontext);
         $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
-        $PAGE->set_title(format_string($discussion->name).": ".format_string($post->subject));
+        $PAGE->set_title("$discussion->name: $post->subject");
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading(format_string($forum->name), 2);
@@ -472,8 +472,6 @@ if (isguestuser()) {
 if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field to the forum table
     $forum->maxattachments = 3;
 }
-
-require_once('post_form.php');
 
 $thresholdwarning = hsuforum_check_throttling($forum, $cm);
 $mform_post = new mod_hsuforum_post_form('post.php', array('course' => $course,
@@ -527,8 +525,9 @@ if (hsuforum_is_subscribed($USER->id, $forum->id)) {
     $subscribe = !empty($USER->autosubscribe);
 }
 
+$postid = empty($post->id) ? null : $post->id;
 $draftid_editor = file_get_submitted_draft_itemid('message');
-$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', empty($post->id) ? null : $post->id, mod_hsuforum_post_form::editor_options(), $post->message);
+$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', $postid, mod_hsuforum_post_form::editor_options($modcontext, $postid), $post->message);
 $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'general'=>$heading,
                                     'subject'=>$post->subject,
@@ -709,16 +708,16 @@ if ($fromform = $mform_post->get_data()) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
-            events_trigger('hsuforum_reply_add', (object) array(
-                'component'    => 'mod_hsuforum',
-                'postid'       => $fromform->id,
-                'discussionid' => $discussion->id,
-                'timestamp'    => time(),
-                'userid'       => $USER->id,
-                'forumid'      => $forum->id,
-                'cmid'         => $cm->id,
-                'courseid'     => $course->id,
+            $event = \mod_hsuforum\event\post_created::create(array(
+                'objectid' => $fromform->id,
+                'courseid' => $course->id,
+                'context'  => $modcontext,
+                'other'    => array(
+                    'discussionid' => $discussion->id,
+                )
             ));
+            $event->add_record_snapshot('hsuforum_discussions', $discussion);
+            $event->trigger();
 
             redirect(hsuforum_go_back_to("$discussionurl#p$fromform->id"), $message.$subscribemessage, $timemessage);
 
@@ -774,7 +773,7 @@ if ($fromform = $mform_post->get_data()) {
             }
 
             if ($subscribemessage = hsuforum_post_subscription($discussion, $forum)) {
-                $timemessage = 4;
+                $timemessage = 6;
             }
 
             // Update completion status
@@ -784,15 +783,13 @@ if ($fromform = $mform_post->get_data()) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
-            events_trigger('hsuforum_discussion_add', (object) array(
-                'component'    => 'mod_hsuforum',
-                'discussionid' => $discussion->id,
-                'timestamp'    => time(),
-                'userid'       => $USER->id,
-                'forumid'      => $forum->id,
-                'cmid'         => $cm->id,
-                'courseid'     => $course->id,
+            $event = \mod_hsuforum\event\discussion_created::create(array(
+                'objectid' => $discussion->id,
+                'courseid' => $course->id,
+                'context'  => $modcontext,
             ));
+            $event->add_record_snapshot('hsuforum_discussions', $discussion);
+            $event->trigger();
 
             redirect(hsuforum_go_back_to("view.php?f=$fromform->forum"), $message.$subscribemessage, $timemessage);
 
@@ -839,7 +836,7 @@ if ($forum->type == 'single') {
     $strdiscussionname = '';
 } else {
     // Show the discussion name in the breadcrumbs.
-    $strdiscussionname = format_string($discussion->name).':';
+    $strdiscussionname = $discussion->name.':';
 }
 
 $forcefocus = empty($reply) ? NULL : 'message';
@@ -856,7 +853,7 @@ if ($edit) {
     $PAGE->navbar->add(get_string('edit', 'hsuforum'));
 }
 
-$PAGE->set_title("$course->shortname: $strdiscussionname ".format_string($toppost->subject));
+$PAGE->set_title("$course->shortname: $strdiscussionname $toppost->subject");
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();

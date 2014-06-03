@@ -3,8 +3,9 @@
         "requires": [
             "base",
             "io-base",
-            "json-parse",
-            "moodle-core-notification"
+            "io-form",
+            "io-upload-iframe",
+            "json-parse"
         ]
     }
 }

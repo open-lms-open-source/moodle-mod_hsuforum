@@ -222,7 +222,7 @@ foreach ($searchterms as $key => $searchterm) {
 }
 $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
 
-echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+echo $OUTPUT->box_start("mod_hsuforum_posts_container $displayformat");
 
 foreach ($posts as $post) {
 

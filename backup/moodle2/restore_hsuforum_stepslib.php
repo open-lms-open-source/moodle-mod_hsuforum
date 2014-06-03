@@ -45,6 +45,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $paths[] = new restore_path_element('hsuforum_post', '/activity/hsuforum/discussions/discussion/posts/post');
             $paths[] = new restore_path_element('hsuforum_rating', '/activity/hsuforum/discussions/discussion/posts/post/ratings/rating');
             $paths[] = new restore_path_element('hsuforum_subscription', '/activity/hsuforum/subscriptions/subscription');
+            $paths[] = new restore_path_element('hsuforum_digest', '/activity/hsuforum/digests/digest');
             $paths[] = new restore_path_element('hsuforum_read', '/activity/hsuforum/readposts/read');
             $paths[] = new restore_path_element('hsuforum_track', '/activity/hsuforum/trackedprefs/track');
         }
@@ -165,6 +166,18 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('hsuforum_subscriptions', $data);
+    }
+
+    protected function process_hsuforum_digest($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->forum = $this->get_new_parentid('hsuforum');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('hsuforum_digests', $data);
     }
 
     protected function process_hsuforum_read($data) {

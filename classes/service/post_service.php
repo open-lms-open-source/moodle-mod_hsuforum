@@ -25,6 +25,7 @@
 namespace mod_hsuforum\service;
 
 use mod_hsuforum\attachments;
+use mod_hsuforum\event\post_created;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use moodle_exception;
@@ -34,7 +35,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__DIR__).'/response/json_response.php');
 require_once(dirname(__DIR__).'/upload_file.php');
 require_once(dirname(dirname(__DIR__)).'/lib.php');
-require_once(dirname(dirname(__DIR__)).'/post_form.php');
 
 /**
  * @package   mod_hsuforum
@@ -89,7 +89,7 @@ class post_service {
             return $this->create_error_response($errors);
         }
         $this->save_post($discussion, $post, $uploader);
-        $this->trigger_post_created($course, $cm, $forum, $post);
+        $this->trigger_post_created($course, $context, $cm, $forum, $discussion, $post);
 
         return new json_response((object) array(
             'eventaction'  => 'postcreated',
@@ -293,11 +293,13 @@ class post_service {
      * Log, update completion info and trigger event
      *
      * @param object $course
+     * @param \context_module $context
      * @param object $cm
      * @param object $forum
+     * @param object $discussion
      * @param object $post
      */
-    public function trigger_post_created($course, $cm, $forum, $post) {
+    public function trigger_post_created($course, \context_module $context, $cm, $forum, $discussion, $post) {
         global $CFG;
 
         require_once($CFG->libdir.'/completionlib.php');
@@ -313,16 +315,16 @@ class post_service {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
 
-        events_trigger('hsuforum_reply_add', (object) array(
-            'component'    => 'mod_hsuforum',
-            'postid'       => $post->id,
-            'discussionid' => $post->discussion,
-            'timestamp'    => time(),
-            'userid'       => $post->userid,
-            'forumid'      => $forum->id,
-            'cmid'         => $cm->id,
-            'courseid'     => $course->id,
+        $event = post_created::create(array(
+            'objectid' => $post->id,
+            'courseid' => $course->id,
+            'context'  => $context,
+            'other'    => array(
+                'discussionid' => $discussion->id,
+            )
         ));
+        $event->add_record_snapshot('hsuforum_discussions', $discussion);
+        $event->trigger();
     }
 
     /**

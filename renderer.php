@@ -311,8 +311,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function post_to_node($cm, $discussion, $post, $skipcansee = false) {
-        global $PAGE;
-
         hsuforum_cm_add_cache($cm);
 
         // Sometimes we must skip this check because $discussion isn't the actual discussion record, it's some sort of monster!
@@ -345,7 +343,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $html = "<span><span class=\"$class\">".
                 html_writer::link($url, format_string($post->subject,true)).'&nbsp;'.
                 $author.'</span>'.
-                $PAGE->get_renderer('mod_hsuforum')->post_flags($post, $cm->cache->context).
+                $this->post_flags($post, $cm->cache->context).
                 "</span>";
 
         $leaf = true;
@@ -596,10 +594,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     public function discussion_lastpostby($cm, $discussion) {
         hsuforum_cm_add_cache($cm);
 
-        $usermodified            = new stdClass();
-        $usermodified->id        = $discussion->usermodified;
-        $usermodified->firstname = $discussion->umfirstname;
-        $usermodified->lastname  = $discussion->umlastname;
+        $usermodified     = new stdClass();
+        $usermodified->id = $discussion->usermodified;
+
+        username_load_fields_from_object($usermodified, $discussion, 'um');
 
         $lastpost         = new stdClass;
         $lastpost->id     = $discussion->lastpostid;
@@ -990,6 +988,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
 
         echo $OUTPUT->heading(format_string($forum->name), 2);
+        if (!empty($forum->intro) && $forum->type != 'single' && $forum->type != 'teacher') {
+            echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
+        }
 
         // Update activity group mode changes here.
         groups_get_activity_group($cm, true);
@@ -1051,9 +1052,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 break;
 
             case 'eachuser':
-                if (!empty($forum->intro)) {
-                    echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
-                }
                 echo '<p class="mdl-align">';
                 if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
                     print_string("allowsdiscussions", "hsuforum");
@@ -1077,9 +1075,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 break;
 
             case 'blog':
-                if (!empty($forum->intro)) {
-                    echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
-                }
                 echo '<br />';
                 if (!empty($showall)) {
                     hsuforum_print_latest_discussions($course, $forum, 0, 'plain', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
@@ -1089,9 +1084,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 break;
 
             default:
-                if (!empty($forum->intro)) {
-                    echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
-                }
                 if (!empty($showall)) {
                     hsuforum_print_latest_discussions($course, $forum, 0, 'header', $dsort->get_sort_sql(), -1, -1, -1, 0, $cm);
                 } else {

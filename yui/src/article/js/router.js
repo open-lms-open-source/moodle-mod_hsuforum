@@ -71,7 +71,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         } else if (!Y.Lang.isUndefined(req.query.edit)) {
             this.get('article').get('form').showEditForm(req.query.edit);
         } else if (!Y.Lang.isUndefined(req.query.prune)) {
-            window.location.href = M.cfg.wwwroot + this.get('root') + req.path + '?' + Y.QueryString.stringify(req.query);
+            window.location.href = req.url;
         }
     },
 
@@ -98,10 +98,8 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @returns {boolean}
      */
     routeUrl: function(url) {
-        var path = this.removeRoot(url);
-
-        if (this.hasRoute(path)) {
-            this.save(path);
+        if (this.hasRoute(url)) {
+            this.save(this.removeRoot(url));
             return true;
         }
         return false;
@@ -117,10 +115,9 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         e.preventDefault();
 
         var formNode = e.currentTarget,
-            root     = this.removeRoot(formNode.get('action')),
             forumId  = formNode.one(SELECTORS.INPUT_FORUM).get('value');
 
-        this.save(root + '?forum=' + forumId);
+        this.save(formNode.get('action') + '?forum=' + forumId);
     },
 
     /**

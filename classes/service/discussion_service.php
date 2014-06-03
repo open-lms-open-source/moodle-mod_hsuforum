@@ -25,6 +25,7 @@
 namespace mod_hsuforum\service;
 
 use mod_hsuforum\attachments;
+use mod_hsuforum\event\discussion_created;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use moodle_exception;
@@ -34,7 +35,6 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__DIR__).'/response/json_response.php');
 require_once(dirname(__DIR__).'/upload_file.php');
 require_once(dirname(dirname(__DIR__)).'/lib.php');
-require_once(dirname(dirname(__DIR__)).'/post_form.php');
 
 /**
  * @package   mod_hsuforum
@@ -86,7 +86,7 @@ class discussion_service {
             ));
         }
         $this->save_discussion($discussion, $uploader);
-        $this->trigger_discussion_created($course, $cm, $forum, $discussion);
+        $this->trigger_discussion_created($course, $context, $cm, $forum, $discussion);
 
         $message = get_string('postaddedsuccess', 'hsuforum');
 
@@ -187,11 +187,12 @@ class discussion_service {
      * Log, update completion info and trigger event
      *
      * @param object $course
+     * @param \context_module $context
      * @param object $cm
      * @param object $forum
      * @param object $discussion
      */
-    public function trigger_discussion_created($course, $cm, $forum, $discussion) {
+    public function trigger_discussion_created($course, \context_module $context, $cm, $forum, $discussion) {
         global $CFG;
 
         require_once($CFG->libdir.'/completionlib.php');
@@ -206,15 +207,13 @@ class discussion_service {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
 
-        events_trigger('hsuforum_discussion_add', (object) array(
-            'component'    => 'mod_hsuforum',
-            'discussionid' => $discussion->id,
-            'timestamp'    => time(),
-            'userid'       => $discussion->userid,
-            'forumid'      => $forum->id,
-            'cmid'         => $cm->id,
-            'courseid'     => $course->id,
+        $event = discussion_created::create(array(
+            'objectid' => $discussion->id,
+            'courseid' => $course->id,
+            'context'  => $context,
         ));
+        $event->add_record_snapshot('hsuforum_discussions', $discussion);
+        $event->trigger();
     }
 
     /**
@@ -229,7 +228,7 @@ class discussion_service {
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
         $forum      = $PAGE->activityrecord;
         $course     = $COURSE;
-        $cm         = $PAGE->cm;
+        $cm         = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $course->id, false, MUST_EXIST); // Cannot use cm_info because it is read only.
         $context    = $PAGE->context;
 
         if ($forum->type == 'news') {

@@ -91,7 +91,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $enrol->enrol_user($instance2, $user->id);
 
         // Assign capabilities to view forums for forum 2.
-        $cm2 = get_coursemodule_from_id('hsuforum', $forum2->id, 0, false, MUST_EXIST);
+        $cm2 = get_coursemodule_from_id('hsuforum', $forum2->cmid, 0, false, MUST_EXIST);
         $context2 = context_module::instance($cm2->id);
         $newrole = create_role('Role 2', 'role2', 'Role 2 description');
         $roleid2 = $this->assignUserCapability('mod/hsuforum:viewdiscussion', $context2->id, $newrole);
@@ -175,7 +175,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $record = new stdClass();
         $record->course = $course2->id;
         $record->type = 'qanda';
-        $record->trackingtype = HSUFORUM_TRACKING_ON;
+        $record->trackingtype = HSUFORUM_TRACKING_FORCED;
         $forum2 = self::getDataGenerator()->create_module('hsuforum', $record);
 
         // Third forum where we will only have one discussion with no replies.
@@ -257,13 +257,13 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $enrol->enrol_user($instance2, $user1->id);
 
         // Assign capabilities to view discussions for forum 2.
-        $cm = get_coursemodule_from_id('hsuforum', $forum2->id, 0, false, MUST_EXIST);
+        $cm = get_coursemodule_from_id('hsuforum', $forum2->cmid, 0, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
         $newrole = create_role('Role 2', 'role2', 'Role 2 description');
         $this->assignUserCapability('mod/hsuforum:viewdiscussion', $context->id, $newrole);
 
         // Assign capabilities to view discussions for forum 3.
-        $cm = get_coursemodule_from_id('hsuforum', $forum3->id, 0, false, MUST_EXIST);
+        $cm = get_coursemodule_from_id('hsuforum', $forum3->cmid, 0, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
         $this->assignUserCapability('mod/hsuforum:viewdiscussion', $context->id, $newrole);
 

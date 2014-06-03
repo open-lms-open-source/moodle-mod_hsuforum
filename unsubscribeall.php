@@ -44,7 +44,7 @@ $strunsubscribeall = get_string('unsubscribeall', 'hsuforum');
 $PAGE->navbar->add(get_string('modulename', 'hsuforum'));
 $PAGE->navbar->add($strunsubscribeall);
 $PAGE->set_title($strunsubscribeall);
-$PAGE->set_heading(format_string($COURSE->fullname));
+$PAGE->set_heading($COURSE->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strunsubscribeall);
 

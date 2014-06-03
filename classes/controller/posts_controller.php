@@ -82,7 +82,7 @@ class posts_controller extends controller_abstract {
         $discussionid = required_param('discussionid', PARAM_INT);
         $discussion   = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
         $forum        = $PAGE->activityrecord;
-        $cm           = $PAGE->cm;
+        $cm           = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $PAGE->course->id, false, MUST_EXIST); // Cannot use cm_info because it is read only.
 
         if ($forum->type == 'news') {
             if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
@@ -190,14 +190,15 @@ class posts_controller extends controller_abstract {
 
         /** @var $renderer \mod_hsuforum\render_interface */
         $renderer = $PAGE->get_renderer('mod_hsuforum', $displayformat);
+        $cm       = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $PAGE->course->id, false, MUST_EXIST); // Cannot use cm_info because it is read only.
         $dsort    = \hsuforum_lib_discussion_sort::get_from_session($PAGE->activityrecord, $PAGE->context);
-        $posts    = hsuforum_get_discussions($PAGE->cm, $dsort->get_sort_sql(), true, -1, false, $page, $perpage, false);
+        $posts    = hsuforum_get_discussions($cm, $dsort->get_sort_sql(), true, -1, false, $page, $perpage, false);
         hsuforum_get_ratings_for_posts($PAGE->context, $PAGE->activityrecord, $posts);
 
         $output = '';
         foreach ($posts as $post) {
             $output .= $renderer->discussion(
-                $PAGE->cm, hsuforum_extract_discussion($post, $PAGE->activityrecord), $post
+                $cm, hsuforum_extract_discussion($post, $PAGE->activityrecord), $post
             );
         }
 
@@ -217,7 +218,7 @@ class posts_controller extends controller_abstract {
         }
         $postid = required_param('postid', PARAM_INT);
         $forum  = $PAGE->activityrecord;
-        $cm     = $PAGE->cm;
+        $cm     = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $PAGE->course->id, false, MUST_EXIST); // Cannot use cm_info because it is read only.
 
         if (!$focuspost = hsuforum_get_post_full($postid)) {
             print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
