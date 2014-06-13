@@ -225,8 +225,6 @@
             $buttonextraclass = ' noavailable';
         }
         echo html_writer::tag('div', $button, array('class' => 'discussioncontrol exporttoportfolio'.$buttonextraclass));
-    } else {
-        echo html_writer::tag('div', '&nbsp;', array('class'=>'discussioncontrol nullcontrol'));
     }
 
     // groups selector not needed here
