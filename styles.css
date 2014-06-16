@@ -129,7 +129,7 @@ span.unread {
 .hsuforum-add-discussion {float: right}
 .hsuforum-control-options {margin-top: 10px; margin-bottom: 10px;}
 .hsuforum-control-options .groupselector {float: left}
-.hsuforum_discussion_sort {float: right; white-space: nowrap}
+.hsuforum_discussion_sort {float: right;}
 .hsuforum_discussion_sort_key, .hsuforum_discussion_sort_direction {display: inline-block;}
 .hsuforum_discussion_sort .invisiblefieldset {display: block;}
 .hsuforumtopicnav {margin: 5px;}
