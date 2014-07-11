@@ -1648,13 +1648,8 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
         $subjectclass = empty($post->parent) ? ' bold' : '';
 
         $postuser = new stdClass();
+        $postuser = username_load_fields_from_object($postuser, $post);
         $postuser->id = $post->userid;
-        $postuser->firstname = $post->firstname;
-        $postuser->lastname = $post->lastname;
-        $postuser->firstnamephonetic = $post->firstnamephonetic;
-        $postuser->lastnamephonetic = $post->lastnamephonetic;
-        $postuser->middlename = $post->middlename;
-        $postuser->alternatename = $post->alternatename;
 
         $postuser = hsuforum_anonymize_user($postuser, (object) array(
             'id' => $post->forum,
@@ -6310,7 +6305,7 @@ function hsuforum_print_posts_threaded($course, &$cm, $forum, $discussion, $pare
                     echo "</div>\n";
                     continue;
                 }
-                $postuser 	   = new stdClass;
+                $postuser      = new stdClass;
                 $postuser->id  = $post->userid;
 
                 username_load_fields_from_object($postuser, $post);
