@@ -33,6 +33,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 class attachments {
     /**
+     * @var object
+     */
+    protected $forum;
+
+    /**
      * @var \context_module
      */
     protected $context;
@@ -65,12 +70,23 @@ class attachments {
     protected $deletefiles;
 
     /**
+     * @param object $forum
      * @param \context_module $context
      * @param array $deletefiles File names to be deleted
      */
-    public function __construct(\context_module $context, array $deletefiles = array()) {
+    public function __construct($forum, \context_module $context, array $deletefiles = array()) {
+        $this->forum       = $forum;
         $this->context     = $context;
         $this->deletefiles = $deletefiles;
+    }
+
+    /**
+     * Are attachments allowed in this forum and for this current user?
+     *
+     * @return bool
+     */
+    public function attachments_allowed() {
+        return (!empty($this->forum->maxattachments) && $this->forum->maxbytes != 1 && has_capability('mod/hsuforum:createattachment', $this->context)); // 1 = No attachments at all.
     }
 
     /**

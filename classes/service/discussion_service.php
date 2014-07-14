@@ -70,7 +70,7 @@ class discussion_service {
         global $PAGE, $OUTPUT;
 
         $uploader = new upload_file(
-            new attachments($context), \mod_hsuforum_post_form::attachment_options($forum)
+            new attachments($forum, $context), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
         $discussion = $this->create_discussion_object($forum, $context, $options);

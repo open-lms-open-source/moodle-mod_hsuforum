@@ -79,7 +79,7 @@ class post_service {
      */
     public function handle_reply($course, $cm, $forum, $context, $discussion, $parent, array $options) {
         $uploader = new upload_file(
-            new attachments($context), \mod_hsuforum_post_form::attachment_options($forum)
+            new attachments($forum, $context), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
         $post   = $this->create_post_object($discussion, $parent, $context, $options);
@@ -118,7 +118,7 @@ class post_service {
         $this->require_can_edit_post($forum, $context, $discussion, $post);
 
         $uploader = new upload_file(
-            new attachments($context, $deletefiles), \mod_hsuforum_post_form::attachment_options($forum)
+            new attachments($forum, $context, $deletefiles), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
         // Apply updates to the post.

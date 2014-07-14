@@ -1126,6 +1126,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
+        global $DB;
+
         if (!empty($postid)) {
             $params = array('edit' => $postid);
             $legend = get_string('editingpost', 'hsuforum');
@@ -1134,6 +1136,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $legend = get_string('addyourdiscussion', 'hsuforum');
         }
         $context = context_module::instance($cm->id);
+        $forum   = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
 
         $data += array(
             'itemid'        => 0,
@@ -1167,6 +1170,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data += array(
             'postid'      => $postid,
             'context'     => $context,
+            'forum'       => $forum,
             'actionurl'   => $actionurl,
             'class'       => 'hsuforum-discussion',
             'legend'      => $legend,
@@ -1187,6 +1191,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function simple_edit_post($cm, $isedit = false, $postid = 0, array $data = array()) {
+        global $DB;
+
         if ($isedit) {
             $param  = 'edit';
             $legend = get_string('editingpost', 'hsuforum');
@@ -1196,6 +1202,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $legend = get_string('addareply', 'hsuforum');
         }
         $context = context_module::instance($cm->id);
+        $forum   = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
 
         $data += array(
             'itemid'        => 0,
@@ -1219,6 +1226,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data += array(
             'postid'          => ($isedit) ? $postid : 0,
             'context'         => $context,
+            'forum'           => $forum,
             'actionurl'       => $actionurl,
             'class'           => 'hsuforum-reply',
             'legend'          => $legend,
@@ -1271,14 +1279,14 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $advancedurl  = s($t->advancedurl);
         $messagelabel = s($t->messagelabel);
         $files        = '';
+        $attachments  = new \mod_hsuforum\attachments($t->forum, $t->context);
+        $canattach    = $attachments->attachments_allowed();
 
         $subjectrequired = '';
         if ($t->subjectrequired) {
             $subjectrequired = 'required="required"';
         }
-        if (!empty($t->postid)) {
-            require_once(__DIR__.'/classes/attachments.php');
-            $attachments = new \mod_hsuforum\attachments($t->context);
+        if (!empty($t->postid) && $canattach) {
             foreach ($attachments->get_attachments($t->postid) as $file) {
                 $checkbox = html_writer::checkbox('deleteattachment[]', $file->get_filename(), false).
                     get_string('deleteattachmentx', 'hsuforum', $file->get_filename());
@@ -1287,6 +1295,14 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             }
             $files = html_writer::tag('legend', get_string('deleteattachments', 'hsuforum'), array('class' => 'accesshide')).$files;
             $files = html_writer::tag('fieldset', $files);
+        }
+        if ($canattach) {
+            $files .= <<<HTML
+                <label>
+                    <span class="accesshide">$t->attachmentlabel</span>
+                    <input type="file" name="attachment[]" multiple="multiple" />
+                </label>
+HTML;
         }
 
         return <<<HTML
@@ -1309,10 +1325,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 <div data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="textarea">$t->message</div>
 
                 $files
-                <label>
-                    <span class="accesshide">$t->attachmentlabel</span>
-                    <input type="file" name="attachment[]" multiple="multiple" />
-                </label>
 
                 $t->extrahtml
 
@@ -1729,7 +1741,8 @@ HTML;
      *  2. Reply to user
      *  3. Private reply to user
      *
-     * @param array $p
+     * @param object $p
+     * @return string
      */    
     public function post_template($p) {
         $icon = "&#64;";
