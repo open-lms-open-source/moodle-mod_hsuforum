@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_hsuforum post created event.
+ * The mod_hsuforum post updated event.
  *
  * @package    mod_hsuforum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
@@ -27,7 +27,7 @@ namespace mod_hsuforum\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_hsuforum post created event class.
+ * The mod_hsuforum post updated event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
@@ -42,14 +42,14 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class post_created extends \core\event\base {
+class post_updated extends \core\event\base {
     /**
      * Init method.
      *
      * @return void
      */
     protected function init() {
-        $this->data['crud'] = 'c';
+        $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
         $this->data['objecttable'] = 'hsuforum_posts';
     }
@@ -60,7 +60,7 @@ class post_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has created the post with id '$this->objectid' in the discussion with " .
+        return "The user with id '$this->userid' has updated the post with id '$this->objectid' in the discussion with " .
             "id '{$this->other['discussionid']}' in the forum with the course module id '$this->contextinstanceid'.";
     }
 
@@ -70,7 +70,7 @@ class post_created extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventpostcreated', 'mod_hsuforum');
+        return get_string('eventpostupdated', 'mod_hsuforum');
     }
 
     /**
@@ -100,7 +100,7 @@ class post_created extends \core\event\base {
         // The legacy log table expects a relative path to /mod/hsuforum/.
         $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/hsuforum/'));
 
-        return array($this->courseid, 'hsuforum', 'add post', $logurl, $this->other['forumid'], $this->contextinstanceid);
+        return array($this->courseid, 'hsuforum', 'update post', $logurl, $this->objectid, $this->contextinstanceid);
     }
 
     /**

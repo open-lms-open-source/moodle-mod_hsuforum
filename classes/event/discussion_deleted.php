@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_hsuforum post created event.
+ * The mod_hsuforum discussion deleted event.
  *
  * @package    mod_hsuforum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
@@ -27,14 +27,12 @@ namespace mod_hsuforum\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_hsuforum post created event class.
+ * The mod_hsuforum discussion deleted event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
  *
- *      - int discussionid: The discussion id the post is part of.
- *      - int forumid: The forum id the post is part of.
- *      - string forumtype: The type of forum the post is part of.
+ *      - int forumid: The id of the forum the discussion is in.
  * }
  *
  * @package    mod_hsuforum
@@ -42,16 +40,17 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class post_created extends \core\event\base {
+class discussion_deleted extends \core\event\base {
+
     /**
      * Init method.
      *
      * @return void
      */
     protected function init() {
-        $this->data['crud'] = 'c';
-        $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'hsuforum_posts';
+        $this->data['crud'] = 'd';
+        $this->data['edulevel'] = self::LEVEL_OTHER;
+        $this->data['objecttable'] = 'hsuforum_discussions';
     }
 
     /**
@@ -60,8 +59,8 @@ class post_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has created the post with id '$this->objectid' in the discussion with " .
-            "id '{$this->other['discussionid']}' in the forum with the course module id '$this->contextinstanceid'.";
+        return "The user with id '$this->userid' has deleted the discussion with id '$this->objectid' in the forum " .
+            "with the course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -70,7 +69,7 @@ class post_created extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventpostcreated', 'mod_hsuforum');
+        return get_string('eventdiscussiondeleted', 'mod_hsuforum');
     }
 
     /**
@@ -79,16 +78,7 @@ class post_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        if ($this->other['forumtype'] == 'single') {
-            // Single discussion forums are an exception. We show
-            // the forum itself since it only has one discussion
-            // thread.
-            $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $this->other['forumid']));
-        } else {
-            $url = new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $this->other['discussionid']));
-        }
-        $url->set_anchor('p'.$this->objectid);
-        return $url;
+        return new \moodle_url('/mod/hsuforum/view.php', array('id' => $this->contextinstanceid));
     }
 
     /**
@@ -97,10 +87,8 @@ class post_created extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/hsuforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/hsuforum/'));
-
-        return array($this->courseid, 'hsuforum', 'add post', $logurl, $this->other['forumid'], $this->contextinstanceid);
+        return array($this->courseid, 'hsuforum', 'delete discussion', 'view.php?id=' . $this->contextinstanceid,
+            $this->other['forumid'], $this->contextinstanceid);
     }
 
     /**
@@ -111,17 +99,8 @@ class post_created extends \core\event\base {
      */
     protected function validate_data() {
         parent::validate_data();
-
-        if (!isset($this->other['discussionid'])) {
-            throw new \coding_exception('The \'discussionid\' value must be set in other.');
-        }
-
         if (!isset($this->other['forumid'])) {
             throw new \coding_exception('The \'forumid\' value must be set in other.');
-        }
-
-        if (!isset($this->other['forumtype'])) {
-            throw new \coding_exception('The \'forumtype\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_MODULE) {
@@ -129,3 +108,4 @@ class post_created extends \core\event\base {
         }
     }
 }
+

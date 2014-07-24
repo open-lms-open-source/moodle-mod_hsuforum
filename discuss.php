@@ -19,7 +19,7 @@
  * Displays a post, and all the posts below it.
  * If no post is given, displays all posts in a discussion
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -82,15 +82,19 @@
             print_error('cannotmovetosingleforum', 'hsuforum', $return);
         }
 
-        if (!$cmto = get_coursemodule_from_instance('hsuforum', $forumto->id, $course->id)) {
+        // Get target forum cm and check it is visible to current user.
+        $modinfo = get_fast_modinfo($course);
+        $forums = $modinfo->get_instances_of('hsuforum');
+        if (!array_key_exists($forumto->id, $forums)) {
             print_error('cannotmovetonotfound', 'hsuforum', $return);
         }
-
-        if (!coursemodule_visible_for_user($cmto)) {
+        $cmto = $forums[$forumto->id];
+        if (!$cmto->uservisible) {
             print_error('cannotmovenotvisible', 'hsuforum', $return);
         }
 
-        require_capability('mod/hsuforum:startdiscussion', context_module::instance($cmto->id));
+        $destinationctx = context_module::instance($cmto->id);
+        require_capability('mod/hsuforum:startdiscussion', $destinationctx);
 
         if (!$forum->anonymous or $warned) {
             if (!hsuforum_move_attachments($discussion, $forum->id, $forumto->id)) {
@@ -98,12 +102,23 @@
             }
             $DB->set_field('hsuforum_discussions', 'forum', $forumto->id, array('id' => $discussion->id));
             $DB->set_field('hsuforum_read', 'forumid', $forumto->id, array('discussionid' => $discussion->id));
-            add_to_log($course->id, 'hsuforum', 'move discussion', "discuss.php?d=$discussion->id", $discussion->id, $cmto->id);
 
-            require_once($CFG->libdir.'/rsslib.php');
-            require_once($CFG->dirroot.'/mod/hsuforum/rsslib.php');
+            $params = array(
+                'context'  => $destinationctx,
+                'objectid' => $discussion->id,
+                'other'    => array(
+                    'fromforumid' => $forum->id,
+                    'toforumid'   => $forumto->id,
+                )
+            );
+            $event  = \mod_hsuforum\event\discussion_moved::create($params);
+            $event->add_record_snapshot('hsuforum_discussions', $discussion);
+            $event->add_record_snapshot('hsuforum', $forum);
+            $event->add_record_snapshot('hsuforum', $forumto);
+            $event->trigger();
 
             // Delete the RSS files for the 2 forums to force regeneration of the feeds
+            require_once($CFG->dirroot.'/mod/hsuforum/rsslib.php');
             hsuforum_rss_delete_file($forum);
             hsuforum_rss_delete_file($forumto);
 
@@ -111,7 +126,14 @@
         }
     }
 
-    add_to_log($course->id, 'hsuforum', 'view discussion', "discuss.php?d=$discussion->id", $discussion->id, $cm->id);
+    $params = array(
+        'context' => $modcontext,
+        'objectid' => $discussion->id,
+    );
+    $event = \mod_hsuforum\event\discussion_viewed::create($params);
+    $event->add_record_snapshot('hsuforum_discussions', $discussion);
+    $event->add_record_snapshot('hsuforum', $forum);
+    $event->trigger();
 
     unset($SESSION->fromdiscussion);
 

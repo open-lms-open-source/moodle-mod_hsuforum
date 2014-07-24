@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright Jamie Pratt <me@jamiep.org>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -68,7 +68,22 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'hsuforum');
         $mform->setDefault('maxbytes', $CFG->hsuforum_maxbytes);
 
-        $choices = array(0,1,2,3,4,5,6,7,8,9,10,20,50,100);
+        $choices = array(
+            0 => 0,
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 4,
+            5 => 5,
+            6 => 6,
+            7 => 7,
+            8 => 8,
+            9 => 9,
+            10 => 10,
+            20 => 20,
+            50 => 50,
+            100 => 100
+        );
         $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'hsuforum'), $choices);
         $mform->addHelpButton('maxattachments', 'maxattachments', 'hsuforum');
         $mform->setDefault('maxattachments', $CFG->hsuforum_maxattachments);

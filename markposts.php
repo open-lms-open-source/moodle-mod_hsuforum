@@ -18,7 +18,7 @@
 /**
  * Set tracking option for the forum.
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 2005 mchurch
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -83,9 +83,7 @@ if ($mark == 'read') {
             print_error('invaliddiscussionid', 'hsuforum');
         }
 
-        if (hsuforum_tp_mark_discussion_read($user, $d)) {
-            add_to_log($course->id, "discussion", "mark read", "view.php?f=$forum->id", $d, $cm->id);
-        }
+        hsuforum_tp_mark_discussion_read($user, $d);
     } else {
         // Mark all messages read in current group
         $currentgroup = groups_get_activity_group($cm);
@@ -94,9 +92,7 @@ if ($mark == 'read') {
             // may return 0
             $currentgroup=false;
         }
-        if (hsuforum_tp_mark_hsuforum_read($user, $forum->id,$currentgroup)) {
-            add_to_log($course->id, "hsuforum", "mark read", "view.php?f=$forum->id", $forum->id, $cm->id);
-        }
+        hsuforum_tp_mark_hsuforum_read($user, $forum->id, $currentgroup);
     }
 
 /// FUTURE - Add ability to mark them as unread.

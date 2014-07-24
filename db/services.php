@@ -43,5 +43,14 @@ $functions = array(
         'description' => 'Returns a list of forum discussions contained within a given set of forums.',
         'type' => 'read',
         'capabilities' => 'mod/hsuforum:viewdiscussion, mod/hsuforum:viewqandawithoutposting'
+    ),
+
+    'mod_hsuforum_get_forum_discussion_posts' => array(
+        'classname' => 'mod_hsuforum_external',
+        'methodname' => 'get_forum_discussion_posts',
+        'classpath' => 'mod/hsuforum/externallib.php',
+        'description' => 'Returns a list of forum posts for a discussion.',
+        'type' => 'read',
+        'capabilities' => 'mod/hsuforum:viewdiscussion, mod/hsuforum:viewqandawithoutposting'
     )
 );

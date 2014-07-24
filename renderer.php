@@ -18,7 +18,7 @@
 /**
  * This file contains a custom renderer class used by the forum module.
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -33,7 +33,7 @@ require_once(__DIR__.'/classes/render_interface.php');
  * A custom renderer class that extends the plugin_renderer_base and
  * is used by the forum module.
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)

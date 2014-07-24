@@ -18,7 +18,7 @@
 /**
  * Set tracking option for the forum.
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 2005 mchurch
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -60,9 +60,17 @@ if (!hsuforum_tp_can_track_forums($forum)) {
 $info = new stdClass();
 $info->name  = fullname($USER);
 $info->forum = format_string($forum->name);
+
+$eventparams = array(
+    'context' => context_module::instance($cm->id),
+    'relateduserid' => $USER->id,
+    'other' => array('forumid' => $forum->id),
+);
+
 if (hsuforum_tp_is_tracked($forum) ) {
     if (hsuforum_tp_stop_tracking($forum->id)) {
-        add_to_log($course->id, "hsuforum", "stop tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
+        $event = \mod_hsuforum\event\readtracking_disabled::create($eventparams);
+        $event->trigger();
         redirect($returnto, get_string("nownottracking", "hsuforum", $info), 1);
     } else {
         print_error('cannottrack', '', $_SERVER["HTTP_REFERER"]);
@@ -70,7 +78,8 @@ if (hsuforum_tp_is_tracked($forum) ) {
 
 } else { // subscribe
     if (hsuforum_tp_start_tracking($forum->id)) {
-        add_to_log($course->id, "hsuforum", "start tracking", "view.php?f=$forum->id", $forum->id, $cm->id);
+        $event = \mod_hsuforum\event\readtracking_enabled::create($eventparams);
+        $event->trigger();
         redirect($returnto, get_string("nowtracking", "hsuforum", $info), 1);
     } else {
         print_error('cannottrack', '', $_SERVER["HTTP_REFERER"]);

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,22 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines message providers (types of messages being sent)
+ * The mod_hsuforum instance list viewed event.
  *
- * @package   mod_hsuforum
- * @copyright 1999 onwards  Martin Dougiamas  http://moodle.com
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @author Mark Nielsen
+ * @package    mod_hsuforum
+ * @copyright  2014 Dan Poltawski <dan@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$messageproviders = array (
+namespace mod_hsuforum\event;
 
-/// Ordinary single forum posts
-    'posts' => array (
-    )
+defined('MOODLE_INTERNAL') || die();
 
-);
-
-
-
+/**
+ * The mod_hsuforum instance list viewed event class.
+ *
+ * @package    mod_hsuforum
+ * @since      Moodle 2.7
+ * @copyright  2014 Dan Poltawski <dan@moodle.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
+    // No need for any code here as everything is handled by the parent class.
+}

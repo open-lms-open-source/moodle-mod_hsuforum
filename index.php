@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -53,7 +53,12 @@ $coursecontext = context_course::instance($course->id);
 
 unset($SESSION->fromdiscussion);
 
-add_to_log($course->id, 'hsuforum', 'view forums', "index.php?id=$course->id");
+$params = array(
+    'context' => context_course::instance($course->id)
+);
+$event = \mod_hsuforum\event\course_module_instance_list_viewed::create($params);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 $strforums       = get_string('forums', 'hsuforum');
 $strforum        = get_string('forum', 'hsuforum');
@@ -185,19 +190,17 @@ if (!is_null($subscribe) and !isguestuser()) {
         if (!hsuforum_is_forcesubscribed($forum)) {
             $subscribed = hsuforum_is_subscribed($USER->id, $forum);
             if ((has_capability('moodle/course:manageactivities', $coursecontext, $USER->id) || $forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) && $subscribe && !$subscribed && $cansub) {
-                hsuforum_subscribe($USER->id, $forumid);
+                hsuforum_subscribe($USER->id, $forumid, $modcontext);
             } else if (!$subscribe && $subscribed) {
-                hsuforum_unsubscribe($USER->id, $forumid);
+                hsuforum_unsubscribe($USER->id, $forumid, $modcontext);
             }
         }
     }
     $returnto = hsuforum_go_back_to("index.php?id=$course->id");
     $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
     if ($subscribe) {
-        add_to_log($course->id, 'hsuforum', 'subscribeall', "index.php?id=$course->id", $course->id);
         redirect($returnto, get_string('nowallsubscribed', 'hsuforum', $shortname), 1);
     } else {
-        add_to_log($course->id, 'hsuforum', 'unsubscribeall', "index.php?id=$course->id", $course->id);
         redirect($returnto, get_string('nowallunsubscribed', 'hsuforum', $shortname), 1);
     }
 }

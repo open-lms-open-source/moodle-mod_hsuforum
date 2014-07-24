@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -122,12 +122,15 @@
         notice(get_string('noviewdiscussionspermission', 'hsuforum'));
     }
 
-/// Okay, we can show the discussions. Log the forum view.
-    if ($cm->id) {
-        add_to_log($course->id, "hsuforum", "view forum", "view.php?id=$cm->id", "$forum->id", $cm->id);
-    } else {
-        add_to_log($course->id, "hsuforum", "view forum", "view.php?f=$forum->id", "$forum->id");
-    }
+    $params = array(
+        'context' => $context,
+        'objectid' => $forum->id
+    );
+    $event = \mod_hsuforum\event\course_module_viewed::create($params);
+    $event->add_record_snapshot('course_modules', $cm);
+    $event->add_record_snapshot('course', $course);
+    $event->add_record_snapshot('hsuforum', $forum);
+    $event->trigger();
 
     $SESSION->fromdiscussion = qualified_me();   // Return here if we post or set subscription etc
 
