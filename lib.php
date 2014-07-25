@@ -5871,7 +5871,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     $context = context_module::instance($cm->id);
 
     $showdisplayformat = false;
-    if (ajaxenabled() and $displayformat == 'header') {
+    if ($displayformat == 'header') {
         $displayformat = optional_param('displayformat', '', PARAM_ALPHA);
         if (!empty($displayformat)) {
             set_user_preference('hsuforum_displayformat', $displayformat);
