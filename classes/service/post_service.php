@@ -26,6 +26,7 @@ namespace mod_hsuforum\service;
 
 use mod_hsuforum\attachments;
 use mod_hsuforum\event\post_created;
+use mod_hsuforum\event\post_updated;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use moodle_exception;
@@ -140,8 +141,7 @@ class post_service {
             $this->db->set_field('hsuforum_discussions', 'groupid', $options['groupid'], array('id' => $discussion->id));
         }
 
-        add_to_log($course->id, 'hsuforum', 'update post',
-            "discuss.php?d=$discussion->id#p$post->id&amp;parent=$post->id", $post->id, $cm->id);
+        $this->trigger_post_updated($context, $forum, $discussion, $post);
 
         return new json_response((object) array(
             'eventaction'  => 'postupdated',
@@ -201,6 +201,7 @@ class post_service {
         $post->messagetrust  = trusttext_trusted($context);
         $post->itemid        = 0; // For text editor stuffs.
         $post->groupid       = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
+        $post->flags         = null;
 
         $strre = get_string('re', 'hsuforum');
         if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
@@ -290,7 +291,7 @@ class post_service {
     }
 
     /**
-     * Log, update completion info and trigger event
+     * Update completion info and trigger event
      *
      * @param object $course
      * @param \context_module $context
@@ -304,9 +305,6 @@ class post_service {
 
         require_once($CFG->libdir.'/completionlib.php');
 
-        add_to_log($course->id, 'hsuforum', 'add post',
-            "discuss.php?d=$post->discussion&amp;parent=$post->id", $post->id, $cm->id);
-
         // Update completion state
         $completion = new \completion_info($course);
         if ($completion->is_enabled($cm) &&
@@ -315,14 +313,47 @@ class post_service {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
 
-        $event = post_created::create(array(
-            'objectid' => $post->id,
-            'courseid' => $course->id,
+        $params = array(
             'context'  => $context,
+            'objectid' => $post->id,
             'other'    => array(
                 'discussionid' => $discussion->id,
+                'forumid'      => $forum->id,
+                'forumtype'    => $forum->type,
             )
-        ));
+        );
+        $event = post_created::create($params);
+        $event->add_record_snapshot('hsuforum_posts', $post);
+        $event->add_record_snapshot('hsuforum_discussions', $discussion);
+        $event->trigger();
+    }
+
+    /**
+     * Trigger event
+     *
+     * @param \context_module $context
+     * @param object $forum
+     * @param object $discussion
+     * @param object $post
+     */
+    public function trigger_post_updated(\context_module $context, $forum, $discussion, $post) {
+        global $USER;
+
+        $params = array(
+            'context'  => $context,
+            'objectid' => $post->id,
+            'other'    => array(
+                'discussionid' => $discussion->id,
+                'forumid'      => $forum->id,
+                'forumtype'    => $forum->type,
+            )
+        );
+
+        if ($post->userid !== $USER->id) {
+            $params['relateduserid'] = $post->userid;
+        }
+
+        $event = post_updated::create($params);
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
     }

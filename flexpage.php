@@ -39,7 +39,15 @@ class mod_hsuforum_flexpage extends block_flexpagemod_lib_mod {
             $this->append_content(ob_get_contents());
             ob_end_clean();
 
-            add_to_log($COURSE->id, "forum", "view forum", "view.php?id=$cm->id", "$forum->id", $cm->id);
+            $params = array(
+                'context'  => $context,
+                'objectid' => $forum->id
+            );
+            $event  = \mod_hsuforum\event\course_module_viewed::create($params);
+            $event->add_record_snapshot('course_modules', $cm);
+            $event->add_record_snapshot('course', $COURSE);
+            $event->add_record_snapshot('hsuforum', $forum);
+            $event->trigger();
 
             require_once($CFG->libdir . '/completionlib.php');
             $completion = new completion_info($COURSE);

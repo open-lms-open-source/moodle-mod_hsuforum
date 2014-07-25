@@ -197,9 +197,6 @@ class discussion_service {
 
         require_once($CFG->libdir.'/completionlib.php');
 
-        add_to_log($course->id, 'hsuforum', 'add discussion',
-            "discuss.php?d=$discussion->id", $discussion->id, $cm->id);
-
         $completion = new \completion_info($course);
         if ($completion->is_enabled($cm) &&
             ($forum->completiondiscussions || $forum->completionposts)
@@ -207,11 +204,14 @@ class discussion_service {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
 
-        $event = discussion_created::create(array(
-            'objectid' => $discussion->id,
-            'courseid' => $course->id,
+        $params = array(
             'context'  => $context,
-        ));
+            'objectid' => $discussion->id,
+            'other'    => array(
+                'forumid' => $forum->id,
+            )
+        );
+        $event = discussion_created::create($params);
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
     }

@@ -745,7 +745,7 @@ if ($fromform = $mform_post->get_data()) {
             } else {
                 $discussionurl = "discuss.php?d=$discussion->id";
             }
-
+            $post   = $DB->get_record('hsuforum_posts', array('id' => $fromform->id), '*', MUST_EXIST);
             $params = array(
                 'context' => $modcontext,
                 'objectid' => $fromform->id,
@@ -756,7 +756,7 @@ if ($fromform = $mform_post->get_data()) {
                 )
             );
             $event = \mod_hsuforum\event\post_created::create($params);
-            $event->add_record_snapshot('hsuforum_posts', $fromform);
+            $event->add_record_snapshot('hsuforum_posts', $post);
             $event->add_record_snapshot('hsuforum_discussions', $discussion);
             $event->trigger();
 
@@ -766,17 +766,6 @@ if ($fromform = $mform_post->get_data()) {
                 ($forum->completionreplies || $forum->completionposts)) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
-
-            $event = \mod_hsuforum\event\post_created::create(array(
-                'objectid' => $fromform->id,
-                'courseid' => $course->id,
-                'context'  => $modcontext,
-                'other'    => array(
-                    'discussionid' => $discussion->id,
-                )
-            ));
-            $event->add_record_snapshot('hsuforum_discussions', $discussion);
-            $event->trigger();
 
             redirect(hsuforum_go_back_to("$discussionurl#p$fromform->id"), $message.$subscribemessage, $timemessage);
 
@@ -849,14 +838,6 @@ if ($fromform = $mform_post->get_data()) {
                 ($forum->completiondiscussions || $forum->completionposts)) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
-
-            $event = \mod_hsuforum\event\discussion_created::create(array(
-                'objectid' => $discussion->id,
-                'courseid' => $course->id,
-                'context'  => $modcontext,
-            ));
-            $event->add_record_snapshot('hsuforum_discussions', $discussion);
-            $event->trigger();
 
             redirect(hsuforum_go_back_to("view.php?f=$fromform->forum"), $message.$subscribemessage, $timemessage);
 
