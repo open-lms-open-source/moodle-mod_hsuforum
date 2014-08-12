@@ -53,7 +53,7 @@ class behat_mod_hsuforum extends behat_base {
     /**
      * Adds a discussion to the forum specified by it's name with the provided table data (usually Subject and Message). The step begins from the forum's course page.
      *
-     * @Given /^I add a new discussion to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" forum with:$/
+     * @Given /^I add a new discussion to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" advanced forum with:$/
      * @param string $forumname
      * @param TableNode $table
      */
@@ -64,7 +64,7 @@ class behat_mod_hsuforum extends behat_base {
     /**
      * Adds a reply to the specified post of the specified forum. The step begins from the forum's page or from the forum's course page.
      *
-     * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<hsuforum_name_string>(?:[^"]|\\")*)" forum with:$/
+     * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<hsuforum_name_string>(?:[^"]|\\")*)" advanced forum with:$/
      * @param string $postname The subject of the post
      * @param string $forumname The forum name
      * @param TableNode $table

@@ -39,10 +39,10 @@ Feature: Set a certain number of discussions as a completion condition for a for
     And I log in as "student1"
     And I follow "Course 1"
     Then I hover "//li[contains(concat(' ', normalize-space(@class), ' '), ' modtype_hsuforum ')]/descendant::img[@alt='Not completed: Test forum name']" "xpath_element"
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Post 1 subject |
       | Message | Body 1 content |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Post 2 subject |
       | Message | Body 2 content |
     And I follow "Course 1"
