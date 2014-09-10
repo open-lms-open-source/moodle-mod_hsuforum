@@ -3979,7 +3979,7 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
 
     echo '<td class="lastpost">';
     $usedate = (empty($post->timemodified)) ? $post->modified : $post->timemodified;  // Just in case
-    $parenturl = (empty($post->lastpostid)) ? '' : '&amp;parent='.$post->lastpostid;
+    $parenturl = '';
     $usermodified = new stdClass();
     $usermodified->id = $post->usermodified;
     $usermodified = username_load_fields_from_object($usermodified, $post, 'um');
@@ -3991,11 +3991,14 @@ function hsuforum_print_discussion_header(&$post, $forum, $group=-1, $datestring
 
     $usermodified = hsuforum_anonymize_user($usermodified, $forum, $lastpost);
 
-    if (!hsuforum_is_anonymous_user($usermodified)) {
-        echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
-            fullname($usermodified).'</a><br />';
-    } else {
-        echo fullname($usermodified).'<br />';
+    if ($canviewparticipants) {
+        $parenturl = (empty($post->lastpostid)) ? '' : '&amp;parent='.$post->lastpostid;
+        if (!hsuforum_is_anonymous_user($usermodified)) {
+            echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
+                fullname($usermodified).'</a><br />';
+        } else {
+            echo fullname($usermodified).'<br />';
+        }
     }
     echo '<a href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.$parenturl.'">'.
           userdate($usedate, $datestring).'</a>';
@@ -6004,6 +6007,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     $discussionlist = array();
 
     foreach ($discussions as $discussion) {
+        if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $context) &&
+            !hsuforum_user_has_posted($forum->id, $discussion->discussion, $USER->id)) {
+            $canviewparticipants = false;
+        }
+
         if (empty($discussion->replies)) {
             $discussion->replies = 0;
         }
