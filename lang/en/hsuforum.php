@@ -522,6 +522,7 @@ $string['nested'] = 'Nested';
 $string['startedbyx'] = 'Started by {$a}';
 $string['startedbyxgroupx'] = 'Started by {$a->name} for group {$a->group}';
 $string['lastpostbyx'] = 'Last post by {$a->name} on {$a->time}';
+$string['lastpostonx'] = 'Last post on {$a}';
 $string['repliesx'] = 'Replies: {$a}';
 $string['unreadx'] = 'Unread: {$a}';
 $string['clicktoexpand'] = 'Click to show post message and any replies';

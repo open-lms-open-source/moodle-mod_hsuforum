@@ -592,6 +592,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @author Mark Nielsen
      */
     public function discussion_lastpostby($cm, $discussion) {
+        global $USER;
+
         hsuforum_cm_add_cache($cm);
 
         $usermodified     = new stdClass();
@@ -607,6 +609,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $usermodified = hsuforum_get_postuser($usermodified, $lastpost, $cm->cache->forum, $cm->cache->context);
         $usedate      = (empty($discussion->timemodified)) ? $discussion->modified : $discussion->timemodified;
 
+        if ($cm->cache->forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $cm->cache->context) &&
+            !hsuforum_user_has_posted($cm->cache->forum->id, $discussion->discussion, $USER->id)) {
+
+            return get_string('lastpostonx', 'hsuforum', userdate($usedate, $cm->cache->str->strftimerecentfull));
+        }
         return get_string('lastpostbyx', 'hsuforum', array('name' => $usermodified->fullname, 'time' => userdate($usedate, $cm->cache->str->strftimerecentfull)));
     }
 
