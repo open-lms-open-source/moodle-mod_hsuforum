@@ -2883,10 +2883,8 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
                           GROUP BY p.discussion) extra ON d.id = extra.discussion
               LEFT JOIN (SELECT p.discussion, p.id postid, p.userid, p.modified
                            FROM {hsuforum_discussions} d
-                      LEFT JOIN {hsuforum_posts} p ON d.usermodified = p.userid AND d.id = p.discussion
-                          WHERE d.forum = ?
-                       GROUP BY p.discussion
-                         HAVING p.modified = MAX(p.modified)) lastpost ON d.id = lastpost.discussion
+                      LEFT JOIN {hsuforum_posts} p ON d.usermodified = p.userid AND d.id = p.discussion AND p.modified = d.timemodified
+                          WHERE d.forum = ?) lastpost ON d.id = lastpost.discussion
                    $tracksql
                    $subscribesql
                    $umtable
