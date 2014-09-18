@@ -2740,7 +2740,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
 
     $now = round(time(), -2);
     $cutoffdate = $now - ($CFG->hsuforum_oldpostdays*24*60*60);
-    $params = array($cm->instance, $USER->id, $USER->id);
+    $params = array($cm->instance, $USER->id, $USER->id, $cm->instance);
 
     $modcontext = context_module::instance($cm->id);
 
@@ -2856,7 +2856,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
     } else {
         $umfields = ', up.reveal AS umreveal, ' . get_all_user_name_fields(true, 'um', null, 'um');
         $umtable  = " LEFT JOIN {user} um ON (d.usermodified = um.id)
-                      LEFT OUTER JOIN {hsuforum_posts} up ON extra.lastpostid = up.id";
+                      LEFT OUTER JOIN {hsuforum_posts} up ON lastpost.postid = up.id";
     }
 
     // Sort of hacky, but allows for custom select
@@ -2865,7 +2865,7 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
     } else {
         $allnames  = get_all_user_name_fields(true, 'u');
         $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.assessed,
-                           d.firstpost, extra.replies, extra.lastpostid,$trackselect$subscribeselect
+                           d.firstpost, extra.replies, lastpost.postid lastpostid,$trackselect$subscribeselect
                            $allnames, u.email, u.picture, u.imagealt $umfields";
     }
 
@@ -2873,13 +2873,17 @@ function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forums
               FROM {hsuforum_discussions} d
                    JOIN {hsuforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
-        LEFT OUTER JOIN (SELECT p.discussion, COUNT(p.id) AS replies, MAX(p.id) AS lastpostid
+        LEFT OUTER JOIN (SELECT p.discussion, COUNT(p.id) AS replies
                            FROM {hsuforum_posts} p
                            JOIN {hsuforum_discussions} d ON p.discussion = d.id
                           WHERE p.parent > 0
                             AND d.forum = ?
                             AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                           GROUP BY p.discussion) extra ON d.id = extra.discussion
+              LEFT JOIN (SELECT p.discussion, p.id postid, p.userid, p.modified
+                           FROM {hsuforum_discussions} d
+                      LEFT JOIN {hsuforum_posts} p ON d.usermodified = p.userid AND d.id = p.discussion AND p.modified = d.timemodified
+                          WHERE d.forum = ?) lastpost ON d.id = lastpost.discussion
                    $tracksql
                    $subscribesql
                    $umtable
