@@ -36,12 +36,12 @@ require_once($CFG->libdir.'/rsslib.php');
  * @return string the full path to the cached RSS feed directory. Null if there is a problem.
  */
 function hsuforum_rss_get_feed($context, $args) {
-    global $CFG, $DB, $USER;
+    global $DB;
 
-    $status = true;
+    $config = get_config('hsuforum');
 
     //are RSS feeds enabled?
-    if (empty($CFG->hsuforum_enablerssfeeds)) {
+    if (empty($config->enablerssfeeds)) {
         debugging('DISABLED (module configuration)');
         return null;
     }
@@ -80,7 +80,7 @@ function hsuforum_rss_get_feed($context, $args) {
         hsuforum_rss_newstuff($forum, $cm, $cachedfilelastmodified))) {
         // Need to regenerate the cached version.
         $result = hsuforum_rss_feed_contents($forum, $sql, $params, $modcontext);
-        $status = rss_save_file('mod_hsuforum', $filename, $result);
+        rss_save_file('mod_hsuforum', $filename, $result);
     }
 
     //return the path to the cached version
@@ -141,7 +141,9 @@ function hsuforum_rss_get_sql($forum, $cm, $time=0) {
  * @return string the SQL query to be used to get the Discussion details from the forum table of the database
  */
 function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
-    global $CFG, $DB, $USER;
+    global $USER;
+
+    $config = get_config('hsuforum');
 
     $timelimit = '';
 
@@ -152,7 +154,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 
     $modcontext = context_module::instance($cm->id);
 
-    if (!empty($CFG->hsuforum_enabletimedposts)) { /// Users must fulfill timed posts
+    if (!empty($config->enabletimedposts)) { /// Users must fulfill timed posts
         if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= :now1 AND (d.timeend = 0 OR d.timeend > :now2))";
             $params['now1'] = $now;

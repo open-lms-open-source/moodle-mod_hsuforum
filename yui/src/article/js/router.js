@@ -14,35 +14,10 @@
  */
 var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     /**
-     * Disable discussion navigation links when viewing a
-     * single discussion.
      *
      * @method initializer
      */
     initializer: function() {
-        // If viewing a single discussion, disable router on nav links.
-        if (Y.one(SELECTORS.DISCUSSIONS) === null) {
-            Y.all(SELECTORS.DISCUSSION_NAV_LINKS).addClass('disable-router');
-        }
-    },
-
-    /**
-     * View the list of discussions.
-     *
-     * Handles collapsing open discussions and
-     * the paging of discussions.
-     *
-     * @method view
-     * @param req
-     */
-    view: function(req) {
-        this.get('article').collapseAllDiscussions();
-
-        if (!Y.Lang.isUndefined(req.query.page)) {
-            this.get('article').loadPage(parseInt(req.query.page, 10));
-        } else {
-            this.get('article').loadPage(0);
-        }
     },
 
     /**
@@ -76,6 +51,20 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     },
 
     /**
+     * Focus hashed element.
+     *
+     * @param el
+     */
+    focusHash: function(el) {
+        var ta = el.get('href').split('#');
+        // Without this timeout it doesn't always focus on the desired element.
+        setTimeout(function(){
+            Y.one('#'+ta[1]).ancestor('li').focus();
+        },300);
+    },
+
+
+    /**
      * Handles routing of link clicks
      *
      * @param e
@@ -83,8 +72,14 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     handleRoute: function(e) {
         // Allow the native behavior on middle/right-click, or when Ctrl or Command are pressed.
         if (e.button !== 1 || e.ctrlKey || e.metaKey || e.currentTarget.hasClass('disable-router')) {
+            if (e.currentTarget.get('href').indexOf('#') >-1){
+                this.focusHash(e.currentTarget);
+            }
             return;
         }
+        // Whenever a route takes us somewhere else we need to move the editor back to its original container.
+        M.mod_hsuforum.restoreEditor();
+
         if (this.routeUrl(e.currentTarget.get('href'))) {
             e.preventDefault();
         }
@@ -182,7 +177,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
          */
         routes: {
             value: [
-                { path: '/view.php', callbacks: ['hideForms', 'view'] },
+                { path: '/view.php', callbacks: ['hideForms'] },
                 { path: '/discuss.php', callbacks: ['hideForms', 'discussion'] },
                 { path: '/post.php', callbacks: ['hideForms', 'post'] }
             ]

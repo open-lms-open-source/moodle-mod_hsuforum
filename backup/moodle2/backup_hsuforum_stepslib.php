@@ -43,7 +43,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
         $forum = new backup_nested_element('hsuforum', array('id'), array(
             'type', 'name', 'intro', 'introformat',
             'assessed', 'assesstimestart', 'assesstimefinish', 'scale',
-            'maxbytes', 'maxattachments', 'forcesubscribe', 'trackingtype',
+            'maxbytes', 'maxattachments', 'forcesubscribe',
             'rsstype', 'rssarticles', 'timemodified', 'warnafter',
             'blockafter', 'blockperiod', 'completiondiscussions', 'completionreplies',
             'completionposts', 'anonymous', 'gradetype', 'displaywordcount'));

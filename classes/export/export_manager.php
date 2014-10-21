@@ -51,8 +51,6 @@ class export_manager {
     public function __construct($cm, adapter_interface $adapter) {
         $this->cm = $cm;
         $this->adapter = $adapter;
-
-        hsuforum_cm_add_cache($this->cm);
     }
 
     /**
@@ -97,7 +95,7 @@ class export_manager {
     public function process_discussion($discussion, $userid = 0) {
         global $USER;
 
-        if ($this->cm->cache->forum->type == 'news') {
+        if (hsuforum_get_cm_forum($this->cm)->type == 'news') {
             if (!($USER->id == $discussion->userid || (($discussion->timestart == 0 || $discussion->timestart <= time()) && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
                 return;
             }
@@ -107,14 +105,14 @@ class export_manager {
         } else {
             $conditions = array();
         }
-        $posts = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort(HSUFORUM_MODE_FLATOLDEST), false, $conditions);
+        $posts = hsuforum_get_all_discussion_posts($discussion->id, $conditions);
 
         if (array_key_exists($discussion->firstpost, $posts)) {
             $post = $posts[$discussion->firstpost];
         } else {
             $post = hsuforum_get_post_full($discussion->firstpost);
         }
-        if (!hsuforum_user_can_see_post($this->cm->cache->forum, $discussion, $post, null, $this->cm)) {
+        if (!hsuforum_user_can_see_post(hsuforum_get_cm_forum($this->cm), $discussion, $post, null, $this->cm)) {
             return;
         }
         $this->clean_posts($discussion, $posts);
@@ -129,7 +127,7 @@ class export_manager {
      */
     public function clean_posts($discussion, &$posts) {
         foreach ($posts as $key => $post) {
-            if (!hsuforum_user_can_see_post($this->cm->cache->forum, $discussion, $post, null, $this->cm)) {
+            if (!hsuforum_user_can_see_post(hsuforum_get_cm_forum($this->cm), $discussion, $post, null, $this->cm)) {
                 unset($posts[$key]);
                 continue;
             }

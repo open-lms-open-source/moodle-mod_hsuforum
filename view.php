@@ -33,6 +33,8 @@
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
     $search      = optional_param('search', '', PARAM_CLEAN);// search string
 
+    $config = get_config('hsuforum');
+
     $params = array();
     if ($id) {
         $params['id'] = $id;
@@ -88,13 +90,9 @@
         print_error('missingparameter');
     }
 
-    if (!$PAGE->button) {
-        $PAGE->set_button(hsuforum_search_form($course, $search));
-    }
-
     $context = context_module::instance($cm->id);
 
-    if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
+    if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
 
         $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': ' . format_string($forum->name);
@@ -134,8 +132,10 @@
 
     $SESSION->fromdiscussion = qualified_me();   // Return here if we post or set subscription etc
 
-    $PAGE->get_renderer('mod_hsuforum')->view($course, $cm, $forum, $context);
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+    echo $renderer->svg_sprite();
+    $renderer->view($course, $cm, $forum, $context);
+
+    echo $renderer->advanced_editor();
 
     echo $OUTPUT->footer($course);
-
-

@@ -111,7 +111,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
             }
         } else { // whole thread
             $fs = get_file_storage();
-            $this->posts = hsuforum_get_all_discussion_posts($this->discussion->id, 'p.created ASC');
+            $this->posts = hsuforum_get_all_discussion_posts($this->discussion->id);
             $this->multifiles = array();
             foreach ($this->posts as $post) {
                 $attach = $fs->get_area_files($this->modcontext->id, 'mod_hsuforum', 'attachment', $post->id, 'timemodified', false);

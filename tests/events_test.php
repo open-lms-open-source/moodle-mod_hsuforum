@@ -1845,30 +1845,30 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // The role_assign observer does it's job adding the hsuforum_subscriptions record.
         $manplugin->enrol_user($manualenrol, $user->id, $student->id);
 
-        // They are not required, but in a real environment they are supposed to be required;
-        // adding them just in case there are APIs changes in future.
-        set_config('hsuforum_trackingtype', 1);
-        set_config('hsuforum_trackreadposts', 1);
-
         $record = array();
         $record['course'] = $course->id;
         $record['forum'] = $trackedforum->id;
         $record['userid'] = $user->id;
+
+        // Creating a discussion calls hsuforum_add_discussion which automatically adds a read record
+        // So at this point the read count is 1.
         $discussion = $forumgen->create_discussion($record);
 
         $record = array();
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
+
+        // Creating a post doesn't automatically add a read record.
         $post = $forumgen->create_post($record);
 
+        // Add a read record for this post - the read record count is now 2
         hsuforum_tp_add_read_record($user->id, $post->id);
-        hsuforum_set_user_maildigest($trackedforum, 2, $user);
-        hsuforum_tp_stop_tracking($untrackedforum->id, $user->id);
 
-        $this->assertEquals(1, $DB->count_records('hsuforum_subscriptions'));
-        $this->assertEquals(1, $DB->count_records('hsuforum_digests'));
-        $this->assertEquals(1, $DB->count_records('hsuforum_track_prefs'));
-        $this->assertEquals(1, $DB->count_records('hsuforum_read'));
+        hsuforum_set_user_maildigest($trackedforum, 2, $user);
+
+        $this->assertEquals(1, $DB->count_records('hsuforum_subscriptions', array('userid' => $user->id)));
+        $this->assertEquals(1, $DB->count_records('hsuforum_digests', array('userid' => $user->id)));
+        $this->assertEquals(2, $DB->count_records('hsuforum_read', array('userid' => $user->id)));
 
         // The course_module_created observer does it's job adding a subscription.
         $forumrecord = array('course' => $course->id, 'type' => 'general', 'forcesubscribe' => HSUFORUM_INITIALSUBSCRIBE);

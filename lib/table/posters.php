@@ -60,9 +60,4 @@ class hsuforum_lib_table_posters extends table_sql {
               WHERE f.id = :forumid$usersql
         ", $params);
     }
-
-    public function col_userpic($row) {
-        global $OUTPUT;
-        return $OUTPUT->user_picture(user_picture::unalias($row, null, 'id'));
-    }
 }

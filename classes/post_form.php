@@ -82,7 +82,9 @@ class mod_hsuforum_post_form extends moodleform {
      * @return void
      */
     function definition() {
-        global $CFG, $OUTPUT, $USER, $DB;
+        global $OUTPUT, $USER, $DB;
+
+        $config = get_config('hsuforum');
 
         $mform =& $this->_form;
 
@@ -95,8 +97,9 @@ class mod_hsuforum_post_form extends moodleform {
         $edit = $this->_customdata['edit'];
         $thresholdwarning = $this->_customdata['thresholdwarning'];
 
-        $mform->addElement('header', 'general', '');//fill in the data depending on page params later using set_data
-
+        // $mform->addElement('header', 'general', '');
+        //fill in the data depending on page params later using set_data
+        $mform->addElement('html', '<div class="fcontainer">');
         // If there is a warning message and we are not editing a post we need to handle the warning.
         if (!empty($thresholdwarning) && !$edit) {
             // Here we want to display a warning if they can still post but have reached the warning threshold.
@@ -147,7 +150,7 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'hsuforum'));
         }
 
-        if (!empty($CFG->hsuforum_enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $coursecontext)) { // hack alert
+        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $coursecontext)) { // hack alert
             $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'hsuforum'));
 
             $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional'=>true));
@@ -242,6 +245,8 @@ class mod_hsuforum_post_form extends moodleform {
 
         $mform->addElement('hidden', 'reply');
         $mform->setType('reply', PARAM_INT);
+
+        $mform->addElement('html', '</div>');
     }
 
     /**
@@ -265,4 +270,3 @@ class mod_hsuforum_post_form extends moodleform {
         return $errors;
     }
 }
-

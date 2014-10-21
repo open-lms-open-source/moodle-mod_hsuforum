@@ -144,9 +144,12 @@ if (!$search || $showform) {
 /// We need to do a search now and print results
 
 $searchterms = str_replace('forumid:', 'instance:', $search);
+if (!$individualparams && !empty($forumid)) {
+    $searchterms .= ' instance:'.$forumid;
+}
 $searchterms = explode(' ', $searchterms);
 
-$searchform = hsuforum_search_form($course, $search);
+$searchform = hsuforum_search_form($course, $forumid, $search);
 
 $PAGE->navbar->add($strsearch, new moodle_url('/mod/hsuforum/search.php', array('id'=>$course->id)));
 $PAGE->navbar->add($strsearchresults);
@@ -154,7 +157,6 @@ if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->heading($strforums, 2);
     echo $OUTPUT->heading($strsearchresults, 3);
     echo $OUTPUT->heading(get_string("noposts", "forum"), 4);
 
@@ -179,18 +181,14 @@ $ratingoptions->userid = $USER->id;
 $ratingoptions->returnurl = $PAGE->url->out(false);
 $rm = new rating_manager();
 
-$displayformat = get_user_preferences('hsuforum_displayformat', 'header');
-/** @var \mod_hsuforum\render_interface|mod_hsuforum_article_renderer $renderer */
-$renderer = null;
-if ($displayformat == 'article') {
-    $renderer = $PAGE->get_renderer('mod_hsuforum', 'article');
-    $renderer->article_js();
-}
+$renderer = $PAGE->get_renderer('mod_hsuforum');
+$renderer->article_js();
 
 $PAGE->set_title($strsearchresults);
 $PAGE->set_heading($course->fullname);
 $PAGE->set_button($searchform);
 echo $OUTPUT->header();
+echo $renderer->svg_sprite();
 echo '<div class="reportlink">';
 echo '<a href="search.php?id='.$course->id.
                          '&amp;user='.urlencode($user).
@@ -207,11 +205,9 @@ echo '<a href="search.php?id='.$course->id.
                          '">'.get_string('advancedsearch','hsuforum').'...</a>';
 echo '</div>';
 
-echo $OUTPUT->heading($strforums, 2);
 echo $OUTPUT->heading("$strsearchresults: $totalcount", 3);
 
 $url = new moodle_url('search.php', array('search' => $search, 'id' => $course->id, 'perpage' => $perpage));
-echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
 //added to implement highlighting of search terms found only in HTML markup
 //fiedorow - 9/2/2005
@@ -228,9 +224,11 @@ foreach ($searchterms as $key => $searchterm) {
 }
 $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
 
-echo $OUTPUT->box_start("mod_hsuforum_posts_container $displayformat");
-
+echo $OUTPUT->box_start("mod_hsuforum_posts_container article");
+echo html_writer::start_tag('ol', array('class' => 'hsuforum-thread-replies-list'));
+$resultnumber = ($page * $perpage) + 1;
 foreach ($posts as $post) {
+
 
     // Replace the simple subject with the three items forum name -> thread name -> subject
     // (if all three are appropriate) each as a link.
@@ -245,6 +243,10 @@ foreach ($posts as $post) {
         print_error('invalidcoursemodule');
     }
 
+    // TODO actually display if the search result has been read, for now just
+    // hide the unread status marker for all results.
+    $post->postread = true;
+
     $post->subject = highlight($strippedsearch, $post->subject);
     $discussion->name = highlight($strippedsearch, $discussion->name);
 
@@ -256,12 +258,7 @@ foreach ($posts as $post) {
         }
     }
 
-    if ($displayformat == 'article') {
-        $post->breadcrumb = $fullsubject;
-    } else {
-        $post->subject = $fullsubject;
-        $post->subjectnoformat = true;
-    }
+    $post->breadcrumb = $fullsubject;
 
     //add the ratings information to the post
     //Unfortunately seem to have do this individually as posts may be from different forums
@@ -281,7 +278,7 @@ foreach ($posts as $post) {
     }
 
     // Identify search terms only found in HTML markup, and add a warning about them to
-    // the start of the message text. However, do not do the highlighting here. hsuforum_print_post
+    // the start of the message text. However, do not do the highlighting here. $renderer->post
     // will do it for us later.
     $missing_terms = "";
 
@@ -297,8 +294,8 @@ foreach ($posts as $post) {
         }
     }
 
-    $post->message = str_replace('<fgw9sdpq4>', '<span class="highlight">', $post->message);
-    $post->message = str_replace('</fgw9sdpq4>', '</span>', $post->message);
+    $post->message = str_replace('<fgw9sdpq4>', '<mark class="highlight">', $post->message);
+    $post->message = str_replace('</fgw9sdpq4>', '</mark>', $post->message);
 
     if ($missing_terms) {
         $strmissingsearchterms = get_string('missingsearchterms','hsuforum');
@@ -308,25 +305,13 @@ foreach ($posts as $post) {
     // Prepare a link to the post in context, to be displayed after the forum post.
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
-    if ($renderer instanceof \mod_hsuforum\render_interface) {
-        // Prime the cache a little with big hitters.
-        if (!property_exists($cm, 'cache')) {
-            $cm->cache = new stdClass;
-            $cm->cache->forum = $forum;
-            $cm->cache->course = $course;
-        }
-        $commands = $renderer->toolbox_commands($cm, $discussion, $post, false);
-        $commands['seeincontext'] = $fulllink;
-
-        echo $OUTPUT->container($renderer->post($cm, $discussion, $post, false, null, $commands), 'hsuforum-post clearfix');
-        continue;
-    }
-
-    // Now pring the post.
-    hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false,
-            $fulllink, '', -99, false);
+    $commands = $renderer->post_get_commands($post, $discussion, $cm, false);
+    $commands = array('seeincontext' => $fulllink) + $commands;
+    $rendereredpost = $renderer->post($cm, $discussion, $post, false, null, $commands, 0, $strippedsearch);
+    echo html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
 }
-echo $OUTPUT->box_end(); // End mod_hsuforum_posts_container
+echo html_writer::end_tag('ol');
+$OUTPUT->box_end(); // End mod_hsuforum_posts_container
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
 echo $OUTPUT->footer();
@@ -347,35 +332,33 @@ function hsuforum_print_big_search_form($course) {
 
     echo html_writer::script('', $CFG->wwwroot.'/mod/hsuforum/forum.js');
 
-    echo '<form id="searchform" action="search.php" method="get">';
-    echo '<table cellpadding="10" class="searchbox" id="form">';
+    echo '<form class="form-horizonal" id="searchform" action="search.php" method="get" role="form">';
 
-    echo '<tr>';
-    echo '<td class="c0"><label for="words">'.get_string('searchwords', 'hsuforum').'</label>';
-    echo '<input type="hidden" value="'.$course->id.'" name="id" alt="" /></td>';
-    echo '<td class="c1"><input type="text" size="35" name="words" id="words"value="'.s($words, true).'" alt="" /></td>';
-    echo '</tr>';
+    echo '<div class="form-group">';
+    echo '<label for="words">'.get_string('searchwords', 'hsuforum').'</label>';
+    echo '<input type="hidden" value="'.$course->id.'" name="id" alt="" />';
+    echo '<input class="form-control" type="text" size="35" name="words" id="words"value="'.s($words, true).'" alt="" />';
+    echo '</div>';
 
-    echo '<tr>';
-    echo '<td class="c0"><label for="phrase">'.get_string('searchphrase', 'hsuforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="phrase" id="phrase" value="'.s($phrase, true).'" alt="" /></td>';
-    echo '</tr>';
+    echo '<div class="form-group">';
+    echo '<label for="phrase">'.get_string('searchphrase', 'hsuforum').'</label>';
+    echo '<input  class="form-control" type="text" size="35" name="phrase" id="phrase" value="'.s($phrase, true).'" alt="" />';
+    echo '</div>';
 
-    echo '<tr>';
-    echo '<td class="c0"><label for="notwords">'.get_string('searchnotwords', 'hsuforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="notwords" id="notwords" value="'.s($notwords, true).'" alt="" /></td>';
-    echo '</tr>';
+    echo '<div class="form-group">';
+    echo '<label for="notwords">'.get_string('searchnotwords', 'hsuforum').'</label>';
+    echo '<input  class="form-control" type="text" size="35" name="notwords" id="notwords" value="'.s($notwords, true).'" alt="" />';
+    echo '</div>';
 
     if ($DB->get_dbfamily() == 'mysql' || $DB->get_dbfamily() == 'postgres') {
-        echo '<tr>';
-        echo '<td class="c0"><label for="fullwords">'.get_string('searchfullwords', 'hsuforum').'</label></td>';
-        echo '<td class="c1"><input type="text" size="35" name="fullwords" id="fullwords" value="'.s($fullwords, true).'" alt="" /></td>';
-        echo '</tr>';
+        echo '<div class="form-group">';
+        echo '<label for="fullwords">'.get_string('searchfullwords', 'hsuforum').'</label>';
+        echo '<input  class="form-control" type="text" size="35" name="fullwords" id="fullwords" value="'.s($fullwords, true).'" alt="" />';
+        echo '</div>';
     }
 
-    echo '<tr>';
-    echo '<td class="c0">'.get_string('searchdatefrom', 'hsuforum').'</td>';
-    echo '<td class="c1">';
+    echo '<div class="form-group">';
+    echo '<label>'.get_string('searchdatefrom', 'hsuforum').'</label>';
     if (empty($datefrom)) {
         $datefromchecked = '';
         $datefrom = make_timestamp(2000, 1, 1, 0, 0, 0);
@@ -395,17 +378,14 @@ function hsuforum_print_big_search_form($course) {
     echo '<input type="hidden" name="hfromyear" value="0" />';
     echo '<input type="hidden" name="hfromhour" value="0" />';
     echo '<input type="hidden" name="hfromminute" value="0" />';
+    echo '</div>';
 
-    echo '</td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0">'.get_string('searchdateto', 'hsuforum').'</td>';
-    echo '<td class="c1">';
+    echo '<div class="form-group">';
+    echo '<label>'.get_string('searchdateto', 'hsuforum').'</label>';
     if (empty($dateto)) {
         $datetochecked = '';
-        $dateto = time()+3600;
-    }else{
+        $dateto = time() + 3600;
+    } else {
         $datetochecked = 'checked="checked"';
     }
 
@@ -422,33 +402,25 @@ function hsuforum_print_big_search_form($course) {
     echo '<input type="hidden" name="htoyear" value="0" />';
     echo '<input type="hidden" name="htohour" value="0" />';
     echo '<input type="hidden" name="htominute" value="0" />';
+    echo '</div>';
 
-    echo '</td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0"><label for="menuforumid">'.get_string('searchwhichforums', 'hsuforum').'</label></td>';
-    echo '<td class="c1">';
+    echo '<div class="form-group">';
+    echo '<label for="menuforumid">'.get_string('searchwhichforums', 'hsuforum').'</label>';
     echo html_writer::select(hsuforum_menu_list($course), 'forumid', '', array(''=>get_string('allforums', 'hsuforum')));
-    echo '</td>';
-    echo '</tr>';
+    echo '</div>';
 
-    echo '<tr>';
-    echo '<td class="c0"><label for="subject">'.get_string('searchsubject', 'hsuforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="subject" id="subject" value="'.s($subject, true).'" alt="" /></td>';
-    echo '</tr>';
+    echo '<div class="form-group">';
+    echo '<label for="subject">'.get_string('searchsubject', 'hsuforum').'</label>';
+    echo '<input class="form-control" type="text" size="35" name="subject" id="subject" value="'.s($subject, true).'" alt="" />';
+    echo '</div>';
 
-    echo '<tr>';
-    echo '<td class="c0"><label for="user">'.get_string('searchuser', 'hsuforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="user" id="user" value="'.s($user, true).'" alt="" /></td>';
-    echo '</tr>';
+    echo '<div class="form-group">';
+    echo '<label for="user">'.get_string('searchuser', 'hsuforum').'</label>';
+    echo '<input class="form-control" type="text" size="35" name="user" id="user" value="'.s($user, true).'" />';
+    echo '</div>';
 
-    echo '<tr>';
-    echo '<td class="submit" colspan="2" align="center">';
-    echo '<input type="submit" value="'.get_string('searchforums', 'hsuforum').'" alt="" /></td>';
-    echo '</tr>';
+    echo '<input type="submit" value="'.get_string('searchforums', 'hsuforum').'"/>';
 
-    echo '</table>';
     echo '</form>';
 
     echo html_writer::script(js_writer::function_call('lockoptions_timetoitems'));

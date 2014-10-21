@@ -39,6 +39,11 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
     protected $helper;
 
     /**
+     * @var stdClass $initialconfig
+     */
+    protected $initialconfig;
+
+    /**
      * Set up message and mail sinks, and set up other requirements for the
      * cron to be tested here.
      */
@@ -46,6 +51,8 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
         global $CFG;
 
         $this->helper = new stdClass();
+
+        $this->initialconfig = new stdClass();
 
         // Messaging is not compatible with transactions...
         $this->preventResetByRollback();
@@ -62,11 +69,18 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
         $this->assertEquals(0, count($messages));
 
         // Tell Moodle that we've not sent any digest messages out recently.
-        $CFG->hsuforum_digestmailtimelast = 0;
+        // NOTE: we can't temporarilly set the global variable anymore now that the config is a plugin config
+        // $CFG->hsuforum_digestmailtimelast = 0;
+        $this->initialconfig->digestmailtimelast = get_config('hsuforum', 'digestmailtimelast');
+        set_config('digestmailtimelast', 0, 'hsuforum');
+
 
         // And set the digest sending time to a negative number - this has
         // the effect of making it 11pm the previous day.
-        $CFG->hsuforum_digestmailtime = -1;
+        // NOTE: we can't temporarilly set the global variable anymore now that the config is a plugin config
+        // $CFG->hsuforum_digestmailtime = -1;
+        $this->initialconfig->digestmailtime = get_config('hsuforum', 'digestmailtime');
+        set_config('digestmailtime', -1, 'hsuforum');
 
         // Forcibly reduce the maxeditingtime to a one second to ensure that
         // messages are sent out.
@@ -85,6 +99,10 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
 
         $this->helper->mailsink->clear();
         $this->helper->mailsink->close();
+
+        // Restore config variables.
+        set_config('digestmailtimelast', $this->initialconfig->digestmailtimelast, 'hsuforum');
+        set_config('digestmailtime', $this->initialconfig->digestmailtime, 'hsuforum');
     }
 
     /**
@@ -137,7 +155,7 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
         // Fake all of the post editing times because digests aren't sent until
         // the start of an hour where the modification time on the message is before
         // the start of that hour
-        $digesttime = usergetmidnight(time(), $CFG->timezone) + ($CFG->hsuforum_digestmailtime * 3600) - (60 * 60);
+        $digesttime = usergetmidnight(time(), $CFG->timezone) + (get_config('hsuforum', 'digestmailtime') * 3600) - (60 * 60);
         $DB->set_field('hsuforum_posts', 'modified', $digesttime, array('mailed' => 0));
         $DB->set_field('hsuforum_posts', 'created', $digesttime, array('mailed' => 0));
     }

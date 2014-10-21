@@ -34,6 +34,31 @@ FORM.ATTRS = {
 Y.extend(FORM, Y.Base,
     {
         /**
+         * Remove crud from content on paste
+         *
+         *
+         */
+        handleFormPaste: function(e) {
+            var cleanhtml = '',
+            tags = '';
+            setTimeout(function(){
+                cleanhtml = document.createElement('p');
+                cleanhtml.innerHTML = e.currentTarget.get('innerHTML');
+                tags = cleanhtml.getElementsByTagName("*");
+                for (var i=0, max=tags.length; i < max; i++){
+                    tags[i].removeAttribute("id");
+                    tags[i].removeAttribute("style");
+                    tags[i].removeAttribute("size");
+                    tags[i].removeAttribute("color");
+                    tags[i].removeAttribute("bgcolor");
+                    tags[i].removeAttribute("face");
+                    tags[i].removeAttribute("align");
+                }
+                e.currentTarget.setContent(cleanhtml.innerHTML);
+            },100);
+        },
+
+        /**
          * Displays the reply form for a discussion
          * or for a post.
          *
@@ -176,6 +201,9 @@ Y.extend(FORM, Y.Base,
             Y.log('Submitting edit post form', 'info', 'Form');
 
             e.preventDefault();
+
+            // Put editor back to its original place in DOM.
+            M.mod_hsuforum.restoreEditor();
 
             var wrapperNode = e.currentTarget.ancestor(SELECTORS.FORM_REPLY_WRAPPER);
 
