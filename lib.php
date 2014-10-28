@@ -1438,7 +1438,7 @@ function hsuforum_filter_user_groups_discussions($discussions) {
 
         // Course data is already cached.
         $instances = get_fast_modinfo($discussion->course)->get_instances();
-        $forum = $instances['forum'][$discussion->forum];
+        $forum = $instances['hsuforum'][$discussion->forum];
 
         // Continue if the user should not see this discussion.
         if (!hsuforum_is_user_group_discussion($forum, $discussion->groupid)) {
