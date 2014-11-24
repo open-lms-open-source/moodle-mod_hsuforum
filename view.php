@@ -27,7 +27,7 @@
     require_once('lib.php');
     require_once($CFG->libdir.'/completionlib.php');
 
-    $id          = optional_param('id', 0, PARAM_INT);       // Course Module ID
+    $id          = optional_param('id', 0, PARAM_INT);       // Forum instance id (id in course modules table)
     $f           = optional_param('f', 0, PARAM_INT);        // Forum ID
     $changegroup = optional_param('group', -1, PARAM_INT);   // choose the current group
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show

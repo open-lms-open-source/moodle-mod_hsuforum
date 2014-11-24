@@ -224,7 +224,7 @@ foreach ($searchterms as $key => $searchterm) {
 }
 $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
 
-echo $OUTPUT->box_start("mod_hsuforum_posts_container article");
+echo $OUTPUT->box_start("mod-hsuforum-posts-container article");
 echo html_writer::start_tag('ol', array('class' => 'hsuforum-thread-replies-list'));
 $resultnumber = ($page * $perpage) + 1;
 foreach ($posts as $post) {
@@ -305,13 +305,12 @@ foreach ($posts as $post) {
     // Prepare a link to the post in context, to be displayed after the forum post.
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
-    $commands = $renderer->post_get_commands($post, $discussion, $cm, false);
-    $commands = array('seeincontext' => $fulllink) + $commands;
+    $commands = array('seeincontext' => $fulllink);
     $rendereredpost = $renderer->post($cm, $discussion, $post, false, null, $commands, 0, $strippedsearch);
     echo html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
 }
 echo html_writer::end_tag('ol');
-$OUTPUT->box_end(); // End mod_hsuforum_posts_container
+$OUTPUT->box_end(); // End mod-hsuforum-posts-container
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
 echo $OUTPUT->footer();

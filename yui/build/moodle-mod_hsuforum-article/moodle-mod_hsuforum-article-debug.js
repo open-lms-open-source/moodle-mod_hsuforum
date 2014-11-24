@@ -9,8 +9,8 @@ var CSS = {
         ADD_DISCUSSION: '#newdiscussionform',
         ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
         ALL_FORMS: '.hsuforum-reply-wrapper form',
-        CONTAINER: '.mod_hsuforum_posts_container',
-        CONTAINER_LINKS: '.mod_hsuforum_posts_container a',
+        CONTAINER: '.mod-hsuforum-posts-container',
+        CONTAINER_LINKS: '.mod-hsuforum-posts-container a',
         DISCUSSION: '.hsuforum-thread',
         DISCUSSIONS: '.hsuforum-threads-wrapper',
         DISCUSSION_EDIT: '.' + CSS.DISCUSSION_EDIT,
@@ -538,6 +538,48 @@ Y.extend(FORM, Y.Base,
                     tags[i].removeAttribute("align");
                 }
                 e.currentTarget.setContent(cleanhtml.innerHTML);
+
+                var range = document.createRange();
+                var sel = window.getSelection();
+
+                /**
+                 * Get last child of node.
+                 * @param el
+                 * @returns {*}
+                 */
+                var getLastChild = function(el){
+                    var children = el.childNodes;
+                    if (!children){
+                        return false;
+                    }
+                    var lastchild = children[children.length-1];
+                    if (!lastchild || typeof(lastchild) === 'undefined') {
+                        return el;
+                    }
+                    // Get last sub child of lastchild
+                    var lastsubchild = getLastChild(lastchild);
+                    if (lastsubchild && typeof(lastsubchild) !== 'undefined') {
+                        return lastsubchild;
+                    } else if (lastchild && typeof(lastchild) !== 'undefined') {
+                        return lastchild;
+                    } else {
+                        return el;
+                    }
+                };
+
+                var lastchild = getLastChild(e.currentTarget._node);
+                var lastchildlength = 1;
+                if (typeof(lastchild.innerHTML) !== 'undefined') {
+                    lastchildlength = lastchild.innerHTML.length;
+                } else {
+                    lastchildlength = lastchild.length;
+                }
+
+                range.setStart(lastchild, lastchildlength);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+
             },100);
         },
 
@@ -599,6 +641,9 @@ Y.extend(FORM, Y.Base,
         _submitReplyForm: function(wrapperNode, fn) {
             wrapperNode.all('button').setAttribute('disabled', 'disabled');
             this._copyMessage(wrapperNode);
+
+            var fileinputs = wrapperNode.all('form input[type=file]');
+
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
                 if (data.errors === true) {
                     Y.log('Form failed to validate', 'info', 'Form');
@@ -608,7 +653,7 @@ Y.extend(FORM, Y.Base,
                     Y.log('Form successfully submitted', 'info', 'Form');
                     fn.call(this, data);
                 }
-            }, this, true);
+            }, this, fileinputs._nodes.length > 0);
         },
 
         /**
@@ -1137,12 +1182,16 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         throw "Failed to get editor";
     }
 
+    var editorhidden = false;
+    if (!editor || editor._node.style.display === 'none'){
+        editorhidden = true;
+    }
+
     if (showEditor) {
         advancedEditLink.setAttribute('aria-pressed', 'true');
         advancedEditLink.setContent(M.util.get_string('hideadvancededitor', 'hsuforum'));
         contentEditable.hide();
         editor.show();
-
         contentEditable.insert(editor, 'before');
         contentEditable.insert(Y.one('#hiddenadvancededitor'), 'before');
         editArea.setContent(contentEditable.getContent());
@@ -1172,6 +1221,10 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         }
         advancedEditLink.setContent(M.util.get_string('useadvancededitor', 'hsuforum'));
         contentEditable.show();
+        if (!editorhidden) {
+            // Only set content if editor wasn't hidden.
+            contentEditable.setContent(editArea.getContent());
+        }
         editor.hide();
     }
 };

@@ -58,7 +58,7 @@ class print_adapter implements adapter_interface {
         $PAGE->set_pagelayout('embedded');
 
         echo $OUTPUT->header();
-        echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+        echo $OUTPUT->box_start('mod-hsuforum-posts-container');
     }
 
     /**

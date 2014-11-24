@@ -366,12 +366,16 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         throw "Failed to get editor";
     }
 
+    var editorhidden = false;
+    if (!editor || editor._node.style.display === 'none'){
+        editorhidden = true;
+    }
+
     if (showEditor) {
         advancedEditLink.setAttribute('aria-pressed', 'true');
         advancedEditLink.setContent(M.util.get_string('hideadvancededitor', 'hsuforum'));
         contentEditable.hide();
         editor.show();
-
         contentEditable.insert(editor, 'before');
         contentEditable.insert(Y.one('#hiddenadvancededitor'), 'before');
         editArea.setContent(contentEditable.getContent());
@@ -401,6 +405,10 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         }
         advancedEditLink.setContent(M.util.get_string('useadvancededitor', 'hsuforum'));
         contentEditable.show();
+        if (!editorhidden) {
+            // Only set content if editor wasn't hidden.
+            contentEditable.setContent(editArea.getContent());
+        }
         editor.hide();
     }
 };

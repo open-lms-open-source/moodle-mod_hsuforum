@@ -172,8 +172,10 @@
     $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(format_string($forum->name), 2);
-    echo $renderer->svg_sprite();
+
+     echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
+     echo $renderer->svg_sprite();
+
 
 /// Check to see if groups are being used in this forum
 /// If so, make sure the current person is allowed to see this discussion

@@ -16,7 +16,7 @@ M.mod_hsuforum.onToggleResponse = function(link) {
         title,
         svgTitle;
 
-    link.toggleClass('hsuforum_toggled');
+    link.toggleClass('hsuforum-toggled');
 
     if (link.getAttribute('aria-pressed') == 'true') {
         link.setAttribute('aria-pressed', false);
@@ -47,7 +47,7 @@ M.mod_hsuforum.applyToggleState = function(Y) {
         return;
     }
     M.mod_hsuforum.toggleStatesApplied = true;
-    if (Y.all('.mod_hsuforum_posts_container').isEmpty()) {
+    if (Y.all('.mod-hsuforum-posts-container').isEmpty()) {
         return;
     }
     // We bind to document otherwise screen readers read everything as clickable.
@@ -60,6 +60,19 @@ M.mod_hsuforum.applyToggleState = function(Y) {
             M.mod_hsuforum.onToggleResponse(link);
         });
     }, document, 'a.hsuforum_flag, a.hsuforum_discussion_subscribe');
+
+    // IE fix - When clicking on an SVG, the Y.delegate function above fails, the click function is never triggered
+    // and the user ends up with a page refresh instead of an AJAX update. This code fixes the issue by making the svg
+    // absolutely positioned and with a relatively positioned span taking its place.
+    if (navigator.userAgent.match(/Trident|MSIE/)){
+        Y.all('a.hsuforum_flag, a.hsuforum_discussion_subscribe').each(function (targNode) {
+           var svgwidth = targNode.one('svg').getStyle('width');
+           var item = Y.Node.create('<span style="display:inline-block;width:'+svgwidth+';min-width:'+svgwidth+';">&nbsp;</span>');
+           targNode.append(item);
+           item.setStyle('position', 'relative');
+           targNode.all('svg').setStyle('position', 'absolute');
+        });
+    }
 }
 
 /**

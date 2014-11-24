@@ -60,7 +60,10 @@ class flag_controller extends controller_abstract {
         $newflags = $flaglib->toggle_flag($flags, $flag);
 
         if ($newflags != $flags) {
-            $DB->set_field('hsuforum_posts', 'flags', $newflags, array('id' => $postid));
+            $updateok = $DB->set_field('hsuforum_posts', 'flags', $newflags, array('id' => $postid));
+            if (AJAX_SCRIPT && !$updateok){
+                http_response_code(500);
+            }
         }
         if (!AJAX_SCRIPT) {
             redirect(new \moodle_url($returnurl));

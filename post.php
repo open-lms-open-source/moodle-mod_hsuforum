@@ -326,6 +326,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->navbar->add(get_string('delete', 'hsuforum'));
         $PAGE->set_title($course->shortname);
         $PAGE->set_heading($course->fullname);
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
 
         if ($replycount) {
             if (!has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
@@ -867,7 +868,7 @@ if ($post->discussion) {
     }
 } else {
     $toppost = new stdClass();
-    $toppost->subject = get_string("addanewdiscussion", "hsuforum");
+    $toppost->subject = get_string("addanewtopic", "hsuforum");
 }
 
 if (empty($post->edit)) {
@@ -906,6 +907,7 @@ if ($edit) {
 
 $PAGE->set_title("$course->shortname: $strdiscussionname $toppost->subject");
 $PAGE->set_heading($course->fullname);
+$renderer = $PAGE->get_renderer('mod_hsuforum');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($forum->name), 2);

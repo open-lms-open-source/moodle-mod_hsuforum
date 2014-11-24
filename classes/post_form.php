@@ -97,8 +97,6 @@ class mod_hsuforum_post_form extends moodleform {
         $edit = $this->_customdata['edit'];
         $thresholdwarning = $this->_customdata['thresholdwarning'];
 
-        // $mform->addElement('header', 'general', '');
-        //fill in the data depending on page params later using set_data
         $mform->addElement('html', '<div class="fcontainer">');
         // If there is a warning message and we are not editing a post we need to handle the warning.
         if (!empty($thresholdwarning) && !$edit) {

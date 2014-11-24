@@ -55,6 +55,48 @@ Y.extend(FORM, Y.Base,
                     tags[i].removeAttribute("align");
                 }
                 e.currentTarget.setContent(cleanhtml.innerHTML);
+
+                var range = document.createRange();
+                var sel = window.getSelection();
+
+                /**
+                 * Get last child of node.
+                 * @param el
+                 * @returns {*}
+                 */
+                var getLastChild = function(el){
+                    var children = el.childNodes;
+                    if (!children){
+                        return false;
+                    }
+                    var lastchild = children[children.length-1];
+                    if (!lastchild || typeof(lastchild) === 'undefined') {
+                        return el;
+                    }
+                    // Get last sub child of lastchild
+                    var lastsubchild = getLastChild(lastchild);
+                    if (lastsubchild && typeof(lastsubchild) !== 'undefined') {
+                        return lastsubchild;
+                    } else if (lastchild && typeof(lastchild) !== 'undefined') {
+                        return lastchild;
+                    } else {
+                        return el;
+                    }
+                };
+
+                var lastchild = getLastChild(e.currentTarget._node);
+                var lastchildlength = 1;
+                if (typeof(lastchild.innerHTML) !== 'undefined') {
+                    lastchildlength = lastchild.innerHTML.length;
+                } else {
+                    lastchildlength = lastchild.length;
+                }
+
+                range.setStart(lastchild, lastchildlength);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+
             },100);
         },
 
@@ -116,6 +158,9 @@ Y.extend(FORM, Y.Base,
         _submitReplyForm: function(wrapperNode, fn) {
             wrapperNode.all('button').setAttribute('disabled', 'disabled');
             this._copyMessage(wrapperNode);
+
+            var fileinputs = wrapperNode.all('form input[type=file]');
+
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
                 if (data.errors === true) {
                     Y.log('Form failed to validate', 'info', 'Form');
@@ -125,7 +170,7 @@ Y.extend(FORM, Y.Base,
                     Y.log('Form successfully submitted', 'info', 'Form');
                     fn.call(this, data);
                 }
-            }, this, true);
+            }, this, fileinputs._nodes.length > 0);
         },
 
         /**

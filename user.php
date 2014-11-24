@@ -307,8 +307,7 @@ foreach ($result->posts as $post) {
     $discussionurl->set_anchor('p'.$post->id);
     $fulllink = html_writer::link($discussionurl, get_string("postincontext", "hsuforum"));
 
-    $commands = $renderer->post_get_commands($post, $discussion, $cm, false);
-    $commands = array('seeincontext' => $fulllink) + $commands;
+    $commands = array('seeincontext' => $fulllink);
     $postoutput[] = $renderer->post($cm, $discussion, $post, false, null, $commands);
 }
 

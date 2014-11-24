@@ -55,8 +55,24 @@ if ($ADMIN->fulltree) {
     }
 
     // Default number of attachments allowed per post in all forums
-    $settings->add(new admin_setting_configtext('hsuforum/maxattachments', get_string('maxattachments', 'hsuforum'),
-                       get_string('configmaxattachments', 'hsuforum'), 9, PARAM_INT));
+    $options = array(
+        0 => 0,
+        1 => 1,
+        2 => 2,
+        3 => 3,
+        4 => 4,
+        5 => 5,
+        6 => 6,
+        7 => 7,
+        8 => 8,
+        9 => 9,
+        10 => 10,
+        20 => 20,
+        50 => 50,
+        100 => 100
+    );
+    $settings->add(new admin_setting_configselect('hsuforum/maxattachments', get_string('maxattachments', 'hsuforum'),
+                       get_string('configmaxattachments', 'hsuforum'), 9, $options));
 
     // Default number of days that a post is considered old
     $settings->add(new admin_setting_configtext('hsuforum/oldpostdays', get_string('oldpostdays', 'hsuforum'),

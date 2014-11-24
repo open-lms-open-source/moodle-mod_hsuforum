@@ -1635,24 +1635,28 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
 function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid = null) {
     global $CFG, $USER, $DB, $OUTPUT;
 
-    // do not use log table if possible, it may be huge and is expensive to join with other tables
-
     $limitfrom = 0;
     $limitnum = 0;
+    $andforumid = '';
     if ($forumid !== null) {
         $andforumid = 'AND d.forum = ?';
         $limitnum = 6;
     }
     $allnamefields = user_picture::fields('u', null, 'duserid');
-    if (!$posts = $DB->get_records_sql("SELECT p.*, f.anonymous as forumanonymous, f.type AS forumtype, d.forum, d.groupid,
-                                              d.timestart, d.timeend, $allnamefields
-                                         FROM {hsuforum_posts} p
-                                              JOIN {hsuforum_discussions} d ON d.id = p.discussion
-                                              JOIN {hsuforum} f             ON f.id = d.forum
-                                              JOIN {user} u              ON u.id = p.userid
-                                        WHERE p.created > ? AND f.course = ? AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                                        $andforumid
-                                     ORDER BY p.created DESC", array($timestart, $course->id, $USER->id, $USER->id, $forumid), $limitfrom, $limitnum)) { // order by initial posting date
+    $sql = "SELECT p.*, f.anonymous as forumanonymous, f.type AS forumtype,
+                   d.forum, d.groupid, d.timestart, d.timeend, $allnamefields
+              FROM {hsuforum_posts} p
+              JOIN {hsuforum_discussions} d ON d.id = p.discussion
+              JOIN {hsuforum} f             ON f.id = d.forum
+              JOIN {user} u                 ON u.id = p.userid
+             WHERE p.created > ?
+                   AND f.course = ?
+                   AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
+                   $andforumid
+          ORDER BY p.created DESC
+    ";
+    $params = array($timestart, $course->id, $USER->id, $USER->id, $forumid);
+    if (!$posts = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum)) {
          return '';
     }
 
@@ -1697,18 +1701,11 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
         return '';
     }
 
-    $out = "<h3 class='hsuforum_recent_heading'>".get_string('newforumposts', 'hsuforum')."</h3>";
+    $out = "<h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>";
 
     foreach ($printposts as $post) {
-        $postuser = new stdClass();
-        $postuser = username_load_fields_from_object($postuser, $post);
-        $postuser->id = $post->userid;
 
-        $postuser = hsuforum_anonymize_user($postuser, (object) array(
-            'id' => $post->forum,
-            'course' => $course->id,
-            'anonymous' => $post->forumanonymous
-        ), $post);
+        $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
 
         $userpicture = new user_picture($postuser);
         $userpicture->link = false;
@@ -2260,6 +2257,7 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
 
     if ($lexer->parse($searchstring)) {
         $parsearray = $parser->get_parsed_array();
+
     // Experimental feature under 1.8! MDL-8830
     // Use alternative text searches if defined
     // This feature only works under mysql until properly implemented for other DBs
@@ -2280,7 +2278,7 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
     }
 
     $fromsql = "{hsuforum_posts} p,
-                  {hsuforum_discussions} d,
+                  {hsuforum_discussions} d JOIN {hsuforum} f ON f.id = d.forum,
                   {user} u";
 
     $selectsql = "(p.privatereply = 0 OR p.privatereply = :privatereply1 OR p.userid = :privatereply2)
@@ -5140,25 +5138,24 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo "<h3 class='hsuforum-discussion-count' data-count='$numdiscussions'>".get_string('xdiscussions', 'hsuforum', $numdiscussions)."</h3>";
     }
 
-    $threadsheader = '';
+    // lots of echo instead of building up and printing - bad
+    echo '<div id="hsuforum-menu">';
     if ($canstart) {
-        $threadsheader .= '
-        <div class="singlebutton forumaddnew hsuforum-add-discussion">
-        <form id="newdiscussionform" method="get" action="'.$CFG->wwwroot.'/mod/hsuforum/post.php">
+        echo
+        '<form class="hsuforum-add-discussion" id="newdiscussionform" method="get" action="'.$CFG->wwwroot.'/mod/hsuforum/post.php">
         <div>
         <input type="hidden" name="forum" value="'.$forum->id.'" />
-        <input type="submit" value="'.get_string('addanewdiscussion', 'hsuforum').'" />
+        <input type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" />
         </div>
-        </form>
-        </div>';
+        </form>';
         // Load js incase the user adds a new discussion.
         $PAGE->requires->js_init_call('M.mod_hsuforum.applyToggleState', null, false, $renderer->get_js_module());
     }
+    echo hsuforum_search_form($course, $forum->id);
 
     // Sort/Filter options
     if ($discussions && $numdiscussions > 0) {
-        $threadsheader .= "<div class='hsuforum-control-options'>";
-        $threadsheader .= hsuforum_search_form($course, $forum->id);
+        echo "<div id='hsuforum-filter-options'>";
         groups_print_activity_menu($cm, $PAGE->url);
         if ($forum->type != 'single' && $numdiscussions > 1) {
             require_once(__DIR__.'/lib/discussion/sort.php');
@@ -5166,19 +5163,19 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
             $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
             hsuforum_lib_discussion_sort::set_to_session($dsort);
-            $threadsheader .= $renderer->discussion_sorting($dsort);
+            echo $renderer->discussion_sorting($dsort);
         }
-        $threadsheader .= "</div>";
+        echo "</div>";
     }
 
-    // Print everything - create - search - sort
-    echo $threadsheader;
+    echo "</div><!-- end hsuforum-menu -->";
+
 
     // When there are no threads, return;
     if (!$discussions) {
         // in an empty forum, if the user can start a thread this div is where the js puts it
         if ($canstart) {
-            echo '<div class="mod_hsuforum_posts_container article">';
+            echo '<div class="mod-hsuforum-posts-container article">';
             echo $renderer->discussions($cm, array(), array(
                 'total'   => 0,
                 'page'    => $page,
@@ -5210,7 +5207,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     $strdatestring = get_string('strftimerecentfull');
 
-    echo '<div class="mod_hsuforum_posts_container article">';
+    echo '<div class="mod-hsuforum-posts-container article">';
 
     // Can be used by some output formats.
     $discussionlist = array();
@@ -5265,7 +5262,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         echo $strolder.'</a> ...</div>';
     }
 
-    echo "</div>"; // End mod_hsuforum_posts_container
+    echo "</div>"; // End mod-hsuforum-posts-container
 
     if ($page != -1) {
         echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
@@ -5338,11 +5335,11 @@ function hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $ca
 
     $postread = !empty($post->postread);
 
-    echo $OUTPUT->box_start("mod_hsuforum_posts_container article");
+    echo $OUTPUT->box_start("mod-hsuforum-posts-container article");
 
     $renderer = $PAGE->get_renderer('mod_hsuforum');
     echo $renderer->discussion_thread($cm, $discussion, $post, $posts, $reply);
-    echo $OUTPUT->box_end(); // End mod_hsuforum_posts_container
+    echo $OUTPUT->box_end(); // End mod-hsuforum-posts-container
     return;
 
 }

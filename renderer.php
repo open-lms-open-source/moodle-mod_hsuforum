@@ -55,10 +55,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
 
-        echo '<h2>'.format_string($forum->name).'</h2>';
+        echo '<div id="hsuforum-header"><h2>'.format_string($forum->name).'</h2>';
         if (!empty($forum->intro)) {
             echo '<div class="hsuforum_introduction">'.format_module_intro('hsuforum', $forum, $cm->id).'</div>';
         }
+        echo "</div>";
 
         // Update activity group mode changes here.
         groups_get_activity_group($cm, true);
@@ -225,10 +226,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->replies  = $discussion->replies;
         $data->replyavatars = array();
         if ($data->replies > 0) {
-            // @TODO - this is rough
             // Get actual replies
             $fields = user_picture::fields('u');
-            $replyusers = $DB->get_records_sql("SELECT DISTINCT $fields FROM {hsuforum_posts} hp LEFT JOIN {user} u ON hp.userid = u.id WHERE hp.discussion = ? AND hp.privatereply = 0 ORDER BY hp.modified DESC", array($discussion->id));
+            $replyusers = $DB->get_records_sql("SELECT DISTINCT $fields FROM {hsuforum_posts} hp JOIN {user} u ON hp.userid = u.id WHERE hp.discussion = ? AND hp.privatereply = 0 ORDER BY hp.modified DESC", array($discussion->id));
             if (!empty($replyusers) && !hsuforum_get_cm_forum($cm)->anonymous) {
                 foreach ($replyusers as $replyuser) {
                     if ($replyuser->id === $postuser->id) {
@@ -262,7 +262,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $subscribe = new hsuforum_lib_discussion_subscribe(hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
-        $data->subscribe = $this->discussion_subscribe_link($discussion, $subscribe) ;
+        $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe) ;
 
         return $this->discussion_template($data);
     }
@@ -303,7 +303,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             return "<div class='hsuforum-post-content-hidden'>".get_string('forumbodyhidden','hsuforum')."</div>";
         }
         if ($commands === false){
-            $commands = '';
+            $commands = array();
         } else if (empty($commands)) {
             $commands = $this->post_get_commands($post, $discussion, $cm, $canreply, false);
         } else if (!is_array($commands)){
@@ -329,7 +329,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->parentfullname = '';
         $data->parentuserurl  = '';
         $data->tools          = implode(' ', $commands);
-        $data->postflags      = implode(' ',$this->post_get_flags($post, $cm));
+        $data->postflags      = implode(' ',$this->post_get_flags($post, $cm, $discussion->id, false));
         $data->depth          = $depth;
 
         if (!empty($post->children)) {
@@ -437,13 +437,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             </div>
             $threadmeta
         </div>
-    </header>
-
-    <div id="hsuforum-thread-{$d->id}" class="hsuforum-thread-body">
         <div class="hsuforum-thread-content" tabindex="0">
             $d->message
         </div>
         $tools
+    </header>
+
+    <div id="hsuforum-thread-{$d->id}" class="hsuforum-thread-body">
         <!-- specific to blog style -->
         $blogmeta
         $d->posts
@@ -509,7 +509,7 @@ HTML;
             $html = $this->post($cm, $discussion, $post, $canreply, $parent, array(), $depth);
             if (!empty($html)) {
                 $count++;
-                $output .= "<li class='hsuforum-post depth$depth' data-depth='$depth' tabindex='-1' data-count='$count'>".$html."</li>";
+                $output .= "<li class='hsuforum-post depth$depth' data-depth='$depth' data-count='$count'>".$html."</li>";
 
                 if (!empty($post->children)) {
                     $output .= $this->post_walker($cm, $discussion, $posts, $post, $canreply, $count, ($depth + 1));
@@ -531,6 +531,8 @@ HTML;
      * @return string
      */
     public function post_template($p) {
+        global $PAGE;
+
         $byuser = $p->fullname;
         if (!empty($p->userurl)) {
             $byuser = html_writer::link($p->userurl, $p->fullname);
@@ -548,7 +550,7 @@ HTML;
             $byline = get_string('postbyxinreplytox', 'hsuforum', array(
                     'parent' => $p->parentuserpic.$parent,
                     'author' => $byuser,
-                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>⬆</a>"
+                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
          }
         // Post is private reply.
@@ -575,8 +577,13 @@ HTML;
             $postreplies = "<div class='post-reply-count accesshide'>$p->replycount</div>";
         }
 
-        return <<<HTML
-<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true">
+        $newwindow = '';
+        if ($PAGE->pagetype === 'local-joulegrader-view') {
+            $newwindow = ' target="_blank"';
+        }
+
+ return <<<HTML
+<div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
 
     <div class="hsuforum-post-figure">
 
@@ -587,7 +594,7 @@ HTML;
         <h6 role="heading" aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
             $unread $byline
         </h6>
-        <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router">$datecreated</a></small>
+        <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
 
         <div class="hsuforum-post-content">
             <div class="hsuforum-post-title">$p->subject</div>
@@ -740,29 +747,17 @@ HTML;
     }
 
     /**
-     * This wraps the output of post_get_flags in a div with the hsuforum_flags class
-     *
-     * @param stdClass $post The post to add flags to
-     * @param $cm
-     * @throws coding_exception
-     * @return string
-     * @author Mark Nielsen
-     */
-    public function post_flags($post, $cm) {
-        $flaghtml = $this->post_get_flags($post, $cm);
-        return html_writer::tag('div', implode('', $flaghtml), array('class' => 'hsuforum_flags'));
-    }
-    /**
      * Output substantive / bookmark toggles
      *
      * @param stdClass $post The post to add flags to
      * @param $cm
-     * @param bool|int $discussion
+     * @param int $discussion id of parent discussion
+     * @param bool $reply is this the first post in a thread or a reply
      * @throws coding_exception
      * @return array
      * @author Mark Nielsen
      */
-    public function post_get_flags($post, $cm, $discussion = false) {
+    public function post_get_flags($post, $cm, $discussion, $reply = false) {
         global $PAGE, $CFG;
 
         $context = context_module::instance($cm->id);
@@ -779,7 +774,7 @@ HTML;
 
         $flaglib   = new hsuforum_lib_flag();
         $canedit   = has_capability('mod/hsuforum:editanypost', $context);
-        $returnurl = $PAGE->url;
+        $returnurl = $this->return_url($cm->id, $discussion);
 
         if ($canedit and !$jsinit) {
             $PAGE->requires->js_init_call('M.mod_hsuforum.applyToggleState', null, false, $this->get_js_module());
@@ -804,8 +799,6 @@ HTML;
                 }
             }
 
-
-
             $isflagged = $flaglib->is_flagged($post->flags, $flag);
 
             $url = new moodle_url('/mod/hsuforum/route.php', array(
@@ -818,7 +811,7 @@ HTML;
             ));
 
             // Create appropriate area described by.
-            $describedby = $discussion ? 'thread-title-'.$discussion : 'hsuforum-post-'.$post->id;
+            $describedby = $reply ? 'thread-title-'.$discussion : 'hsuforum-post-'.$post->id;
 
             // Create toggle element.
             $flaghtml[$flag] = $this->toggle_element($flag,
@@ -832,6 +825,29 @@ HTML;
         }
 
         return $flaghtml;
+    }
+
+    /**
+     * Return Url for non-ajax fallback.
+     *
+     * When $PAGE is a route we need to create on based on the action
+     * parameter.
+     *
+     * @param int $cmid
+     * @param int $discussionid
+     * @return string url
+     */
+    private function return_url($cmid, $discussionid) {
+        global $PAGE;
+        if (strpos($PAGE->url, 'route.php') === false) {
+            return $PAGE->url;
+        }
+        $action = $PAGE->url->param('action');
+        if ($action === 'add_discussion' ) {
+            return "view.php?id=$cmid";
+        } else if ($action === 'reply') {
+            return "discuss.php?id=$discussionid";
+        }
     }
 
     /**
@@ -858,9 +874,9 @@ HTML;
         if (!isset($attributes['class'])){
             $attributes['class'] = '';
         }
-        $classes = array($attributes['class'], 'hsuforum_toggle hsuforum_toggle_'.$type);
+        $classes = array($attributes['class'], 'hsuforum-toggle hsuforum-toggle-'.$type);
         if ($pressed) {
-            $classes[] = 'hsuforum_toggled';
+            $classes[] = 'hsuforum-toggled';
         }
         $classes = array_filter($classes);
         // Re-add classes to attributes.
@@ -880,17 +896,16 @@ HTML;
         }
     }
 
-
-
     /**
      * Adds a link to subscribe to a disussion
      *
+     * @param stdClass $cm
      * @param stdClass $discussion
      * @param hsuforum_lib_discussion_subscribe $subscribe
      * @return string
      * @author Mark Nielsen / Guy Thomas
      */
-    public function discussion_subscribe_link($discussion, hsuforum_lib_discussion_subscribe $subscribe) {
+    public function discussion_subscribe_link($cm, $discussion, hsuforum_lib_discussion_subscribe $subscribe) {
         global $PAGE;
 
         static $jsinit = false;
@@ -903,12 +918,20 @@ HTML;
             $PAGE->requires->js_init_call('M.mod_hsuforum.applyToggleState', null, false, $this->get_js_module());
             $jsinit = true;
         }
+        if (empty($PAGE->cm)) {
+            return;
+        }
+        $context = $PAGE->cm->context;
+        $cid = $context->id;
+
+        $returnurl = $this->return_url($cm->id, $discussion->id);
+
         $url = new moodle_url('/mod/hsuforum/route.php', array(
-            'contextid'    => $PAGE->cm->context->id,
+            'contextid'    => $cid,
             'action'       => 'subscribedisc',
             'discussionid' => $discussion->id,
             'sesskey'      => sesskey(),
-            'returnurl'    => $PAGE->url,
+            'returnurl'    => $returnurl,
         ));
 
         $o = $this->toggle_element('subscribe',
@@ -922,20 +945,30 @@ HTML;
     }
 
     /**
+     * @param $forumid
      * @param hsuforum_lib_discussion_sort $sort
      * @return string
      * @author Mark Nielsen
      */
     public function discussion_sorting(hsuforum_lib_discussion_sort $sort) {
+
         global $PAGE;
 
-        $forumid = $PAGE->cm->context->instanceid;
-        $url = $PAGE->url;
+        if (empty($PAGE->cm)) {
+            return;
+        }
+        $context = $PAGE->cm->context;
+
+        $instid = $context->instanceid;
+
+        // This used to be set to $PAGE->url but that causes issues with flex page inline rendering.
+        $url = new moodle_url('/mod/hsuforum/view.php');
+
         $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
 
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
-                    <input type='hidden' name='id' value='$forumid'>
+                    <input type='hidden' name='id' value='$instid'>
                     <label for='dsortkey' class='accesshide'>".get_string('orderdiscussionsby', 'hsuforum')."</label>
                     $sortselect
                     <input type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
@@ -1124,8 +1157,8 @@ HTML;
             foreach ($counts as $count) {
                 $countshtml .= html_writer::tag('div', $count, array('class' => 'hsuforum_count'));
             }
-            $output = html_writer::tag('div', $countshtml, array('class' => 'hsuforum_counts')).$showonlypreferencebutton.$output;
-            $output = html_writer::tag('div', $output, array('class' => 'mod_hsuforum_posts_container'));
+            $output = html_writer::div($countshtml, 'hsuforum_counts').$showonlypreferencebutton.$output;
+            $output = html_writer::div($output, 'mod-hsuforum-posts-container article');
         }
         return $output;
     }
@@ -1531,10 +1564,8 @@ HTML;
             <polygon points="88.7,93.2 50.7,58.6 12.4,93.2 12.4,7.8 88.7,7.8 "/>
         </g>
         <g id="subscribe">
-
-            <polygon  fill="#FF7519" points="96.7,14.8 96.7,84.3 50.2,49.5 		"/>
-            <polygon  fill="#FFAC0D" points="3.5,14.8 96.7,14.8 50.2,49.5 		"/>
-            <rect fill-opacity="0.75" x="3.5" y="14.8"  width="93.2" height="69.5"/>
+	       <polygon  enable-background="new    " points="96.7,84.3 3.5,84.3 3.5,14.8 50.1,49.6 96.7,14.8 	"/>
+           <polygon  points="3.5,9.8 96.7,9.8 50.2,44.5 	"/>
         </g>
         </svg>';
     }
