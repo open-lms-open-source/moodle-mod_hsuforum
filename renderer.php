@@ -918,11 +918,7 @@ HTML;
             $PAGE->requires->js_init_call('M.mod_hsuforum.applyToggleState', null, false, $this->get_js_module());
             $jsinit = true;
         }
-        if (empty($PAGE->cm)) {
-            return;
-        }
-        $context = $PAGE->cm->context;
-        $cid = $context->id;
+        $cid = $PAGE->cm->context->id;
 
         $returnurl = $this->return_url($cm->id, $discussion->id);
 
@@ -954,12 +950,7 @@ HTML;
 
         global $PAGE;
 
-        if (empty($PAGE->cm)) {
-            return;
-        }
-        $context = $PAGE->cm->context;
-
-        $instid = $context->instanceid;
+        $instid = $PAGE->cm->context->instanceid;
 
         // This used to be set to $PAGE->url but that causes issues with flex page inline rendering.
         $url = new moodle_url('/mod/hsuforum/view.php');
