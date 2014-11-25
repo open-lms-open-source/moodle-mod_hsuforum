@@ -5163,7 +5163,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
             $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
             $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
             hsuforum_lib_discussion_sort::set_to_session($dsort);
-            echo $renderer->discussion_sorting($dsort);
+            echo $renderer->discussion_sorting($cm, $dsort);
         }
         echo "</div>";
     }

@@ -906,24 +906,15 @@ HTML;
      * @author Mark Nielsen / Guy Thomas
      */
     public function discussion_subscribe_link($cm, $discussion, hsuforum_lib_discussion_subscribe $subscribe) {
-        global $PAGE;
-
-        static $jsinit = false;
 
         if (!$subscribe->can_subscribe()) {
             return;
         }
 
-        if (!$jsinit) {
-            $PAGE->requires->js_init_call('M.mod_hsuforum.applyToggleState', null, false, $this->get_js_module());
-            $jsinit = true;
-        }
-        $cid = $PAGE->cm->context->id;
-
         $returnurl = $this->return_url($cm->id, $discussion->id);
 
         $url = new moodle_url('/mod/hsuforum/route.php', array(
-            'contextid'    => $cid,
+            'contextid'    => context_module::instance($cm->id)->id,
             'action'       => 'subscribedisc',
             'discussionid' => $discussion->id,
             'sesskey'      => sesskey(),
@@ -941,25 +932,19 @@ HTML;
     }
 
     /**
-     * @param $forumid
+     * @param $cm
      * @param hsuforum_lib_discussion_sort $sort
      * @return string
      * @author Mark Nielsen
      */
-    public function discussion_sorting(hsuforum_lib_discussion_sort $sort) {
+    public function discussion_sorting($cm, hsuforum_lib_discussion_sort $sort) {
 
-        global $PAGE;
-
-        $instid = $PAGE->cm->context->instanceid;
-
-        // This used to be set to $PAGE->url but that causes issues with flex page inline rendering.
         $url = new moodle_url('/mod/hsuforum/view.php');
 
         $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
-
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
                     <legend class='accesshide'>".get_string('sortdiscussions', 'hsuforum')."</legend>
-                    <input type='hidden' name='id' value='$instid'>
+                    <input type='hidden' name='id' value='{$cm->id}'>
                     <label for='dsortkey' class='accesshide'>".get_string('orderdiscussionsby', 'hsuforum')."</label>
                     $sortselect
                     <input type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
