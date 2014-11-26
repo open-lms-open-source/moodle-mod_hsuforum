@@ -133,6 +133,7 @@
     $SESSION->fromdiscussion = qualified_me();   // Return here if we post or set subscription etc
 
     $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
     echo $renderer->svg_sprite();
     $renderer->view($course, $cm, $forum, $context);
 

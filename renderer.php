@@ -762,8 +762,6 @@ HTML;
 
         $context = context_module::instance($cm->id);
 
-        static $jsinit = false;
-
         if (!has_capability('mod/hsuforum:viewflags', $context)) {
             return array();
         }
@@ -775,11 +773,6 @@ HTML;
         $flaglib   = new hsuforum_lib_flag();
         $canedit   = has_capability('mod/hsuforum:editanypost', $context);
         $returnurl = $this->return_url($cm->id, $discussion);
-
-        if ($canedit and !$jsinit) {
-            $PAGE->requires->js_init_call('M.mod_hsuforum.applyToggleState', null, false, $this->get_js_module());
-            $jsinit = true;
-        }
 
         $flaghtml = array();
 

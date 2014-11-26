@@ -5071,6 +5071,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     }
 
     $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
     $fullpost = true;
 
@@ -5148,8 +5149,6 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         <input type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" />
         </div>
         </form>';
-        // Load js incase the user adds a new discussion.
-        $PAGE->requires->js_init_call('M.mod_hsuforum.applyToggleState', null, false, $renderer->get_js_module());
     }
     echo hsuforum_search_form($course, $forum->id);
 

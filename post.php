@@ -178,6 +178,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     // Ensure lang, theme, etc. is set up properly. MDL-6926
     $PAGE->set_cm($cm, $course, $forum);
     $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
     $coursecontext = context_course::instance($course->id);
     $modcontext    = context_module::instance($cm->id);
@@ -263,6 +264,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     $PAGE->set_cm($cm, $course, $forum);
     $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
     if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
         if (((time() - $post->created) > $CFG->maxeditingtime) and
@@ -327,6 +329,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_title($course->shortname);
         $PAGE->set_heading($course->fullname);
         $renderer = $PAGE->get_renderer('mod_hsuforum');
+        $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
         if ($replycount) {
             if (!has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
@@ -458,6 +461,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         $PAGE->set_cm($cm);
         $renderer = $PAGE->get_renderer('mod_hsuforum');
+        $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
         $PAGE->set_context($modcontext);
         $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
@@ -908,6 +912,7 @@ if ($edit) {
 $PAGE->set_title("$course->shortname: $strdiscussionname $toppost->subject");
 $PAGE->set_heading($course->fullname);
 $renderer = $PAGE->get_renderer('mod_hsuforum');
+$PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($forum->name), 2);

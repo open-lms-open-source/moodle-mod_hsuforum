@@ -36,6 +36,14 @@ M.mod_hsuforum.onToggleResponse = function(link) {
 M.mod_hsuforum.toggleStatesApplied = false;
 
 /**
+ * Initialise advanced forum javascript.
+ * @param Y
+ */
+M.mod_hsuforum.init = function(Y) {
+    M.mod_hsuforum.applyToggleState(Y);
+}
+
+/**
  * Apply toggle state
  * @param Y
  *

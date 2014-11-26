@@ -168,6 +168,7 @@
     $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $modcontext);
 
     $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
     $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);
