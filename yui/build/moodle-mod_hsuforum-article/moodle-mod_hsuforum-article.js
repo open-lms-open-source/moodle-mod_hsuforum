@@ -1172,7 +1172,7 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
     }
 
     var editorhidden = false;
-    if (!editor || editor._node.style.display === 'none'){
+    if (!editor || editor.getComputedStyle('display') === 'none'){
         editorhidden = true;
     }
 
