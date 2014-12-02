@@ -232,7 +232,7 @@ function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                  d.timestart,
                  d.timeend,
                  u.id AS userid,
-                 $usernamefields
+                 $usernamefields,
                  p.reveal AS postreveal,
                  p.subject AS postsubject,
                  p.message AS postmessage,
@@ -333,6 +333,7 @@ function hsuforum_rss_feed_contents($forum, $sql, $params, $context) {
             $post->id = $rec->postid;
             $post->parent = $rec->postparent;
             $post->userid = $rec->userid;
+            $post->privatereply = $rec->privatereply;
         }
 
         if ($isdiscussion && !hsuforum_user_can_see_discussion($forum, $discussion, $context)) {
