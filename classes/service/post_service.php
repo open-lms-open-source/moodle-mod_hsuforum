@@ -216,19 +216,6 @@ class post_service {
     }
 
     /**
-     * Test string is empty.
-     *
-     * @param $str
-     * @return bool
-     */
-    protected function str_empty($str) {
-        $str = strip_tags($str);
-        $str = str_ireplace('&nbsp;', '', $str);
-        $str = trim($str);
-        return ($str === '');
-    }
-
-    /**
      * Validates the submitted post and any submitted files
      *
      * @param object $course
@@ -262,10 +249,12 @@ class post_service {
                 $errors[] = $e;
             }
         }
-        if ($this->str_empty($post->subject)) {
+        $subject = trim($post->subject);
+        if (empty($subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        if ($this->str_empty($post->message)) {
+        $message = trim($post->message);
+        if (empty($message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
 

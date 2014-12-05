@@ -131,19 +131,6 @@ class discussion_service {
     }
 
     /**
-     * Test string is empty.
-     *
-     * @param $str
-     * @return bool
-     */
-    protected function str_empty($str) {
-        $str = strip_tags($str);
-        $str = str_ireplace('&nbsp;', '', $str);
-        $str = trim($str);
-        return ($str === '');
-    }
-
-    /**
      * Validates the submitted discussion and any submitted files
      *
      * @param object $cm
@@ -163,10 +150,12 @@ class discussion_service {
         } catch (\Exception $e) {
             $errors[] = $e;
         }
-        if ($this->str_empty($discussion->subject)) {
+        $subject = trim($discussion->subject);
+        if (empty($subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        if ($this->str_empty($discussion->message)) {
+        $message = trim($discussion->message);
+        if (empty($message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
         if ($uploader->was_file_uploaded()) {
