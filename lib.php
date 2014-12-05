@@ -3356,7 +3356,7 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
     $output .= '<label class="accesshide" for="search" >'.get_string('search', 'hsuforum').'</label>';
-    $output .= '<input id="search" name="search" results="5" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
+    $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
     $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
     if ($forumid != null) {
@@ -3933,6 +3933,7 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     $post->forum         = $forum->id;     // speedup
     $post->course        = $forum->course; // speedup
     $post->mailnow       = $discussion->mailnow;
+    $post->reveal        = $discussion->reveal;
 
     if (!is_null($mform)) {
         $data = $mform->get_data();
@@ -6837,6 +6838,10 @@ class hsuforum_existing_subscriber_selector extends hsuforum_subscriber_selector
  * @param cm_info $cm Course-module object
  */
 function hsuforum_cm_info_view(cm_info $cm) {
+    if (!$cm->uservisible) {
+        return;
+    }
+
     $out = hsuforum_recent_activity($cm->get_course(), true, 0, hsuforum_get_cm_forum($cm)->id);
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
         $out .= '<a class="unread" href="' . $cm->url . '">';
@@ -7281,7 +7286,6 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
 function hsuforum_extract_postuser($post, $forum, context_module $context) {
     $postuser     = new stdClass();
     $postuser->id = $post->userid;
-
     $fields = array_merge(
         get_all_user_name_fields(),
         array('imagealt', 'picture', 'email')
@@ -7329,6 +7333,7 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
  * @author Mark Nielsen
  */
 function hsuforum_anonymize_user($user, $forum, $post) {
+    global $USER;
     static $anonymous = null;
 
     if (!isset($forum->anonymous) or !isset($forum->course)) {
@@ -7337,7 +7342,11 @@ function hsuforum_anonymize_user($user, $forum, $post) {
     if (!isset($post->reveal)) {
         throw new coding_exception('Must pass the post\'s reveal field');
     }
-    if (empty($forum->anonymous) or !empty($post->reveal)) {
+    if (empty($forum->anonymous)
+        or !empty($post->reveal)
+        or ($post->privatereply == $USER->id)
+        or ($post->userid == $USER->id)
+    ) {
         return $user;
     }
     if (is_null($anonymous)) {
@@ -7354,6 +7363,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
             'email' => $guest->email,
             'imagealt' => '',
             'profilelink' => new moodle_url('/user/view.php', array('id'=>$guest->id, 'course'=>$forum->course)),
+            'anonymous' => true
         );
         $anonymous->fullname = fullname($anonymous, true);
         $anonymous->imagealt = $anonymous->fullname;

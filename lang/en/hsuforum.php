@@ -616,3 +616,5 @@ $string['postwasupdated'] = 'The post was updated';
 $string['id'] = 'id';
 $string['switchtoaccessible'] = 'Switch to the accessible view';
 $string['anonymousrecentactivity'] = 'There may have been recent activity in this forum, but the details cannot be displayed because the forum is anonymous.';
+$string['manageforumsubscriptions'] = 'Manage forum subscriptions';
+$string['nonanonymous'] = 'Non anonymously';

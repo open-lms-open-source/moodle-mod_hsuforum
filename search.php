@@ -306,13 +306,18 @@ foreach ($posts as $post) {
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
     $commands = array('seeincontext' => $fulllink);
-    $rendereredpost = $renderer->post($cm, $discussion, $post, false, null, $commands, 0, $strippedsearch);
+    $parent = $DB->get_record('hsuforum_posts', array('id' =>$post->parent));
+    $rendereredpost = $renderer->post($cm, $discussion, $post, false, $parent, $commands, 0, $strippedsearch);
     echo html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
 }
 echo html_writer::end_tag('ol');
-$OUTPUT->box_end(); // End mod-hsuforum-posts-container
-echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
-
+echo $OUTPUT->box_end(); // End mod-hsuforum-posts-container
+$pagingurl = $url;
+if ($search && $forumid) {
+    // Forum specific simple search.
+    $pagingurl->param('forumid', $forumid);
+}
+echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $pagingurl);
 echo $OUTPUT->footer();
 
 

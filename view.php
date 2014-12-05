@@ -59,9 +59,6 @@
         if (! $forum = $DB->get_record("hsuforum", array("id" => $cm->instance))) {
             print_error('invalidforumid', 'hsuforum');
         }
-        if ($forum->type == 'single') {
-            $PAGE->set_pagetype('mod-hsuforum-discuss');
-        }
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
         $PAGE->set_context(context_module::instance($cm->id));
@@ -80,6 +77,7 @@
         if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
             print_error('missingparameter');
         }
+
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
         $PAGE->set_context(context_module::instance($cm->id));
@@ -88,6 +86,10 @@
         $strforum = get_string("modulename", "hsuforum");
     } else {
         print_error('missingparameter');
+    }
+
+    if ($forum->type == 'single') {
+        $PAGE->set_pagetype('mod-hsuforum-discuss');
     }
 
     $context = context_module::instance($cm->id);
@@ -138,5 +140,12 @@
     $renderer->view($course, $cm, $forum, $context);
 
     echo $renderer->advanced_editor();
+
+    if ($forum->type == 'single') {
+        echo hsuforum_search_form($course, $forum->id);
+    }
+    $url = new moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
+    $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
+    echo html_writer::link($url, $manageforumsubscriptions);
 
     echo $OUTPUT->footer($course);

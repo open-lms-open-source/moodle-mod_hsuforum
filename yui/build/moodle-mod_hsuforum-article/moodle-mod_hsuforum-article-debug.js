@@ -404,6 +404,9 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     handleAddDiscussionRoute: function(e) {
         e.preventDefault();
 
+        // Put editor back to its original place in DOM.
+        M.mod_hsuforum.restoreEditor();
+
         var formNode = e.currentTarget,
             forumId  = formNode.one(SELECTORS.INPUT_FORUM).get('value');
 
@@ -522,11 +525,17 @@ Y.extend(FORM, Y.Base,
          *
          */
         handleFormPaste: function(e) {
-            var cleanhtml = '',
-            tags = '';
-            setTimeout(function(){
-                cleanhtml = document.createElement('p');
-                cleanhtml.innerHTML = e.currentTarget.get('innerHTML');
+            var datastr = '';
+            var sel = window.getSelection();
+
+            /**
+             * Clean up html - remove attributes that we don't want.
+             * @param html
+             * @returns {string}
+             */
+            var cleanHTML = function(html){
+                var cleanhtml = document.createElement('div');
+                cleanhtml.innerHTML = html;
                 tags = cleanhtml.getElementsByTagName("*");
                 for (var i=0, max=tags.length; i < max; i++){
                     tags[i].removeAttribute("id");
@@ -537,7 +546,61 @@ Y.extend(FORM, Y.Base,
                     tags[i].removeAttribute("face");
                     tags[i].removeAttribute("align");
                 }
-                e.currentTarget.setContent(cleanhtml.innerHTML);
+                return cleanhtml.innerHTML;
+            }
+
+            if (e._event && e._event.clipboardData && e._event.clipboardData.getData) {
+                if (/text\/html/.test(e._event.clipboardData.types)
+                    || e._event.clipboardData.types.contains('text/html')
+                ) {
+                    datastr = e._event.clipboardData.getData('text/html');
+                }
+                else if (/text\/plain/.test(e._event.clipboardData.types)
+                    || e._event.clipboardData.types.contains('text/plain')
+                ) {
+                    datastr = e._event.clipboardData.getData('text/plain');
+                }
+                if (datastr !== '') {
+                    if (sel.getRangeAt && sel.rangeCount) {
+                        var range = sel.getRangeAt(0);
+
+                        var newnode = document.createElement('p');
+                        newnode.innerHTML = cleanHTML(datastr);
+
+                        // Get rid of this node - we don't want it.
+                        if (newnode.childNodes[0].tagName === 'META') {
+                            newnode.removeChild(newnode.childNodes[0]);
+                        }
+
+                        // Get the last node as we will need this to position cursor.
+                        var lastnode = newnode.childNodes[newnode.childNodes.length-1];
+                        for (var n = 0; n <= newnode.childNodes.length; n++) {
+                            var insertnode = newnode.childNodes[newnode.childNodes.length-1];
+                            range.insertNode(insertnode);
+                        }
+
+                        range.setStartAfter(lastnode);
+                        range.setEndAfter(lastnode);
+
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+
+                    if (e._event.preventDefault) {
+                        e._event.stopPropagation();
+                        e._event.preventDefault();
+                    }
+                    return false;
+                }
+            }
+
+            /**
+             * This is the best we can do when we can't access cliboard - just stick cursor at the end.
+             */
+            setTimeout(function() {
+                var cleanhtml = cleanHTML(e.currentTarget.get('innerHTML'));
+
+                e.currentTarget.setContent(cleanhtml);
 
                 var range = document.createRange();
                 var sel = window.getSelection();
@@ -705,6 +768,9 @@ Y.extend(FORM, Y.Base,
          */
         handleCancelForm: function(e) {
             e.preventDefault();
+
+            // Put editor back to its original place in DOM.
+            M.mod_hsuforum.restoreEditor();
 
             var node = e.target.ancestor(SELECTORS.POST_TARGET);
             if (node) {
@@ -940,9 +1006,6 @@ Y.extend(ARTICLE, Y.Base,
 
             /* Clean html on paste */
             Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
-
-
-
 
             // We bind to document otherwise screen readers read everything as clickable.
             Y.delegate('click', form.handleCancelForm, document, SELECTORS.LINK_CANCEL, form);

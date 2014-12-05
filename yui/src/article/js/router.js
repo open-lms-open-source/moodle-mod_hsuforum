@@ -109,6 +109,9 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     handleAddDiscussionRoute: function(e) {
         e.preventDefault();
 
+        // Put editor back to its original place in DOM.
+        M.mod_hsuforum.restoreEditor();
+
         var formNode = e.currentTarget,
             forumId  = formNode.one(SELECTORS.INPUT_FORUM).get('value');
 

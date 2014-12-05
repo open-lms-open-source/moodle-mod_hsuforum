@@ -68,10 +68,7 @@ $strdescription  = get_string('description');
 $strdiscussions  = get_string('discussions', 'hsuforum');
 $strsubscribed   = get_string('subscribed', 'hsuforum');
 $strunreadposts  = get_string('unreadposts', 'hsuforum');
-$strtracking     = get_string('tracking', 'hsuforum');
 $strmarkallread  = get_string('markallread', 'hsuforum');
-$strtrackforum   = get_string('trackforum', 'hsuforum');
-$strnotrackforum = get_string('notrackforum', 'hsuforum');
 $strsubscribe    = get_string('subscribe', 'hsuforum');
 $strunsubscribe  = get_string('unsubscribe', 'hsuforum');
 $stryes          = get_string('yes');
@@ -100,9 +97,6 @@ $generaltable->head  = array ($strforum, $strdescription, $strdiscussions);
 $generaltable->align = array ('left', 'left', 'center');
 
 $generaltable->head[] = $strunreadposts;
-$generaltable->align[] = 'center';
-
-$generaltable->head[] = $strtracking;
 $generaltable->align[] = 'center';
 
 $subscribed_forums = hsuforum_get_subscribed_forums($course);
@@ -211,7 +205,11 @@ if ($generalforums) {
         $context = context_module::instance($cm->id);
 
         $count = hsuforum_count_discussions($forum, $cm, $course);
-
+        if ($unread = hsuforum_count_forum_unread_posts($cm, $course)) {
+            $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
+         } else {
+             $unreadlink = '<span class="read">0</span>';
+         }
         $forum->intro = shorten_text(format_module_intro('hsuforum', $forum, $cm->id), $config->shortpost);
         $forumname = format_string($forum->name, true);
 
@@ -223,7 +221,7 @@ if ($generalforums) {
         $forumlink = "<a href=\"view.php?f=$forum->id\" $style>".format_string($forum->name,true)."</a>";
         $discussionlink = "<a href=\"view.php?f=$forum->id\" $style>".$count."</a>";
 
-        $row = array ($forumlink, $forum->intro, $discussionlink);
+        $row = array ($forumlink, $forum->intro, $discussionlink, $unreadlink);
 
         if ($can_subscribe) {
             if ($forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) {
@@ -278,9 +276,6 @@ $learningtable->align = array ('left', 'left', 'center');
 $learningtable->head[] = $strunreadposts;
 $learningtable->align[] = 'center';
 
-$learningtable->head[] = $strtracking;
-$learningtable->align[] = 'center';
-
 if ($can_subscribe) {
     $learningtable->head[] = $strsubscribed;
     $learningtable->align[] = 'center';
@@ -313,6 +308,11 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
             $context = context_module::instance($cm->id);
 
             $count = hsuforum_count_discussions($forum, $cm, $course);
+            if ($unread = hsuforum_count_forum_unread_posts($cm, $course)) {
+                $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
+             } else {
+                 $unreadlink = '<span class="read">0</span>';
+             }
 
             $forum->intro = shorten_text(format_module_intro('hsuforum', $forum, $cm->id), $config->shortpost);
 
@@ -336,7 +336,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
             $forumlink = "<a href=\"view.php?f=$forum->id\" $style>".format_string($forum->name,true)."</a>";
             $discussionlink = "<a href=\"view.php?f=$forum->id\" $style>".$count."</a>";
 
-            $row = array ($printsection, $forumlink, $forum->intro, $discussionlink);
+            $row = array ($printsection, $forumlink, $forum->intro, $discussionlink, $unreadlink);
 
             if ($can_subscribe) {
                 if ($forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) {

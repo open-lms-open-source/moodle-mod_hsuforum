@@ -120,6 +120,7 @@ class discussion_service {
             'messageformat' => FORMAT_MOODLE,
             'messagetrust'  => trusttext_trusted($context),
             'mailnow'       => 0,
+            'reveal'        => 0,
         );
         foreach ($options as $name => $value) {
             if (property_exists($discussion, $name)) {
@@ -127,6 +128,19 @@ class discussion_service {
             }
         }
         return $discussion;
+    }
+
+    /**
+     * Test string is empty.
+     *
+     * @param $str
+     * @return bool
+     */
+    protected function str_empty($str) {
+        $str = strip_tags($str);
+        $str = str_ireplace('&nbsp;', '', $str);
+        $str = trim($str);
+        return ($str === '');
     }
 
     /**
@@ -149,12 +163,10 @@ class discussion_service {
         } catch (\Exception $e) {
             $errors[] = $e;
         }
-        $subject = trim($discussion->subject);
-        if (empty($subject)) {
+        if ($this->str_empty($discussion->subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        $message = trim($discussion->message);
-        if (empty($message)) {
+        if ($this->str_empty($discussion->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
         if ($uploader->was_file_uploaded()) {

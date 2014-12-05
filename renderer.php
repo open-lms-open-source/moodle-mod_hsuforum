@@ -182,14 +182,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function discussion($cm, $discussion, $post, $fullthread, array $posts = array(), $canreply = null) {
-        global $DB, $PAGE;
+        global $DB, $PAGE, $USER;
 
-        $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
+        $forum = hsuforum_get_cm_forum($cm);
+        $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
 
         $course = hsuforum_get_cm_course($cm);
         if (is_null($canreply)) {
-            $canreply = hsuforum_user_can_post(hsuforum_get_cm_forum($cm), $discussion, null, $cm, $course, context_module::instance($cm->id));
+            $canreply = hsuforum_user_can_post($forum, $discussion, null, $cm, $course, context_module::instance($cm->id));
         }
         // Meta properties, sometimes don't exist.
         if (!property_exists($discussion, 'replies')) {
@@ -229,7 +230,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             // Get actual replies
             $fields = user_picture::fields('u');
             $replyusers = $DB->get_records_sql("SELECT DISTINCT $fields FROM {hsuforum_posts} hp JOIN {user} u ON hp.userid = u.id WHERE hp.discussion = ? AND hp.privatereply = 0 ORDER BY hp.modified DESC", array($discussion->id));
-            if (!empty($replyusers) && !hsuforum_get_cm_forum($cm)->anonymous) {
+            if (!empty($replyusers) && !$forum->anonymous) {
                 foreach ($replyusers as $replyuser) {
                     if ($replyuser->id === $postuser->id) {
                         continue; // Don't show the posters avatar in the reply section.
@@ -239,15 +240,22 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 }
             }
         }
-        $data->group    = $group;
-        $data->imagesrc = $postuser->user_picture->get_url($this->page)->out();
-        $data->userurl  = $this->get_post_user_url($cm, $postuser);
-        $data->viewurl  = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
-        $data->tools    = implode(' ', $this->post_get_commands($post, $discussion, $cm, $canreply));
-        $data->postflags = implode(' ',$this->post_get_flags($post, $cm, $discussion->id));
-        $data->subscribe = '';
-        $data->posts = '';
+        $data->group      = $group;
+        $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
+        $data->userurl    = $this->get_post_user_url($cm, $postuser);
+        $data->viewurl    = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
+        $data->tools      = implode(' ', $this->post_get_commands($post, $discussion, $cm, $canreply));
+        $data->postflags  = implode(' ',$this->post_get_flags($post, $cm, $discussion->id));
+        $data->subscribe  = '';
+        $data->posts      = '';
         $data->fullthread = $fullthread;
+        $data->revealed   = false;
+
+        if ($forum->anonymous
+                && $postuser->id === $USER->id
+                && $post->reveal) {
+            $data->revealed         = true;
+        }
 
         if ($fullthread && $canreply) {
             $data->replyform = html_writer::tag(
@@ -261,7 +269,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $data->posts = $this->posts($cm, $discussion, $posts, $canreply);
         }
 
-        $subscribe = new hsuforum_lib_discussion_subscribe(hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
+        $subscribe = new hsuforum_lib_discussion_subscribe($forum, context_module::instance($cm->id));
         $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe) ;
 
         return $this->discussion_template($data);
@@ -296,9 +304,10 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function post($cm, $discussion, $post, $canreply = false, $parent = null, $commands = array(), $depth = 0, $search = '') {
-        global $USER, $CFG;
+        global $USER, $CFG, $DB;
 
-        if (!hsuforum_user_can_see_post(hsuforum_get_cm_forum($cm), $discussion, $post, null, $cm)) {
+        $forum = hsuforum_get_cm_forum($cm);
+        if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
             // Return a message about why you cannot see the post
             return "<div class='hsuforum-post-content-hidden'>".get_string('forumbodyhidden','hsuforum')."</div>";
         }
@@ -309,7 +318,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         } else if (!is_array($commands)){
             throw new coding_exception('$commands must be false, empty or populated array');
         }
-        $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
+        $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
 
         // $post->breadcrumb comes from search btw.
@@ -331,6 +340,13 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->tools          = implode(' ', $commands);
         $data->postflags      = implode(' ',$this->post_get_flags($post, $cm, $discussion->id, false));
         $data->depth          = $depth;
+        $data->revealed       = false;
+
+        if ($forum->anonymous
+                && $postuser->id === $USER->id
+                && $post->reveal) {
+            $data->revealed         = true;
+        }
 
         if (!empty($post->children)) {
             $post->replycount = count($post->children);
@@ -343,15 +359,25 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         // Mark post as read.
         if ($data->unread) {
-            hsuforum_mark_post_read($USER->id, $post, hsuforum_get_cm_forum($cm)->id);
+            hsuforum_mark_post_read($USER->id, $post, $forum->id);
         }
         if (!empty($parent)) {
-            $parentuser = hsuforum_extract_postuser($parent, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
-            $parentuser->user_picture->size = 100;
+            $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
+            if (empty($parentuser->anonymous) && (empty($parentuser->user_picture) || empty($parentuser->picture))) {
+                $usernamefields = user_picture::fields();
+                $parentuser = $DB->get_record('user', array('id' => $discussion->userid),
+                    $usernamefields, MUST_EXIST);
+                $parentuser->fullname = fullname($parentuser);
+                $parentuser->user_picture = new user_picture($parentuser);
+            }
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
             $data->parentfullname = $parentuser->fullname;
-            $data->parentuserurl = $this->get_post_user_url($cm, $parentuser);
-            $data->parentuserpic = $this->output->user_picture($parentuser, array('link' => false, 'size' => 100, 'alttext' => false));
+            if (!empty($parentuser->user_picture)) {
+                $parentuser->user_picture->size = 100;
+                $data->parentuserurl = $this->get_post_user_url($cm, $parentuser);
+                $data->parentuserpic = $this->output->user_picture($parentuser,
+                    array('link' => false, 'size' => 100, 'alttext' => false));
+            }
         }
         return $this->post_template($data);
     }
@@ -417,6 +443,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $blogmeta = $threadmeta;
         }
 
+        $revealed = "";
+        if ($d->revealed) {
+            $nonanonymous = get_string('nonanonymous', 'mod_hsuforum');
+            $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
+        }
+
         return <<<HTML
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
@@ -424,7 +456,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         <div class="hsuforum-thread-author">
             <img class="userpicture img-circle" src="{$d->imagesrc}" alt="" />
             <p class="hsuforum-thread-byline">
-                $byuser $group
+                $byuser $group $revealed
             </p>
         </div>
 
@@ -477,7 +509,8 @@ HTML;
 
             // Mark post as read.
             if (empty($parent->postread)) {
-                hsuforum_mark_post_read($USER->id, $parent, hsuforum_get_cm_forum($cm)->id);
+                $forum = hsuforum_get_cm_forum($cm);
+                hsuforum_mark_post_read($USER->id, $parent, $forum->id);
             }
         }
         $output  = "<h5 role='heading' aria-level='5'>".hsuforum_xreplies($count)."</h5>";
@@ -582,6 +615,12 @@ HTML;
             $newwindow = ' target="_blank"';
         }
 
+        $revealed = "";
+        if ($p->revealed) {
+            $nonanonymous = get_string('nonanonymous', 'mod_hsuforum');
+            $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
+        }
+
  return <<<HTML
 <div class="hsuforum-post-wrapper hsuforum-post-target clearfix $unreadclass" id="p$p->id" data-postid="$p->id" data-discussionid="$p->discussionid" data-author="$author" data-ispost="true" tabindex="-1">
 
@@ -592,7 +631,7 @@ HTML;
     </div>
     <div class="hsuforum-post-body">
         <h6 role="heading" aria-level="6" class="hsuforum-post-byline" id="hsuforum-post-$p->id">
-            $unread $byline
+            $unread $byline $revealed
         </h6>
         <small class='hsuform-post-date'><a href="$p->permalink" class="disable-router"$newwindow>$datecreated</a></small>
 
@@ -776,18 +815,19 @@ HTML;
 
         $flaghtml = array();
 
+        $forum = hsuforum_get_cm_forum($cm);
         foreach ($flaglib->get_flags() as $flag) {
 
             // Skip bookmark flagging if switched off at forum level or if global kill switch set.
             if ($flag == 'bookmark') {
-                if (hsuforum_get_cm_forum($cm)->showbookmark === '0') {
+                if ($forum->showbookmark === '0') {
                     continue;
                 }
             }
 
             // Skip substantive flagging if switched off at forum level or if global kill switch set.
             if ($flag == 'substantive') {
-                if (hsuforum_get_cm_forum($cm)->showsubstantive === '0') {
+                if ($forum->showsubstantive === '0') {
                     continue;
                 }
             }
@@ -989,13 +1029,12 @@ HTML;
 
 
 
-        if (!empty(hsuforum_get_cm_forum($cm)->displaywordcount)) {
+        $forum = hsuforum_get_cm_forum($cm);
+        if (!empty($forum->displaywordcount)) {
             $postcontent .= "<div class='post-word-count'>".get_string('numwords', 'moodle', count_words($post->message))."</div>";
         }
         $postcontent  = "<div class='posting'>".$postcontent."</div>";
         return $postcontent;
-
-        // html_writer::tag('div', $postcontent, array('class' => 'content'));
     }
 
     /**
@@ -1033,16 +1072,18 @@ HTML;
 
         $config = get_config('hsuforum');
 
+        $forum = hsuforum_get_cm_forum($cm);
+
         $showonlypreferencebutton = '';
-        if (!empty($showonlypreference) and !empty($showonlypreference->button) and !hsuforum_get_cm_forum($cm)->anonymous) {
+        if (!empty($showonlypreference) and !empty($showonlypreference->button) and !$forum->anonymous) {
             $showonlypreferencebutton = $showonlypreference->button;
         }
 
         $output    = '';
         $postcount = $discussioncount = $flagcount = 0;
         $flaglib   = new hsuforum_lib_flag();
-        if ($posts = hsuforum_get_user_posts(hsuforum_get_cm_forum($cm)->id, $userid, context_module::instance($cm->id))) {
-            $discussions = hsuforum_get_user_involved_discussions(hsuforum_get_cm_forum($cm)->id, $userid);
+        if ($posts = hsuforum_get_user_posts($forum->id, $userid, context_module::instance($cm->id))) {
+            $discussions = hsuforum_get_user_involved_discussions($forum->id, $userid);
             if (!empty($showonlypreference) and !empty($showonlypreference->preference)) {
                 foreach ($discussions as $discussion) {
 
@@ -1058,7 +1099,7 @@ HTML;
                             continue;
                         }
                     }
-                    if (!hsuforum_get_cm_forum($cm)->anonymous) {
+                    if (!$forum->anonymous) {
                         $output .= $this->post($cm, $discussion, $discussionpost, false, null, false);
 
                         $output .= html_writer::start_tag('div', array('class' => 'indent'));
@@ -1074,12 +1115,12 @@ HTML;
                                 get_string('postincontext', 'hsuforum'),
                                 array('target' => '_blank')
                             );
-                            if (!hsuforum_get_cm_forum($cm)->anonymous) {
+                            if (!$forum->anonymous) {
                                 $output .= $this->post($cm, $discussion, $post, false, null, false);
                             }
                         }
                     }
-                    if (!hsuforum_get_cm_forum($cm)->anonymous) {
+                    if (!$forum->anonymous) {
                         $output .= html_writer::end_tag('div');
                     }
                 }
@@ -1093,7 +1134,7 @@ HTML;
                     if ($flaglib->is_flagged($post->flags, 'substantive')) {
                         $flagcount++;
                     }
-                    if (!hsuforum_get_cm_forum($cm)->anonymous) {
+                    if (!$forum->anonymous) {
                         $command = html_writer::link(
                             new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id),
                             get_string('postincontext', 'hsuforum'),
@@ -1106,7 +1147,7 @@ HTML;
         }
         if (!empty($postcount) or !empty($discussioncount)) {
 
-            if (hsuforum_get_cm_forum($cm)->anonymous) {
+            if ($forum->anonymous) {
                 $output = html_writer::tag('h3', get_string('thisisanonymous', 'hsuforum'));
             }
             $counts = array(
@@ -1119,7 +1160,7 @@ HTML;
                 $counts[] = get_string('totalsubstantive', 'hsuforum', $flagcount);
             }
 
-            if ($grade = hsuforum_get_user_formatted_rating_grade(hsuforum_get_cm_forum($cm), $userid)) {
+            if ($grade = hsuforum_get_user_formatted_rating_grade($forum, $userid)) {
                 $counts[] = get_string('totalrating', 'hsuforum', $grade);
             }
             $countshtml = '';
@@ -1173,7 +1214,7 @@ HTML;
             $legend = get_string('addyourdiscussion', 'hsuforum');
         }
         $context = context_module::instance($cm->id);
-        $forum   = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
+        $forum = hsuforum_get_cm_forum($cm);
 
         $data += array(
             'itemid'        => 0,
@@ -1204,7 +1245,7 @@ HTML;
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));
             }
         }
-        if (hsuforum_get_cm_forum($cm)->anonymous) {
+        if ($forum->anonymous) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
                 get_string('reveal', 'hsuforum'));
         }
@@ -1243,7 +1284,7 @@ HTML;
             $legend = get_string('addareply', 'hsuforum');
         }
         $context = context_module::instance($cm->id);
-        $forum   = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
+        $forum = hsuforum_get_cm_forum($cm);
 
         $data += array(
             'itemid'        => 0,
@@ -1262,12 +1303,12 @@ HTML;
 
         $extrahtml = '';
         if (has_capability('mod/hsuforum:allowprivate', $context)
-            && hsuforum_get_cm_forum($cm)->allowprivatereplies !== '0'
+            && $forum->allowprivatereplies !== '0'
         ) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])).
                 get_string('privatereply', 'hsuforum'));
         }
-        if (hsuforum_get_cm_forum($cm)->anonymous) {
+        if ($forum->anonymous) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
                 get_string('reveal', 'hsuforum'));
         }
@@ -1438,8 +1479,11 @@ HTML;
         if (!property_exists($post, 'privatereply')) {
             throw new coding_exception('Must set post\'s privatereply property!');
         }
+
+        $forum = hsuforum_get_cm_forum($cm);
+
         if ($canreply and empty($post->privatereply)) {
-            $postuser   = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
+            $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
@@ -1453,7 +1497,7 @@ HTML;
 
         // Hack for allow to edit news posts those are not displayed yet until they are displayed
         $age = time() - $post->created;
-        if (!$post->parent && hsuforum_get_cm_forum($cm)->type == 'news' && $discussion->timestart > time()) {
+        if (!$post->parent && $forum->type == 'news' && $discussion->timestart > time()) {
             $age = 0;
         }
         if (($ownpost && $age < $CFG->maxeditingtime) || has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
@@ -1470,7 +1514,7 @@ HTML;
             );
         }
 
-        if (has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id)) && $post->parent && hsuforum_get_cm_forum($cm)->type != 'single') {
+        if (has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id)) && $post->parent && $forum->type != 'single') {
             $commands['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 get_string('prune', 'hsuforum'),
@@ -1479,7 +1523,7 @@ HTML;
         }
 
 
-        if ($CFG->enableportfolios && empty(hsuforum_get_cm_forum($cm)->anonymous) && (has_capability('mod/hsuforum:exportpost', context_module::instance($cm->id)) || ($ownpost && has_capability('mod/hsuforum:exportownpost', context_module::instance($cm->id))))) {
+        if ($CFG->enableportfolios && empty($forum->anonymous) && (has_capability('mod/hsuforum:exportpost', context_module::instance($cm->id)) || ($ownpost && has_capability('mod/hsuforum:exportownpost', context_module::instance($cm->id))))) {
             require_once($CFG->libdir.'/portfoliolib.php');
             $button = new portfolio_add_button();
             $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), 'mod_hsuforum');
