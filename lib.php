@@ -2201,11 +2201,8 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
             $params = array_merge($params, array('userid'.$forumid=>$USER->id, 'timestart'.$forumid=>$now, 'timeend'.$forumid=>$now));
         }
 
-        $cm = $forum->cm;
-        $context = $forum->context;
-
         if ($forum->type == 'qanda'
-            && !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
+            && !has_capability('mod/hsuforum:viewqandawithoutposting', $forum->context)) {
             if (!empty($forum->onlydiscussions)) {
                 list($discussionid_sql, $discussionid_params) = $DB->get_in_or_equal($forum->onlydiscussions, SQL_PARAMS_NAMED, 'qanda'.$forumid.'_');
                 $params = array_merge($params, $discussionid_params);
@@ -2280,6 +2277,14 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
     $fromsql = "{hsuforum_posts} p,
                   {hsuforum_discussions} d JOIN {hsuforum} f ON f.id = d.forum,
                   {user} u";
+
+    foreach ($parsearray as $item){
+        if ($item->getType() == TOKEN_USER || $item->getType() == TOKEN_USERID) {
+            // Additional user SQL for anonymous posts.
+            $extrasql .= " AND (f.anonymous != 1 OR p.reveal = 1) ";
+            break;
+        }
+    }
 
     $selectsql = "(p.privatereply = 0 OR p.privatereply = :privatereply1 OR p.userid = :privatereply2)
                AND $messagesearch
