@@ -98,6 +98,7 @@ function hsuforum_add_instance($forum, $mform = null) {
         $discussion->messagetrust  = trusttext_trusted(context_course::instance($forum->course));
         $discussion->mailnow       = false;
         $discussion->groupid       = -1;
+        $discussion->reveal        =  0;
 
         $message = '';
 
