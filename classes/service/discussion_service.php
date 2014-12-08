@@ -154,8 +154,7 @@ class discussion_service {
         if (empty($subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        $message = trim($discussion->message);
-        if (empty($message)) {
+        if (hsuforum_str_empty($discussion->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
         if ($uploader->was_file_uploaded()) {

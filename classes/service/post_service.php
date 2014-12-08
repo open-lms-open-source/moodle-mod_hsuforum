@@ -249,12 +249,10 @@ class post_service {
                 $errors[] = $e;
             }
         }
-        $subject = trim($post->subject);
-        if (empty($subject)) {
+        if (hsuforum_str_empty($post->subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        $message = trim($post->message);
-        if (empty($message)) {
+        if (hsuforum_str_empty($post->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
 

@@ -7810,3 +7810,42 @@ function hsuforum_xreplies($replies) {
     }
     return get_string('xreplies', 'hsuforum', $replies);
 }
+
+/**
+ * Is a string empty.
+ * @param string $str
+ * @return bool
+ */
+function hsuforum_str_empty($str) {
+    // Remove line breaks from string as they are just whitespace.
+    $str = str_ireplace('<br/>', '', $str);
+    $str = str_ireplace('<br />', '', $str);
+    // Check for void tags (self closing tags like <img>).
+    // Note, html5 doesn't require void tags to close with /> so we can't just use a regex to find them.
+    $voidtags = array(
+        'area',
+        'base',
+        'col',
+        'command',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'keygen',
+        'link',
+        'meta',
+        'param',
+        'source',
+        'track',
+        'wbr'
+    );
+    foreach ($voidtags as $check) {
+        if (stripos($str, $check) !== false) {
+            return false;
+        }
+    }
+    $str = strip_tags($str);
+    $str = str_ireplace('&nbsp;', '', $str);
+    $str = trim($str);
+    return ($str === '');
+}
