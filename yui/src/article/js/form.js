@@ -47,7 +47,7 @@ Y.extend(FORM, Y.Base,
              * @param html
              * @returns {string}
              */
-            var cleanHTML = function(html){
+            var cleanHTML = function(html) {
                 var cleanhtml = document.createElement('div');
                 cleanhtml.innerHTML = html;
                 tags = cleanhtml.getElementsByTagName("*");
@@ -61,7 +61,7 @@ Y.extend(FORM, Y.Base,
                     tags[i].removeAttribute("align");
                 }
                 return cleanhtml.innerHTML;
-            }
+            };
 
             if (e._event && e._event.clipboardData && e._event.clipboardData.getData) {
                 if (/text\/html/.test(e._event.clipboardData.types)

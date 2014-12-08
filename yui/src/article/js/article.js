@@ -77,7 +77,12 @@ ARTICLE.ATTRS = {
     /**
      * Observers mutation events for editor.
      */
-    editorMutateObserver: null
+    editorMutateObserver: null,
+
+    /**
+     * The show advanced edit link that was clicked most recently,
+     */
+    currentEditLink: null
 };
 
 Y.extend(ARTICLE, Y.Base,
@@ -292,18 +297,63 @@ M.mod_hsuforum.init_article = function(config) {
 };
 
 /**
+ * Trigger click event.
+ * @param el
+ */
+M.mod_hsuforum.dispatchClick = function(el) {
+    if (document.createEvent) {
+        var event = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        el.dispatchEvent(event);
+    } else if (el.fireEvent) {
+        el.fireEvent('onclick');
+    }
+};
+
+/**
  * Restore editor to original position in DOM.
  */
 M.mod_hsuforum.restoreEditor = function() {
     var editCont = Y.one('#hiddenadvancededitorcont');
     if (editCont) {
-        var editArea = Y.one('#hiddenadvancededitoreditable');
-        var editor = editArea.ancestor('.editor_atto');
-        editCont.appendChild(editor);
+        var editArea = Y.one('#hiddenadvancededitoreditable'),
+        editor = editArea.ancestor('.editor_atto'),
+        advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
+        contentEditable = false;
+
+        if (advancedEditLink) {
+            contentEditable = advancedEditLink.previous('.hsuforum-textarea');
+        }
+
+        var editorHidden = (!editor || editor.getComputedStyle('display') === 'none');
+
+        // If the editor is visible then we need to make sure content is passed back to content editable div.
+        // Are we in source mode?
+        if (!editorHidden) {
+            if (editor.one('.atto_html_button.highlight')) {
+                // Trigger click on atto source button - we need to update the editor content.
+                M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
+            }
+        }
+
+        // Update content editable div.
+        if (contentEditable) {
+            contentEditable.setContent(editArea.getContent());
+        }
+
         // Switch all editor links to hide mode.
         M.mod_hsuforum.toggleAdvancedEditor(false, true);
+
+        // Put editor back in its correct place.
+        Y.one('#hiddenadvancededitorcont').show();
+        Y.one('#hiddenadvancededitorcont')._node.style.display='block';
+        editCont.appendChild(editor);
+        editCont.appendChild(Y.one('#hiddenadvancededitor'));
     }
-},
+};
 
 /**
  * Toggle advanced editor in place of plain text editor.
@@ -316,6 +366,7 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
     }
 
     if (advancedEditLink) {
+        M.mod_hsuforum.Article.currentEditLink = advancedEditLink;
         if (showEditor) {
             advancedEditLink.removeClass('hideadvancededitor');
         } else {
@@ -363,15 +414,19 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         throw "Failed to get editor";
     }
 
-    var editorhidden = false;
+    var editorHidden = false;
     if (!editor || editor.getComputedStyle('display') === 'none'){
-        editorhidden = true;
+        editorHidden = true;
     }
 
     if (showEditor) {
         advancedEditLink.setAttribute('aria-pressed', 'true');
         advancedEditLink.setContent(M.util.get_string('hideadvancededitor', 'hsuforum'));
         contentEditable.hide();
+        // Are we in source mode?
+        if (editor.one('.atto_html_button.highlight')) {
+            Y.one('#hiddenadvancededitor').show();
+        }
         editor.show();
         contentEditable.insert(editor, 'before');
         contentEditable.insert(Y.one('#hiddenadvancededitor'), 'before');
@@ -402,10 +457,18 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         }
         advancedEditLink.setContent(M.util.get_string('useadvancededitor', 'hsuforum'));
         contentEditable.show();
-        if (!editorhidden) {
-            // Only set content if editor wasn't hidden.
+
+        // If editor is not hidden then we need to update content editable div with editor content.
+        if (!editorHidden) {
+            // Are we in source mode?
+            if (editor.one('.atto_html_button.highlight')) {
+                // Trigger click on atto source button - we need to update the editor content.
+                M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
+            }
+            // Update content of content editable div.
             contentEditable.setContent(editArea.getContent());
         }
+        Y.one('#hiddenadvancededitor').hide();
         editor.hide();
     }
 };
