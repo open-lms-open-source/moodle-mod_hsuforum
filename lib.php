@@ -1692,40 +1692,31 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
 
         // Check that the user can see the discussion.
         if (hsuforum_is_user_group_discussion($cm, $post->groupid)) {
-            $printposts[] = $post;
+            // $printposts[] = $post;
+            $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
+
+            $userpicture = new user_picture($postuser);
+            $userpicture->link = false;
+            $userpicture->alttext = false;
+            $userpicture->size = 100;
+            $picture = $OUTPUT->render($userpicture);
+
+            $url = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion;
+            if (!empty($post->parent)) {
+                $url .= '#p'.$post->id;
+            }
+
+            $postusername = fullname($postuser, $viewfullnames);
+            $postsubject = break_up_long_words(format_string($post->subject, true));
+            $posttime = hsuforum_relative_time($post->modified);
+            $out .= hsuforum_media_object($url, $picture, $postusername, $posttime, $postsubject);
+
         }
 
     }
-    unset($posts);
 
-    if (!$printposts) {
-        return '';
-    }
-
-    $out = "<h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>";
-
-    foreach ($printposts as $post) {
-
-        $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
-
-        $userpicture = new user_picture($postuser);
-        $userpicture->link = false;
-        $userpicture->alttext = false;
-        $userpicture->size = 100;
-        $picture = $OUTPUT->render($userpicture);
-
-        $url = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion;
-        if (!empty($post->parent)) {
-            $url .= '#p'.$post->id;
-        }
-
-        $postusername = fullname($postuser, $viewfullnames);
-
-        $postsubject = break_up_long_words(format_string($post->subject, true));
-
-        $posttime = hsuforum_relative_time($post->modified);
-
-        $out .= hsuforum_media_object($url, $picture, $postusername, $posttime, $postsubject);
+    if(!$out) {
+        $out = "<h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>".$out;
 
     }
     return $out;
