@@ -239,9 +239,8 @@
         echo html_writer::tag('div', $button, array('class' => 'discussioncontrol exporttoportfolio'.$buttonextraclass));
     }
 
-    if ($forum->type != 'single'
+    if ($course->format !='singleactivity' && $forum->type != 'single'
                 && has_capability('mod/hsuforum:movediscussions', $modcontext)) {
-
         echo '<div class="discussioncontrol movediscussion">';
         // Popup menu to move discussions to other forums. The discussion in a
         // single discussion forum can't be moved.
