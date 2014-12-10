@@ -1666,8 +1666,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
 
     $groupmodes = array();
     $cms    = array();
-
-    $printposts = array();
+    $out = '';
     foreach ($posts as $post) {
         if (!isset($modinfo->instances['hsuforum'][$post->forum])) {
             // not visible
@@ -1692,7 +1691,6 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
 
         // Check that the user can see the discussion.
         if (hsuforum_is_user_group_discussion($cm, $post->groupid)) {
-            // $printposts[] = $post;
             $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
 
             $userpicture = new user_picture($postuser);
