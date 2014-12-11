@@ -23,24 +23,6 @@ require_once($CFG->libdir.'/formslib.php');
 class export_form extends \moodleform {
     protected function definition() {
         $mform = $this->_form;
-
-        $mform->addElement('header', 'general', get_string('general', 'hsuforum'));
-
-        $options = array(
-            'csv'   => get_string('csv', 'hsuforum'),
-            'text'  => get_string('plaintext', 'hsuforum'),
-            'print' => get_string('print', 'hsuforum'),
-        );
-
-        $mform->addElement('select', 'format', get_string('exportformat', 'hsuforum'), $options);
-        $mform->setType('format', PARAM_ALPHA);
-
-        $mform->addElement('advcheckbox', 'attachments', get_string('exportattachments', 'hsuforum'));
-        $mform->setType('attachments', PARAM_BOOL);
-        $mform->disabledIf('attachments', 'format', 'eq', 'print');
-
-        $mform->addElement('header', 'postsfor', get_string('postsfor', 'hsuforum'));
-
         $options1 = $this->get_discussion_options();
         if ($this->_customdata->forum->anonymous) {
             $options2 = $this->get_anonymous_discussion_user_options($options1);
@@ -51,6 +33,19 @@ class export_form extends \moodleform {
         $hierselect->setOptions(array($options1, $options2));
         $mform->setType('discussionopts', PARAM_INT);
 
+        $options = array(
+            'print' => get_string('print', 'hsuforum'),
+            'csv'   => get_string('csv', 'hsuforum'),
+            'text'  => get_string('plaintext', 'hsuforum'),
+
+        );
+
+        $mform->addElement('select', 'format', get_string('exportformat', 'hsuforum'), $options);
+        $mform->setType('format', PARAM_ALPHA);
+
+        $mform->addElement('advcheckbox', 'attachments', get_string('exportattachments', 'hsuforum'));
+        $mform->setType('attachments', PARAM_BOOL);
+        $mform->disabledIf('attachments', 'format', 'eq', 'print');
         $this->add_action_buttons(true, get_string('export', 'hsuforum'));
     }
 

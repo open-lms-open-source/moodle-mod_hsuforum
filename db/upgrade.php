@@ -577,6 +577,97 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014051201, 'hsuforum');
     }
 
+    if ($oldversion < 2014092400) {
+
+        // Define fields to be added to hsuforum table.
+        $table = new xmldb_table('hsuforum');
+        $fields = array();
+        $fields[] = new xmldb_field('showsubstantive', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'displaywordcount');
+        $fields[] = new xmldb_field('showbookmark', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'showsubstantive');
+
+        // Go through each field and add if it doesn't already exist.
+        foreach ($fields as $field){
+            // Conditionally launch add field.
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014092400, 'hsuforum');
+    }
+
+    if ($oldversion < 2014093000) {
+        // Define fields to be added to hsuforum table.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('allowprivatereplies', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'showbookmark');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014093000, 'hsuforum');
+    }
+
+    if ($oldversion < 2014093001) {
+        // Set default settings for existing forums.
+        $DB->execute("
+                UPDATE {hsuforum}
+                   SET allowprivatereplies = 1,
+                       showsubstantive = 1,
+                       showbookmark = 1
+
+        ");
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014093001, 'hsuforum');
+    }
+
+    // Convert global configs to plugin configs
+    if ($oldversion < 2014100600) {
+        $configs = array(
+            'allowforcedreadtracking',
+            'cleanreadtime',
+            'digestmailtime',
+            'digestmailtimelast',
+            'disablebookmark',
+            'disablesubstantive',
+            'displaymode',
+            'enablerssfeeds',
+            'enabletimedposts',
+            'lastreadclean',
+            'longpost',
+            'manydiscussions',
+            'maxattachments',
+            'maxbytes',
+            'oldpostdays',
+            'replytouser',
+            'shortpost',
+            'showbookmark',
+            'showsubstantive',
+            'trackingtype',
+            'trackreadposts',
+            'usermarksread'
+        );
+
+        // Migrate legacy configs to plugin configs.
+        foreach ($configs as $config) {
+            $oldvar = 'hsuforum_'.$config;
+            if (isset($CFG->$oldvar)){
+                // Set new config variable up based on legacy config.
+                set_config($config, $CFG->$oldvar, 'hsuforum');
+                // Delete legacy config.
+                unset_config($oldvar);
+            }
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014100600, 'hsuforum');
+
+    }
+
     return true;
 }
 

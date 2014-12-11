@@ -9,17 +9,13 @@ var CSS = {
         ADD_DISCUSSION: '#newdiscussionform',
         ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
         ALL_FORMS: '.hsuforum-reply-wrapper form',
-        CONTAINER: '.mod_hsuforum_posts_container',
-        CONTAINER_LINKS: '.mod_hsuforum_posts_container a',
-        DISCUSSION: '.hsuforum-thread-article',
+        CONTAINER: '.mod-hsuforum-posts-container',
+        CONTAINER_LINKS: '.mod-hsuforum-posts-container a',
+        DISCUSSION: '.hsuforum-thread',
         DISCUSSIONS: '.hsuforum-threads-wrapper',
         DISCUSSION_EDIT: '.' + CSS.DISCUSSION_EDIT,
-        DISCUSSION_BY_ID: '.hsuforum-thread-article[data-discussionid="%d"]',
-        DISCUSSION_CLOSE: '.hsuforum-thread-nav .close',
+        DISCUSSION_BY_ID: '.hsuforum-thread[data-discussionid="%d"]',
         DISCUSSION_COUNT: '.hsuforum-discussion-count',
-        DISCUSSION_NAV_LINKS: '.hsuforum-thread-nav a',
-        DISCUSSION_NEXT: '.hsuforum-thread-nav .next',
-        DISCUSSION_PREV: '.hsuforum-thread-nav .prev',
         DISCUSSION_TARGET: '.hsuforum-new-discussion-target',
         DISCUSSION_TEMPLATE: '#hsuforum-discussion-template',
         DISCUSSION_VIEW: '.hsuforum-thread-view',
@@ -32,8 +28,6 @@ var CSS = {
         INPUT_REPLY: 'input[name="reply"]',
         INPUT_SUBJECT: 'input[name="subject"]',
         LINK_CANCEL: '.hsuforum-cancel',
-        LOAD_MORE: '.hsuforum-threads-load-more',
-        LOAD_TARGET: '.hsuforum-threads-load-target',
         NO_DISCUSSIONS: '.forumnodiscuss',
         NOTIFICATION: '.hsuforum-notification',
         OPTIONS_TO_PROCESS: '.hsuforum-options-menu.unprocessed',
@@ -103,50 +97,6 @@ Y.extend(DOM, Y.Base,
             Y.all(SELECTORS.RATE).addClass('processed');
             // Initialize current menu options.
             this.initOptionMenus();
-            // Show load more button
-            var loadNode = Y.one(SELECTORS.LOAD_MORE);
-            if (loadNode !== null) {
-                loadNode.setStyle('display', 'block');
-            }
-        },
-
-        /**
-         * Force discussion navigation links to point to each
-         * other for the passed discussion, the previous discussion
-         * and then next discussion.
-         *
-         * @method _forceNavLinks
-         * @param {Integer} discussionId
-         * @private
-         */
-        _forceNavLinks: function(discussionId) {
-            var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', discussionId)),
-                prev = node.previous(SELECTORS.DISCUSSION),
-                next = node.next(SELECTORS.DISCUSSION);
-
-            var updateURL = function(link, discNode) {
-                var href = link.getAttribute('href').replace(/d=\d+/, 'd=' + discNode.getData('discussionid'));
-                link.setAttribute('href', href)
-                    .removeClass('hidden')
-                    .show();
-            };
-
-            if (prev !== null) {
-                // Force previous discussion to point to this discussion.
-                updateURL(prev.one(SELECTORS.DISCUSSION_NEXT), node);
-                updateURL(node.one(SELECTORS.DISCUSSION_PREV), prev);
-            } else {
-                // No previous discussion, hide prev link.
-                node.one(SELECTORS.DISCUSSION_PREV).hide();
-            }
-            if (next !== null) {
-                // Force next discussion to point to this discussion.
-                updateURL(next.one(SELECTORS.DISCUSSION_PREV), node);
-                updateURL(node.one(SELECTORS.DISCUSSION_NEXT), next);
-            } else {
-                // No next discussion, hide next link.
-                node.one(SELECTORS.DISCUSSION_NEXT).hide();
-            }
         },
 
         /**
@@ -236,43 +186,6 @@ Y.extend(DOM, Y.Base,
         },
 
         /**
-         * Makes sure posts are loaded on the page when viewing
-         * a discussion.
-         *
-         * Also marks the discussion as read if necessary.
-         *
-         * @method ensurePostsExist
-         * @param node
-         * @param {Function} fn
-         * @param {Object} context Specifies what 'this' refers to.
-         */
-        ensurePostsExist: function(node, fn, context) {
-            var unread = node.hasAttribute('data-isunread');
-            if (unread) {
-                node.removeAttribute('data-isunread');
-            }
-            var viewNode = node.one(SELECTORS.PLACEHOLDER);
-            if (viewNode === null) {
-                this.initFeatures();
-                if (unread) {
-                    this.markPostAsRead(node.getData('postid'), fn, context);
-                } else {
-                    fn.call(context);
-                }
-                return;
-            }
-
-            this.get('io').send({
-                discussionid: node.getData('discussionid'),
-                action: 'posts_html'
-            }, function(data) {
-                viewNode.replace(data.html);
-                this.initFeatures();
-                fn.call(context);
-            }, this);
-        },
-
-        /**
          * Can change the discussion count displayed to the user.
          *
          * Method name is misleading, you can also decrement it
@@ -333,7 +246,6 @@ Y.extend(DOM, Y.Base,
                 // Adding new discussion.
                 Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
             }
-            this._forceNavLinks(e.discussionid);
         },
 
         /**
@@ -368,51 +280,13 @@ Y.extend(DOM, Y.Base,
                 return;
             }
             if (Y.one(SELECTORS.DISCUSSIONS)) {
-                var prev = node.previous(SELECTORS.DISCUSSION),
-                    next = node.next(SELECTORS.DISCUSSION);
-
                 node.remove(true);
-
-                // Update number of discussions.
                 this.incrementDiscussionCount(-1);
                 Y.one(SELECTORS.DISCUSSION_COUNT).focus();
-
-                if (prev) {
-                    this._forceNavLinks(prev.getData('discussionid'));
-                }
-                if (next) {
-                    this._forceNavLinks(next.getData('discussionid'));
-                }
             } else {
                 // Redirect because we are viewing a single discussion.
                 window.location.href = e.redirecturl;
             }
-        },
-
-        /**
-         * Load more discussions onto the page
-         *
-         * @method loadMoreDiscussions
-         * @param {Integer} page
-         * @param {Integer} perpage
-         * @param {Function} fn
-         * @param context
-         */
-        loadMoreDiscussions: function(page, perpage, fn, context) {
-            var node = Y.one(SELECTORS.LOAD_TARGET);
-
-            if (!(node instanceof Y.Node)) {
-                return;
-            }
-
-            this.get('io').send({
-                page: page,
-                perpage: perpage,
-                action: 'discussions_html'
-            }, function(data) {
-                node.insert(data.html, 'before');
-                fn.call(context);
-            }, this);
         }
     }
 );
@@ -434,35 +308,10 @@ M.mod_hsuforum.Dom = DOM;
  */
 var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     /**
-     * Disable discussion navigation links when viewing a
-     * single discussion.
      *
      * @method initializer
      */
     initializer: function() {
-        // If viewing a single discussion, disable router on nav links.
-        if (Y.one(SELECTORS.DISCUSSIONS) === null) {
-            Y.all(SELECTORS.DISCUSSION_NAV_LINKS).addClass('disable-router');
-        }
-    },
-
-    /**
-     * View the list of discussions.
-     *
-     * Handles collapsing open discussions and
-     * the paging of discussions.
-     *
-     * @method view
-     * @param req
-     */
-    view: function(req) {
-        this.get('article').collapseAllDiscussions();
-
-        if (!Y.Lang.isUndefined(req.query.page)) {
-            this.get('article').loadPage(parseInt(req.query.page, 10));
-        } else {
-            this.get('article').loadPage(0);
-        }
     },
 
     /**
@@ -496,6 +345,20 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     },
 
     /**
+     * Focus hashed element.
+     *
+     * @param el
+     */
+    focusHash: function(el) {
+        var ta = el.get('href').split('#');
+        // Without this timeout it doesn't always focus on the desired element.
+        setTimeout(function(){
+            Y.one('#'+ta[1]).ancestor('li').focus();
+        },300);
+    },
+
+
+    /**
      * Handles routing of link clicks
      *
      * @param e
@@ -503,8 +366,14 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     handleRoute: function(e) {
         // Allow the native behavior on middle/right-click, or when Ctrl or Command are pressed.
         if (e.button !== 1 || e.ctrlKey || e.metaKey || e.currentTarget.hasClass('disable-router')) {
+            if (e.currentTarget.get('href').indexOf('#') >-1){
+                this.focusHash(e.currentTarget);
+            }
             return;
         }
+        // Whenever a route takes us somewhere else we need to move the editor back to its original container.
+        M.mod_hsuforum.restoreEditor();
+
         if (this.routeUrl(e.currentTarget.get('href'))) {
             e.preventDefault();
         }
@@ -533,6 +402,9 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      */
     handleAddDiscussionRoute: function(e) {
         e.preventDefault();
+
+        // Put editor back to its original place in DOM.
+        M.mod_hsuforum.restoreEditor();
 
         var formNode = e.currentTarget,
             forumId  = formNode.one(SELECTORS.INPUT_FORUM).get('value');
@@ -602,7 +474,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
          */
         routes: {
             value: [
-                { path: '/view.php', callbacks: ['hideForms', 'view'] },
+                { path: '/view.php', callbacks: ['hideForms'] },
                 { path: '/discuss.php', callbacks: ['hideForms', 'discussion'] },
                 { path: '/post.php', callbacks: ['hideForms', 'post'] }
             ]
@@ -646,6 +518,133 @@ FORM.ATTRS = {
 
 Y.extend(FORM, Y.Base,
     {
+        /**
+         * Remove crud from content on paste
+         *
+         *
+         */
+        handleFormPaste: function(e) {
+            var datastr = '';
+            var sel = window.getSelection();
+
+            /**
+             * Clean up html - remove attributes that we don't want.
+             * @param html
+             * @returns {string}
+             */
+            var cleanHTML = function(html) {
+                var cleanhtml = document.createElement('div');
+                cleanhtml.innerHTML = html;
+                tags = cleanhtml.getElementsByTagName("*");
+                for (var i=0, max=tags.length; i < max; i++){
+                    tags[i].removeAttribute("id");
+                    tags[i].removeAttribute("style");
+                    tags[i].removeAttribute("size");
+                    tags[i].removeAttribute("color");
+                    tags[i].removeAttribute("bgcolor");
+                    tags[i].removeAttribute("face");
+                    tags[i].removeAttribute("align");
+                }
+                return cleanhtml.innerHTML;
+            };
+
+            if (e._event && e._event.clipboardData && e._event.clipboardData.getData) {
+                if (/text\/html/.test(e._event.clipboardData.types)
+                    || e._event.clipboardData.types.contains('text/html')
+                ) {
+                    datastr = e._event.clipboardData.getData('text/html');
+                }
+                else if (/text\/plain/.test(e._event.clipboardData.types)
+                    || e._event.clipboardData.types.contains('text/plain')
+                ) {
+                    datastr = e._event.clipboardData.getData('text/plain');
+                }
+                if (datastr !== '') {
+                    if (sel.getRangeAt && sel.rangeCount) {
+                        var range = sel.getRangeAt(0);
+
+                        var newnode = document.createElement('p');
+                        newnode.innerHTML = cleanHTML(datastr);
+
+                        // Get rid of this node - we don't want it.
+                        if (newnode.childNodes[0].tagName === 'META') {
+                            newnode.removeChild(newnode.childNodes[0]);
+                        }
+
+                        // Get the last node as we will need this to position cursor.
+                        var lastnode = newnode.childNodes[newnode.childNodes.length-1];
+                        for (var n = 0; n <= newnode.childNodes.length; n++) {
+                            var insertnode = newnode.childNodes[newnode.childNodes.length-1];
+                            range.insertNode(insertnode);
+                        }
+
+                        range.setStartAfter(lastnode);
+                        range.setEndAfter(lastnode);
+
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+
+                    if (e._event.preventDefault) {
+                        e._event.stopPropagation();
+                        e._event.preventDefault();
+                    }
+                    return false;
+                }
+            }
+
+            /**
+             * This is the best we can do when we can't access cliboard - just stick cursor at the end.
+             */
+            setTimeout(function() {
+                var cleanhtml = cleanHTML(e.currentTarget.get('innerHTML'));
+
+                e.currentTarget.setContent(cleanhtml);
+
+                var range = document.createRange();
+                var sel = window.getSelection();
+
+                /**
+                 * Get last child of node.
+                 * @param el
+                 * @returns {*}
+                 */
+                var getLastChild = function(el){
+                    var children = el.childNodes;
+                    if (!children){
+                        return false;
+                    }
+                    var lastchild = children[children.length-1];
+                    if (!lastchild || typeof(lastchild) === 'undefined') {
+                        return el;
+                    }
+                    // Get last sub child of lastchild
+                    var lastsubchild = getLastChild(lastchild);
+                    if (lastsubchild && typeof(lastsubchild) !== 'undefined') {
+                        return lastsubchild;
+                    } else if (lastchild && typeof(lastchild) !== 'undefined') {
+                        return lastchild;
+                    } else {
+                        return el;
+                    }
+                };
+
+                var lastchild = getLastChild(e.currentTarget._node);
+                var lastchildlength = 1;
+                if (typeof(lastchild.innerHTML) !== 'undefined') {
+                    lastchildlength = lastchild.innerHTML.length;
+                } else {
+                    lastchildlength = lastchild.length;
+                }
+
+                range.setStart(lastchild, lastchildlength);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+
+            },100);
+        },
+
         /**
          * Displays the reply form for a discussion
          * or for a post.
@@ -704,6 +703,9 @@ Y.extend(FORM, Y.Base,
         _submitReplyForm: function(wrapperNode, fn) {
             wrapperNode.all('button').setAttribute('disabled', 'disabled');
             this._copyMessage(wrapperNode);
+
+            var fileinputs = wrapperNode.all('form input[type=file]');
+
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
                 if (data.errors === true) {
                     wrapperNode.one(SELECTORS.VALIDATION_ERRORS).setHTML(data.html).addClass('notifyproblem');
@@ -711,7 +713,7 @@ Y.extend(FORM, Y.Base,
                 } else {
                     fn.call(this, data);
                 }
-            }, this, true);
+            }, this, fileinputs._nodes.length > 0);
         },
 
         /**
@@ -763,6 +765,9 @@ Y.extend(FORM, Y.Base,
         handleCancelForm: function(e) {
             e.preventDefault();
 
+            // Put editor back to its original place in DOM.
+            M.mod_hsuforum.restoreEditor();
+
             var node = e.target.ancestor(SELECTORS.POST_TARGET);
             if (node) {
                 node.removeClass(CSS.POST_EDIT)
@@ -785,6 +790,9 @@ Y.extend(FORM, Y.Base,
         handleFormSubmit: function(e) {
 
             e.preventDefault();
+
+            // Put editor back to its original place in DOM.
+            M.mod_hsuforum.restoreEditor();
 
             var wrapperNode = e.currentTarget.ancestor(SELECTORS.FORM_REPLY_WRAPPER);
 
@@ -933,13 +941,23 @@ ARTICLE.ATTRS = {
     form: { readOnly: true },
 
     /**
-     * Maintains an aria live log
+     * Maintains an aria live log.
      *
      * @attribute liveLog
      * @type M.mod_hsuforum.init_livelog
      * @readOnly
      */
-    liveLog: { readOnly: true }
+    liveLog: { readOnly: true },
+
+    /**
+     * Observers mutation events for editor.
+     */
+    editorMutateObserver: null,
+
+    /**
+     * The show advanced edit link that was clicked most recently,
+     */
+    currentEditLink: null
 };
 
 Y.extend(ARTICLE, Y.Base,
@@ -962,6 +980,14 @@ Y.extend(ARTICLE, Y.Base,
          * @method bind
          */
         bind: function() {
+            var firstUnreadPost = document.getElementsByClassName("hsuforum-post-unread")[0];
+            if(firstUnreadPost && location.hash === '#unread') {
+                // get the post parent to focus on
+                var post = document.getElementById(firstUnreadPost.id).parentNode;
+                post.scrollIntoView();
+                post.focus();
+            }
+
             if (Y.one(SELECTORS.SEARCH_PAGE) !== null) {
                 return;
             }
@@ -974,21 +1000,49 @@ Y.extend(ARTICLE, Y.Base,
                 router  = this.get('router'),
                 addNode = Y.one(SELECTORS.ADD_DISCUSSION);
 
+            /* Clean html on paste */
+            Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
+
             // We bind to document otherwise screen readers read everything as clickable.
-            Y.delegate('click', this.handleViewNextDiscussion, document, SELECTORS.DISCUSSION_NEXT, this);
             Y.delegate('click', form.handleCancelForm, document, SELECTORS.LINK_CANCEL, form);
             Y.delegate('click', router.handleRoute, document, SELECTORS.CONTAINER_LINKS, router);
             Y.delegate('click', dom.handleViewRating, document, SELECTORS.RATE_POPUP, dom);
-            Y.delegate('click', function(e) {
-                // On discussion close, focus on the closed discussion.
-                e.target.ancestor(SELECTORS.DISCUSSION).focus();
-                this.get('liveLog').logText(M.str.mod_hsuforum.discussionclosed);
-            }, document, SELECTORS.DISCUSSION_CLOSE, this);
 
-            Y.delegate('click', function() {
-                // On discussion open, log that it was loaded
-                this.get('liveLog').logText(M.str.mod_hsuforum.discussionloaded);
-            }, document, [SELECTORS.DISCUSSION_VIEW, SELECTORS.DISCUSSION_NEXT, SELECTORS.DISCUSSION_PREV].join(', '), this);
+            // Advanced editor.
+            Y.delegate('click', function(e){
+
+                var editCont = Y.one('#hiddenadvancededitorcont'),
+                    editor,
+                    editArea,
+                    advancedEditLink = this,
+                    checkEditArea;
+
+                if (!editCont){
+                    return;
+                }
+
+                // Note, preventDefault is intentionally here as if an editor container is not present we want the
+                // link to work.
+                e.preventDefault();
+
+                editArea = Y.one('#hiddenadvancededitoreditable');
+                editor = editArea.ancestor('.editor_atto');
+
+                if (editor){
+                    M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
+                } else {
+                    // The advanced editor isn't available yet, lets try again periodically.
+                    advancedEditLink.setContent(M.util.get_string('loadingeditor', 'hsuforum'));
+                    checkEditArea = setInterval(function(){
+                        editor = editArea.ancestor('.editor_atto');
+                        if (editor) {
+                            clearInterval(checkEditArea);
+                            M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
+                        }
+                    }, 500);
+                }
+
+            }, document, '.hsuforum-use-advanced');
 
             // Submit handlers.
             rootNode.delegate('submit', form.handleFormSubmit, SELECTORS.FORM, form);
@@ -998,12 +1052,14 @@ Y.extend(ARTICLE, Y.Base,
 
             // On post created, update HTML, URL and log.
             form.on(EVENTS.POST_CREATED, dom.handleUpdateDiscussion, dom);
+            form.on(EVENTS.POST_CREATED, dom.handleNotification, dom);
             form.on(EVENTS.POST_CREATED, router.handleViewDiscussion, router);
             form.on(EVENTS.POST_CREATED, this.handleLiveLog, this);
 
             // On post updated, update HTML and URL and log.
             form.on(EVENTS.POST_UPDATED, dom.handleUpdateDiscussion, dom);
             form.on(EVENTS.POST_UPDATED, router.handleViewDiscussion, router);
+            form.on(EVENTS.POST_UPDATED, dom.handleNotification, dom);
             form.on(EVENTS.POST_UPDATED, this.handleLiveLog, this);
 
             // On discussion created, update HTML, display notification, update URL and log it.
@@ -1021,6 +1077,7 @@ Y.extend(ARTICLE, Y.Base,
             // On post deleted, update HTML, URL and log.
             this.on(EVENTS.POST_DELETED, dom.handleUpdateDiscussion, dom);
             this.on(EVENTS.POST_DELETED, router.handleViewDiscussion, router);
+            this.on(EVENTS.POST_DELETED, dom.handleNotification, dom);
             this.on(EVENTS.POST_DELETED, this.handleLiveLog, this);
 
             // On form cancel, update the URL to view the discussion/post.
@@ -1047,173 +1104,19 @@ Y.extend(ARTICLE, Y.Base,
          */
         viewDiscussion: function(discussionid, postid) {
             var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', discussionid));
-
             if (!(node instanceof Y.Node)) {
                 return;
             }
-            this.get('dom').ensurePostsExist(node, function() {
-                if (!node.hasClass(CSS.DISCUSSION_EXPANDED)) {
-                    this.collapseAllDiscussions();
-                    this.expandDiscussion(node);
-                }
-                if (!Y.Lang.isUndefined(postid)) {
-                    var postNode = Y.one(SELECTORS.POST_BY_ID.replace('%d', postid));
-                    if (postNode === null || postNode.hasAttribute('data-isdiscussion')) {
-                        node.focus();
-                    } else {
-                        postNode.get('parentNode').focus();
-                    }
-                } else {
+            if (!Y.Lang.isUndefined(postid)) {
+                var postNode = Y.one(SELECTORS.POST_BY_ID.replace('%d', postid));
+                if (postNode === null || postNode.hasAttribute('data-isdiscussion')) {
                     node.focus();
-                }
-            }, this);
-        },
-
-        /**
-         * Load more discussions when navigating
-         * to the next discussion and there are
-         * none.
-         *
-         * @method handleViewNextDiscussion
-         * @param e
-         */
-        handleViewNextDiscussion: function(e) {
-            var node = e.currentTarget.ancestor(SELECTORS.DISCUSSION);
-            if (!node.next().test(SELECTORS.DISCUSSION) && this.canLoadMoreDiscussions()) {
-                var loadNode = Y.one(SELECTORS.LOAD_MORE);
-                if (loadNode === null) {
-                    return;
-                }
-                // Stop the router from handling.
-                e.preventDefault();
-                e.stopImmediatePropagation();
-
-                var params = Y.QueryString.parse(loadNode.get('href').split('?')[1]);
-                this.loadPage(params.page, function() {
-                    this.get('router').routeUrl(e.currentTarget.get('href'));
-                }, this);
-            }
-        },
-
-        /**
-         * Load a page of discussions.
-         *
-         * @method loadPage
-         * @param page
-         * @param {Function} [fn]
-         * @param [context]
-         */
-        loadPage: function(page, fn, context) {
-            var loadNode = Y.one(SELECTORS.LOAD_MORE);
-            if (loadNode === null) {
-                return;
-            }
-
-            var discussions  = Y.all(SELECTORS.DISCUSSION);
-            var total        = parseInt(loadNode.getData('total'), 10);
-            var perpage      = parseInt(loadNode.getData('perpage'), 10);
-            var displayCount = (page * perpage) + perpage;
-
-            // Make sure we don't try to display more than exist.
-            if (displayCount > total) {
-                displayCount = total;
-            }
-            if (displayCount > discussions.size()) {
-                var morePages = Math.ceil((displayCount - discussions.size()) / perpage);
-                morePages--; // Because we start at zero.
-
-                if (morePages >= 0) {
-                    this._loadAllPages(page, perpage, morePages, function() {
-                        // Update the load more link to load the next page.
-                        var href = loadNode.getAttribute('href').replace(/page=\d+/, 'page=' + (page + 1));
-                        loadNode.setAttribute('href', href);
-
-                        // Need to hide if no more to load.
-                        if (displayCount >= total) {
-                            loadNode.hide();
-                        } else {
-                            // loadNode.show();
-                            loadNode.setStyle('display', 'block');
-                        }
-                        if (fn) {
-                            fn.call(context);
-                        } else {
-                            Y.all(SELECTORS.DISCUSSION).item(displayCount + 1 - perpage).scrollIntoView(true).focus();
-                        }
-                    }, this);
-                }
-            } else if (fn) {
-                fn.call(context);
-            }
-        },
-
-        /**
-         * Internal method - keeps loading pages of discussions
-         * until we are at the page we want.
-         *
-         * @method _loadAllPages
-         * @param page
-         * @param perpage
-         * @param morePages
-         * @param fn
-         * @param context
-         * @private
-         */
-        _loadAllPages: function(page, perpage, morePages, fn, context) {
-            this.get('dom').loadMoreDiscussions(page - morePages, perpage, function() {
-                var left = morePages - 1;
-                if (left >= 0) {
-                    this._loadAllPages(page, perpage, left, fn, context);
                 } else {
-                    fn.call(context);
+                    postNode.get('parentNode').focus();
                 }
-            }, this);
-        },
-
-        /**
-         * Expand a discussion
-         *
-         * @method expandDiscussion
-         * @param discussionNode
-         */
-        expandDiscussion: function(discussionNode) {
-
-            Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION)
-                .setAttribute('aria-hidden', 'true')
-                .setAttribute('aria-expanded', 'false');
-
-            discussionNode.addClass(CSS.DISCUSSION_EXPANDED)
-                .setAttribute('aria-hidden', 'false')
-                .setAttribute('aria-expanded', 'true')
-                .scrollIntoView(true);
-
-            this.get('form').attachFormWarnings();
-        },
-
-        /**
-         * Collapse all discussions
-         * @method collapseAllDiscussions
-         */
-        collapseAllDiscussions: function() {
-
-            Y.one(SELECTORS.CONTAINER).all(SELECTORS.DISCUSSION)
-                .removeClass(CSS.DISCUSSION_EXPANDED)
-                .setAttribute('aria-hidden', 'false')
-                .setAttribute('aria-expanded', 'false');
-        },
-
-        /**
-         * Determine if we can load more discussions
-         *
-         * @method canLoadMoreDiscussions
-         * @returns {boolean}
-         */
-        canLoadMoreDiscussions: function() {
-            var loadNode = Y.one(SELECTORS.LOAD_MORE);
-            if (loadNode === null) {
-                return false;
+            } else {
+                node.focus();
             }
-            return loadNode.getStyle('display') !== 'none';
         },
 
         /**
@@ -1264,6 +1167,183 @@ M.mod_hsuforum.init_article = function(config) {
     new ARTICLE(config);
 };
 
+/**
+ * Trigger click event.
+ * @param el
+ */
+M.mod_hsuforum.dispatchClick = function(el) {
+    if (document.createEvent) {
+        var event = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        el.dispatchEvent(event);
+    } else if (el.fireEvent) {
+        el.fireEvent('onclick');
+    }
+};
+
+/**
+ * Restore editor to original position in DOM.
+ */
+M.mod_hsuforum.restoreEditor = function() {
+    var editCont = Y.one('#hiddenadvancededitorcont');
+    if (editCont) {
+        var editArea = Y.one('#hiddenadvancededitoreditable'),
+        editor = editArea.ancestor('.editor_atto'),
+        advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
+        contentEditable = false;
+
+        if (advancedEditLink) {
+            contentEditable = advancedEditLink.previous('.hsuforum-textarea');
+        }
+
+        var editorHidden = (!editor || editor.getComputedStyle('display') === 'none');
+
+        // If the editor is visible then we need to make sure content is passed back to content editable div.
+        // Are we in source mode?
+        if (!editorHidden) {
+            if (editor.one('.atto_html_button.highlight')) {
+                // Trigger click on atto source button - we need to update the editor content.
+                M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
+            }
+        }
+
+        // Update content editable div.
+        if (contentEditable) {
+            contentEditable.setContent(editArea.getContent());
+        }
+
+        // Switch all editor links to hide mode.
+        M.mod_hsuforum.toggleAdvancedEditor(false, true);
+
+        // Put editor back in its correct place.
+        Y.one('#hiddenadvancededitorcont').show();
+        Y.one('#hiddenadvancededitorcont')._node.style.display='block';
+        editCont.appendChild(editor);
+        editCont.appendChild(Y.one('#hiddenadvancededitor'));
+    }
+};
+
+/**
+ * Toggle advanced editor in place of plain text editor.
+ */
+M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keepLink) {
+
+    var showEditor = false;
+    if (!forcehide) {
+        showEditor = advancedEditLink && advancedEditLink.getAttribute('aria-pressed') === 'false';
+    }
+
+    if (advancedEditLink) {
+        M.mod_hsuforum.Article.currentEditLink = advancedEditLink;
+        if (showEditor) {
+            advancedEditLink.removeClass('hideadvancededitor');
+        } else {
+            advancedEditLink.addClass('hideadvancededitor');
+        }
+    }
+
+    // @TODO - consider a better explantion of forcehide
+    // Force hide is required for doing things like hiding all editors except for the link that was just clicked.
+    // So if you click reply against a topic and then open the editor and then click reply against another topic and
+    // then open the editor you need the previous editor link to be reset.
+    if (forcehide) {
+        // If advancedEditLink is not set and we are forcing a hide then we need to hide every instance and change all labels.
+        if (!advancedEditLink){
+            var links = Y.all('.hsuforum-use-advanced');
+            for (var l = 0; l<links.size(); l++) {
+                var link = links.item(l);
+                if (keepLink && keepLink === link){
+                    continue; // Do not process this link.
+                }
+                // To hide this link and restore the editor, call myself.
+                M.mod_hsuforum.toggleAdvancedEditor(link, true);
+            }
+
+            return;
+        }
+    } else {
+        // OK we need to make sure the editor isn't available anywhere else, so call myself.
+        M.mod_hsuforum.toggleAdvancedEditor(false, true, advancedEditLink);
+    }
+
+    var editCont = Y.one('#hiddenadvancededitorcont'),
+        editArea,
+        contentEditable = advancedEditLink.previous('.hsuforum-textarea'),
+        editor;
+
+    if (editCont){
+        editArea = Y.one('#hiddenadvancededitoreditable');
+        editor = editArea.ancestor('.editor_atto');
+        if (contentEditable){
+            editArea.setStyle('height', contentEditable.getDOMNode().offsetHeight+'px');
+        }
+    } else {
+        //@TODO - throw error
+        throw "Failed to get editor";
+    }
+
+    var editorHidden = false;
+    if (!editor || editor.getComputedStyle('display') === 'none'){
+        editorHidden = true;
+    }
+
+    if (showEditor) {
+        advancedEditLink.setAttribute('aria-pressed', 'true');
+        advancedEditLink.setContent(M.util.get_string('hideadvancededitor', 'hsuforum'));
+        contentEditable.hide();
+        // Are we in source mode?
+        if (editor.one('.atto_html_button.highlight')) {
+            Y.one('#hiddenadvancededitor').show();
+        }
+        editor.show();
+        contentEditable.insert(editor, 'before');
+        contentEditable.insert(Y.one('#hiddenadvancededitor'), 'before');
+        editArea.setContent(contentEditable.getContent());
+
+        // Focus on editarea.
+        editArea.focus();
+
+        /**
+         * Callback for when editArea content changes.
+         */
+        var editAreaChanged = function(){
+            contentEditable.setContent(editArea.getContent());
+        };
+
+        // Whenever the html editor changes its content, update the text area.
+        if (window.MutationObserver){
+            M.mod_hsuforum.Article.editorMutateObserver = new MutationObserver(editAreaChanged);
+            M.mod_hsuforum.Article.editorMutateObserver.observe(editArea.getDOMNode(), {childList: true, characterData: true, subtree: true});
+        } else {
+            // Don't use yui delegate as I don't think it supports this event type
+            editArea.getDOMNode().addEventListener ('DOMCharacterDataModified', editAreachanged, false);
+        }
+    } else {
+        advancedEditLink.setAttribute('aria-pressed', 'false');
+        if (M.mod_hsuforum.Article.editorMutateObserver){
+            M.mod_hsuforum.Article.editorMutateObserver.disconnect();
+        }
+        advancedEditLink.setContent(M.util.get_string('useadvancededitor', 'hsuforum'));
+        contentEditable.show();
+
+        // If editor is not hidden then we need to update content editable div with editor content.
+        if (!editorHidden) {
+            // Are we in source mode?
+            if (editor.one('.atto_html_button.highlight')) {
+                // Trigger click on atto source button - we need to update the editor content.
+                M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
+            }
+            // Update content of content editable div.
+            contentEditable.setContent(editArea.getContent());
+        }
+        Y.one('#hiddenadvancededitor').hide();
+        editor.hide();
+    }
+};
+
 
 }, '@VERSION@', {
     "requires": [
@@ -1271,7 +1351,6 @@ M.mod_hsuforum.init_article = function(config) {
         "node",
         "event",
         "router",
-        "yui2-menu",
         "core_rating",
         "querystring",
         "moodle-mod_hsuforum-io",

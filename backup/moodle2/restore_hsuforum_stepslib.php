@@ -34,7 +34,6 @@
 class restore_hsuforum_activity_structure_step extends restore_activity_structure_step {
 
     protected function define_structure() {
-
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
 
@@ -58,8 +57,17 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->course = $this->get_courseid();
+
+        if (!property_exists($data, 'allowprivatereplies')) {
+            $data->allowprivatereplies = 1;
+        }
+        if (!property_exists($data, 'showsubstantive')) {
+            $data->showsubstantive = 1;
+        }
+        if (!property_exists($data, 'showbookmark')) {
+            $data->showbookmark = 1;
+        }
 
         $data->assesstimestart = $this->apply_date_offset($data->assesstimestart);
         $data->assesstimefinish = $this->apply_date_offset($data->assesstimefinish);

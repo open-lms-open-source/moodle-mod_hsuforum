@@ -134,7 +134,6 @@ class mod_hsuforum_external extends external_api {
                     'maxbytes' => new external_value(PARAM_INT, 'Maximum attachment size'),
                     'maxattachments' => new external_value(PARAM_INT, 'Maximum number of attachments'),
                     'forcesubscribe' => new external_value(PARAM_INT, 'Force users to subscribe'),
-                    'trackingtype' => new external_value(PARAM_INT, 'Subscription mode'),
                     'rsstype' => new external_value(PARAM_INT, 'RSS feed for this activity'),
                     'rssarticles' => new external_value(PARAM_INT, 'Number of RSS recent articles'),
                     'timemodified' => new external_value(PARAM_INT, 'Time modified'),
@@ -236,9 +235,6 @@ class mod_hsuforum_external extends external_api {
             // Check if they can view full names.
             $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
             // Get the unreads array, this takes a forum id and returns data for all discussions.
-            if ($cantrack = hsuforum_tp_can_track_forums($forum)) {
-                $forumtracked = hsuforum_tp_is_tracked($forum);
-            }
             // The forum function returns the replies for all the discussions in a given forum.
             // Get the discussions for this forum.
             $order = 'timemodified DESC';
@@ -275,9 +271,8 @@ class mod_hsuforum_external extends external_api {
                     $return->firstuseremail = $arrusers[$discussion->userid]->email;
                     $return->subject = $discussion->subject;
                     $return->numunread = '';
-                    if ($cantrack && $forumtracked) {
-                        $return->numunread = (int) $discussion->unread;
-                    }
+                    $return->numunread = (int) $discussion->unread;
+
                     // Check if there are any replies to this discussion.
                     if (!is_null($discussion->replies)) {
                         $return->numreplies = (int) $discussion->replies;
@@ -358,9 +353,6 @@ class mod_hsuforum_external extends external_api {
         return new external_function_parameters (
             array(
                 'discussionid' => new external_value(PARAM_INT, 'discussion ID', VALUE_REQUIRED),
-                'sortby' => new external_value(PARAM_ALPHA,
-                    'sort by this element: id, created or modified', VALUE_DEFAULT, 'created'),
-                'sortdirection' => new external_value(PARAM_ALPHA, 'sort direction: ASC or DESC', VALUE_DEFAULT, 'DESC')
             )
         );
     }
@@ -369,41 +361,23 @@ class mod_hsuforum_external extends external_api {
      * Returns a list of forum posts for a discussion
      *
      * @param int $discussionid the post ids
-     * @param string $sortby sort by this element (id, created or modified)
-     * @param string $sortdirection sort direction: ASC or DESC
      *
      * @return array the forum post details
      * @since Moodle 2.7
      */
-    public static function get_forum_discussion_posts($discussionid, $sortby = "created", $sortdirection = "DESC") {
+    public static function get_forum_discussion_posts($discussionid) {
         global $CFG, $DB, $USER;
 
         $warnings = array();
 
         // Validate the parameter.
-        $params = self::validate_parameters(self::get_forum_discussion_posts_parameters(),
-            array(
-                'discussionid' => $discussionid,
-                'sortby' => $sortby,
-                'sortdirection' => $sortdirection));
+        $params = self::validate_parameters(
+            self::get_forum_discussion_posts_parameters(),
+            array('discussionid' => $discussionid)
+        );
 
         // Compact/extract functions are not recommended.
         $discussionid   = $params['discussionid'];
-        $sortby         = $params['sortby'];
-        $sortdirection  = $params['sortdirection'];
-
-        $sortallowedvalues = array('id', 'created', 'modified');
-        if (!in_array($sortby, $sortallowedvalues)) {
-            throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $sortby . '),' .
-                'allowed values are: ' . implode(',', $sortallowedvalues));
-        }
-
-        $sortdirection = strtoupper($sortdirection);
-        $directionallowedvalues = array('ASC', 'DESC');
-        if (!in_array($sortdirection, $directionallowedvalues)) {
-            throw new invalid_parameter_exception('Invalid value for sortdirection parameter (value: ' . $sortdirection . '),' .
-                'allowed values are: ' . implode(',', $directionallowedvalues));
-        }
 
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
         $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
@@ -434,10 +408,7 @@ class mod_hsuforum_external extends external_api {
         // We will add this field in the response.
         $canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
-        $forumtracked = hsuforum_tp_is_tracked($forum);
-
-        $sort = 'p.' . $sortby . ' ' . $sortdirection;
-        $posts = hsuforum_get_all_discussion_posts($discussion->id, $sort, $forumtracked);
+        $posts = hsuforum_get_all_discussion_posts($discussion->id);
 
         foreach ($posts as $pid => $post) {
 

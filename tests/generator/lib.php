@@ -191,6 +191,10 @@ class mod_hsuforum_generator extends testing_module_generator {
             $record['mailnow'] = "0";
         }
 
+        if (!isset($record['reveal'])) {
+            $record['reveal'] = 0;
+        }
+
         $record = (object) $record;
 
         // Add the discussion.
@@ -266,6 +270,10 @@ class mod_hsuforum_generator extends testing_module_generator {
 
         if (!isset($record['mailnow'])) {
             $record['mailnow'] = 0;
+        }
+
+        if (!isset($record['reveal'])) {
+            $record['reveal'] = 0;
         }
 
         $record = (object) $record;

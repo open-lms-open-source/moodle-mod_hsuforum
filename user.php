@@ -232,6 +232,10 @@ $rm = new rating_manager();
 $ratingoptions = new stdClass;
 $ratingoptions->component = 'mod_hsuforum';
 $ratingoptions->ratingarea = 'post';
+
+$renderer = $PAGE->get_renderer('mod_hsuforum');
+echo $renderer->svg_sprite();
+
 foreach ($result->posts as $post) {
     if (!isset($result->forums[$post->forum]) || !isset($discussions[$post->discussion])) {
         // Something very VERY dodgy has happened if we end up here
@@ -244,6 +248,10 @@ foreach ($result->posts as $post) {
 
     $forumurl = new moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id));
     $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
+
+    // TODO actually display if the search result has been read, for now just
+    // hide the unread status marker for all results.
+    $post->postread = true;
 
     // load ratings
     if ($forum->assessed != RATING_AGGREGATE_NONE) {
@@ -299,7 +307,8 @@ foreach ($result->posts as $post) {
     $discussionurl->set_anchor('p'.$post->id);
     $fulllink = html_writer::link($discussionurl, get_string("postincontext", "hsuforum"));
 
-    $postoutput[] = hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false, $fulllink, '', null, true, null, true);
+    $commands = array('seeincontext' => $fulllink);
+    $postoutput[] = $renderer->post($cm, $discussion, $post, false, null, $commands);
 }
 
 $userfullname = fullname($user);
@@ -334,10 +343,8 @@ echo $OUTPUT->heading($inpageheading);
 echo html_writer::start_tag('div', array('class' => 'user-content'));
 
 if (!empty($postoutput)) {
-    echo $OUTPUT->paging_bar($result->totalcount, $page, $perpage, $url);
     foreach ($postoutput as $post) {
         echo $post;
-        echo html_writer::empty_tag('br');
     }
     echo $OUTPUT->paging_bar($result->totalcount, $page, $perpage, $url);
 } else if ($discussionsonly) {

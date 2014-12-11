@@ -97,7 +97,7 @@ class post_service {
             'discussionid' => (int) $discussion->id,
             'postid'       => (int) $post->id,
             'livelog'      => get_string('postcreated', 'hsuforum'),
-            'html'         => $this->discussionservice->render_discussion($discussion->id),
+            'html'         => $this->discussionservice->render_full_thread($discussion->id),
         ));
     }
 
@@ -148,7 +148,7 @@ class post_service {
             'discussionid' => (int) $discussion->id,
             'postid'       => (int) $post->id,
             'livelog'      => get_string('postwasupdated', 'hsuforum'),
-            'html'         => $this->discussionservice->render_discussion($discussion->id),
+            'html'         => $this->discussionservice->render_full_thread($discussion->id),
         ));
     }
 
@@ -249,14 +249,21 @@ class post_service {
                 $errors[] = $e;
             }
         }
-        $subject = trim($post->subject);
-        if (empty($subject)) {
+        if (hsuforum_str_empty($post->subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        $message = trim($post->message);
-        if (empty($message)) {
+        if (hsuforum_str_empty($post->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
+
+        if ($post->privatereply) {
+            if (!has_capability('mod/hsuforum:allowprivate', $context)
+                || !$forum->allowprivatereplies
+            ) {
+                $errors[] = new \moodle_exception('cannotmakeprivatereplies', 'hsuforum');
+            }
+        }
+
         if ($uploader->was_file_uploaded()) {
             try {
                 $uploader->validate_files(empty($post->id) ? 0 : $post->id);

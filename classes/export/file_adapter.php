@@ -81,8 +81,6 @@ class file_adapter implements adapter_interface {
         $this->cm = $cm;
         $this->format = $format;
         $this->attachments = $attachments;
-
-        hsuforum_cm_add_cache($this->cm);
     }
 
     /**
@@ -95,7 +93,7 @@ class file_adapter implements adapter_interface {
         if (!empty($discussion)) {
             $filename = $this->create_file_name($discussion->name);
         } else {
-            $filename = $this->create_file_name($this->cm->cache->forum->name);
+            $filename = $this->create_file_name(hsuforum_get_cm_forum($this->cm)->name);
         }
         $this->tempdirectory = $this->create_temp_directory();
         $this->exportfile    = $this->tempdirectory.'/'.$filename;
@@ -115,7 +113,7 @@ class file_adapter implements adapter_interface {
         $discname = format_string($discussion->name);
 
         foreach ($posts as $post) {
-            $postuser = hsuforum_extract_postuser($post, $this->cm->cache->forum, $this->cm->cache->context);
+            $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($this->cm), \context_module::instance($this->cm->id));
             $author   = fullname($postuser);
 
             $attachments = $this->process_attachments($post);
@@ -123,9 +121,9 @@ class file_adapter implements adapter_interface {
             $options          = new \stdClass();
             $options->para    = false;
             $options->trusted = $post->messagetrust;
-            $options->context = $this->cm->cache->context;
+            $options->context = \context_module::instance($this->cm->id);
 
-            $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $this->cm->cache->context->id, 'mod_hsuforum', 'post', $post->id);
+            $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', \context_module::instance($this->cm->id)->id, 'mod_hsuforum', 'post', $post->id);
             $message = format_text($message, $post->messageformat, $options, $this->cm->course);
             $message = \core_text::specialtoascii(html_to_text($message));
 
@@ -184,7 +182,7 @@ class file_adapter implements adapter_interface {
             return $attachments;
         }
         /** @var \stored_file[] $files */
-        $files = get_file_storage()->get_area_files($this->cm->cache->context->id, 'mod_hsuforum', 'attachment', $post->id, 'timemodified', false);
+        $files = get_file_storage()->get_area_files(\context_module::instance($this->cm->id)->id, 'mod_hsuforum', 'attachment', $post->id, 'timemodified', false);
         foreach ($files as $file) {
             if ($this->attachments) {
                 $filename = $this->resolve_file_name($file);

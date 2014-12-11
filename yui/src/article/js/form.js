@@ -34,6 +34,133 @@ FORM.ATTRS = {
 Y.extend(FORM, Y.Base,
     {
         /**
+         * Remove crud from content on paste
+         *
+         *
+         */
+        handleFormPaste: function(e) {
+            var datastr = '';
+            var sel = window.getSelection();
+
+            /**
+             * Clean up html - remove attributes that we don't want.
+             * @param html
+             * @returns {string}
+             */
+            var cleanHTML = function(html) {
+                var cleanhtml = document.createElement('div');
+                cleanhtml.innerHTML = html;
+                tags = cleanhtml.getElementsByTagName("*");
+                for (var i=0, max=tags.length; i < max; i++){
+                    tags[i].removeAttribute("id");
+                    tags[i].removeAttribute("style");
+                    tags[i].removeAttribute("size");
+                    tags[i].removeAttribute("color");
+                    tags[i].removeAttribute("bgcolor");
+                    tags[i].removeAttribute("face");
+                    tags[i].removeAttribute("align");
+                }
+                return cleanhtml.innerHTML;
+            };
+
+            if (e._event && e._event.clipboardData && e._event.clipboardData.getData) {
+                if (/text\/html/.test(e._event.clipboardData.types)
+                    || e._event.clipboardData.types.contains('text/html')
+                ) {
+                    datastr = e._event.clipboardData.getData('text/html');
+                }
+                else if (/text\/plain/.test(e._event.clipboardData.types)
+                    || e._event.clipboardData.types.contains('text/plain')
+                ) {
+                    datastr = e._event.clipboardData.getData('text/plain');
+                }
+                if (datastr !== '') {
+                    if (sel.getRangeAt && sel.rangeCount) {
+                        var range = sel.getRangeAt(0);
+
+                        var newnode = document.createElement('p');
+                        newnode.innerHTML = cleanHTML(datastr);
+
+                        // Get rid of this node - we don't want it.
+                        if (newnode.childNodes[0].tagName === 'META') {
+                            newnode.removeChild(newnode.childNodes[0]);
+                        }
+
+                        // Get the last node as we will need this to position cursor.
+                        var lastnode = newnode.childNodes[newnode.childNodes.length-1];
+                        for (var n = 0; n <= newnode.childNodes.length; n++) {
+                            var insertnode = newnode.childNodes[newnode.childNodes.length-1];
+                            range.insertNode(insertnode);
+                        }
+
+                        range.setStartAfter(lastnode);
+                        range.setEndAfter(lastnode);
+
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+
+                    if (e._event.preventDefault) {
+                        e._event.stopPropagation();
+                        e._event.preventDefault();
+                    }
+                    return false;
+                }
+            }
+
+            /**
+             * This is the best we can do when we can't access cliboard - just stick cursor at the end.
+             */
+            setTimeout(function() {
+                var cleanhtml = cleanHTML(e.currentTarget.get('innerHTML'));
+
+                e.currentTarget.setContent(cleanhtml);
+
+                var range = document.createRange();
+                var sel = window.getSelection();
+
+                /**
+                 * Get last child of node.
+                 * @param el
+                 * @returns {*}
+                 */
+                var getLastChild = function(el){
+                    var children = el.childNodes;
+                    if (!children){
+                        return false;
+                    }
+                    var lastchild = children[children.length-1];
+                    if (!lastchild || typeof(lastchild) === 'undefined') {
+                        return el;
+                    }
+                    // Get last sub child of lastchild
+                    var lastsubchild = getLastChild(lastchild);
+                    if (lastsubchild && typeof(lastsubchild) !== 'undefined') {
+                        return lastsubchild;
+                    } else if (lastchild && typeof(lastchild) !== 'undefined') {
+                        return lastchild;
+                    } else {
+                        return el;
+                    }
+                };
+
+                var lastchild = getLastChild(e.currentTarget._node);
+                var lastchildlength = 1;
+                if (typeof(lastchild.innerHTML) !== 'undefined') {
+                    lastchildlength = lastchild.innerHTML.length;
+                } else {
+                    lastchildlength = lastchild.length;
+                }
+
+                range.setStart(lastchild, lastchildlength);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+
+            },100);
+        },
+
+        /**
          * Displays the reply form for a discussion
          * or for a post.
          *
@@ -91,6 +218,9 @@ Y.extend(FORM, Y.Base,
         _submitReplyForm: function(wrapperNode, fn) {
             wrapperNode.all('button').setAttribute('disabled', 'disabled');
             this._copyMessage(wrapperNode);
+
+            var fileinputs = wrapperNode.all('form input[type=file]');
+
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
                 if (data.errors === true) {
                     Y.log('Form failed to validate', 'info', 'Form');
@@ -100,7 +230,7 @@ Y.extend(FORM, Y.Base,
                     Y.log('Form successfully submitted', 'info', 'Form');
                     fn.call(this, data);
                 }
-            }, this, true);
+            }, this, fileinputs._nodes.length > 0);
         },
 
         /**
@@ -153,6 +283,9 @@ Y.extend(FORM, Y.Base,
         handleCancelForm: function(e) {
             e.preventDefault();
 
+            // Put editor back to its original place in DOM.
+            M.mod_hsuforum.restoreEditor();
+
             var node = e.target.ancestor(SELECTORS.POST_TARGET);
             if (node) {
                 node.removeClass(CSS.POST_EDIT)
@@ -176,6 +309,9 @@ Y.extend(FORM, Y.Base,
             Y.log('Submitting edit post form', 'info', 'Form');
 
             e.preventDefault();
+
+            // Put editor back to its original place in DOM.
+            M.mod_hsuforum.restoreEditor();
 
             var wrapperNode = e.currentTarget.ancestor(SELECTORS.FORM_REPLY_WRAPPER);
 

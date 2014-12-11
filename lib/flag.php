@@ -42,49 +42,6 @@ class hsuforum_lib_flag {
         return $this->flags;
     }
 
-    /**
-     * Get a human readable name for a flag
-     *
-     * @param string $flag The flag name
-     * @return string
-     */
-    public function get_flag_name($flag) {
-        return get_string("flag:$flag", 'hsuforum');
-    }
-
-    /**
-     * A string that reads something like, "Flag So and So"
-     * or "Remove flag from so and so"
-     *
-     * @param string $flag The flag name
-     * @param string $target The name of whatever we are flagging
-     * @param boolean $isflagged Current flagged or not
-     * @return string
-     */
-    public function get_flag_action_label($flag, $target, $isflagged) {
-        if ($isflagged) {
-            return get_string("removeflaglabel:$flag", 'hsuforum', $target);
-        } else {
-            return get_string("flaglabel:$flag", 'hsuforum', $target);
-        }
-    }
-
-    /**
-     * A string that reads something like, "So and So has been flagged"
-     * or "So and so has not been flagged"
-     *
-     * @param string $flag The flag name
-     * @param string $target The name of whatever we are flagging
-     * @param boolean $isflagged Current flagged or not
-     * @return string
-     */
-    public function get_flag_state_label($flag, $target, $isflagged) {
-        if ($isflagged) {
-            return get_string("flagstateon:$flag", 'hsuforum', $target);
-        } else {
-            return get_string("flagstateoff:$flag", 'hsuforum', $target);
-        }
-    }
 
     /**
      * Determine if the passed value contains the passed flag

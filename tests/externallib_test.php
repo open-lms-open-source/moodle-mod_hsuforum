@@ -146,9 +146,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        // Set the CFG variable to allow track forums.
-        $CFG->hsuforum_trackreadposts = true;
-
         // Create a user who can track forums.
         $record = new stdClass();
         $record->trackforums = true;
@@ -165,17 +162,15 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $course1 = self::getDataGenerator()->create_course();
         $course2 = self::getDataGenerator()->create_course();
 
-        // First forum with tracking off.
+        // First forum (tracking now enabled by default).
         $record = new stdClass();
         $record->course = $course1->id;
-        $record->trackingtype = HSUFORUM_TRACKING_OFF;
         $forum1 = self::getDataGenerator()->create_module('hsuforum', $record);
 
-        // Second forum of type 'qanda' with tracking enabled.
+        // Second forum of type 'qanda' (tracking now enabled by default).
         $record = new stdClass();
         $record->course = $course2->id;
         $record->type = 'qanda';
-        $record->trackingtype = HSUFORUM_TRACKING_FORCED;
         $forum2 = self::getDataGenerator()->create_module('hsuforum', $record);
 
         // Third forum where we will only have one discussion with no replies.
@@ -277,7 +272,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
                 'firstpost' => $discussion1->firstpost,
                 'userid' => $discussion1->userid,
                 'groupid' => $discussion1->groupid,
-                'assessed' => $discussion1->assessed,
+                'assessed' => ''.$discussion1->assessed,
                 'timemodified' => $discussion1reply3->created,
                 'usermodified' => $discussion1reply3->userid,
                 'timestart' => $discussion1->timestart,
@@ -288,7 +283,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
                 'firstuseremail' => $user1->email,
                 'subject' => $discussion1->name,
                 'numreplies' => 3,
-                'numunread' => '',
+                'numunread' => 3, // Note - this was changed from empty to 3 because all forums get tracked by default now.
                 'lastpost' => $discussion1reply3->id,
                 'lastuserid' => $user4->id,
                 'lastuserfullname' => fullname($user4),
@@ -394,9 +389,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
         $this->resetAfterTest(true);
 
-        // Set the CFG variable to allow track forums.
-        $CFG->hsuforum_trackreadposts = true;
-
         // Create a user who can track forums.
         $record = new stdClass();
         $record->trackforums = true;
@@ -414,7 +406,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         // Forum with tracking off.
         $record = new stdClass();
         $record->course = $course1->id;
-        $record->trackingtype = HSUFORUM_TRACKING_OFF;
         $forum1 = self::getDataGenerator()->create_module('hsuforum', $record);
         $forum1context = context_module::instance($forum1->cmid);
 
@@ -456,27 +447,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'warnings' => array(),
         );
         $expectedposts['posts'][] = array(
-            'id' => $discussion1reply2->id,
-            'discussion' => $discussion1reply2->discussion,
-            'parent' => $discussion1reply2->parent,
-            'userid' => $discussion1reply2->userid,
-            'created' => $discussion1reply2->created,
-            'modified' => $discussion1reply2->modified,
-            'mailed' => $discussion1reply2->mailed,
-            'subject' => $discussion1reply2->subject,
-            'message' => file_rewrite_pluginfile_urls($discussion1reply2->message, 'pluginfile.php',
-                    $forum1context->id, 'mod_hsuforum', 'post', $discussion1reply2->id),
-            'messageformat' => $discussion1reply2->messageformat,
-            'messagetrust' => $discussion1reply2->messagetrust,
-            'attachment' => $discussion1reply2->attachment,
-            'totalscore' => $discussion1reply2->totalscore,
-            'mailnow' => $discussion1reply2->mailnow,
-            'children' => array(),
-            'canreply' => true,
-            'postread' => false,
-            'userfullname' => fullname($user3)
-        );
-        $expectedposts['posts'][] = array(
             'id' => $discussion1reply1->id,
             'discussion' => $discussion1reply1->discussion,
             'parent' => $discussion1reply1->parent,
@@ -497,14 +467,35 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'postread' => false,
             'userfullname' => fullname($user2)
         );
+        $expectedposts['posts'][] = array(
+            'id' => $discussion1reply2->id,
+            'discussion' => $discussion1reply2->discussion,
+            'parent' => $discussion1reply2->parent,
+            'userid' => $discussion1reply2->userid,
+            'created' => $discussion1reply2->created,
+            'modified' => $discussion1reply2->modified,
+            'mailed' => $discussion1reply2->mailed,
+            'subject' => $discussion1reply2->subject,
+            'message' => file_rewrite_pluginfile_urls($discussion1reply2->message, 'pluginfile.php',
+                    $forum1context->id, 'mod_hsuforum', 'post', $discussion1reply2->id),
+            'messageformat' => $discussion1reply2->messageformat,
+            'messagetrust' => $discussion1reply2->messagetrust,
+            'attachment' => $discussion1reply2->attachment,
+            'totalscore' => $discussion1reply2->totalscore,
+            'mailnow' => $discussion1reply2->mailnow,
+            'children' => array(),
+            'canreply' => true,
+            'postread' => false,
+            'userfullname' => fullname($user3)
+        );
 
         // Test a discussion with two additional posts (total 3 posts).
-        $posts = mod_hsuforum_external::get_forum_discussion_posts($discussion1->id, 'modified', 'DESC');
+        $posts = mod_hsuforum_external::get_forum_discussion_posts($discussion1->id);
         $posts = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussion_posts_returns(), $posts);
         $this->assertEquals(3, count($posts['posts']));
 
         // Unset the initial discussion post.
-        array_pop($posts['posts']);
+        array_shift($posts['posts']);
         $this->assertEquals($expectedposts, $posts);
 
         // Test discussion without additional posts. There should be only one post (the one created by the discussion).

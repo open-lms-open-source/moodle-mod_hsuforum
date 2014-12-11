@@ -58,7 +58,7 @@ class behat_mod_hsuforum extends behat_base {
      * @param TableNode $table
      */
     public function i_add_a_forum_discussion_to_forum_with($forumname, TableNode $table) {
-        return $this->add_new_discussion($forumname, $table, get_string('addanewdiscussion', 'hsuforum'));
+        return $this->add_new_discussion($forumname, $table, get_string('addanewtopic', 'hsuforum'));
     }
 
     /**

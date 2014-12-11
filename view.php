@@ -27,11 +27,13 @@
     require_once('lib.php');
     require_once($CFG->libdir.'/completionlib.php');
 
-    $id          = optional_param('id', 0, PARAM_INT);       // Course Module ID
+    $id          = optional_param('id', 0, PARAM_INT);       // Forum instance id (id in course modules table)
     $f           = optional_param('f', 0, PARAM_INT);        // Forum ID
     $changegroup = optional_param('group', -1, PARAM_INT);   // choose the current group
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
     $search      = optional_param('search', '', PARAM_CLEAN);// search string
+
+    $config = get_config('hsuforum');
 
     $params = array();
     if ($id) {
@@ -57,9 +59,6 @@
         if (! $forum = $DB->get_record("hsuforum", array("id" => $cm->instance))) {
             print_error('invalidforumid', 'hsuforum');
         }
-        if ($forum->type == 'single') {
-            $PAGE->set_pagetype('mod-hsuforum-discuss');
-        }
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
         $PAGE->set_context(context_module::instance($cm->id));
@@ -78,6 +77,7 @@
         if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
             print_error('missingparameter');
         }
+
         // move require_course_login here to use forced language for course
         // fix for MDL-6926
         $PAGE->set_context(context_module::instance($cm->id));
@@ -88,13 +88,13 @@
         print_error('missingparameter');
     }
 
-    if (!$PAGE->button) {
-        $PAGE->set_button(hsuforum_search_form($course, $search));
+    if ($forum->type == 'single') {
+        $PAGE->set_pagetype('mod-hsuforum-discuss');
     }
 
     $context = context_module::instance($cm->id);
 
-    if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
+    if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
 
         $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': ' . format_string($forum->name);
@@ -134,8 +134,18 @@
 
     $SESSION->fromdiscussion = qualified_me();   // Return here if we post or set subscription etc
 
-    $PAGE->get_renderer('mod_hsuforum')->view($course, $cm, $forum, $context);
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
+    echo $renderer->svg_sprite();
+    $renderer->view($course, $cm, $forum, $context);
+
+    echo $renderer->advanced_editor();
+
+    if ($forum->type == 'single') {
+        echo hsuforum_search_form($course, $forum->id);
+    }
+    $url = new moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
+    $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
+    echo html_writer::link($url, $manageforumsubscriptions);
 
     echo $OUTPUT->footer($course);
-
-

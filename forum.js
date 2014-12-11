@@ -9,14 +9,6 @@ function hsuforum_produce_subscribe_link(forumid, backtoindex, ltext, ltitle) {
     }
 }
 
-function hsuforum_produce_tracking_link(forumid, ltext, ltitle) {
-    var elementid = "trackinglink";
-    var subs_link = document.getElementById(elementid);
-    if(subs_link){
-        subs_link.innerHTML = "<a title='"+ltitle+"' href='"+M.cfg.wwwroot+"/mod/hsuforum/settracking.php?id="+forumid+"'>"+ltext+"<\/a>";
-    }
-}
-
 function lockoptions_timetoitems() {
     lockoptions('searchform','timefromrestrict', timefromitems);
 }

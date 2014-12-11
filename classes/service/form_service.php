@@ -100,7 +100,8 @@ class form_service {
         return $this->get_renderer()->simple_edit_post($cm, true, $post->id, array(
             'subject' => $post->subject,
             'message' => $message,
-            'private' => $post->private,
+            'privatereply' => $post->privatereply,
+            'reveal' => $post->reveal,
             'itemid'  => $itemid,
         ));
     }
@@ -119,6 +120,7 @@ class form_service {
         return $this->get_renderer()->simple_edit_discussion($cm, $post->id, array(
             'subject' => $post->subject,
             'message' => $message,
+            'reveal' => $post->reveal,
             'groupid' => ($discussion->groupid == -1) ? 0 : $discussion->groupid,
             'itemid'  => $itemid,
         ));

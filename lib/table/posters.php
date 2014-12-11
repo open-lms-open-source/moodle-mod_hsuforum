@@ -27,13 +27,20 @@
 require_once($CFG->libdir.'/tablelib.php');
 
 class hsuforum_lib_table_posters extends table_sql {
-    function __construct($uniqueid) {
+    public function __construct($uniqueid) {
         global $PAGE, $USER;
 
         parent::__construct($uniqueid);
 
         $this->define_columns(array('userpic', 'fullname', 'total', 'posts', 'replies', 'substantive'));
-        $this->define_headers(array('', get_string('fullnameuser'), get_string('totalposts', 'hsuforum'), get_string('posts', 'hsuforum'), get_string('replies', 'hsuforum'), get_string('substantive', 'hsuforum')));
+        $this->define_headers(array(
+            '',
+            get_string('fullnameuser'),
+            get_string('totalposts', 'hsuforum'),
+            get_string('posts', 'hsuforum'),
+            get_string('replies', 'hsuforum'),
+            get_string('substantive', 'hsuforum'))
+        );
 
         $fields = user_picture::fields('u', null, 'id');
         $params = array('forumid' => $PAGE->activityrecord->id);
@@ -45,8 +52,11 @@ class hsuforum_lib_table_posters extends table_sql {
             $usersql = '';
         }
         $this->set_sql(
-            "$fields, COUNT(*) AS total, SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS posts,
-             SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replies, SUM(CASE WHEN p.flags LIKE '%substantive%' THEN 1 ELSE 0 END) AS substantive",
+            "$fields,
+             COUNT(*) AS total,
+             SUM(CASE WHEN p.parent = 0 THEN 1 ELSE 0 END) AS posts,
+             SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replies,
+             SUM(CASE WHEN p.flags LIKE '%substantive%' THEN 1 ELSE 0 END) AS substantive",
             '{hsuforum_posts} p, {hsuforum_discussions} d, {hsuforum} f, {user} u',
             "u.id = p.userid AND p.discussion = d.id AND d.forum = f.id AND f.id = :forumid$usersql GROUP BY p.userid",
             $params

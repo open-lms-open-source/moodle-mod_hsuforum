@@ -43,8 +43,6 @@ class print_adapter implements adapter_interface {
 
     public function __construct($cm) {
         $this->cm = $cm;
-
-        hsuforum_cm_add_cache($this->cm);
     }
 
     /**
@@ -60,7 +58,7 @@ class print_adapter implements adapter_interface {
         $PAGE->set_pagelayout('embedded');
 
         echo $OUTPUT->header();
-        echo $OUTPUT->box_start('mod_hsuforum_posts_container');
+        echo $OUTPUT->box_start('mod-hsuforum-posts-container');
     }
 
     /**
@@ -71,13 +69,10 @@ class print_adapter implements adapter_interface {
      * @return void
      */
     public function send_discussion($discussion, $posts) {
-        global $USER;
-
+        global $PAGE;
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
         foreach ($posts as $post) {
-            $ownpost = ($USER->id == $post->userid);
-
-            hsuforum_print_post($post, $discussion, $this->cm->cache->forum, $this->cm, $this->cm->cache->course, $ownpost, false, false,
-                '', '', null, false, false, false, array());
+            echo $renderer->post($this->cm, $discussion, $post, false, null, false);
         }
     }
 

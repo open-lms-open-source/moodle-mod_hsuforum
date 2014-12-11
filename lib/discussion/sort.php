@@ -30,16 +30,20 @@ class hsuforum_lib_discussion_sort implements Serializable {
      */
     protected $key = 'lastreply';
 
+    /* TODO - why would you sort by the number of unread replies??
+
+    */
+
     /**
      * @var array
      */
     protected $keyopts = array(
         'lastreply' => 'd.timemodified %dir%',
-        'created'   => 'p.created %dir%',
-        'firstname' => 'u.firstname %dir%, d.timemodified %dir%',
-        'lastname'  => 'u.lastname %dir%, d.timemodified %dir%',
         'replies'   => 'extra.replies %dir%, d.timemodified %dir%',
-        'unread'    => 'unread.unread %dir%, d.timemodified %dir%',
+        // 'unread'    => 'unread.unread %dir%, d.timemodified %dir%',
+        'created'   => 'p.created %dir%',
+        // 'firstname' => 'u.firstname %dir%, d.timemodified %dir%',
+        // 'lastname'  => 'u.lastname %dir%, d.timemodified %dir%',
         'subscribe' => 'sd.id %dir%, d.timemodified %dir%',
     );
 
@@ -81,9 +85,6 @@ class hsuforum_lib_discussion_sort implements Serializable {
         $dsub = new hsuforum_lib_discussion_subscribe($forum, $context);
         if (!$dsub->can_subscribe()) {
             $instance->disable('subscribe');
-        }
-        if (!hsuforum_tp_is_tracked($forum)) {
-            $instance->disable('unread');
         }
         return $instance;
     }

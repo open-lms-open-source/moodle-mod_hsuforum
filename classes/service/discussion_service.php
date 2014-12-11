@@ -120,6 +120,7 @@ class discussion_service {
             'messageformat' => FORMAT_MOODLE,
             'messagetrust'  => trusttext_trusted($context),
             'mailnow'       => 0,
+            'reveal'        => 0,
         );
         foreach ($options as $name => $value) {
             if (property_exists($discussion, $name)) {
@@ -153,8 +154,7 @@ class discussion_service {
         if (empty($subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        $message = trim($discussion->message);
-        if (empty($message)) {
+        if (hsuforum_str_empty($discussion->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
         if ($uploader->was_file_uploaded()) {
@@ -246,8 +246,7 @@ class discussion_service {
             print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
-        $forumtracked = hsuforum_tp_is_tracked($forum);
-        $posts        = hsuforum_get_all_discussion_posts($discussion->id, hsuforum_get_layout_mode_sort(HSUFORUM_MODE_NESTED), $forumtracked);
+        $posts        = hsuforum_get_all_discussion_posts($discussion->id);
         $canreply     = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
 
         hsuforum_get_ratings_for_posts($context, $forum, $posts);
@@ -256,25 +255,33 @@ class discussion_service {
     }
 
     /**
-     * Render a discussion
+     * Render a discussion overview (basically the first post)
      *
      * @param int $discussionid
      * @return string
      * @throws \coding_exception
      */
-    public function render_discussion($discussionid) {
+    public function render_discussion($discussionid, $fullthread = false) {
         global $PAGE;
 
-        $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
-
-        /** @var $renderer \mod_hsuforum\render_interface */
-        $renderer = $PAGE->get_renderer('mod_hsuforum', $displayformat);
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
 
         list($cm, $discussion, $posts, $canreply) = $this->get_posts($discussionid);
 
         if (!array_key_exists($discussion->firstpost, $posts)) {
             throw new \coding_exception('Failed to find discussion post');
         }
-        return $renderer->discussion($cm, $discussion, $posts[$discussion->firstpost], $posts, $canreply);
+        return $renderer->discussion($cm, $discussion, $posts[$discussion->firstpost], $fullthread, $posts, $canreply);
+    }
+
+    /**
+     * Render a full discussion thread
+     *
+     * @param int $discussionid
+     * @return string
+     * @throws \coding_exception
+     */
+    public function render_full_thread($discussionid) {
+        return $this->render_discussion($discussionid, true);
     }
 }

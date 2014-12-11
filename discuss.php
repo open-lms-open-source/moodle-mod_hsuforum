@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -28,19 +27,19 @@
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
-    require_once(__DIR__.'/lib/discussion/nav.php');
 
     $d      = required_param('d', PARAM_INT);                // Discussion ID
-    $parent = optional_param('parent', 0, PARAM_INT);        // If set, then display this post and all children.
-    $mode   = optional_param('mode', 0, PARAM_INT);          // If set, changes the layout of the thread
+    $root = optional_param('root', 0, PARAM_INT);        // If set, then display this post and all children.
     $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum
     $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
     $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
     $warned = optional_param('warned', 0, PARAM_INT);
 
+    $config = get_config('hsuforum');
+
     $url = new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$d));
-    if ($parent !== 0) {
-        $url->param('parent', $parent);
+    if ($root !== 0) {
+        $url->param('root', $root);
     }
     $PAGE->set_url($url);
 
@@ -57,7 +56,7 @@
     $modcontext = context_module::instance($cm->id);
     require_capability('mod/hsuforum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'hsuforum');
 
-    if (!empty($CFG->enablerssfeeds) && !empty($CFG->hsuforum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
+    if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
 
         $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': ' . format_string($forum->name);
@@ -137,23 +136,11 @@
 
     unset($SESSION->fromdiscussion);
 
-    if ($mode) {
-        set_user_preference('hsuforum_displaymode', $mode);
+    if (!$root) {
+        $root = $discussion->firstpost;
     }
 
-    $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
-    $displaymode = hsuforum_get_layout_mode($forum);
-
-    if ($parent) {
-        // If flat AND parent, then force nested display this time
-        if ($displaymode == HSUFORUM_MODE_FLATOLDEST or $displaymode == HSUFORUM_MODE_FLATNEWEST or $displaymode == HSUFORUM_MODE_FLATFIRSTNAME or $displaymode == HSUFORUM_MODE_FLATLASTNAME) {
-            $displaymode = HSUFORUM_MODE_NESTED;
-        }
-    } else {
-        $parent = $discussion->firstpost;
-    }
-
-    if (! $post = hsuforum_get_post_full($parent)) {
+    if (! $post = hsuforum_get_post_full($root)) {
         print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
     }
 
@@ -161,18 +148,10 @@
         print_error('noviewdiscussionspermission', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
     }
 
-    if ($mark == 'read' or $mark == 'unread') {
-        if ($CFG->hsuforum_usermarksread && hsuforum_tp_can_track_forums($forum) && hsuforum_tp_is_tracked($forum)) {
-            if ($mark == 'read') {
-                hsuforum_tp_add_read_record($USER->id, $postid);
-            } else {
-                // unread
-                hsuforum_tp_delete_read_records($USER->id, $postid);
-            }
-        }
+    if ($mark == 'read') {
+        hsuforum_tp_add_read_record($USER->id, $postid);
     }
 
-    $searchform = hsuforum_search_form($course);
 
     $forumnode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
     if (empty($forumnode)) {
@@ -187,34 +166,17 @@
     }
 
     $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $modcontext);
-    $dnav  = hsuforum_lib_discussion_nav::get_from_session($cm, $dsort);
 
-    $prevdiscussion = $dnav->get_prev_discussionid($discussion->id);
-    $nextdiscussion = $dnav->get_next_discussionid($discussion->id);
-
-    if ($prevdiscussion) {
-        $prevdiscussion = $DB->get_record('hsuforum_discussions', array('id' => $prevdiscussion));
-    }
-    if ($nextdiscussion) {
-        $nextdiscussion = $DB->get_record('hsuforum_discussions', array('id' => $nextdiscussion));
-    }
-    hsuforum_lib_discussion_nav::set_to_session($dnav);
-
-    $displayformat = get_user_preferences('hsuforum_displayformat', 'header');
-
-    try {
-        /** @var $renderer \mod_hsuforum\render_interface */
-        $renderer = $PAGE->get_renderer('mod_hsuforum', $displayformat);
-    } catch (Exception $e) {
-        /** @var $renderer mod_hsuforum_renderer */
-        $renderer = $PAGE->get_renderer('mod_hsuforum');
-    }
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
     $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);
-    $PAGE->set_button($searchform);
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(format_string($forum->name), 2);
+
+     echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
+     echo $renderer->svg_sprite();
+
 
 /// Check to see if groups are being used in this forum
 /// If so, make sure the current person is allowed to see this discussion
@@ -232,8 +194,36 @@
         }
     }
 
-/// Print the controls across the top
-    echo '<div class="discussioncontrols clearfix">';
+
+    // Print Notice of Warning if Moving this Discussion
+    if ($move > 0 and confirm_sesskey()) {
+        echo $OUTPUT->confirm(
+            get_string('anonymouswarning', 'hsuforum'),
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id, 'move' => $move, 'warned' => 1)),
+            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id))
+        );
+    }
+
+    if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
+        $a = new stdClass();
+        $a->blockafter  = $forum->blockafter;
+        $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
+        echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
+    }
+
+    if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
+                !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
+        echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
+    }
+
+    if ($move == -1 and confirm_sesskey()) {
+        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)));
+    }
+
+    $canrate = has_capability('mod/hsuforum:rate', $modcontext);
+    hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply, $canrate);
+
+    echo '<div class="discussioncontrols">';
 
     if (!empty($CFG->enableportfolios) && has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
         require_once($CFG->libdir.'/portfoliolib.php');
@@ -249,18 +239,8 @@
         echo html_writer::tag('div', $button, array('class' => 'discussioncontrol exporttoportfolio'.$buttonextraclass));
     }
 
-    // groups selector not needed here
-    if ($displayformat != 'article') {
-        echo '<div class="discussioncontrol displaymode">';
-        $select = new single_select(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $discussion->id)), 'mode', hsuforum_get_layout_modes($forum), $displaymode, null, "mode");
-        $select->set_label(get_string('displaydiscussionreplies', 'hsuforum'), array('class' => 'accesshide'));
-        echo $OUTPUT->render($select);
-        echo "</div>";
-    }
-
-    if ($forum->type != 'single'
+    if ($course->format !='singleactivity' && $forum->type != 'single'
                 && has_capability('mod/hsuforum:movediscussions', $modcontext)) {
-
         echo '<div class="discussioncontrol movediscussion">';
         // Popup menu to move discussions to other forums. The discussion in a
         // single discussion forum can't be moved.
@@ -297,40 +277,8 @@
         }
         echo "</div>";
     }
-    echo '<div class="clearfloat">&nbsp;</div>';
     echo "</div>";
 
-    // Print Notice of Warning if Moving this Discussion
-    if ($move > 0 and confirm_sesskey()) {
-        echo $OUTPUT->confirm(
-            get_string('anonymouswarning', 'hsuforum'),
-            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id, 'move' => $move, 'warned' => 1)),
-            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id))
-        );
-    }
+echo $renderer->advanced_editor();
 
-    if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
-        $a = new stdClass();
-        $a->blockafter  = $forum->blockafter;
-        $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
-        echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
-    }
-
-    if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
-                !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
-        echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
-    }
-
-    if ($move == -1 and confirm_sesskey()) {
-        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)));
-    }
-
-    $canrate = has_capability('mod/hsuforum:rate', $modcontext);
-    echo $renderer->discussion_navigation($prevdiscussion, $nextdiscussion, array('class' => 'hsuforumtopicnav_top'));
-    hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
-    echo $renderer->discussion_navigation($prevdiscussion, $nextdiscussion, array('class' => 'hsuforumtopicnav_bottom'));
-
-    echo $OUTPUT->footer();
-
-
-
+echo $OUTPUT->footer();
