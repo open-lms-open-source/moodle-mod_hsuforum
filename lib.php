@@ -196,6 +196,7 @@ function hsuforum_update_instance($forum, $mform) {
             $discussion->messagetrust    = true;
             $discussion->mailnow         = false;
             $discussion->groupid         = -1;
+            $discussion->reveal          = 0;
 
             $message = '';
 

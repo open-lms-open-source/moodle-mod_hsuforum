@@ -799,6 +799,7 @@ if ($fromform = $mform_post->get_data()) {
         }
 
         $fromform->mailnow = empty($fromform->mailnow) ? 0 : 1;
+        $fromform->reveal = empty($fromform->reveal) ? 0 : 1;
 
         $discussion = $fromform;
         $discussion->name    = $fromform->subject;
