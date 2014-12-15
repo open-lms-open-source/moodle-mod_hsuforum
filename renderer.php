@@ -1514,7 +1514,10 @@ HTML;
             );
         }
 
-        if (has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id)) && $post->parent && $forum->type != 'single') {
+        if (has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id))
+                && $post->parent
+                && !$post->privatereply
+                && $forum->type != 'single') {
             $commands['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 get_string('prune', 'hsuforum'),
