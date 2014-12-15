@@ -224,13 +224,9 @@ if ($generalforums) {
         $row = array ($forumlink, $forum->intro, $discussionlink, $unreadlink);
 
         if ($can_subscribe) {
-            if ($forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) {
-                $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
-                        'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
-                        'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
-            } else {
-                $row[] = '-';
-            }
+            $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
+                    'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
+                    'cantsubscribe' => '-'), false, false, true);
 
             $digestoptions_selector->url->param('id', $forum->id);
             if ($forum->maildigest === null) {
@@ -339,13 +335,9 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
             $row = array ($printsection, $forumlink, $forum->intro, $discussionlink, $unreadlink);
 
             if ($can_subscribe) {
-                if ($forum->forcesubscribe != HSUFORUM_DISALLOWSUBSCRIBE) {
-                    $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
-                        'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
-                        'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
-                } else {
-                    $row[] = '-';
-                }
+                $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
+                    'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
+                    'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
 
                 $digestoptions_selector->url->param('id', $forum->id);
                 if ($forum->maildigest === null) {

@@ -668,6 +668,30 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
     }
 
+    if ($oldversion < 2014051203) {
+        // Find records with multiple userid/postid combinations and find the lowest ID.
+        // Later we will remove all those which don't match this ID.
+        $sql = "
+            SELECT MIN(id) as lowid, userid, postid
+            FROM {hsuforum_read}
+            GROUP BY userid, postid
+            HAVING COUNT(id) > 1";
+
+        if ($duplicatedrows = $DB->get_recordset_sql($sql)) {
+            foreach ($duplicatedrows as $row) {
+                $DB->delete_records_select('hsuforum_read', 'userid = ? AND postid = ? AND id <> ?', array(
+                    $row->userid,
+                    $row->postid,
+                    $row->lowid,
+                ));
+            }
+        }
+        $duplicatedrows->close();
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2014051203, 'hsuforum');
+    }
+
     return true;
 }
 
