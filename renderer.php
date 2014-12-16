@@ -335,6 +335,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
         $data->unread         = empty($post->postread) ? true : false;
         $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id));
+        $data->isreply        = false;
         $data->parentfullname = '';
         $data->parentuserurl  = '';
         $data->tools          = implode(' ', $commands);
@@ -362,6 +363,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             hsuforum_mark_post_read($USER->id, $post, $forum->id);
         }
         if (!empty($parent)) {
+            $data->isreply = true;
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
             $data->parentfullname = $parentuser->fullname;
@@ -565,15 +567,11 @@ HTML;
         }
         $byline = get_string('postbyx', 'hsuforum', $byuser);
 
-        if (!empty($p->parentfullname)) {
+        if ($p->isreply) {
             $parent = $p->parentfullname;
             if (!empty($p->parentuserurl)) {
                 $parent = html_writer::link($p->parentuserurl, $p->parentfullname);
             }
-        }
-
-        // Post is a reply.
-        if ($parent) {
             if (empty($p->parentuserpic)) {
                 $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
@@ -583,17 +581,15 @@ HTML;
                         'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
             }
-        }
-
-        // Post is private reply.
-        if ($parent && !empty($p->privatereply)) {
-            if (empty($p->parentuserpic)) {
-                $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
-            } else {
-                $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                        'author' => $byuser,
-                        'parent' => $p->parentuserpic.$parent
-                    ));
+            if (!empty($p->privatereply)) {
+                if (empty($p->parentuserpic)) {
+                    $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
+                } else {
+                    $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
+                            'author' => $byuser,
+                            'parent' => $p->parentuserpic.$parent
+                        ));
+                }
             }
         }
 
