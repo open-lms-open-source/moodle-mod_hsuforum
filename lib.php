@@ -2271,7 +2271,8 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
     foreach ($parsearray as $item){
         if ($item->getType() == TOKEN_USER || $item->getType() == TOKEN_USERID) {
             // Additional user SQL for anonymous posts.
-            $extrasql .= " AND (f.anonymous != 1 OR p.reveal = 1) ";
+            $extrasql .= " AND ((f.anonymous != 1 OR p.userid = :currentuserid) OR p.reveal = 1) ";
+            $params['currentuserid'] = $USER->id;
             break;
         }
     }
