@@ -238,6 +238,7 @@ Y.extend(DOM, Y.Base,
          * @param e
          */
         handleUpdateDiscussion: function (e) {
+            Y.log('Updating discussion HTML: ' + e.discussionid, 'info', 'Dom');
             var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', e.discussionid));
             if (node) {
                 // Updating existing discussion.
@@ -723,9 +724,11 @@ Y.extend(FORM, Y.Base,
 
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
                 if (data.errors === true) {
+                    Y.log('Form failed to validate', 'info', 'Form');
                     wrapperNode.one(SELECTORS.VALIDATION_ERRORS).setHTML(data.html).addClass('notifyproblem');
                     wrapperNode.all('button').removeAttribute('disabled');
                 } else {
+                    Y.log('Form successfully submitted', 'info', 'Form');
                     fn.call(this, data);
                 }
             }, this, fileinputs._nodes.length > 0);
@@ -757,6 +760,7 @@ Y.extend(FORM, Y.Base,
          * @method removeAllForms
          */
         removeAllForms: function() {
+            Y.log('Removing all forms', 'info', 'Form');
 
             Y.all(SELECTORS.POSTS + ' ' + SELECTORS.FORM_REPLY_WRAPPER).each(function(node) {
                 // Don't removing forms for editing, for safety.
@@ -803,6 +807,7 @@ Y.extend(FORM, Y.Base,
          * @param e
          */
         handleFormSubmit: function(e) {
+            Y.log('Submitting edit post form', 'info', 'Form');
 
             e.preventDefault();
 
@@ -833,6 +838,7 @@ Y.extend(FORM, Y.Base,
          * @param postId
          */
         showReplyToForm: function(postId) {
+            Y.log('Show reply to post: ' + postId, 'info', 'Form');
             var postNode = Y.one(SELECTORS.POST_BY_ID.replace('%d', postId));
 
             if (postNode.hasAttribute('data-ispost')) {
@@ -847,6 +853,7 @@ Y.extend(FORM, Y.Base,
          * @method showAddDiscussionForm
          */
         showAddDiscussionForm: function() {
+            Y.log('Show discussion form', 'info', 'Form');
             Y.one(SELECTORS.ADD_DISCUSSION_TARGET)
                 .setHTML(Y.one(SELECTORS.DISCUSSION_TEMPLATE).getHTML())
                 .one(SELECTORS.INPUT_SUBJECT)
@@ -1004,10 +1011,12 @@ Y.extend(ARTICLE, Y.Base,
             }
 
             if (Y.one(SELECTORS.SEARCH_PAGE) !== null) {
+                Y.log('Not binding event handlers on search page', 'info', 'Article');
                 return;
             }
             var rootNode = Y.one(SELECTORS.CONTAINER);
             if (rootNode === null) {
+                Y.log('Failed to bind event handlers', 'error', 'Article');
                 return;
             }
             var dom     = this.get('dom'),
@@ -1120,6 +1129,7 @@ Y.extend(ARTICLE, Y.Base,
         viewDiscussion: function(discussionid, postid) {
             var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', discussionid));
             if (!(node instanceof Y.Node)) {
+                Y.log('Cannot view discussion because discussion node not found', 'error', 'Article');
                 return;
             }
             if (!Y.Lang.isUndefined(postid)) {
@@ -1161,6 +1171,7 @@ Y.extend(ARTICLE, Y.Base,
             if (node === null) {
                 return;
             }
+            Y.log('Deleting post: ' + postId);
 
             this.get('io').send({
                 postid: postId,
@@ -1223,13 +1234,12 @@ M.mod_hsuforum.restoreEditor = function() {
                 // Trigger click on atto source button - we need to update the editor content.
                 M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
             }
-            // Update content editable div.
-            if (contentEditable) {
-                contentEditable.setContent(editArea.getContent());
-            }
         }
 
-
+        // Update content editable div.
+        if (contentEditable) {
+            contentEditable.setContent(editArea.getContent());
+        }
 
         // Switch all editor links to hide mode.
         M.mod_hsuforum.toggleAdvancedEditor(false, true);
@@ -1353,7 +1363,7 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
                 M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
             }
             // Update content of content editable div.
-
+            alert('hello');
             contentEditable.setContent(editArea.getContent());
         }
         Y.one('#hiddenadvancededitor').hide();
