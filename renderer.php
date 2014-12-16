@@ -571,20 +571,30 @@ HTML;
                 $parent = html_writer::link($p->parentuserurl, $p->parentfullname);
             }
         }
+
         // Post is a reply.
-        if($p->depth) {
-            $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                    'parent' => $p->parentuserpic.$parent,
-                    'author' => $byuser,
-                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
+        if ($parent) {
+            if (empty($p->parentuserpic)) {
+                $byline = get_string('replybyx', 'hsuforum', $byuser);
+            } else {
+                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
+                        'parent' => $p->parentuserpic.$parent,
+                        'author' => $byuser,
+                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
-         }
+            }
+        }
+
         // Post is private reply.
-        if ($p->depth && !empty($p->privatereply)) {
-            $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                    'author' => $byuser,
-                    'parent' => $p->parentuserpic.$parent
-                ));
+        if ($parent && !empty($p->privatereply)) {
+            if (empty($p->parentuserpic)) {
+                $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
+            } else {
+                $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
+                        'author' => $byuser,
+                        'parent' => $p->parentuserpic.$parent
+                    ));
+            }
         }
 
         $author = s(strip_tags($p->fullname));
