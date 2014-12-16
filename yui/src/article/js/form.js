@@ -63,16 +63,31 @@ Y.extend(FORM, Y.Base,
                 return cleanhtml.innerHTML;
             };
 
-            if (e._event && e._event.clipboardData && e._event.clipboardData.getData) {
-                if (/text\/html/.test(e._event.clipboardData.types)
-                    || e._event.clipboardData.types.contains('text/html')
-                ) {
-                    datastr = e._event.clipboardData.getData('text/html');
-                }
-                else if (/text\/plain/.test(e._event.clipboardData.types)
-                    || e._event.clipboardData.types.contains('text/plain')
-                ) {
-                    datastr = e._event.clipboardData.getData('text/plain');
+            var clipboardData = false;
+            if (e._event && e._event.clipboardData && e._event.clipboardData.getData){
+                // Proper web browsers.
+                clipboardData = e._event.clipboardData;
+            } else if (window.clipboardData && window.clipboardData.getData){
+                // IE11 and below.
+                clipboardData = window.clipboardData;
+            }
+
+            if (clipboardData) {
+                if (clipboardData.types) {
+                    // Get data the standard way.
+                    if (/text\/html/.test(clipboardData.types)
+                        || clipboardData.types.contains('text/html')
+                    ) {
+                        datastr = clipboardData.getData('text/html');
+                    }
+                    else if (/text\/plain/.test(clipboardData.types)
+                        || clipboardData.types.contains('text/plain')
+                    ) {
+                        datastr = clipboardData.getData('text/plain');
+                    }
+                } else {
+                    // Get data the IE11 and below way.
+                    datastr = clipboardData.getData('Text');
                 }
                 if (datastr !== '') {
                     if (sel.getRangeAt && sel.rangeCount) {
