@@ -2277,7 +2277,10 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
         }
     }
 
-    $selectsql = "(p.privatereply = 0 OR p.privatereply = :privatereply1 OR p.userid = :privatereply2)
+    $selectsql = "(p.privatereply = 0
+                OR p.privatereply = :privatereply1
+                OR p.userid = :privatereply2
+               )
                AND $messagesearch
                AND p.discussion = d.id
                AND p.userid = u.id
