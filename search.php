@@ -306,7 +306,11 @@ foreach ($posts as $post) {
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
     $commands = array('seeincontext' => $fulllink);
-    $parent = $DB->get_record('hsuforum_posts', array('id' =>$post->parent));
+    if (empty($post->parent)) {
+        $parent = null;
+    } else {
+        $parent = $DB->get_record('hsuforum_posts', array('id' =>$post->parent));
+    }
     $rendereredpost = $renderer->post($cm, $discussion, $post, false, $parent, $commands, 0, $strippedsearch);
     echo html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
 }

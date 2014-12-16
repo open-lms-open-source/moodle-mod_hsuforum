@@ -337,12 +337,13 @@ M.mod_hsuforum.restoreEditor = function() {
                 // Trigger click on atto source button - we need to update the editor content.
                 M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
             }
+            // Update content editable div.
+            if (contentEditable) {
+                contentEditable.setContent(editArea.getContent());
+            }
         }
 
-        // Update content editable div.
-        if (contentEditable) {
-            contentEditable.setContent(editArea.getContent());
-        }
+
 
         // Switch all editor links to hide mode.
         M.mod_hsuforum.toggleAdvancedEditor(false, true);
@@ -466,6 +467,7 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
                 M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
             }
             // Update content of content editable div.
+
             contentEditable.setContent(editArea.getContent());
         }
         Y.one('#hiddenadvancededitor').hide();

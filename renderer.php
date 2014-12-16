@@ -363,13 +363,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
         if (!empty($parent)) {
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
-            if (empty($parentuser->anonymous) && (empty($parentuser->user_picture) || empty($parentuser->picture))) {
-                $usernamefields = user_picture::fields();
-                $parentuser = $DB->get_record('user', array('id' => $discussion->userid),
-                    $usernamefields, MUST_EXIST);
-                $parentuser->fullname = fullname($parentuser);
-                $parentuser->user_picture = new user_picture($parentuser);
-            }
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
             $data->parentfullname = $parentuser->fullname;
             if (!empty($parentuser->user_picture)) {
@@ -587,7 +580,7 @@ HTML;
                 ));
          }
         // Post is private reply.
-        if (!empty($p->privatereply)) {
+        if ($p->depth && !empty($p->privatereply)) {
             $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
                     'author' => $byuser,
                     'parent' => $p->parentuserpic.$parent
