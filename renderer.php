@@ -1203,17 +1203,25 @@ HTML;
      * @return string
      */
     public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
-        global $DB;
+        global $DB, $USER;
+
+        $context = context_module::instance($cm->id);
+        $forum = hsuforum_get_cm_forum($cm);
+        $user = $USER;
 
         if (!empty($postid)) {
             $params = array('edit' => $postid);
             $legend = get_string('editingpost', 'hsuforum');
+            $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
+            if ($post->userid != $USER->id) {
+                $user = $DB->get_record('user', ['id' => $post->userid]);
+                $user = hsuforum_anonymize_user($user, $forum, $post);
+                $data['userpicture'] = $this->output->user_picture($user, array('link' => false, 'size' => 100));
+            }
         } else {
             $params  = array('forum' => $cm->instance);
             $legend = get_string('addyourdiscussion', 'hsuforum');
         }
-        $context = context_module::instance($cm->id);
-        $forum = hsuforum_get_cm_forum($cm);
 
         $data += array(
             'itemid'        => 0,
@@ -1272,18 +1280,26 @@ HTML;
      * @return string
      */
     public function simple_edit_post($cm, $isedit = false, $postid = 0, array $data = array()) {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
+
+        $context = context_module::instance($cm->id);
+        $forum = hsuforum_get_cm_forum($cm);
+        $user = $USER;
 
         if ($isedit) {
             $param  = 'edit';
             $legend = get_string('editingpost', 'hsuforum');
+            $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
+            if ($post->userid != $USER->id) {
+                $user = $DB->get_record('user', ['id' => $post->userid]);
+                $user = hsuforum_anonymize_user($user, $forum, $post);
+                $data['userpicture'] = $this->output->user_picture($user, array('link' => false, 'size' => 100));
+            }
         } else {
             // It is a reply, AKA new post
             $param  = 'reply';
             $legend = get_string('addareply', 'hsuforum');
         }
-        $context = context_module::instance($cm->id);
-        $forum = hsuforum_get_cm_forum($cm);
 
         $data += array(
             'itemid'        => 0,
@@ -1301,7 +1317,7 @@ HTML;
         ));
 
         $extrahtml = '';
-        if (has_capability('mod/hsuforum:allowprivate', $context)
+        if (has_capability('mod/hsuforum:allowprivate', $context, $user)
             && $forum->allowprivatereplies !== '0'
         ) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])).
@@ -1358,6 +1374,8 @@ HTML;
             'extrahtml'          => '',
             'advancedlabel'      => get_string('useadvancededitor', 'hsuforum')
         );
+
+
 
         $t            = (object) $t;
         $legend       = s($t->legend);

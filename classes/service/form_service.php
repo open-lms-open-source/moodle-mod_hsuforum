@@ -70,13 +70,13 @@ class form_service {
      * @param object $post
      */
     protected function append_edited_by($post) {
-        global $CFG, $USER;
+        global $CFG, $USER, $COURSE;
 
         if ($USER->id != $post->userid) { // Not the original author, so add a message to the end
             $data       = new \stdClass();
             $data->date = userdate($post->modified);
             if ($post->messageformat == FORMAT_HTML) {
-                $data->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$USER->id.'&course='.$post->course.'">'.
+                $data->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$USER->id.'&course='.$COURSE->id.'">'.
                     fullname($USER).'</a>';
                 $post->message .= '<p><span class="edited">('.get_string('editedby', 'hsuforum', $data).')</span></p>';
             } else {
