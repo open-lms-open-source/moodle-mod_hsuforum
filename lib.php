@@ -6855,19 +6855,24 @@ function hsuforum_cm_info_view(cm_info $cm) {
     }
 
     $forum = hsuforum_get_cm_forum($cm);
+
+    $out = '';
+
     if ($forum->showrecent) {
-        $out = hsuforum_recent_activity($cm->get_course(), true, 0, $forum->id);
-        if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
-            $out .= '<a class="unread" href="' . $cm->url . '">';
-            if ($unread == 1) {
-                $out .= get_string('unreadpostsone', 'hsuforum');
-            } else {
-                $out .= get_string('unreadpostsnumber', 'hsuforum', $unread);
-            }
-            $out .= '</a>';
-        }
-        $cm->set_after_link($out);
+        $out .= hsuforum_recent_activity($cm->get_course(), true, 0, $forum->id);
     }
+
+    if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
+        $out .= '<a class="unread" href="' . $cm->url . '">';
+        if ($unread == 1) {
+            $out .= get_string('unreadpostsone', 'hsuforum');
+        } else {
+            $out .= get_string('unreadpostsnumber', 'hsuforum', $unread);
+        }
+        $out .= '</a>';
+    }
+
+    $cm->set_after_link($out);
 }
 
 /**
