@@ -1207,7 +1207,6 @@ HTML;
 
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
-        $user = $USER;
 
         if (!empty($postid)) {
             $params = array('edit' => $postid);
@@ -1284,16 +1283,16 @@ HTML;
 
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
-        $user = $USER;
+        $postuser = $USER;
 
         if ($isedit) {
             $param  = 'edit';
             $legend = get_string('editingpost', 'hsuforum');
             $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
             if ($post->userid != $USER->id) {
-                $user = $DB->get_record('user', ['id' => $post->userid]);
-                $user = hsuforum_anonymize_user($user, $forum, $post);
-                $data['userpicture'] = $this->output->user_picture($user, array('link' => false, 'size' => 100));
+                $postuser = $DB->get_record('user', ['id' => $post->userid]);
+                $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
+                $data['userpicture'] = $this->output->user_picture($postuser, array('link' => false, 'size' => 100));
             }
         } else {
             // It is a reply, AKA new post
@@ -1317,7 +1316,7 @@ HTML;
         ));
 
         $extrahtml = '';
-        if (has_capability('mod/hsuforum:allowprivate', $context, $user)
+        if (has_capability('mod/hsuforum:allowprivate', $context, $postuser)
             && $forum->allowprivatereplies !== '0'
         ) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])).
