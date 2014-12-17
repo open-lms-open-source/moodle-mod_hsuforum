@@ -693,6 +693,20 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
     }
 
+    if ($oldversion < 2014121700) {
+        // Define fields to be added to hsuforum table.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('showrecent', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'displaywordcount');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014121700, 'hsuforum');
+    }
+
 
     return true;
 }

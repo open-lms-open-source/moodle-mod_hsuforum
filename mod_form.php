@@ -52,6 +52,11 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
         $this->add_intro_editor(true, get_string('forumintro', 'hsuforum'));
 
+        // Display recent posts on course page?
+        $mform->addElement('advcheckbox', 'showrecent', get_string('showrecent', 'hsuforum'));
+        $mform->addHelpButton('showrecent', 'showrecent', 'hsuforum');
+        $mform->setDefault('showrecent', 1);
+
         $forumtypes = hsuforum_get_hsuforum_types();
         core_collator::asort($forumtypes, core_collator::SORT_STRING);
         $mform->addElement('select', 'type', get_string('forumtype', 'hsuforum'), $forumtypes);
