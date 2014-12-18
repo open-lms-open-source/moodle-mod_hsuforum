@@ -7356,8 +7356,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
     }
     if (empty($forum->anonymous)
         or !empty($post->reveal)
-        // Note: we do not check $post->privatereply against $USER->id as the poster should remain private to the
-        // person who was replied to.
+        or ($post->privatereply == $USER->id)
         or ($post->userid == $USER->id)
     ) {
         return $user;
