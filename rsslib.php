@@ -184,7 +184,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
     $params = array_merge($params, $groupparams);
 
     $forumsort = "d.timemodified DESC";
-    $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.reveal AS postreveal, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
+    $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.reveal AS postreveal, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust, p.privatereply AS postprivatereply";
     $userpicturefields = user_picture::fields('u', null, 'userid');
 
     $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid,
@@ -237,13 +237,14 @@ function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                  d.timestart,
                  d.timeend,
                  u.id AS userid,
-                 $usernamefields
+                 $usernamefields,
                  p.reveal AS postreveal,
                  p.subject AS postsubject,
                  p.message AS postmessage,
                  p.created AS postcreated,
                  p.messageformat AS postformat,
                  p.messagetrust AS posttrust,
+                 p.privatereply AS postprivatereply,
                  p.parent as postparent
             FROM {hsuforum_discussions} d,
                {hsuforum_posts} p,
@@ -338,6 +339,7 @@ function hsuforum_rss_feed_contents($forum, $sql, $params, $context) {
             $post->id = $rec->postid;
             $post->parent = $rec->postparent;
             $post->userid = $rec->userid;
+            $post->privatereply = $rec->postprivatereply;
         }
 
         if ($isdiscussion && !hsuforum_user_can_see_discussion($forum, $discussion, $context)) {
