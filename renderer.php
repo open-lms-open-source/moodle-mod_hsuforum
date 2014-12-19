@@ -362,8 +362,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($data->unread) {
             hsuforum_mark_post_read($USER->id, $post, $forum->id);
         }
+
         if (!empty($parent)) {
-            $data->isreply = true;
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
             $data->parentfullname = $parentuser->fullname;
@@ -374,6 +374,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     array('link' => false, 'size' => 100, 'alttext' => false));
             }
         }
+
+        if ($depth > 0) {
+            // Top level responses don't count.
+            $data->isreply = true;
+        }
+
         return $this->post_template($data);
     }
 
