@@ -6850,11 +6850,12 @@ function hsuforum_cm_info_view(cm_info $cm) {
         return;
     }
 
+    $config = get_config('hsuforum');
     $forum = hsuforum_get_cm_forum($cm);
 
     $out = '';
 
-    if ($forum->showrecent) {
+    if (empty($config->hiderecentposts) && $forum->showrecent) {
         $out .= hsuforum_recent_activity($cm->get_course(), true, 0, $forum->id);
     }
 
