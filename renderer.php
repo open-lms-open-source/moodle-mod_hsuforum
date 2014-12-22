@@ -1290,18 +1290,22 @@ HTML;
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
         $postuser = $USER;
+        $ownpost = false;
 
         if ($isedit) {
             $param  = 'edit';
             $legend = get_string('editingpost', 'hsuforum');
             $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
-            if ($post->userid != $USER->id) {
+            if ($post->userid == $USER->id) {
+                $ownpost = true;
+            } else {
                 $postuser = $DB->get_record('user', ['id' => $post->userid]);
                 $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
                 $data['userpicture'] = $this->output->user_picture($postuser, array('link' => false, 'size' => 100));
             }
         } else {
             // It is a reply, AKA new post
+            $ownpost = true;
             $param  = 'reply';
             $legend = get_string('addareply', 'hsuforum');
         }
@@ -1328,7 +1332,8 @@ HTML;
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])).
                 get_string('privatereply', 'hsuforum'));
         }
-        if ($forum->anonymous) {
+        if ($forum->anonymous && !$isedit
+            || $forum->anonymous && $isedit && $ownpost) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
                 get_string('reveal', 'hsuforum'));
         }
