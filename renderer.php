@@ -335,6 +335,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
         $data->unread         = empty($post->postread) ? true : false;
         $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id));
+        $data->isreply        = false;
         $data->parentfullname = '';
         $data->parentuserurl  = '';
         $data->tools          = implode(' ', $commands);
@@ -361,15 +362,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($data->unread) {
             hsuforum_mark_post_read($USER->id, $post, $forum->id);
         }
+
         if (!empty($parent)) {
             $parentuser = hsuforum_extract_postuser($parent, $forum, context_module::instance($cm->id));
-            if (empty($parentuser->anonymous) && (empty($parentuser->user_picture) || empty($parentuser->picture))) {
-                $usernamefields = user_picture::fields();
-                $parentuser = $DB->get_record('user', array('id' => $discussion->userid),
-                    $usernamefields, MUST_EXIST);
-                $parentuser->fullname = fullname($parentuser);
-                $parentuser->user_picture = new user_picture($parentuser);
-            }
             $data->parenturl = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$parent->discussion.'#p'.$parent->id;
             $data->parentfullname = $parentuser->fullname;
             if (!empty($parentuser->user_picture)) {
@@ -379,6 +374,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                     array('link' => false, 'size' => 100, 'alttext' => false));
             }
         }
+
+        if ($depth > 0) {
+            // Top level responses don't count.
+            $data->isreply = true;
+        }
+
         return $this->post_template($data);
     }
 
@@ -572,26 +573,30 @@ HTML;
         }
         $byline = get_string('postbyx', 'hsuforum', $byuser);
 
-        if (!empty($p->parentfullname)) {
+        if ($p->isreply) {
             $parent = $p->parentfullname;
             if (!empty($p->parentuserurl)) {
                 $parent = html_writer::link($p->parentuserurl, $p->parentfullname);
             }
-        }
-        // Post is a reply.
-        if($p->depth) {
-            $byline = get_string('postbyxinreplytox', 'hsuforum', array(
-                    'parent' => $p->parentuserpic.$parent,
-                    'author' => $byuser,
-                    'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
+            if (empty($p->parentuserpic)) {
+                $byline = get_string('replybyx', 'hsuforum', $byuser);
+            } else {
+                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
+                        'parent' => $p->parentuserpic.$parent,
+                        'author' => $byuser,
+                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
-         }
-        // Post is private reply.
-        if (!empty($p->privatereply)) {
-            $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
-                    'author' => $byuser,
-                    'parent' => $p->parentuserpic.$parent
-                ));
+            }
+            if (!empty($p->privatereply)) {
+                if (empty($p->parentuserpic)) {
+                    $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
+                } else {
+                    $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
+                            'author' => $byuser,
+                            'parent' => $p->parentuserpic.$parent
+                        ));
+                }
+            }
         }
 
         $author = s(strip_tags($p->fullname));
@@ -1204,17 +1209,24 @@ HTML;
      * @return string
      */
     public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
-        global $DB;
+        global $DB, $USER;
+
+        $context = context_module::instance($cm->id);
+        $forum = hsuforum_get_cm_forum($cm);
 
         if (!empty($postid)) {
             $params = array('edit' => $postid);
             $legend = get_string('editingpost', 'hsuforum');
+            $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
+            if ($post->userid != $USER->id) {
+                $user = $DB->get_record('user', ['id' => $post->userid]);
+                $user = hsuforum_anonymize_user($user, $forum, $post);
+                $data['userpicture'] = $this->output->user_picture($user, array('link' => false, 'size' => 100));
+            }
         } else {
             $params  = array('forum' => $cm->instance);
             $legend = get_string('addyourdiscussion', 'hsuforum');
         }
-        $context = context_module::instance($cm->id);
-        $forum = hsuforum_get_cm_forum($cm);
 
         $data += array(
             'itemid'        => 0,
@@ -1273,18 +1285,30 @@ HTML;
      * @return string
      */
     public function simple_edit_post($cm, $isedit = false, $postid = 0, array $data = array()) {
-        global $DB, $CFG;
+        global $DB, $CFG, $USER;
+
+        $context = context_module::instance($cm->id);
+        $forum = hsuforum_get_cm_forum($cm);
+        $postuser = $USER;
+        $ownpost = false;
 
         if ($isedit) {
             $param  = 'edit';
             $legend = get_string('editingpost', 'hsuforum');
+            $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
+            if ($post->userid == $USER->id) {
+                $ownpost = true;
+            } else {
+                $postuser = $DB->get_record('user', ['id' => $post->userid]);
+                $postuser = hsuforum_anonymize_user($postuser, $forum, $post);
+                $data['userpicture'] = $this->output->user_picture($postuser, array('link' => false, 'size' => 100));
+            }
         } else {
             // It is a reply, AKA new post
+            $ownpost = true;
             $param  = 'reply';
             $legend = get_string('addareply', 'hsuforum');
         }
-        $context = context_module::instance($cm->id);
-        $forum = hsuforum_get_cm_forum($cm);
 
         $data += array(
             'itemid'        => 0,
@@ -1302,13 +1326,14 @@ HTML;
         ));
 
         $extrahtml = '';
-        if (has_capability('mod/hsuforum:allowprivate', $context)
+        if (has_capability('mod/hsuforum:allowprivate', $context, $postuser)
             && $forum->allowprivatereplies !== '0'
         ) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])).
                 get_string('privatereply', 'hsuforum'));
         }
-        if ($forum->anonymous) {
+        if ($forum->anonymous && !$isedit
+            || $forum->anonymous && $isedit && $ownpost) {
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
                 get_string('reveal', 'hsuforum'));
         }
@@ -1359,6 +1384,8 @@ HTML;
             'extrahtml'          => '',
             'advancedlabel'      => get_string('useadvancededitor', 'hsuforum')
         );
+
+
 
         $t            = (object) $t;
         $legend       = s($t->legend);
@@ -1514,7 +1541,10 @@ HTML;
             );
         }
 
-        if (has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id)) && $post->parent && $forum->type != 'single') {
+        if (has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id))
+                && $post->parent
+                && !$post->privatereply
+                && $forum->type != 'single') {
             $commands['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 get_string('prune', 'hsuforum'),

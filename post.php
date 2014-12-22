@@ -109,6 +109,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error("invalidcoursemodule");
     }
 
+    // Retrieve the contexts.
+    $modcontext    = context_module::instance($cm->id);
     $coursecontext = context_course::instance($course->id);
 
     if (! hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm)) {
@@ -124,7 +126,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('nopostforum', 'hsuforum');
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $coursecontext)) {
+    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         print_error("activityiscurrentlyhidden");
     }
 
@@ -180,8 +182,9 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $renderer = $PAGE->get_renderer('mod_hsuforum');
     $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
-    $coursecontext = context_course::instance($course->id);
+    // Retrieve the contexts.
     $modcontext    = context_module::instance($cm->id);
+    $coursecontext = context_course::instance($course->id);
 
     if (! hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
         if (!isguestuser()) {
@@ -210,7 +213,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         }
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $coursecontext)) {
+    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         print_error("activityiscurrentlyhidden");
     }
 
@@ -799,6 +802,7 @@ if ($fromform = $mform_post->get_data()) {
         }
 
         $fromform->mailnow = empty($fromform->mailnow) ? 0 : 1;
+        $fromform->reveal = empty($fromform->reveal) ? 0 : 1;
 
         $discussion = $fromform;
         $discussion->name    = $fromform->subject;

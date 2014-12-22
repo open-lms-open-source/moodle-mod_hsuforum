@@ -577,6 +577,30 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014051201, 'hsuforum');
     }
 
+    if ($oldversion < 2014051203) {
+        // Find records with multiple userid/postid combinations and find the lowest ID.
+        // Later we will remove all those which don't match this ID.
+        $sql = "
+            SELECT MIN(id) as lowid, userid, postid
+            FROM {hsuforum_read}
+            GROUP BY userid, postid
+            HAVING COUNT(id) > 1";
+
+        if ($duplicatedrows = $DB->get_recordset_sql($sql)) {
+            foreach ($duplicatedrows as $row) {
+                $DB->delete_records_select('hsuforum_read', 'userid = ? AND postid = ? AND id <> ?', array(
+                    $row->userid,
+                    $row->postid,
+                    $row->lowid,
+                ));
+            }
+        }
+        $duplicatedrows->close();
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2014051203, 'hsuforum');
+    }
+
     if ($oldversion < 2014092400) {
 
         // Define fields to be added to hsuforum table.
@@ -625,6 +649,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014093001, 'hsuforum');
     }
 
+
     // Convert global configs to plugin configs
     if ($oldversion < 2014100600) {
         $configs = array(
@@ -667,6 +692,21 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2014100600, 'hsuforum');
 
     }
+
+    if ($oldversion < 2014121700) {
+        // Define fields to be added to hsuforum table.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('showrecent', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'displaywordcount');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014121700, 'hsuforum');
+    }
+
 
     return true;
 }

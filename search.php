@@ -227,6 +227,7 @@ $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
 echo $OUTPUT->box_start("mod-hsuforum-posts-container article");
 echo html_writer::start_tag('ol', array('class' => 'hsuforum-thread-replies-list'));
 $resultnumber = ($page * $perpage) + 1;
+$modinfo = get_fast_modinfo($course);
 foreach ($posts as $post) {
 
 
@@ -306,8 +307,13 @@ foreach ($posts as $post) {
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
     $commands = array('seeincontext' => $fulllink);
-    $parent = $DB->get_record('hsuforum_posts', array('id' =>$post->parent));
-    $rendereredpost = $renderer->post($cm, $discussion, $post, false, $parent, $commands, 0, $strippedsearch);
+    if (empty($post->parent)) {
+        $parent = null;
+    } else {
+        $parent = $DB->get_record('hsuforum_posts', array('id' =>$post->parent));
+    }
+    $postcm = $modinfo->instances['hsuforum'][$discussion->forum];
+    $rendereredpost = $renderer->post($postcm, $discussion, $post, false, $parent, $commands, 0, $strippedsearch);
     echo html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
 }
 echo html_writer::end_tag('ol');

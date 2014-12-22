@@ -160,8 +160,8 @@ class mod_hsuforum_external extends external_api {
             array(
                 'forumids' => new external_multiple_structure(new external_value(PARAM_INT, 'forum ID',
                         '', VALUE_REQUIRED, '', NULL_NOT_ALLOWED), 'Array of Forum IDs', VALUE_REQUIRED),
-                'limitfrom' => new external_value(PARAM_INT, 'limit from', VALUE_OPTIONAL, 0),
-                'limitnum' => new external_value(PARAM_INT, 'limit number', VALUE_OPTIONAL, 0)
+                'limitfrom' => new external_value(PARAM_INT, 'limit from', VALUE_DEFAULT, 0),
+                'limitnum' => new external_value(PARAM_INT, 'limit number', VALUE_DEFAULT, 0)
             )
         );
     }
@@ -195,10 +195,6 @@ class mod_hsuforum_external extends external_api {
 
         // Array to store the forum discussions to return.
         $arrdiscussions = array();
-        // Keep track of the course ids we have performed a require_course_login check on to avoid repeating.
-        $arrcourseschecked = array();
-        // Store the modinfo for the forums in an individual courses.
-        $arrcoursesforuminfo = array();
         // Keep track of the users we have looked up in the DB.
         $arrusers = array();
 
@@ -206,97 +202,109 @@ class mod_hsuforum_external extends external_api {
         foreach ($forumids as $id) {
             // Get the forum object.
             $forum = $DB->get_record('hsuforum', array('id' => $id), '*', MUST_EXIST);
-            // Check that that user can view this course if check not performed yet.
-            if (!in_array($forum->course, $arrcourseschecked)) {
-                // Check the user can function in this context.
-                self::validate_context(context_course::instance($forum->course));
-                // Add to the array.
-                $arrcourseschecked[] = $forum->course;
-            }
-            // Get the modinfo for the course if we haven't already.
-            if (!isset($arrcoursesforuminfo[$forum->course])) {
-                $modinfo = get_fast_modinfo($forum->course);
-                $arrcoursesforuminfo[$forum->course] = $modinfo->get_instances_of('hsuforum');
-            }
-            // Check if this forum does not exist in the modinfo array, should always be false unless DB is borked.
-            if (empty($arrcoursesforuminfo[$forum->course][$forum->id])) {
-                throw new moodle_exception('invalidmodule', 'error');
-            }
-            // We now have the course module.
-            $cm = $arrcoursesforuminfo[$forum->course][$forum->id];
-            // If the forum is not visible throw an exception.
-            if (!$cm->uservisible) {
-                throw new moodle_exception('nopermissiontoshow', 'error');
-            }
+
+            $course = get_course($forum->course);
+
+            $modinfo = get_fast_modinfo($course);
+            $forums  = $modinfo->get_instances_of('hsuforum');
+            $cm = $forums[$forum->id];
+
             // Get the module context.
             $modcontext = context_module::instance($cm->id);
-            // Check they have the view forum capability.
-            require_capability('mod/hsuforum:viewdiscussion', $modcontext);
-            // Check if they can view full names.
-            $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
-            // Get the unreads array, this takes a forum id and returns data for all discussions.
-            // The forum function returns the replies for all the discussions in a given forum.
-            // Get the discussions for this forum.
-            $order = 'timemodified DESC';
-            if ($discussions = hsuforum_get_discussions($cm, $order, true, array($limitfrom, $limitnum))) {
-                foreach ($discussions as $discussion) {
-                    // If the forum is of type qanda and the user has not posted in the discussion
-                    // we need to ensure that they have the required capability.
-                    if ($forum->type == 'qanda' && !hsuforum_user_has_posted($forum->id, $discussion->discussion, $USER->id)) {
-                        require_capability('mod/hsuforum:viewqandawithoutposting', $modcontext);
-                    }
-                    $usernamefields = user_picture::fields();
-                    // If we don't have the users details then perform DB call.
-                    if (empty($arrusers[$discussion->userid])) {
-                        $arrusers[$discussion->userid] = $DB->get_record('user', array('id' => $discussion->userid),
-                                $usernamefields, MUST_EXIST);
-                    }
-                    // Create object to return.
-                    $return = new stdClass();
-                    $return->id = (int) $discussion->discussion;
-                    $return->course = $cm->course;
-                    $return->forum = $forum->id;
-                    $return->name = $discussion->name;
-                    $return->userid = $discussion->userid;
-                    $return->groupid = $discussion->groupid;
-                    $return->assessed = $discussion->assessed;
-                    $return->timemodified = (int) $discussion->timemodified;
-                    $return->usermodified = $discussion->usermodified;
-                    $return->timestart = $discussion->timestart;
-                    $return->timeend = $discussion->timeend;
-                    $return->firstpost = (int) $discussion->id;
-                    $return->firstuserfullname = fullname($arrusers[$discussion->userid], $canviewfullname);
-                    $return->firstuserimagealt = $arrusers[$discussion->userid]->imagealt;
-                    $return->firstuserpicture = $arrusers[$discussion->userid]->picture;
-                    $return->firstuseremail = $arrusers[$discussion->userid]->email;
-                    $return->subject = $discussion->subject;
-                    $return->numunread = '';
-                    $return->numunread = (int) $discussion->unread;
 
-                    // Check if there are any replies to this discussion.
-                    if (!is_null($discussion->replies)) {
-                        $return->numreplies = (int) $discussion->replies;
-                        $return->lastpost = (int) $discussion->lastpostid;
-                     } else { // No replies, so the last post will be the first post.
-                        $return->numreplies = 0;
-                        $return->lastpost = (int) $discussion->id;
-                     }
-                    // Get the last post as well as the user who made it.
-                    $lastpost = $DB->get_record('hsuforum_posts', array('id' => $return->lastpost), '*', MUST_EXIST);
-                    if (empty($arrusers[$lastpost->userid])) {
-                        $arrusers[$lastpost->userid] = $DB->get_record('user', array('id' => $lastpost->userid),
-                                $usernamefields, MUST_EXIST);
+            // Validate the context.
+            self::validate_context($modcontext);
+
+            require_capability('mod/hsuforum:viewdiscussion', $modcontext);
+
+            // Get the discussions for this forum.
+            $params = array();
+            $groupselect = "";
+            $groupmode = groups_get_activity_groupmode($cm, $course);
+
+            if ($groupmode and $groupmode != VISIBLEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
+                // Get all the discussions from all the groups this user belongs to.
+                $usergroups = groups_get_user_groups($course->id);
+                if (!empty($usergroups['0'])) {
+                    list($sql, $params) = $DB->get_in_or_equal($usergroups['0']);
+                    $groupselect = "AND (groupid $sql OR groupid = -1)";
+                }
+
+                array_unshift($params, $id);
+                $select = "forum = ? $groupselect";
+
+                if ($discussions = $DB->get_records_select('hsuforum_discussions', $select, $params, 'timemodified DESC', '*',
+                    $limitfrom, $limitnum)) {
+
+                    // Check if they can view full names.
+                    $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
+                    // Get the unreads array, this takes a forum id and returns data for all discussions.
+                    $unreads = array();
+                    if ($cantrack = hsuforum_tp_can_track_forums($forum)) {
+                        if ($forumtracked = hsuforum_tp_is_tracked($forum)) {
+                            $unreads = hsuforum_get_discussions_unread($cm);
+                        }
                     }
-                    $return->lastuserid = $lastpost->userid;
-                    $return->lastuserfullname = fullname($arrusers[$lastpost->userid], $canviewfullname);
-                    $return->lastuserimagealt = $arrusers[$lastpost->userid]->imagealt;
-                    $return->lastuserpicture = $arrusers[$lastpost->userid]->picture;
-                    $return->lastuseremail = $arrusers[$lastpost->userid]->email;
-                    // Add the discussion statistics to the array to return.
-                    $arrdiscussions[$return->id] = (array) $return;
+                    // The forum function returns the replies for all the discussions in a given forum.
+                    $replies = hsuforum_count_discussion_replies($id);
+                    foreach ($discussions as $discussion) {
+                        // This function checks capabilities, timed discussions, groups and qanda forums posting.
+                        if (!hsuforum_user_can_see_discussion($forum, $discussion, $modcontext)) {
+                            continue;
+                        }
+                        $usernamefields = user_picture::fields();
+                        // If we don't have the users details then perform DB call.
+                        if (empty($arrusers[$discussion->userid])) {
+                            $arrusers[$discussion->userid] = $DB->get_record('user', array('id' => $discussion->userid),
+                                    $usernamefields, MUST_EXIST);
+                        }
+                        // Create object to return.
+                        $return = new stdClass();
+                        $return->id = (int) $discussion->discussion;
+                        $return->course = $cm->course;
+                        $return->forum = $forum->id;
+                        $return->name = $discussion->name;
+                        $return->userid = $discussion->userid;
+                        $return->groupid = $discussion->groupid;
+                        $return->assessed = $discussion->assessed;
+                        $return->timemodified = (int) $discussion->timemodified;
+                        $return->usermodified = $discussion->usermodified;
+                        $return->timestart = $discussion->timestart;
+                        $return->timeend = $discussion->timeend;
+                        $return->firstpost = (int) $discussion->id;
+                        $return->firstuserfullname = fullname($arrusers[$discussion->userid], $canviewfullname);
+                        $return->firstuserimagealt = $arrusers[$discussion->userid]->imagealt;
+                        $return->firstuserpicture = $arrusers[$discussion->userid]->picture;
+                        $return->firstuseremail = $arrusers[$discussion->userid]->email;
+                        $return->subject = $discussion->subject;
+                        $return->numunread = '';
+                        $return->numunread = (int) $discussion->unread;
+
+                        // Check if there are any replies to this discussion.
+                        if (!is_null($discussion->replies)) {
+                            $return->numreplies = (int) $discussion->replies;
+                            $return->lastpost = (int) $discussion->lastpostid;
+                        } else { // No replies, so the last post will be the first post.
+                            $return->numreplies = 0;
+                            $return->lastpost = (int) $discussion->firstpost;
+                        }
+                        // Get the last post as well as the user who made it.
+                        $lastpost = $DB->get_record('hsuforum_posts', array('id' => $return->lastpost), '*', MUST_EXIST);
+                        if (empty($arrusers[$lastpost->userid])) {
+                            $arrusers[$lastpost->userid] = $DB->get_record('user', array('id' => $lastpost->userid),
+                                    $usernamefields, MUST_EXIST);
+                        }
+                        $return->lastuserid = $lastpost->userid;
+                        $return->lastuserfullname = fullname($arrusers[$lastpost->userid], $canviewfullname);
+                        $return->lastuserimagealt = $arrusers[$lastpost->userid]->imagealt;
+                        $return->lastuserpicture = $arrusers[$lastpost->userid]->picture;
+                        $return->lastuseremail = $arrusers[$lastpost->userid]->email;
+                        // Add the discussion statistics to the array to return.
+                        $arrdiscussions[$return->id] = (array) $return;
+                    }
+                    $discussions->close();
                 }
             }
-            $discussions->close();
         }
 
         return $arrdiscussions;
@@ -423,9 +431,13 @@ class mod_hsuforum_external extends external_api {
             }
 
             // Function hsuforum_get_all_discussion_posts adds postread field.
-            if (!isset($post->postread)) {
+            // Note that the value returned can be a boolean or an integer. The WS expects a boolean.
+            if (empty($post->postread)) {
                 $posts[$pid]->postread = false;
+            } else {
+                $posts[$pid]->postread = true;
             }
+
             $posts[$pid]->canreply = $canreply;
             if (!empty($posts[$pid]->children)) {
                 $posts[$pid]->children = array_keys($posts[$pid]->children);

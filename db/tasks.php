@@ -15,21 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Definition of Forum scheduled tasks.
  *
- * @package    mod
- * @subpackage hsuforum
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @author Mark Nielsen
+ * @package   mod_hsuforum
+ * @category  task
+ * @copyright 2014 Dan Poltawski <dan@moodle.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014121900;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2014051203;       // Requires this Moodle version
-$plugin->component = 'mod_hsuforum';   // Full name of the plugin (used for diagnostics)
-$plugin->release   = '2.7.0 (Build: 20140603)';
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->cron      = 60;
+$tasks = array(
+    array(
+        'classname' => 'mod_hsuforum\task\cron_task',
+        'blocking' => 0,
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*'
+    )
+);

@@ -196,6 +196,7 @@ function hsuforum_update_instance($forum, $mform) {
             $discussion->messagetrust    = true;
             $discussion->mailnow         = false;
             $discussion->groupid         = -1;
+            $discussion->reveal          = 0;
 
             $message = '';
 
@@ -450,18 +451,15 @@ function hsuforum_cron_minimise_user_record(stdClass $user) {
 }
 
 /**
- * Function to be run periodically according to the moodle cron
- * Finds all posts that have yet to be mailed out, and mails them
- * out to all subscribers
+ * Function to be run periodically according to the scheduled task.
  *
- * @global object
- * @global object
- * @global object
- * @uses CONTEXT_MODULE
- * @uses CONTEXT_COURSE
- * @uses SITEID
- * @uses FORMAT_PLAIN
- * @return void
+ * Finds all posts that have yet to be mailed out, and mails them
+ * out to all subscribers as well as other maintance tasks.
+ *
+ * NOTE: Since 2.7.2 this function is run by scheduled task rather
+ * than standard cron.
+ *
+ * @todo MDL-44734 The function will be split up into seperate tasks.
  */
 function hsuforum_cron() {
     global $CFG, $USER, $DB;
@@ -1489,12 +1487,12 @@ function hsuforum_print_overview($courses,&$htmlarray) {
 
         // If the user has never entered into the course all posts are pending
         if ($course->lastaccess == 0) {
-            $coursessqls[] = '(d.course = ?)';
+            $coursessqls[] = '(f.course = ?)';
             $params[] = $course->id;
 
         // Only posts created after the course last access
         } else {
-            $coursessqls[] = '(d.course = ? AND p.created > ?)';
+            $coursessqls[] = '(f.course = ? AND p.created > ?)';
             $params[] = $course->id;
             $params[] = $course->lastaccess;
         }
@@ -1502,12 +1500,14 @@ function hsuforum_print_overview($courses,&$htmlarray) {
     $params[] = $USER->id;
     $coursessql = implode(' OR ', $coursessqls);
 
-    $sql = "SELECT d.id, d.forum, d.course, d.groupid, COUNT(*) as count "
-                .'FROM {hsuforum_discussions} d '
+    $sql = "SELECT d.id, d.forum, f.course, d.groupid, COUNT(*) as count "
+                .'FROM {hsuforum} f '
+                .'JOIN {hsuforum_discussions} d ON d.forum = f.id '
                 .'JOIN {hsuforum_posts} p ON p.discussion = d.id '
                 ."WHERE ($coursessql) "
                 .'AND p.userid != ? '
-                .'GROUP BY d.id, d.forum, d.course, d.groupid';
+                .'GROUP BY d.id, d.forum, f.course, d.groupid '
+                .'ORDER BY f.course, d.forum';
 
     // Avoid warnings.
     if (!$discussions = $DB->get_records_sql($sql, $params)) {
@@ -1713,7 +1713,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
 
     }
 
-    if(!$out) {
+    if($out) {
         $out = "<h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>".$out;
 
     }
@@ -2271,12 +2271,16 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
     foreach ($parsearray as $item){
         if ($item->getType() == TOKEN_USER || $item->getType() == TOKEN_USERID) {
             // Additional user SQL for anonymous posts.
-            $extrasql .= " AND (f.anonymous != 1 OR p.reveal = 1) ";
+            $extrasql .= " AND ((f.anonymous != 1 OR p.userid = :currentuserid) OR p.reveal = 1) ";
+            $params['currentuserid'] = $USER->id;
             break;
         }
     }
 
-    $selectsql = "(p.privatereply = 0 OR p.privatereply = :privatereply1 OR p.userid = :privatereply2)
+    $selectsql = "(p.privatereply = 0
+                OR p.privatereply = :privatereply1
+                OR p.userid = :privatereply2
+               )
                AND $messagesearch
                AND p.discussion = d.id
                AND p.userid = u.id
@@ -3008,7 +3012,9 @@ function hsuforum_subscribed_users($course, $forum, $groupid=0, $context = null,
     // Guest user should never be subscribed to a forum.
     unset($results[$CFG->siteguest]);
 
-    return $results;
+    $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+    $modinfo = get_fast_modinfo($cm->course);
+    return groups_filter_users_by_course_module_visible($modinfo->get_cm($cm->id), $results);
 }
 
 
@@ -4291,7 +4297,6 @@ function hsuforum_get_subscribed_forums($course) {
               FROM {hsuforum} f
                    LEFT JOIN {hsuforum_subscriptions} fs ON (fs.forum = f.id AND fs.userid = ?)
              WHERE f.course = ?
-                   AND f.forcesubscribe <> ".HSUFORUM_DISALLOWSUBSCRIBE."
                    AND (f.forcesubscribe = ".HSUFORUM_FORCESUBSCRIBE." OR fs.id IS NOT NULL)";
     if ($subscribed = $DB->get_records_sql($sql, array($USER->id, $course->id))) {
         foreach ($subscribed as $s) {
@@ -5633,50 +5638,58 @@ function hsuforum_mark_posts_read($user, $postids) {
         return $status;
     }
 
-    list($usql, $params) = $DB->get_in_or_equal($postids);
-    $params[] = $user->id;
+    list($usql, $postidparams) = $DB->get_in_or_equal($postids, SQL_PARAMS_NAMED, 'postid');
 
-    $sql = "SELECT id
-              FROM {hsuforum_read}
-             WHERE postid $usql AND userid = ?";
-    if ($existing = $DB->get_records_sql($sql, $params)) {
-        $existing = array_keys($existing);
-    } else {
-        $existing = array();
-    }
+    $insertparams = array(
+             'userid1' => $user->id,
+             'userid2' => $user->id,
+             'userid3' => $user->id,
+             'firstread' => $now,
+             'lastread' => $now,
+             'cutoffdate' => $cutoffdate,
+         );
+     $params = array_merge($postidparams, $insertparams);
 
-    $new = array_diff($postids, $existing);
+     if ($CFG->hsuforum_allowforcedreadtracking) {
+             $trackingsql = "AND (f.trackingtype = ".HSUFORUM_TRACKING_FORCED."
+                     OR (f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))";
+         } else {
+             $trackingsql = "AND ((f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL."  OR f.trackingtype = ".HSUFORUM_TRACKING_FORCED.")
+                         AND tf.id IS NULL)";
+         }
 
-    if ($new) {
-        list($usql, $new_params) = $DB->get_in_or_equal($new);
-        $params = array($user->id, $now, $now, $user->id);
-        $params = array_merge($params, $new_params);
-        $params[] = $cutoffdate;
+ // First insert any new entries.
+ $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
 
+         SELECT :userid1, p.id, p.discussion, d.forum, :firstread, :lastread
+             FROM {hsuforum_posts} p
+                 JOIN {hsuforum_discussions} d       ON d.id = p.discussion
+                 JOIN {hsuforum} f                   ON f.id = d.forum
+                 LEFT JOIN {hsuforum_track_prefs} tf ON (tf.userid = :userid2 AND tf.forumid = f.id)
+                 LEFT JOIN {hsuforum_read} fr        ON (
+                         fr.userid = :userid3
+                     AND fr.postid = p.id
+                     AND fr.discussionid = d.id
+                     AND fr.forumid = f.id
+                 )
+             WHERE p.id $usql
+                 AND p.modified >= :cutoffdate
+                 $trackingsql
+                 AND fr.id IS NULL";
 
-        $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+ $status = $DB->execute($sql, $params) && $status;
 
-                SELECT ?, p.id, p.discussion, d.forum, ?, ?
-                  FROM {hsuforum_posts} p
-                       JOIN {hsuforum_discussions} d       ON d.id = p.discussion
-                       JOIN {hsuforum} f                   ON f.id = d.forum
-                       LEFT JOIN {hsuforum_track_prefs} tf ON (tf.userid = ? AND tf.forumid = f.id)
-                 WHERE p.id $usql
-                       AND p.modified >= ?
-               ";
-        $status = $DB->execute($sql, $params) && $status;
-    }
-
-    if ($existing) {
-        list($usql, $new_params) = $DB->get_in_or_equal($existing);
-        $params = array($now, $user->id);
-        $params = array_merge($params, $new_params);
-
-        $sql = "UPDATE {hsuforum_read}
-                   SET lastread = ?
-                 WHERE userid = ? AND postid $usql";
-        $status = $DB->execute($sql, $params) && $status;
-    }
+ // Then update all records.
+ $updateparams = array(
+         'userid' => $user->id,
+         'lastread' => $now,
+     );
+ $params = array_merge($postidparams, $updateparams);
+ $status = $DB->set_field_select('hsuforum_read', 'lastread', $now, '
+             userid      =  :userid
+         AND lastread    <> :lastread
+         AND postid      ' . $usql,
+                 $params) && $status;
 
     return $status;
 }
@@ -6837,7 +6850,15 @@ function hsuforum_cm_info_view(cm_info $cm) {
         return;
     }
 
-    $out = hsuforum_recent_activity($cm->get_course(), true, 0, hsuforum_get_cm_forum($cm)->id);
+    $config = get_config('hsuforum');
+    $forum = hsuforum_get_cm_forum($cm);
+
+    $out = '';
+
+    if (empty($config->hiderecentposts) && $forum->showrecent) {
+        $out .= hsuforum_recent_activity($cm->get_course(), true, 0, $forum->id);
+    }
+
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
         $out .= '<a class="unread" href="' . $cm->url . '">';
         if ($unread == 1) {
@@ -6846,8 +6867,8 @@ function hsuforum_cm_info_view(cm_info $cm) {
             $out .= get_string('unreadpostsnumber', 'hsuforum', $unread);
         }
         $out .= '</a>';
-        $cm->set_after_link($out);
     }
+
     $cm->set_after_link($out);
 }
 
@@ -7339,7 +7360,8 @@ function hsuforum_anonymize_user($user, $forum, $post) {
     }
     if (empty($forum->anonymous)
         or !empty($post->reveal)
-        or ($post->privatereply == $USER->id)
+        // Note: we do not check $post->privatereply against $USER->id as the poster should remain private to the
+        // person who was replied to.
         or ($post->userid == $USER->id)
     ) {
         return $user;
