@@ -250,6 +250,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->posts      = '';
         $data->fullthread = $fullthread;
         $data->revealed   = false;
+        $data->rawcreated = $post->created;
 
         if ($forum->anonymous
                 && $postuser->id === $USER->id
@@ -329,6 +330,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->subject        = property_exists($post, 'breadcrumb') ? $post->breadcrumb : $this->raw_post_subject($post);
         $data->message        = $this->post_message($post, $cm, $search);
         $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
+        $data->rawcreated     = $post->created;
         $data->datetime       = date(DATE_W3C, usertime($post->created));
         $data->privatereply   = $post->privatereply;
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
@@ -418,7 +420,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $participants = '<div class="hsuforum-thread-participants">'.implode(' ',$d->replyavatars).'</div>';
 
 
-        $datecreated = hsuforum_relative_time($d->created, array('class' => 'hsuforum-thread-pubdate'));
+        $datecreated = hsuforum_relative_time($d->rawcreated, array('class' => 'hsuforum-thread-pubdate'));
 
         $threadtitle = $d->subject;
         if (!$d->fullthread) {
@@ -607,7 +609,7 @@ HTML;
             $unreadclass = "hsuforum-post-unread";
         }
         $options = get_string('options', 'hsuforum');
-        $datecreated = hsuforum_relative_time($p->created, array('class' => 'hsuforum-post-pubdate'));
+        $datecreated = hsuforum_relative_time($p->rawcreated, array('class' => 'hsuforum-post-pubdate'));
 
 
         $postreplies = '';

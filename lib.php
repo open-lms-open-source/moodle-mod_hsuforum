@@ -7779,13 +7779,15 @@ function hsuforum_simpler_time($seconds) {
 
 /**
  * Return friendly relative time (e.g. "1 min ago", "1 year ago") in a <time> tag
- * @param integer | string $timeinpast
- * @param null | array $attributes - tag attributes
+ *
+ * @param int $timeinpast
+ * @param null|array $attributes Tag attributes
  * @return string
+ * @throws coding_exception
  */
 function hsuforum_relative_time($timeinpast, $attributes = null) {
     if (!is_numeric($timeinpast)) {
-        $timeinpast = strtotime($timeinpast);
+        throw new coding_exception('Relative times must be calculated from the raw timestamp');
     }
     $secondsago = time() - $timeinpast;
     $secondsago = hsuforum_simpler_time($secondsago);
