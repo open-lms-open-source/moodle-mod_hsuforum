@@ -251,6 +251,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->fullthread = $fullthread;
         $data->revealed   = false;
         $data->rawcreated = $post->created;
+        $data->rawmodified = $post->modified;
 
         if ($forum->anonymous
                 && $postuser->id === $USER->id
@@ -414,7 +415,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         $latestpost = '';
         if (!empty($d->modified) && !empty($d->replies)) {
-            $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($d->modified)).'</small>';
+            $latestpost = '<small class="hsuforum-thread-replies-meta">'.get_string('lastposttimeago', 'hsuforum', hsuforum_relative_time($d->rawmodified)).'</small>';
         }
 
         $participants = '<div class="hsuforum-thread-participants">'.implode(' ',$d->replyavatars).'</div>';
