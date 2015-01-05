@@ -26,6 +26,7 @@ namespace mod_hsuforum\service;
 
 use mod_hsuforum\attachments;
 use mod_hsuforum\event\post_created;
+use mod_hsuforum\event\post_updated;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use moodle_exception;
@@ -79,7 +80,7 @@ class post_service {
      */
     public function handle_reply($course, $cm, $forum, $context, $discussion, $parent, array $options) {
         $uploader = new upload_file(
-            new attachments($context), \mod_hsuforum_post_form::attachment_options($forum)
+            new attachments($forum, $context), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
         $post   = $this->create_post_object($discussion, $parent, $context, $options);
@@ -96,7 +97,7 @@ class post_service {
             'discussionid' => (int) $discussion->id,
             'postid'       => (int) $post->id,
             'livelog'      => get_string('postcreated', 'hsuforum'),
-            'html'         => $this->discussionservice->render_discussion($discussion->id),
+            'html'         => $this->discussionservice->render_full_thread($discussion->id),
         ));
     }
 
@@ -118,7 +119,7 @@ class post_service {
         $this->require_can_edit_post($forum, $context, $discussion, $post);
 
         $uploader = new upload_file(
-            new attachments($context, $deletefiles), \mod_hsuforum_post_form::attachment_options($forum)
+            new attachments($forum, $context, $deletefiles), \mod_hsuforum_post_form::attachment_options($forum)
         );
 
         // Apply updates to the post.
@@ -140,15 +141,14 @@ class post_service {
             $this->db->set_field('hsuforum_discussions', 'groupid', $options['groupid'], array('id' => $discussion->id));
         }
 
-        add_to_log($course->id, 'hsuforum', 'update post',
-            "discuss.php?d=$discussion->id#p$post->id&amp;parent=$post->id", $post->id, $cm->id);
+        $this->trigger_post_updated($context, $forum, $discussion, $post);
 
         return new json_response((object) array(
             'eventaction'  => 'postupdated',
             'discussionid' => (int) $discussion->id,
             'postid'       => (int) $post->id,
             'livelog'      => get_string('postwasupdated', 'hsuforum'),
-            'html'         => $this->discussionservice->render_discussion($discussion->id),
+            'html'         => $this->discussionservice->render_full_thread($discussion->id),
         ));
     }
 
@@ -201,6 +201,7 @@ class post_service {
         $post->messagetrust  = trusttext_trusted($context);
         $post->itemid        = 0; // For text editor stuffs.
         $post->groupid       = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
+        $post->flags         = null;
 
         $strre = get_string('re', 'hsuforum');
         if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
@@ -248,14 +249,21 @@ class post_service {
                 $errors[] = $e;
             }
         }
-        $subject = trim($post->subject);
-        if (empty($subject)) {
+        if (hsuforum_str_empty($post->subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
         }
-        $message = trim($post->message);
-        if (empty($message)) {
+        if (hsuforum_str_empty($post->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
+
+        if ($post->privatereply) {
+            if (!has_capability('mod/hsuforum:allowprivate', $context)
+                || !$forum->allowprivatereplies
+            ) {
+                $errors[] = new \moodle_exception('cannotmakeprivatereplies', 'hsuforum');
+            }
+        }
+
         if ($uploader->was_file_uploaded()) {
             try {
                 $uploader->validate_files(empty($post->id) ? 0 : $post->id);
@@ -290,7 +298,7 @@ class post_service {
     }
 
     /**
-     * Log, update completion info and trigger event
+     * Update completion info and trigger event
      *
      * @param object $course
      * @param \context_module $context
@@ -304,9 +312,6 @@ class post_service {
 
         require_once($CFG->libdir.'/completionlib.php');
 
-        add_to_log($course->id, 'hsuforum', 'add post',
-            "discuss.php?d=$post->discussion&amp;parent=$post->id", $post->id, $cm->id);
-
         // Update completion state
         $completion = new \completion_info($course);
         if ($completion->is_enabled($cm) &&
@@ -315,14 +320,47 @@ class post_service {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
 
-        $event = post_created::create(array(
-            'objectid' => $post->id,
-            'courseid' => $course->id,
+        $params = array(
             'context'  => $context,
+            'objectid' => $post->id,
             'other'    => array(
                 'discussionid' => $discussion->id,
+                'forumid'      => $forum->id,
+                'forumtype'    => $forum->type,
             )
-        ));
+        );
+        $event = post_created::create($params);
+        $event->add_record_snapshot('hsuforum_posts', $post);
+        $event->add_record_snapshot('hsuforum_discussions', $discussion);
+        $event->trigger();
+    }
+
+    /**
+     * Trigger event
+     *
+     * @param \context_module $context
+     * @param object $forum
+     * @param object $discussion
+     * @param object $post
+     */
+    public function trigger_post_updated(\context_module $context, $forum, $discussion, $post) {
+        global $USER;
+
+        $params = array(
+            'context'  => $context,
+            'objectid' => $post->id,
+            'other'    => array(
+                'discussionid' => $discussion->id,
+                'forumid'      => $forum->id,
+                'forumtype'    => $forum->type,
+            )
+        );
+
+        if ($post->userid !== $USER->id) {
+            $params['relateduserid'] = $post->userid;
+        }
+
+        $event = post_updated::create($params);
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
     }

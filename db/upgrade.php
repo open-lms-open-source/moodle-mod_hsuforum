@@ -36,7 +36,7 @@
  * Please do not forget to use upgrade_set_timeout()
  * before any action that may take longer time to finish.
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -531,6 +531,182 @@ function xmldb_hsuforum_upgrade($oldversion) {
 
     // Moodle v2.6.0 release upgrade line.
     // Put any upgrade step following this.
+
+    if ($oldversion < 2014040400) {
+
+        // Define index userid-postid (not unique) to be dropped form hsuforum_read.
+        $table = new xmldb_table('hsuforum_read');
+        $index = new xmldb_index('userid-postid', XMLDB_INDEX_NOTUNIQUE, array('userid', 'postid'));
+
+        // Conditionally launch drop index userid-postid.
+        if ($dbman->index_exists($table, $index)) {
+            $dbman->drop_index($table, $index);
+        }
+
+
+        // Define index postid-userid (not unique) to be added to hsuforum_read.
+        $index = new xmldb_index('postid-userid', XMLDB_INDEX_NOTUNIQUE, array('postid', 'userid'));
+
+        // Conditionally launch add index postid-userid.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2014040400, 'hsuforum');
+    }
+
+    // Moodle v2.7.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    if ($oldversion < 2014051201) {
+
+        // Incorrect values that need to be replaced.
+        $replacements = array(
+            11 => 20,
+            12 => 50,
+            13 => 100
+        );
+
+        // Run the replacements.
+        foreach ($replacements as $old => $new) {
+            $DB->set_field('hsuforum', 'maxattachments', $new, array('maxattachments' => $old));
+        }
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2014051201, 'hsuforum');
+    }
+
+    if ($oldversion < 2014051203) {
+        // Find records with multiple userid/postid combinations and find the lowest ID.
+        // Later we will remove all those which don't match this ID.
+        $sql = "
+            SELECT MIN(id) as lowid, userid, postid
+            FROM {hsuforum_read}
+            GROUP BY userid, postid
+            HAVING COUNT(id) > 1";
+
+        if ($duplicatedrows = $DB->get_recordset_sql($sql)) {
+            foreach ($duplicatedrows as $row) {
+                $DB->delete_records_select('hsuforum_read', 'userid = ? AND postid = ? AND id <> ?', array(
+                    $row->userid,
+                    $row->postid,
+                    $row->lowid,
+                ));
+            }
+        }
+        $duplicatedrows->close();
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2014051203, 'hsuforum');
+    }
+
+    if ($oldversion < 2014092400) {
+
+        // Define fields to be added to hsuforum table.
+        $table = new xmldb_table('hsuforum');
+        $fields = array();
+        $fields[] = new xmldb_field('showsubstantive', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'displaywordcount');
+        $fields[] = new xmldb_field('showbookmark', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'showsubstantive');
+
+        // Go through each field and add if it doesn't already exist.
+        foreach ($fields as $field){
+            // Conditionally launch add field.
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014092400, 'hsuforum');
+    }
+
+    if ($oldversion < 2014093000) {
+        // Define fields to be added to hsuforum table.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('allowprivatereplies', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'showbookmark');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014093000, 'hsuforum');
+    }
+
+    if ($oldversion < 2014093001) {
+        // Set default settings for existing forums.
+        $DB->execute("
+                UPDATE {hsuforum}
+                   SET allowprivatereplies = 1,
+                       showsubstantive = 1,
+                       showbookmark = 1
+
+        ");
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014093001, 'hsuforum');
+    }
+
+
+    // Convert global configs to plugin configs
+    if ($oldversion < 2014100600) {
+        $configs = array(
+            'allowforcedreadtracking',
+            'cleanreadtime',
+            'digestmailtime',
+            'digestmailtimelast',
+            'disablebookmark',
+            'disablesubstantive',
+            'displaymode',
+            'enablerssfeeds',
+            'enabletimedposts',
+            'lastreadclean',
+            'longpost',
+            'manydiscussions',
+            'maxattachments',
+            'maxbytes',
+            'oldpostdays',
+            'replytouser',
+            'shortpost',
+            'showbookmark',
+            'showsubstantive',
+            'trackingtype',
+            'trackreadposts',
+            'usermarksread'
+        );
+
+        // Migrate legacy configs to plugin configs.
+        foreach ($configs as $config) {
+            $oldvar = 'hsuforum_'.$config;
+            if (isset($CFG->$oldvar)){
+                // Set new config variable up based on legacy config.
+                set_config($config, $CFG->$oldvar, 'hsuforum');
+                // Delete legacy config.
+                unset_config($oldvar);
+            }
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014100600, 'hsuforum');
+
+    }
+
+    if ($oldversion < 2014121700) {
+        // Define fields to be added to hsuforum table.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('showrecent', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'displaywordcount');
+
+        // Conditionally launch add field.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2014121700, 'hsuforum');
+    }
+
 
     return true;
 }

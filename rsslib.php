@@ -18,13 +18,16 @@
 /**
  * This file adds support to rss feeds generation
  *
- * @package mod_hsuforum
+ * @package   mod_hsuforum
  * @category rss
  * @copyright 2001 Eloy Lafuente (stronk7) http://contiento.com
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-* @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
-* @author Mark Nielsen
+ * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @author Mark Nielsen
  */
+
+/* Include the core RSS lib */
+require_once($CFG->libdir.'/rsslib.php');
 
 /**
  * Returns the path to the cached rss feed contents. Creates/updates the cache if necessary.
@@ -33,12 +36,12 @@
  * @return string the full path to the cached RSS feed directory. Null if there is a problem.
  */
 function hsuforum_rss_get_feed($context, $args) {
-    global $CFG, $DB, $USER;
+    global $DB;
 
-    $status = true;
+    $config = get_config('hsuforum');
 
     //are RSS feeds enabled?
-    if (empty($CFG->hsuforum_enablerssfeeds)) {
+    if (empty($config->enablerssfeeds)) {
         debugging('DISABLED (module configuration)');
         return null;
     }
@@ -77,7 +80,7 @@ function hsuforum_rss_get_feed($context, $args) {
         hsuforum_rss_newstuff($forum, $cm, $cachedfilelastmodified))) {
         // Need to regenerate the cached version.
         $result = hsuforum_rss_feed_contents($forum, $sql, $params, $modcontext);
-        $status = rss_save_file('mod_hsuforum', $filename, $result);
+        rss_save_file('mod_hsuforum', $filename, $result);
     }
 
     //return the path to the cached version
@@ -138,7 +141,9 @@ function hsuforum_rss_get_sql($forum, $cm, $time=0) {
  * @return string the SQL query to be used to get the Discussion details from the forum table of the database
  */
 function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
-    global $CFG, $DB, $USER;
+    global $USER;
+
+    $config = get_config('hsuforum');
 
     $timelimit = '';
 
@@ -149,7 +154,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 
     $modcontext = context_module::instance($cm->id);
 
-    if (!empty($CFG->hsuforum_enabletimedposts)) { /// Users must fulfill timed posts
+    if (!empty($config->enabletimedposts)) { /// Users must fulfill timed posts
         if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= :now1 AND (d.timeend = 0 OR d.timeend > :now2))";
             $params['now1'] = $now;
@@ -179,7 +184,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
     $params = array_merge($params, $groupparams);
 
     $forumsort = "d.timemodified DESC";
-    $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.reveal AS postreveal, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
+    $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.reveal AS postreveal, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust, p.privatereply AS postprivatereply";
     $userpicturefields = user_picture::fields('u', null, 'userid');
 
     $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid,
@@ -232,13 +237,14 @@ function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                  d.timestart,
                  d.timeend,
                  u.id AS userid,
-                 $usernamefields
+                 $usernamefields,
                  p.reveal AS postreveal,
                  p.subject AS postsubject,
                  p.message AS postmessage,
                  p.created AS postcreated,
                  p.messageformat AS postformat,
                  p.messagetrust AS posttrust,
+                 p.privatereply AS postprivatereply,
                  p.parent as postparent
             FROM {hsuforum_discussions} d,
                {hsuforum_posts} p,
@@ -333,6 +339,7 @@ function hsuforum_rss_feed_contents($forum, $sql, $params, $context) {
             $post->id = $rec->postid;
             $post->parent = $rec->postparent;
             $post->userid = $rec->userid;
+            $post->privatereply = $rec->postprivatereply;
         }
 
         if ($isdiscussion && !hsuforum_user_can_see_discussion($forum, $discussion, $context)) {

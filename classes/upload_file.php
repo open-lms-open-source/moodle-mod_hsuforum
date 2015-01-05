@@ -128,6 +128,9 @@ class upload_file {
         if (empty($_FILES) || !isset($_FILES[$this->element])) {
             return false;
         }
+        if (!$this->attachments->attachments_allowed()) {
+            return false;
+        }
         foreach ($this->get_files() as $file) {
             if ($file['error'] != UPLOAD_ERR_NO_FILE && $file['size'] > 0) {
                 return true;

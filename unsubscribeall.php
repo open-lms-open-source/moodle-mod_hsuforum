@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright  2008 Petr Skoda (http://skodak.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -29,10 +29,10 @@ require_once("lib.php");
 $confirm = optional_param('confirm', false, PARAM_BOOL);
 
 $PAGE->set_url('/mod/hsuforum/unsubscribeall.php');
-$PAGE->set_context(context_user::instance($USER->id));
 
 // Do not autologin guest. Only proper users can have forum subscriptions.
 require_login(null, false);
+$PAGE->set_context(context_user::instance($USER->id));
 
 $return = $CFG->wwwroot.'/';
 
@@ -52,7 +52,7 @@ if (data_submitted() and $confirm and confirm_sesskey()) {
     $forums = hsuforum_get_optional_subscribed_forums();
 
     foreach($forums as $forum) {
-        hsuforum_unsubscribe($USER->id, $forum->id);
+        hsuforum_unsubscribe($USER->id, $forum->id, context_module::instance($forum->cm));
     }
     $DB->set_field('user', 'autosubscribe', 0, array('id'=>$USER->id));
 

@@ -96,6 +96,7 @@ class edit_controller extends controller_abstract {
             $reply         = required_param('reply', PARAM_INT);
             $subject       = trim(optional_param('subject', '', PARAM_TEXT));
             $privatereply  = optional_param('privatereply', 0, PARAM_BOOL);
+            $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
 
@@ -115,6 +116,7 @@ class edit_controller extends controller_abstract {
                 'privatereply'  => $privatereply,
                 'message'       => $message,
                 'messageformat' => $messageformat,
+                'reveal'        => $reveal,
             );
             if (!empty($subject)) {
                 $data['subject'] = $subject;
@@ -146,6 +148,7 @@ class edit_controller extends controller_abstract {
             $subject       = required_param('subject', PARAM_TEXT);
             $groupid       = optional_param('groupinfo', 0, PARAM_INT);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
+            $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
 
             $forum   = $PAGE->activityrecord;
@@ -162,6 +165,7 @@ class edit_controller extends controller_abstract {
                 'groupid'       => $groupid,
                 'message'       => $message,
                 'messageformat' => $messageformat,
+                'reveal'        => $reveal,
             ));
         } catch (\Exception $e) {
             return new json_response($e);
@@ -184,6 +188,8 @@ class edit_controller extends controller_abstract {
             $groupid       = optional_param('groupinfo', 0, PARAM_INT);
             $itemid        = required_param('itemid', PARAM_INT);
             $files         = optional_param_array('deleteattachment', array(), PARAM_FILE);
+            $privatereply  = optional_param('privatereply', 0, PARAM_BOOL);
+            $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
 
@@ -198,6 +204,11 @@ class edit_controller extends controller_abstract {
             if (empty($groupid)) {
                 $groupid = -1;
             }
+            // If private reply, then map it to the parent author user ID.
+            if (!empty($privatereply)) {
+                $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
+                $privatereply = $parent->userid;
+            }
             return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,  array(
                 'subject'       => $subject,
                 'name'          => $subject,
@@ -205,6 +216,8 @@ class edit_controller extends controller_abstract {
                 'itemid'        => $itemid,
                 'message'       => $message,
                 'messageformat' => $messageformat,
+                'reveal'        => $reveal,
+                'privatereply'  => $privatereply,
             ));
         } catch (\Exception $e) {
             return new json_response($e);
@@ -266,7 +279,7 @@ class edit_controller extends controller_abstract {
 
         $html = '';
         if ($discussion->firstpost != $post->id) {
-            $html    = $this->discussionservice->render_discussion($discussion->id);
+            $html    = $this->discussionservice->render_full_thread($discussion->id);
             $message = get_string('postdeleted', 'hsuforum');
         } else {
             $message = get_string('deleteddiscussion', 'hsuforum');

@@ -1,5 +1,9 @@
 This files describes API changes in /mod/hsuforum/*,
 information provided here is intended especially for developers.
+=== 2.7 ===
+* All forum tracking options removed and tracking forced
+* Manual marking of posts as read is now removed
+* Old posts are automatically marked as read
 
 === 2.6 ===
 

@@ -18,8 +18,8 @@
 /**
  * Defines message providers (types of messages being sent)
  *
- * @package mod-hsuforum
- * @copyright  1999 onwards  Martin Dougiamas  http://moodle.com
+ * @package   mod_hsuforum
+ * @copyright 1999 onwards  Martin Dougiamas  http://moodle.com
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
  * @author Mark Nielsen

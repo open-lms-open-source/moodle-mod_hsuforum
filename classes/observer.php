@@ -86,9 +86,28 @@ class mod_hsuforum_observer {
         $forums = $DB->get_records_sql($sql, $params);
         foreach ($forums as $forum) {
             // If user doesn't have allowforcesubscribe capability then don't subscribe.
-            if (has_capability('mod/hsuforum:allowforcesubscribe', context_module::instance($forum->cmid), $userid)) {
-                hsuforum_subscribe($userid, $forum->id);
+            $modcontext = context_module::instance($forum->cmid);
+            if (has_capability('mod/hsuforum:allowforcesubscribe', $modcontext, $userid)) {
+                hsuforum_subscribe($userid, $forum->id, $modcontext);
             }
+        }
+    }
+
+    /**
+     * Observer for \core\event\course_module_created event.
+     *
+     * @param \core\event\course_module_created $event
+     * @return void
+     */
+    public static function course_module_created(\core\event\course_module_created $event) {
+        global $CFG;
+
+        if ($event->other['modulename'] === 'hsuforum') {
+            // Include the forum library to make use of the hsuforum_instance_created function.
+            require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
+
+            $forum = $event->get_record_snapshot('hsuforum', $event->other['instanceid']);
+            hsuforum_instance_created($event->get_context(), $forum);
         }
     }
 }

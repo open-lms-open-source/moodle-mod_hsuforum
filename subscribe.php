@@ -26,8 +26,7 @@
  * through a confirmation page that redirects the user back with the
  * sesskey.
  *
- * @package    mod
- * @subpackage hsuforum
+ * @package   mod_hsuforum
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -151,7 +150,6 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
     }
     require_sesskey();
     if (hsuforum_unsubscribe($user->id, $forum->id)) {
-        add_to_log($course->id, "hsuforum", "unsubscribe", "view.php?f=$forum->id", $forum->id, $cm->id);
         redirect($returnto, get_string("nownotsubscribed", "hsuforum", $info), 1);
     } else {
         print_error('cannotunsubscribe', 'hsuforum', $_SERVER["HTTP_REFERER"]);
@@ -176,6 +174,5 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
     }
     require_sesskey();
     hsuforum_subscribe($user->id, $forum->id);
-    add_to_log($course->id, "hsuforum", "subscribe", "view.php?f=$forum->id", $forum->id, $cm->id);
     redirect($returnto, get_string("nowsubscribed", "hsuforum", $info), 1);
 }

@@ -18,7 +18,7 @@
 /**
  * Display user activity reports for a course
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -63,8 +63,6 @@ if ($page != 0) {
 if ($perpage != 5) {
     $url->param('perpage', $perpage);
 }
-
-add_to_log(($isspecificcourse)?$courseid:SITEID, "hsuforum", "user report", 'user.php?'.$url->get_query_string(), $userid);
 
 $user = $DB->get_record("user", array("id" => $userid), '*', MUST_EXIST);
 $usercontext = context_user::instance($user->id, MUST_EXIST);
@@ -118,6 +116,15 @@ if ($isspecificcourse) {
     // All courses where the user has posted within a forum will be returned.
     $courses = hsuforum_get_courses_user_posted_in($user, $discussionsonly);
 }
+
+
+$params = array(
+    'context' => $PAGE->context,
+    'relateduserid' => $user->id,
+    'other' => array('reportmode' => $mode),
+);
+$event = \mod_hsuforum\event\user_report_viewed::create($params);
+$event->trigger();
 
 // Get the posts by the requested user that the current user can access.
 $result = hsuforum_get_posts_by_user($user, $courses, $isspecificcourse, $discussionsonly, ($page * $perpage), $perpage);
@@ -225,6 +232,10 @@ $rm = new rating_manager();
 $ratingoptions = new stdClass;
 $ratingoptions->component = 'mod_hsuforum';
 $ratingoptions->ratingarea = 'post';
+
+$renderer = $PAGE->get_renderer('mod_hsuforum');
+echo $renderer->svg_sprite();
+
 foreach ($result->posts as $post) {
     if (!isset($result->forums[$post->forum]) || !isset($discussions[$post->discussion])) {
         // Something very VERY dodgy has happened if we end up here
@@ -237,6 +248,10 @@ foreach ($result->posts as $post) {
 
     $forumurl = new moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id));
     $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
+
+    // TODO actually display if the search result has been read, for now just
+    // hide the unread status marker for all results.
+    $post->postread = true;
 
     // load ratings
     if ($forum->assessed != RATING_AGGREGATE_NONE) {
@@ -292,7 +307,8 @@ foreach ($result->posts as $post) {
     $discussionurl->set_anchor('p'.$post->id);
     $fulllink = html_writer::link($discussionurl, get_string("postincontext", "hsuforum"));
 
-    $postoutput[] = hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false, $fulllink, '', null, true, null, true);
+    $commands = array('seeincontext' => $fulllink);
+    $postoutput[] = $renderer->post($cm, $discussion, $post, false, null, $commands);
 }
 
 $userfullname = fullname($user);
@@ -327,10 +343,8 @@ echo $OUTPUT->heading($inpageheading);
 echo html_writer::start_tag('div', array('class' => 'user-content'));
 
 if (!empty($postoutput)) {
-    echo $OUTPUT->paging_bar($result->totalcount, $page, $perpage, $url);
     foreach ($postoutput as $post) {
         echo $post;
-        echo html_writer::empty_tag('br');
     }
     echo $OUTPUT->paging_bar($result->totalcount, $page, $perpage, $url);
 } else if ($discussionsonly) {

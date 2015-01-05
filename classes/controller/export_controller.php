@@ -65,7 +65,7 @@ class export_controller extends controller_abstract {
     public function export_action() {
         global $PAGE;
 
-        // Must fetch plain object for hsuforum_cm_add_cache().
+        // Must fetch plain object
         $cm    = get_coursemodule_from_id('hsuforum', $PAGE->cm->id, $PAGE->course->id, false, MUST_EXIST);
         $mform = new export_form($this->new_url(), (object) array(
             'cm'    => $cm,

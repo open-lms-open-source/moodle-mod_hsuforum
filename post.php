@@ -18,7 +18,7 @@
 /**
  * Edit and save a new post to a discussion
  *
- * @package mod-hsuforum
+ * @package   mod_hsuforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
@@ -109,6 +109,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error("invalidcoursemodule");
     }
 
+    // Retrieve the contexts.
+    $modcontext    = context_module::instance($cm->id);
     $coursecontext = context_course::instance($course->id);
 
     if (! hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm)) {
@@ -124,7 +126,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('nopostforum', 'hsuforum');
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $coursecontext)) {
+    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         print_error("activityiscurrentlyhidden");
     }
 
@@ -133,7 +135,6 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     } else {
         $SESSION->fromurl = '';
     }
-
 
     // Load up the $post variable.
 
@@ -178,9 +179,12 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     // Ensure lang, theme, etc. is set up properly. MDL-6926
     $PAGE->set_cm($cm, $course, $forum);
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
-    $coursecontext = context_course::instance($course->id);
+    // Retrieve the contexts.
     $modcontext    = context_module::instance($cm->id);
+    $coursecontext = context_course::instance($course->id);
 
     if (! hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
         if (!isguestuser()) {
@@ -209,7 +213,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         }
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $coursecontext)) {
+    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         print_error("activityiscurrentlyhidden");
     }
 
@@ -262,6 +266,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     }
 
     $PAGE->set_cm($cm, $course, $forum);
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
     if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
         if (((time() - $post->created) > $CFG->maxeditingtime) and
@@ -325,6 +331,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->navbar->add(get_string('delete', 'hsuforum'));
         $PAGE->set_title($course->shortname);
         $PAGE->set_heading($course->fullname);
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+        $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
         if ($replycount) {
             if (!has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
@@ -337,12 +345,11 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
 
-            hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+            echo $renderer->post($cm, $discussion, $post, false, null, false);
 
             if (empty($post->edit)) {
-                $forumtracked = hsuforum_tp_is_tracked($forum);
-                $posts = hsuforum_get_all_discussion_posts($discussion->id, "created ASC", $forumtracked);
-                hsuforum_print_posts_nested($course, $cm, $forum, $discussion, $post, false, false, $forumtracked, $posts);
+                $posts = hsuforum_get_all_discussion_posts($discussion->id);
+                hsuforum_print_posts_nested($course, $cm, $forum, $discussion, $post, false, false, $posts);
             }
         } else {
             echo $OUTPUT->header();
@@ -350,7 +357,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             echo $OUTPUT->confirm(get_string("deletesure", "hsuforum", $replycount),
                          "post.php?delete=$delete&confirm=$delete",
                          $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
-            hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+
+            echo $renderer->post($cm, $discussion, $post, false, null, false);
         }
 
     }
@@ -414,8 +422,39 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         hsuforum_discussion_update_last_post($discussion->id);
         hsuforum_discussion_update_last_post($newid);
 
-        add_to_log($discussion->course, "hsuforum", "prune post",
-                       "discuss.php?d=$newid", "$post->id", $cm->id);
+        // Fire events to reflect the split..
+        $params = array(
+            'context' => $modcontext,
+            'objectid' => $discussion->id,
+            'other' => array(
+                'forumid' => $forum->id,
+            )
+        );
+        $event = \mod_hsuforum\event\discussion_updated::create($params);
+        $event->trigger();
+
+        $params = array(
+            'context' => $modcontext,
+            'objectid' => $newid,
+            'other' => array(
+                'forumid' => $forum->id,
+            )
+        );
+        $event = \mod_hsuforum\event\discussion_created::create($params);
+        $event->trigger();
+
+        $params = array(
+            'context' => $modcontext,
+            'objectid' => $post->id,
+            'other' => array(
+                'discussionid' => $newid,
+                'forumid' => $forum->id,
+                'forumtype' => $forum->type,
+            )
+        );
+        $event = \mod_hsuforum\event\post_updated::create($params);
+        $event->add_record_snapshot('hsuforum_discussions', $discussion);
+        $event->trigger();
 
         redirect(hsuforum_go_back_to("discuss.php?d=$newid"));
 
@@ -424,6 +463,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $course = $DB->get_record('course', array('id' => $forum->course));
 
         $PAGE->set_cm($cm);
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+        $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
         $PAGE->set_context($modcontext);
         $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
@@ -432,6 +473,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         echo $OUTPUT->header();
         echo $OUTPUT->heading(format_string($forum->name), 2);
         echo $OUTPUT->heading(get_string('pruneheading', 'forum'), 3);
+        echo $renderer->svg_sprite();
         if (!empty($post->privatereply)) {
             echo $OUTPUT->notification(get_string('splitprivatewarning', 'hsuforum'));
         }
@@ -441,7 +483,10 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         echo '</center>';
 
-        hsuforum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+        // We don't have the valid unread status. Set to read so we don't see
+        // the unread tag.
+        $post->postread = true;
+        echo $renderer->post($cm, $discussion, $post);
     }
     echo $OUTPUT->footer();
     die;
@@ -494,7 +539,7 @@ if ($USER->id != $post->userid) {   // Not the original author, so add a message
     if ($post->messageformat == FORMAT_HTML) {
         $data->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$USER->id.'&course='.$post->course.'">'.
                        fullname($USER).'</a>';
-        $post->message .= '<p><span class="edited">('.get_string('editedby', 'hsuforum', $data).')</span></p>';
+        $post->message .= '<p class="edited">('.get_string('editedby', 'hsuforum', $data).')</p>';
     } else {
         $data->name = fullname($USER);
         $post->message .= "\n\n(".get_string('editedby', 'hsuforum', $data).')';
@@ -504,13 +549,12 @@ if ($USER->id != $post->userid) {   // Not the original author, so add a message
 
 $formheading = '';
 if (!empty($parent)) {
-    $heading = get_string("yourreply", "hsuforum");
-    $formheading = get_string('reply', 'hsuforum');
+    $formheading = get_string("yourreply", "hsuforum");
 } else {
     if ($forum->type == 'qanda') {
-        $heading = get_string('yournewquestion', 'hsuforum');
+        $formheading = get_string('yournewquestion', 'hsuforum');
     } else {
-        $heading = get_string('yournewtopic', 'hsuforum');
+        $formheading = get_string('yournewtopic', 'hsuforum');
     }
 }
 
@@ -529,7 +573,6 @@ $postid = empty($post->id) ? null : $post->id;
 $draftid_editor = file_get_submitted_draft_itemid('message');
 $currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', $postid, mod_hsuforum_post_form::editor_options($modcontext, $postid), $post->message);
 $mform_post->set_data(array(        'attachments'=>$draftitemid,
-                                    'general'=>$heading,
                                     'subject'=>$post->subject,
                                     'message'=>array(
                                         'text'=>$currenttext,
@@ -655,8 +698,24 @@ if ($fromform = $mform_post->get_data()) {
         } else {
             $discussionurl = "discuss.php?d=$discussion->id#p$fromform->id";
         }
-        add_to_log($course->id, "hsuforum", "update post",
-                "$discussionurl&amp;parent=$fromform->id", "$fromform->id", $cm->id);
+
+        $params = array(
+            'context' => $modcontext,
+            'objectid' => $fromform->id,
+            'other' => array(
+                'discussionid' => $discussion->id,
+                'forumid' => $forum->id,
+                'forumtype' => $forum->type,
+            )
+        );
+
+        if ($realpost->userid !== $USER->id) {
+            $params['relateduserid'] = $realpost->userid;
+        }
+
+        $event = \mod_hsuforum\event\post_updated::create($params);
+        $event->add_record_snapshot('hsuforum_discussions', $discussion);
+        $event->trigger();
 
         redirect(hsuforum_go_back_to("$discussionurl"), $message.$subscribemessage, $timemessage);
 
@@ -698,8 +757,20 @@ if ($fromform = $mform_post->get_data()) {
             } else {
                 $discussionurl = "discuss.php?d=$discussion->id";
             }
-            add_to_log($course->id, "hsuforum", "add post",
-                      "$discussionurl&amp;parent=$fromform->id", "$fromform->id", $cm->id);
+            $post   = $DB->get_record('hsuforum_posts', array('id' => $fromform->id), '*', MUST_EXIST);
+            $params = array(
+                'context' => $modcontext,
+                'objectid' => $fromform->id,
+                'other' => array(
+                    'discussionid' => $discussion->id,
+                    'forumid' => $forum->id,
+                    'forumtype' => $forum->type,
+                )
+            );
+            $event = \mod_hsuforum\event\post_created::create($params);
+            $event->add_record_snapshot('hsuforum_posts', $post);
+            $event->add_record_snapshot('hsuforum_discussions', $discussion);
+            $event->trigger();
 
             // Update completion state
             $completion=new completion_info($course);
@@ -707,17 +778,6 @@ if ($fromform = $mform_post->get_data()) {
                 ($forum->completionreplies || $forum->completionposts)) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
-
-            $event = \mod_hsuforum\event\post_created::create(array(
-                'objectid' => $fromform->id,
-                'courseid' => $course->id,
-                'context'  => $modcontext,
-                'other'    => array(
-                    'discussionid' => $discussion->id,
-                )
-            ));
-            $event->add_record_snapshot('hsuforum_discussions', $discussion);
-            $event->trigger();
 
             redirect(hsuforum_go_back_to("$discussionurl#p$fromform->id"), $message.$subscribemessage, $timemessage);
 
@@ -742,6 +802,7 @@ if ($fromform = $mform_post->get_data()) {
         }
 
         $fromform->mailnow = empty($fromform->mailnow) ? 0 : 1;
+        $fromform->reveal = empty($fromform->reveal) ? 0 : 1;
 
         $discussion = $fromform;
         $discussion->name    = $fromform->subject;
@@ -756,8 +817,16 @@ if ($fromform = $mform_post->get_data()) {
         $message = '';
         if ($discussion->id = hsuforum_add_discussion($discussion, $mform_post, $message)) {
 
-            add_to_log($course->id, "hsuforum", "add discussion",
-                    "discuss.php?d=$discussion->id", "$discussion->id", $cm->id);
+            $params = array(
+                'context' => $modcontext,
+                'objectid' => $discussion->id,
+                'other' => array(
+                    'forumid' => $forum->id,
+                )
+            );
+            $event = \mod_hsuforum\event\discussion_created::create($params);
+            $event->add_record_snapshot('hsuforum_discussions', $discussion);
+            $event->trigger();
 
             $timemessage = 2;
             if (!empty($message)) { // if we're printing stuff about the file upload
@@ -783,14 +852,6 @@ if ($fromform = $mform_post->get_data()) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
-            $event = \mod_hsuforum\event\discussion_created::create(array(
-                'objectid' => $discussion->id,
-                'courseid' => $course->id,
-                'context'  => $modcontext,
-            ));
-            $event->add_record_snapshot('hsuforum_discussions', $discussion);
-            $event->trigger();
-
             redirect(hsuforum_go_back_to("view.php?f=$fromform->forum"), $message.$subscribemessage, $timemessage);
 
         } else {
@@ -815,8 +876,7 @@ if ($post->discussion) {
     }
 } else {
     $toppost = new stdClass();
-    $toppost->subject = ($forum->type == "news") ? get_string("addanewtopic", "hsuforum") :
-                                                   get_string("addanewdiscussion", "hsuforum");
+    $toppost->subject = get_string("addanewtopic", "hsuforum");
 }
 
 if (empty($post->edit)) {
@@ -855,6 +915,8 @@ if ($edit) {
 
 $PAGE->set_title("$course->shortname: $strdiscussionname $toppost->subject");
 $PAGE->set_heading($course->fullname);
+$renderer = $PAGE->get_renderer('mod_hsuforum');
+$PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($forum->name), 2);
@@ -885,12 +947,14 @@ if (!empty($parent)) {
         print_error('notpartofdiscussion', 'hsuforum');
     }
 
-    hsuforum_print_post($parent, $discussion, $forum, $cm, $course, false, false, false);
+    echo $renderer->svg_sprite();
+    // We don't have the valid unread status. Set to read so we don't see
+    // the unread tag.
+    $parent->postread = true;
+    echo $renderer->post($cm, $discussion, $parent);
     if (empty($post->edit)) {
         if ($forum->type != 'qanda' || hsuforum_user_can_see_discussion($forum, $discussion, $modcontext)) {
-            $forumtracked = hsuforum_tp_is_tracked($forum);
-            $posts = hsuforum_get_all_discussion_posts($discussion->id, "created ASC", $forumtracked);
-            hsuforum_print_posts_threaded($course, $cm, $forum, $discussion, $parent, 0, false, $forumtracked, $posts);
+            $posts = hsuforum_get_all_discussion_posts($discussion->id);
         }
     }
 } else {
@@ -903,11 +967,9 @@ if (!empty($parent)) {
         }
     }
 }
-
 if (!empty($formheading)) {
-    echo $OUTPUT->heading($formheading, 2, array('class' => 'accesshide'));
+    echo $OUTPUT->heading($formheading, 4);
 }
 $mform_post->display();
 
 echo $OUTPUT->footer();
-

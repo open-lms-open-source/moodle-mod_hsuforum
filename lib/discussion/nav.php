@@ -284,32 +284,6 @@ class hsuforum_lib_discussion_nav implements Serializable {
     }
 
     /**
-     * @param int $discussionid
-     * @return bool|int
-     */
-    public function get_prev_discussionid($discussionid) {
-        $key = $this->find_discussionid_key($discussionid);
-
-        if ($key !== false) {
-            return $this->get_discussionid_by_key(($key - 1));
-        }
-        return false;
-    }
-
-    /**
-     * @param int $discussionid
-     * @return bool|int
-     */
-    public function get_next_discussionid($discussionid) {
-        $key = $this->find_discussionid_key($discussionid);
-
-        if ($key !== false) {
-            return $this->get_discussionid_by_key(($key + 1));
-        }
-        return false;
-    }
-
-    /**
      * Get the page that the discussion is on
      *
      * @param int $discussionid
@@ -317,10 +291,11 @@ class hsuforum_lib_discussion_nav implements Serializable {
      * @return int
      */
     public function get_page($discussionid, $perpage = null) {
-        global $CFG;
+
+        $config = get_config('hsuforum');
 
         if (is_null($perpage)) {
-            $perpage = $CFG->hsuforum_manydiscussions;
+            $perpage = $config->manydiscussions;
         }
         if ($this->find_discussionid_key($discussionid) === false) {
             return 0; // Shouldn't happen, we should find valid ones.

@@ -16,10 +16,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package moodlecore
+ * @package    mod_hsuforum
  * @subpackage backup-moodle2
- * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
  * @author Mark Nielsen
  */
@@ -34,7 +34,6 @@
 class restore_hsuforum_activity_structure_step extends restore_activity_structure_step {
 
     protected function define_structure() {
-
         $paths = array();
         $userinfo = $this->get_setting_value('userinfo');
 
@@ -58,8 +57,17 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         global $DB;
 
         $data = (object)$data;
-        $oldid = $data->id;
         $data->course = $this->get_courseid();
+
+        if (!property_exists($data, 'allowprivatereplies')) {
+            $data->allowprivatereplies = 1;
+        }
+        if (!property_exists($data, 'showsubstantive')) {
+            $data->showsubstantive = 1;
+        }
+        if (!property_exists($data, 'showbookmark')) {
+            $data->showbookmark = 1;
+        }
 
         $data->assesstimestart = $this->apply_date_offset($data->assesstimestart);
         $data->assesstimefinish = $this->apply_date_offset($data->assesstimefinish);
@@ -228,7 +236,8 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $sd->messageformat = $forumrec->introformat;
             $sd->messagetrust  = true;
             $sd->mailnow  = false;
-            $sdid = hsuforum_add_discussion($sd, null, $sillybyrefvar, $this->task->get_userid());
+            $sd->reveal = 0;
+            $sdid = hsuforum_add_discussion($sd, null, null, $this->task->get_userid());
             // Mark the post as mailed
             $DB->set_field ('hsuforum_posts','mailed', '1', array('discussion' => $sdid));
             // Copy all the files from mod_foum/intro to mod_hsuforum/post
