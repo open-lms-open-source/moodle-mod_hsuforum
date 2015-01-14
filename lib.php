@@ -1823,10 +1823,11 @@ function hsuforum_get_user_grades($forum, $userid = 0) {
  * @return void
  */
 function hsuforum_update_grades($forum, $userid=0, $nullifnone=true) {
-    global $CFG, $DB;
+    global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
-    if ($forum->gradetype == HSUFORUM_GRADETYPE_NONE or ($forum->gradetype == HSUFORUM_GRADETYPE_RATING and !$forum->assessed)) {
+    if ($forum->gradetype == HSUFORUM_GRADETYPE_NONE or $forum->gradetype == HSUFORUM_GRADETYPE_MANUAL or
+        ($forum->gradetype == HSUFORUM_GRADETYPE_RATING and !$forum->assessed)) {
         hsuforum_grade_item_update($forum);
 
     } else if ($grades = hsuforum_get_user_grades($forum, $userid)) {
