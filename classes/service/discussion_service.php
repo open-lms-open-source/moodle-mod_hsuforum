@@ -90,12 +90,14 @@ class discussion_service {
 
         $message = get_string('postaddedsuccess', 'hsuforum');
 
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+
         return new json_response((object) array(
             'eventaction'      => 'discussioncreated',
             'discussionid'     => (int) $discussion->id,
             'livelog'          => $message,
             'notificationhtml' => $OUTPUT->notification($message, 'notifysuccess'),
-            'html'             => $this->render_discussion($discussion->id),
+            'html'             => $renderer->render_discussionsview($forum),
         ));
     }
 
@@ -145,11 +147,12 @@ class discussion_service {
         if (!hsuforum_user_can_post_discussion($forum, $discussion->groupid, -1, $cm, $context)) {
             $errors[] = new \moodle_exception('nopostforum', 'hsuforum');
         }
-        try {
-            hsuforum_check_throttling($forum, $cm, false);
-        } catch (\Exception $e) {
-            $errors[] = $e;
+
+        $thresholdwarning = hsuforum_check_throttling($forum, $cm);
+        if ($thresholdwarning !== false && $thresholdwarning->canpost === false) {
+            $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
         }
+
         $subject = trim($discussion->subject);
         if (empty($subject)) {
             $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
@@ -253,6 +256,7 @@ class discussion_service {
 
         return array($cm, $discussion, $posts, $canreply);
     }
+
 
     /**
      * Render a discussion overview (basically the first post)

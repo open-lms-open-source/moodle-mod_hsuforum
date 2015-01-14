@@ -117,15 +117,10 @@ Y.extend(ARTICLE, Y.Base,
                 Y.log('Not binding event handlers on search page', 'info', 'Article');
                 return;
             }
-            var rootNode = Y.one(SELECTORS.CONTAINER);
-            if (rootNode === null) {
-                Y.log('Failed to bind event handlers', 'error', 'Article');
-                return;
-            }
+
             var dom     = this.get('dom'),
                 form    = this.get('form'),
-                router  = this.get('router'),
-                addNode = Y.one(SELECTORS.ADD_DISCUSSION);
+                router  = this.get('router');
 
             /* Clean html on paste */
             Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
@@ -171,11 +166,9 @@ Y.extend(ARTICLE, Y.Base,
 
             }, document, '.hsuforum-use-advanced');
 
-            // Submit handlers.
-            rootNode.delegate('submit', form.handleFormSubmit, SELECTORS.FORM, form);
-            if (addNode instanceof Y.Node) {
-                addNode.on('submit', router.handleAddDiscussionRoute, router);
-            }
+            // We bind to document for these buttons as they get re-added on each discussion addition.
+            Y.delegate('submit', form.handleFormSubmit, document, SELECTORS.FORM, form);
+            Y.delegate('click', router.handleAddDiscussionRoute, document, SELECTORS.ADD_DISCUSSION, router);
 
             // On post created, update HTML, URL and log.
             form.on(EVENTS.POST_CREATED, dom.handleUpdateDiscussion, dom);

@@ -238,14 +238,9 @@ Y.extend(DOM, Y.Base,
          * @param e
          */
         handleUpdateDiscussion: function (e) {
-            var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', e.discussionid));
-            if (node) {
-                // Updating existing discussion.
-                node.replace(e.html);
-            } else {
-                // Adding new discussion.
-                Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
-            }
+            M.mod_hsuforum.restoreEditor();
+            var node = Y.one('#discussionsview');
+            node.setHTML(e.html);
         },
 
         /**
@@ -1006,14 +1001,10 @@ Y.extend(ARTICLE, Y.Base,
             if (Y.one(SELECTORS.SEARCH_PAGE) !== null) {
                 return;
             }
-            var rootNode = Y.one(SELECTORS.CONTAINER);
-            if (rootNode === null) {
-                return;
-            }
+
             var dom     = this.get('dom'),
                 form    = this.get('form'),
-                router  = this.get('router'),
-                addNode = Y.one(SELECTORS.ADD_DISCUSSION);
+                router  = this.get('router');
 
             /* Clean html on paste */
             Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
@@ -1059,11 +1050,9 @@ Y.extend(ARTICLE, Y.Base,
 
             }, document, '.hsuforum-use-advanced');
 
-            // Submit handlers.
-            rootNode.delegate('submit', form.handleFormSubmit, SELECTORS.FORM, form);
-            if (addNode instanceof Y.Node) {
-                addNode.on('submit', router.handleAddDiscussionRoute, router);
-            }
+            // We bind to document for these buttons as they get re-added on each discussion addition.
+            Y.delegate('submit', form.handleFormSubmit, document, SELECTORS.FORM, form);
+            Y.delegate('click', router.handleAddDiscussionRoute, document, SELECTORS.ADD_DISCUSSION, router);
 
             // On post created, update HTML, URL and log.
             form.on(EVENTS.POST_CREATED, dom.handleUpdateDiscussion, dom);

@@ -266,17 +266,20 @@
                     $forummenu[$section][$sectionname][$url] = format_string($forumcm->name);
                 }
             }
-            if (!empty($forummenu)) {
-                echo '<div class="movediscussionoption">';
-                $select = new url_select($forummenu, '',
-                        array(''=>get_string("movethisdiscussionto", "hsuforum")),
-                        'forummenu');
-                echo $OUTPUT->render($select);
-                echo "</div>";
-            }
         }
         echo "</div>";
     }
+    if (!empty($forummenu)) {
+        echo '<div class="movediscussionoption">';
+        $select = new url_select($forummenu, '',
+            array(''=>get_string("movethisdiscussionto", "hsuforum")),
+            'forummenu');
+        echo $OUTPUT->render($select);
+        echo "</div>";
+    }
+
+    $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);
+    echo $renderer->discussion_navigation($neighbours['prev'], $neighbours['next']);
     echo "</div>";
 
 echo $renderer->advanced_editor();

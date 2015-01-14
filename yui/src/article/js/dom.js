@@ -183,15 +183,9 @@ Y.extend(DOM, Y.Base,
          * @param e
          */
         handleUpdateDiscussion: function (e) {
-            Y.log('Updating discussion HTML: ' + e.discussionid, 'info', 'Dom');
-            var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', e.discussionid));
-            if (node) {
-                // Updating existing discussion.
-                node.replace(e.html);
-            } else {
-                // Adding new discussion.
-                Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
-            }
+            Y.log('Updating discussion HTML to include: ' + e.discussionid, 'info', 'Dom');
+            var node = Y.one('#discussionsview');
+            node.setHTML(e.html);
         },
 
         /**

@@ -243,10 +243,9 @@ class post_service {
             }
         }
         if (empty($post->id)) {
-            try {
-                hsuforum_check_throttling($forum, $cm, false);
-            } catch (\Exception $e) {
-                $errors[] = $e;
+            $thresholdwarning = hsuforum_check_throttling($forum, $cm);
+            if ($thresholdwarning !== false && $thresholdwarning->canpost === false) {
+                $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
             }
         }
         if (hsuforum_str_empty($post->subject)) {

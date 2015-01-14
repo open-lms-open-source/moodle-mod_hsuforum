@@ -71,6 +71,7 @@ class print_adapter implements adapter_interface {
     public function send_discussion($discussion, $posts) {
         global $PAGE;
         $renderer = $PAGE->get_renderer('mod_hsuforum');
+        echo $renderer->svg_sprite();
         foreach ($posts as $post) {
             echo $renderer->post($this->cm, $discussion, $post, false, null, false);
         }

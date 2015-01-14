@@ -24,22 +24,32 @@
  */
 
     require_once('../../config.php');
-    require_once('lib.php');
     require_once($CFG->libdir.'/completionlib.php');
 
-    $id          = optional_param('id', 0, PARAM_INT);       // Forum instance id (id in course modules table)
-    $f           = optional_param('f', 0, PARAM_INT);        // Forum ID
-    $changegroup = optional_param('group', -1, PARAM_INT);   // choose the current group
+    $id          = optional_param('id', false, PARAM_INT);       // Forum instance id (id in course modules table)
+    $f           = optional_param('f', false, PARAM_INT);        // Forum ID
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
     $search      = optional_param('search', '', PARAM_CLEAN);// search string
 
-    $config = get_config('hsuforum');
+    if (!$f && !$id) {
+        print_error('missingparameter');
+    } else if ($f) {
+        $forum = $DB->get_record('forum', array('id' => $f));
+    } else {
+        $sql = "SELECT hf.*, cm.id AS cmid FROM {course_modules} cm
+                    LEFT JOIN {modules} m
+                           ON m.id = cm.module
+                    LEFT JOIN {hsuforum} hf ON hf.id = cm.instance
+                        WHERE m.name = 'hsuforum'
+                          AND cm.id = ?";
+        $forum = $DB->get_record_sql($sql, array($id));
+    }
 
     $params = array();
     if ($id) {
-        $params['id'] = $id;
+        $params['id'] = $forum->cmid;
     } else {
-        $params['f'] = $f;
+        $params['f'] = $forum->id;
     }
     if ($page) {
         $params['page'] = $page;
@@ -49,69 +59,29 @@
     }
     $PAGE->set_url('/mod/hsuforum/view.php', $params);
 
-    if ($id) {
-        if (! $cm = get_coursemodule_from_id('hsuforum', $id)) {
-            print_error('invalidcoursemodule');
-        }
-        if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-            print_error('coursemisconf');
-        }
-        if (! $forum = $DB->get_record("hsuforum", array("id" => $cm->instance))) {
-            print_error('invalidforumid', 'hsuforum');
-        }
-        // move require_course_login here to use forced language for course
-        // fix for MDL-6926
-        $PAGE->set_context(context_module::instance($cm->id));
-        require_course_login($course, true, $cm);
-        $strforums = get_string("modulenameplural", "hsuforum");
-        $strforum = get_string("modulename", "hsuforum");
-    } else if ($f) {
+    $course = $DB->get_record('course', array('id' => $forum->course));
 
-        if (! $forum = $DB->get_record("hsuforum", array("id" => $f))) {
-            print_error('invalidforumid', 'hsuforum');
-        }
-        if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
-            print_error('coursemisconf');
-        }
-
-        if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
-            print_error('missingparameter');
-        }
-
-        // move require_course_login here to use forced language for course
-        // fix for MDL-6926
-        $PAGE->set_context(context_module::instance($cm->id));
-        require_course_login($course, true, $cm);
-        $strforums = get_string("modulenameplural", "hsuforum");
-        $strforum = get_string("modulename", "hsuforum");
-    } else {
+    if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
         print_error('missingparameter');
     }
 
-    if ($forum->type == 'single') {
-        $PAGE->set_pagetype('mod-hsuforum-discuss');
-    }
-
+// move require_course_login here to use forced language for course
+// fix for MDL-6926
     $context = context_module::instance($cm->id);
-
-    if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
-        require_once("$CFG->libdir/rsslib.php");
-
-        $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': ' . format_string($forum->name);
-        rss_add_http_header($context, 'mod_hsuforum', $forum, $rsstitle);
-    }
-
-    // Mark viewed if required
-    $completion = new completion_info($course);
-    $completion->set_module_viewed($cm);
+    $PAGE->set_context($context);
+    require_course_login($course, true, $cm);
 
 /// Print header.
-
     $PAGE->set_title($forum->name);
     $PAGE->add_body_class('forumtype-'.$forum->type);
     $PAGE->set_heading($course->fullname);
 
+    $renderer = $PAGE->get_renderer('mod_hsuforum');
+/// This has to be called before we start setting up page as it triggers view events.
+    $discussionview = $renderer->render_discussionsview($forum);
+
     echo $OUTPUT->header();
+    echo ('<div id="discussionsview">');
 
 /// Some capability checks.
     if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
@@ -122,30 +92,8 @@
         notice(get_string('noviewdiscussionspermission', 'hsuforum'));
     }
 
-    $params = array(
-        'context' => $context,
-        'objectid' => $forum->id
-    );
-    $event = \mod_hsuforum\event\course_module_viewed::create($params);
-    $event->add_record_snapshot('course_modules', $cm);
-    $event->add_record_snapshot('course', $course);
-    $event->add_record_snapshot('hsuforum', $forum);
-    $event->trigger();
+    echo $discussionview;
 
-    $SESSION->fromdiscussion = qualified_me();   // Return here if we post or set subscription etc
-
-    $renderer = $PAGE->get_renderer('mod_hsuforum');
-    $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
-    echo $renderer->svg_sprite();
-    $renderer->view($course, $cm, $forum, $context);
-
+    echo '</div>';
     echo $renderer->advanced_editor();
-
-    if ($forum->type == 'single') {
-        echo hsuforum_search_form($course, $forum->id);
-    }
-    $url = new moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
-    $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
-    echo html_writer::link($url, $manageforumsubscriptions);
-
     echo $OUTPUT->footer($course);
