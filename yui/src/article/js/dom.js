@@ -185,7 +185,20 @@ Y.extend(DOM, Y.Base,
         handleUpdateDiscussion: function (e) {
             Y.log('Updating discussion HTML to include: ' + e.discussionid, 'info', 'Dom');
             var node = Y.one('#discussionsview');
-            node.setHTML(e.html);
+            if (node) {
+                // We are viewing all disussions on one page (view.php).
+                node.setHTML(e.html);
+            } else {
+                // We are viewing a single discussion with the replies underneath.
+                node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', e.discussionid));
+                if (node) {
+                    // Updating existing discussion.
+                    node.replace(e.html);
+                } else {
+                    // Adding new discussion.
+                    Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
+                }
+            }
         },
 
         /**
@@ -200,9 +213,6 @@ Y.extend(DOM, Y.Base,
             if (Y.one(SELECTORS.NO_DISCUSSIONS)) {
                 Y.one(SELECTORS.NO_DISCUSSIONS).remove();
             }
-
-            // Update number of discussions.
-            this.incrementDiscussionCount(1);
         },
 
         /**

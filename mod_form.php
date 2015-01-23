@@ -352,6 +352,10 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $errors['completionusegrade'] = get_string('completionusegradeerror', 'hsuforum');
             }
         }
+        if ($data['gradetype'] == HSUFORUM_GRADETYPE_MANUAL
+                && $data['scale'] == 0) {
+            $errors['scale'] = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
+        }
         return $errors;
     }
 }

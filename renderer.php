@@ -55,11 +55,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
         $forumicon = "<img src='".$OUTPUT->pix_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
-        echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
-        if ($forum->type != 'single' && !empty($forum->intro)) {
-            echo '<div class="hsuforum_introduction">'.format_module_intro('hsuforum', $forum, $cm->id).'</div>';
-        }
-        echo "</div>";
+        echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2></div>';
 
         // Update activity group mode changes here.
         groups_get_activity_group($cm, true);
@@ -68,17 +64,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
         hsuforum_lib_discussion_sort::set_to_session($dsort);
 
-        // If it's a simple single discussion forum,
-        // we need to print the display
-        // mode control.
-        // TODO - these display modes are all useless - Remove.
-        $discussion = NULL;
-        if ($forum->type == 'single') {
-            $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
-            if (!empty($discussions)) {
-                $discussion = array_pop($discussions);
-            }
-        }
 
         if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
             $a = new stdClass();
@@ -92,20 +77,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         switch ($forum->type) {
-            case 'single':
-                if (!empty($discussions) && count($discussions) > 1) {
-                    echo $OUTPUT->notification(get_string('warnformorepost', 'hsuforum'));
-                }
-                if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
-                    print_error('cannotfindfirstpost', 'hsuforum');
-                }
-
-                $canreply    = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
-                $canrate     = has_capability('mod/hsuforum:rate', $context);
-
-                hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply, $canrate);
-                break;
-
             case 'eachuser':
                 if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
                     echo '<p class="mdl-align">';
@@ -197,16 +168,15 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $event->add_record_snapshot('hsuforum', $forum);
         $event->trigger();
 
-        $SESSION->fromdiscussion = qualified_me();   // Return here if we post or set subscription etc
-
+        if (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT) {
+            // Return here if we post or set subscription etc (but not if we are calling this via ajax).
+            $SESSION->fromdiscussion = qualified_me();
+        }
 
         $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $this->get_js_module());
         $output .= $this->svg_sprite();
         $this->view($course, $cm, $forum, $context);
 
-        if ($forum->type == 'single') {
-            $output .= hsuforum_search_form($course, $forum->id);
-        }
         $url = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
         $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
         $output .= \html_writer::link($url, $manageforumsubscriptions);
@@ -549,20 +519,17 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
-        $threadheader = '';
-        if ($forumtype != 'single') {
-            $threadheader = <<<HTML
-            <div class="hsuforum-thread-header">
-                <div class="hsuforum-thread-title">
-                    <h4 id='thread-title-{$d->id}' role="heading" aria-level="4">
-                        $threadtitle
-                    </h4>
-                    <small>$datecreated</small>
-                </div>
-                $threadmeta
+        $threadheader = <<<HTML
+        <div class="hsuforum-thread-header">
+            <div class="hsuforum-thread-title">
+                <h4 id='thread-title-{$d->id}' role="heading" aria-level="4">
+                    $threadtitle
+                </h4>
+                <small>$datecreated</small>
             </div>
+            $threadmeta
+        </div>
 HTML;
-        }
 
         return <<<HTML
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"

@@ -3467,6 +3467,12 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
 function hsuforum_set_return() {
     global $CFG, $SESSION;
 
+    // If its an AJAX_SCRIPT then it makes no sense to set this variable.
+    if (defined(AJAX_SCRIPT) && AJAX_SCRIPT) {
+        unset($SESSION->fromdiscussion);
+        return;
+    }
+
     if (! isset($SESSION->fromdiscussion)) {
         if (!empty($_SERVER['HTTP_REFERER'])) {
             $referer = $_SERVER['HTTP_REFERER'];
@@ -6256,6 +6262,8 @@ function hsuforum_check_throttling($forum, $cm = null) {
 
         return $warning;
     }
+
+    return false;
 }
 
 /**

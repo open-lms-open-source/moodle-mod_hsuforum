@@ -34,7 +34,7 @@
     if (!$f && !$id) {
         print_error('missingparameter');
     } else if ($f) {
-        $forum = $DB->get_record('forum', array('id' => $f));
+        $forum = $DB->get_record('hsuforum', array('id' => $f));
     } else {
         $sql = "SELECT hf.*, cm.id AS cmid FROM {course_modules} cm
                     LEFT JOIN {modules} m
@@ -43,6 +43,12 @@
                         WHERE m.name = 'hsuforum'
                           AND cm.id = ?";
         $forum = $DB->get_record_sql($sql, array($id));
+    }
+
+    if ($forum->type == 'single') {
+        $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
+        $discussion = array_pop($discussions);
+        redirect('discuss.php?d='.$discussion->id);
     }
 
     $params = array();
