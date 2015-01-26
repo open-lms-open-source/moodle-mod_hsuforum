@@ -31,35 +31,19 @@
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
     $search      = optional_param('search', '', PARAM_CLEAN);// search string
 
+    $params = array();
+
     if (!$f && !$id) {
         print_error('missingparameter');
     } else if ($f) {
-        $forum = $DB->get_record('hsuforum', array('id' => $f));
+        $forum = $DB->get_record('forum', array('id' => $f));
+        $params['f'] = $forum->id;
     } else {
         $cm = get_coursemodule_from_id('hsuforum', $id);
         $forum = $DB->get_record('hsuforum', array('id' => $cm->instance));
-
-        $sql = "SELECT hf.*, cm.id AS cmid FROM {course_modules} cm
-                    LEFT JOIN {modules} m
-                           ON m.id = cm.module
-                    LEFT JOIN {hsuforum} hf ON hf.id = cm.instance
-                        WHERE m.name = 'hsuforum'
-                          AND cm.id = ?";
-        $forum = $DB->get_record_sql($sql, array($id));
+        $params['id'] = $cm->id;
     }
 
-    if ($forum->type == 'single') {
-        $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
-        $discussion = array_pop($discussions);
-        redirect('discuss.php?d='.$discussion->id);
-    }
-
-    $params = array();
-    if ($id) {
-        $params['id'] = $forum->cmid;
-    } else {
-        $params['f'] = $forum->id;
-    }
     if ($page) {
         $params['page'] = $page;
     }
