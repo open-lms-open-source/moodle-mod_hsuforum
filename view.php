@@ -36,6 +36,9 @@
     } else if ($f) {
         $forum = $DB->get_record('hsuforum', array('id' => $f));
     } else {
+        $cm = get_coursemodule_from_id('hsuforum', $id);
+        $forum = $DB->get_record('hsuforum', array('id' => $cm->instance));
+
         $sql = "SELECT hf.*, cm.id AS cmid FROM {course_modules} cm
                     LEFT JOIN {modules} m
                            ON m.id = cm.module
