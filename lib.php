@@ -3495,6 +3495,18 @@ function hsuforum_set_return() {
 function hsuforum_go_back_to($default) {
     global $SESSION;
 
+    if (!empty($SESSION->fromdiscussion)
+        && (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT)) {
+        // If we have an ajax fromdiscussion session variable then we need to get rid of it because this is not an
+        // ajax page and we will end up redirecting incorrectly to route.php.
+        $murl = new moodle_url($SESSION->fromdiscussion);
+        $path = $murl->get_path();
+        if (strpos($path, '/mod/hsuforum/route.php') === 0) {
+            // OK - this is bad, we are not using AJAX but the redirect url is an AJAX url, so kill it.
+            unset($SESSION->fromdiscussion);
+        }
+    }
+
     if (!empty($SESSION->fromdiscussion)) {
         $returnto = $SESSION->fromdiscussion;
         unset($SESSION->fromdiscussion);
