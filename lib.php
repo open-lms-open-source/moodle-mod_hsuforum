@@ -6687,7 +6687,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
 
         $discsubscribers = ($viewingdiscussion or (optional_param('action', '', PARAM_ALPHA) == 'discsubscribers'));
-        if ($discsubscribers and !hsuforum_is_forcesubscribed($forumobject)) {
+        if ($discsubscribers
+                && !hsuforum_is_forcesubscribed($forumobject)
+                && $discussionid) {
             $url = new moodle_url('/mod/hsuforum/route.php', array(
                 'contextid'    => $PAGE->cm->context->id,
                 'action'       => 'discsubscribers',
