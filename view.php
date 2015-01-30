@@ -36,7 +36,7 @@
     if (!$f && !$id) {
         print_error('missingparameter');
     } else if ($f) {
-        $forum = $DB->get_record('forum', array('id' => $f));
+        $forum = $DB->get_record('hsuforum', array('id' => $f));
         $params['f'] = $forum->id;
     } else {
         if (!$cm = get_coursemodule_from_id('hsuforum', $id)){
