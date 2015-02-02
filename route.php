@@ -32,7 +32,10 @@ use mod_hsuforum\controller\posters_controller;
 use mod_hsuforum\controller\posts_controller;
 use mod_hsuforum\controller\router;
 
-if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0) {
+if ((!empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+    && strcasecmp($_SERVER['HTTP_X_REQUESTED_WITH'], 'XMLHttpRequest') === 0)
+    || !empty($_POST['yuiformsubmit']) // Handle yui form submissions.
+) {
     define('AJAX_SCRIPT', true);
     define('NO_DEBUG_DISPLAY', true);
 }

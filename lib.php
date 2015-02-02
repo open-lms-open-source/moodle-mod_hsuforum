@@ -3468,6 +3468,12 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
 function hsuforum_set_return() {
     global $CFG, $SESSION;
 
+    // If its an AJAX_SCRIPT then it makes no sense to set this variable.
+    if (defined(AJAX_SCRIPT) && AJAX_SCRIPT) {
+        unset($SESSION->fromdiscussion);
+        return;
+    }
+
     if (! isset($SESSION->fromdiscussion)) {
         if (!empty($_SERVER['HTTP_REFERER'])) {
             $referer = $_SERVER['HTTP_REFERER'];
@@ -3489,6 +3495,18 @@ function hsuforum_set_return() {
  */
 function hsuforum_go_back_to($default) {
     global $SESSION;
+
+    if (!empty($SESSION->fromdiscussion)
+        && (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT)) {
+        // If we have an ajax fromdiscussion session variable then we need to get rid of it because this is not an
+        // ajax page and we will end up redirecting incorrectly to route.php.
+        $murl = new moodle_url($SESSION->fromdiscussion);
+        $path = $murl->get_path();
+        if (strpos($path, '/mod/hsuforum/route.php') === 0) {
+            // OK - this is bad, we are not using AJAX but the redirect url is an AJAX url, so kill it.
+            unset($SESSION->fromdiscussion);
+        }
+    }
 
     if (!empty($SESSION->fromdiscussion)) {
         $returnto = $SESSION->fromdiscussion;
@@ -6257,6 +6275,8 @@ function hsuforum_check_throttling($forum, $cm = null) {
 
         return $warning;
     }
+
+    return false;
 }
 
 /**
@@ -6668,7 +6688,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
 
         $discsubscribers = ($viewingdiscussion or (optional_param('action', '', PARAM_ALPHA) == 'discsubscribers'));
-        if ($discsubscribers and !hsuforum_is_forcesubscribed($forumobject)) {
+        if ($discsubscribers
+                && !hsuforum_is_forcesubscribed($forumobject)
+                && $discussionid) {
             $url = new moodle_url('/mod/hsuforum/route.php', array(
                 'contextid'    => $PAGE->cm->context->id,
                 'action'       => 'discsubscribers',

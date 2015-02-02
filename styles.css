@@ -2,6 +2,12 @@
 #page-local-joulegrader-view .indent {
     border-bottom:1px solid #ccc;
 }
+
+#page-local-joulegrader-view .hsuforum-post-pubdate:after {
+    content: attr(title);
+    padding-left: 1em;
+}
+
 #local-joulegrader .content .mod-hsuforum-posts-container,
 #local-joulegrader .content .mod-hsuforum-posts-container .content {
     text-align: left;
@@ -654,6 +660,7 @@ FUN WITH FORMS
 .hsuforum.modtype_hsuforum .snap-media-object {
     width:50%;
     float:left;
+    min-width: 200px;
 }
 
 .block_flexpagemod_hsuforum .snap-media-object > a,
@@ -778,4 +785,14 @@ FUN WITH FORMS
 .hsuforum-threshold-blocked .hsuforum-post-figure,
 .hsuforum-threshold-blocked .hsuforum-post-body {
     display: none;
+}
+
+.format-flexpage .block_flexpagemod_hsuforum li.activity:before,
+.format-flexpage .block_flexpagemod_hsuforum li.activity:after,
+.modtype_hsuforum.activity:before,
+.modtype_hsuforum.activity:after,
+.modtype_hsuforum.activity .unread:before {
+    content: "";
+    display: table;
+    clear: both;
 }

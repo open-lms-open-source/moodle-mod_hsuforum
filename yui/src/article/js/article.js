@@ -109,7 +109,13 @@ Y.extend(ARTICLE, Y.Base,
             if(firstUnreadPost && location.hash === '#unread') {
                 // get the post parent to focus on
                 var post = document.getElementById(firstUnreadPost.id).parentNode;
-                post.scrollIntoView();
+                if (M.cfg.theme === 'express' && navigator.userAgent.match(/Trident|MSIE/)) {
+                    // This has issues in IE when the themer
+                    // uses negative margins to layout columns
+                    // so skip it.
+                } else {
+                    post.scrollIntoView();
+                }
                 post.focus();
             }
 

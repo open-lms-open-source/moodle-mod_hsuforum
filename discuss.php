@@ -174,7 +174,9 @@
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-     echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
+    if ($forum->type != 'single') {
+         echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
+    }
      echo $renderer->svg_sprite();
 
 
@@ -276,6 +278,9 @@
             'forummenu');
         echo $OUTPUT->render($select);
         echo "</div>";
+    }
+    if ($forum->type == 'single') {
+        echo  hsuforum_search_form($course, $forum->id);
     }
 
     $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);

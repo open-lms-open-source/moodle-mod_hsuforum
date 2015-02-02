@@ -31,26 +31,21 @@
     $page        = optional_param('page', 0, PARAM_INT);     // which page to show
     $search      = optional_param('search', '', PARAM_CLEAN);// search string
 
+    $params = array();
+
     if (!$f && !$id) {
         print_error('missingparameter');
     } else if ($f) {
-        $forum = $DB->get_record('forum', array('id' => $f));
+        $forum = $DB->get_record('hsuforum', array('id' => $f));
+        $params['f'] = $forum->id;
     } else {
-        $sql = "SELECT hf.*, cm.id AS cmid FROM {course_modules} cm
-                    LEFT JOIN {modules} m
-                           ON m.id = cm.module
-                    LEFT JOIN {hsuforum} hf ON hf.id = cm.instance
-                        WHERE m.name = 'hsuforum'
-                          AND cm.id = ?";
-        $forum = $DB->get_record_sql($sql, array($id));
+        if (!$cm = get_coursemodule_from_id('hsuforum', $id)){
+            print_error('missingparameter');
+        }
+        $forum = $DB->get_record('hsuforum', array('id' => $cm->instance));
+        $params['id'] = $cm->id;
     }
 
-    $params = array();
-    if ($id) {
-        $params['id'] = $forum->cmid;
-    } else {
-        $params['f'] = $forum->id;
-    }
     if ($page) {
         $params['page'] = $page;
     }
@@ -61,7 +56,7 @@
 
     $course = $DB->get_record('course', array('id' => $forum->course));
 
-    if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
+    if (!$cm && !$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
         print_error('missingparameter');
     }
 

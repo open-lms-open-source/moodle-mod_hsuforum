@@ -237,6 +237,7 @@ Y.extend(FORM, Y.Base,
             var fileinputs = wrapperNode.all('form input[type=file]');
 
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
+                data.yuiformsubmit = 1; // So we can detect and class this as an AJAX post later!
                 if (data.errors === true) {
                     Y.log('Form failed to validate', 'info', 'Form');
                     wrapperNode.one(SELECTORS.VALIDATION_ERRORS).setHTML(data.html).addClass('notifyproblem');
