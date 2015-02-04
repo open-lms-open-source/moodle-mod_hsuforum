@@ -47,9 +47,13 @@
     }
 
     if ($forum->type == 'single') {
-        $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
-        $discussion = array_pop($discussions);
-        redirect('discuss.php?d='.$discussion->id);
+        $discussions = $DB->get_records('hsuforum_discussions', array('forum' => $forum->id), 'timemodified ASC');
+        $discussion  = array_pop($discussions);
+
+        if (empty($discussion)) {
+            print_error('cannotfindfirstpost', 'hsuforum');
+        }
+        redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
     }
 
     if ($page) {
