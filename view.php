@@ -60,6 +60,8 @@
         print_error('missingparameter');
     }
 
+    $context = context_module::instance($cm->id);
+
     if ($forum->type == 'single') {
         $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
         $discussion = array_pop($discussions);
@@ -71,12 +73,22 @@
         // Mark forum viewed
         $completion = new \completion_info($course);
         $completion->set_module_viewed($cm);
-        redirect('discuss.php?d='.$discussion->id);
+
+        $params = array(
+            'context' => $context,
+            'objectid' => $forum->id
+        );
+        $event = \mod_hsuforum\event\course_module_viewed::create($params);
+        $event->add_record_snapshot('course_modules', $cm);
+        $event->add_record_snapshot('course', $course);
+        $event->add_record_snapshot('hsuforum', $forum);
+        $event->trigger();
+
+        redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
     }
 
 // move require_course_login here to use forced language for course
 // fix for MDL-6926
-    $context = context_module::instance($cm->id);
     $PAGE->set_context($context);
     require_course_login($course, true, $cm);
 
