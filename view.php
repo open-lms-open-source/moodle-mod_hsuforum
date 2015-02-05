@@ -60,8 +60,6 @@
         print_error('missingparameter');
     }
 
-    $context = context_module::instance($cm->id);
-
     if ($forum->type == 'single') {
         $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
         $discussion = array_pop($discussions);
@@ -75,6 +73,7 @@
 
 // move require_course_login here to use forced language for course
 // fix for MDL-6926
+    $context = context_module::instance($cm->id);
     $PAGE->set_context($context);
     require_course_login($course, true, $cm);
 
