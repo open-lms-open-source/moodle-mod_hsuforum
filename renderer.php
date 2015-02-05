@@ -55,7 +55,11 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
         $forumicon = "<img src='".$OUTPUT->pix_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
-        echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2></div>';
+        echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
+        if (!empty($forum->intro)) {
+            echo '<div class="hsuforum_introduction">'.format_module_intro('hsuforum', $forum, $cm->id).'</div>';
+        }
+        echo "</div>";
 
         // Update activity group mode changes here.
         groups_get_activity_group($cm, true);
