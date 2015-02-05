@@ -70,22 +70,6 @@
             print_error('cannotfindfirstpost', 'hsuforum');
         }
 
-        // Mark forum viewed
-        if (isloggedin()) {
-            $completion = new \completion_info($course);
-            $completion->set_module_viewed($cm);
-
-            $params = array(
-                'context' => $context,
-                'objectid' => $forum->id
-            );
-            $event = \mod_hsuforum\event\course_module_viewed::create($params);
-            $event->add_record_snapshot('course_modules', $cm);
-            $event->add_record_snapshot('course', $course);
-            $event->add_record_snapshot('hsuforum', $forum);
-            $event->trigger();
-        }
-
         redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
     }
 
