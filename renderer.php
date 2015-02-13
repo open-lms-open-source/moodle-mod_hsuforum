@@ -54,8 +54,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $config = get_config('hsuforum');
         $mode    = optional_param('mode', 0, PARAM_INT); // Display mode (for single forum)
         $page    = optional_param('page', 0, PARAM_INT); // which page to show
-
-        echo '<div id="hsuforum-header"><h2>'.format_string($forum->name).'</h2>';
+        $forumicon = "<img src='".$OUTPUT->pix_url('icon', 'hsuforum')."' alt='' class='iconlarge activityicon'/> ";
+        echo '<div id="hsuforum-header"><h2>'.$forumicon.format_string($forum->name).'</h2>';
         if (!empty($forum->intro)) {
             echo '<div class="hsuforum_introduction">'.format_module_intro('hsuforum', $forum, $cm->id).'</div>';
         }
@@ -68,17 +68,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
         hsuforum_lib_discussion_sort::set_to_session($dsort);
 
-        // If it's a simple single discussion forum,
-        // we need to print the display
-        // mode control.
-        // TODO - these display modes are all useless - Remove.
-        $discussion = NULL;
-        if ($forum->type == 'single') {
-            $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
-            if (!empty($discussions)) {
-                $discussion = array_pop($discussions);
-            }
-        }
 
         if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
             $a = new stdClass();
@@ -92,20 +81,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         switch ($forum->type) {
-            case 'single':
-                if (!empty($discussions) && count($discussions) > 1) {
-                    echo $OUTPUT->notification(get_string('warnformorepost', 'hsuforum'));
-                }
-                if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
-                    print_error('cannotfindfirstpost', 'hsuforum');
-                }
-
-                $canreply    = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context);
-                $canrate     = has_capability('mod/hsuforum:rate', $context);
-
-                hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply, $canrate);
-                break;
-
             case 'eachuser':
                 if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
                     echo '<p class="mdl-align">';
@@ -120,7 +95,102 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
     }
 
+    /**
+     * Render all discussions view, including add discussion button, etc...
+     *
+     * @param stdClass $forum - forum row
+     * @return string
+     */
+    public function render_discussionsview($forum) {
+        global $CFG, $DB, $PAGE, $SESSION;
 
+        ob_start(); // YAK! todo, fix this rubbish.
+
+        require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
+        require_once($CFG->libdir.'/completionlib.php');
+        require_once($CFG->libdir.'/accesslib.php');
+
+        $output = '';
+
+        $modinfo = get_fast_modinfo($forum->course);
+        $forums = $modinfo->get_instances_of('hsuforum');
+        if (!isset($forums[$forum->id])) {
+            print_error('invalidcoursemodule');
+        }
+        $cm = $forums[$forum->id];
+
+        $id          = $cm->id;      // Forum instance id (id in course modules table)
+        $f           = $forum->id;        // Forum ID
+
+        $config = get_config('hsuforum');
+
+        if ($id) {
+            if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
+                print_error('coursemisconf');
+            }
+        } else if ($f) {
+            if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
+                print_error('coursemisconf');
+            }
+
+            // move require_course_login here to use forced language for course
+            // fix for MDL-6926
+            require_course_login($course, true, $cm);
+        } else {
+            print_error('missingparameter');
+        }
+
+        $context = \context_module::instance($cm->id);
+
+        if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
+            require_once("$CFG->libdir/rsslib.php");
+
+            $rsstitle = format_string($course->shortname, true, array('context' => \context_course::instance($course->id))) . ': ' . format_string($forum->name);
+            rss_add_http_header($context, 'mod_hsuforum', $forum, $rsstitle);
+        }
+
+        // Mark viewed if required
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm);
+
+        /// Some capability checks.
+        if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
+            notice(get_string("activityiscurrentlyhidden"));
+        }
+
+        if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+            notice(get_string('noviewdiscussionspermission', 'hsuforum'));
+        }
+
+        $params = array(
+            'context' => $context,
+            'objectid' => $forum->id
+        );
+        $event = \mod_hsuforum\event\course_module_viewed::create($params);
+        $event->add_record_snapshot('course_modules', $cm);
+        $event->add_record_snapshot('course', $course);
+        $event->add_record_snapshot('hsuforum', $forum);
+        $event->trigger();
+
+        if (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT) {
+            // Return here if we post or set subscription etc (but not if we are calling this via ajax).
+            $SESSION->fromdiscussion = qualified_me();
+        }
+
+        $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $this->get_js_module());
+        $output .= $this->svg_sprite();
+        $this->view($course, $cm, $forum, $context);
+
+        $url = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
+        $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
+        $output .= \html_writer::link($url, $manageforumsubscriptions);
+
+        $output = ob_get_contents().$output;
+
+        ob_end_clean();
+
+        return ($output);
+    }
 
     /**
      * Render a list of discussions
@@ -274,7 +344,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $subscribe = new hsuforum_lib_discussion_subscribe($forum, context_module::instance($cm->id));
         $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe) ;
 
-        return $this->discussion_template($data);
+        return $this->discussion_template($data, $forum->type);
     }
 
     public function article_assets($cm) {
@@ -386,7 +456,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         return $this->post_template($data);
     }
 
-    public function discussion_template($d) {
+    public function discussion_template($d, $forumtype) {
         $replies = '';
         if(!empty($d->replies)) {
             $xreplies = hsuforum_xreplies($d->replies);
@@ -453,6 +523,18 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
+        $threadheader = <<<HTML
+        <div class="hsuforum-thread-header">
+            <div class="hsuforum-thread-title">
+                <h4 id='thread-title-{$d->id}' role="heading" aria-level="4">
+                    $threadtitle
+                </h4>
+                <small>$datecreated</small>
+            </div>
+            $threadmeta
+        </div>
+HTML;
+
         return <<<HTML
 <article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
@@ -464,15 +546,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             </p>
         </div>
 
-        <div class="hsuforum-thread-header">
-            <div class="hsuforum-thread-title">
-                <h4 id='thread-title-{$d->id}' role="heading" aria-level="4">
-                    $threadtitle
-                </h4>
-                <small>$datecreated</small>
-            </div>
-            $threadmeta
-        </div>
+        $threadheader
+
         <div class="hsuforum-thread-content" tabindex="0">
             $d->message
         </div>
@@ -575,7 +650,6 @@ HTML;
             $byuser = html_writer::link($p->userurl, $p->fullname);
         }
         $byline = get_string('postbyx', 'hsuforum', $byuser);
-
         if ($p->isreply) {
             $parent = $p->parentfullname;
             if (!empty($p->parentuserurl)) {
@@ -600,6 +674,8 @@ HTML;
                         ));
                 }
             }
+        } else if (!empty($p->privatereply)) {
+            $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
         }
 
         $author = s(strip_tags($p->fullname));
@@ -1212,7 +1288,7 @@ HTML;
      * @return string
      */
     public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
-        global $DB, $USER;
+        global $DB, $USER, $OUTPUT;
 
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
@@ -1229,6 +1305,14 @@ HTML;
         } else {
             $params  = array('forum' => $cm->instance);
             $legend = get_string('addyourdiscussion', 'hsuforum');
+            $thresholdwarning = hsuforum_check_throttling($forum, $cm);
+            if (!empty($thresholdwarning)) {
+                $message = get_string($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
+                $data['thresholdwarning'] = $OUTPUT->notification($message);
+                if ($thresholdwarning->canpost === false) {
+                    $data['thresholdblocked'] = " hsuforum-threshold-blocked ";
+                }
+            }
         }
 
         $data += array(
@@ -1288,7 +1372,7 @@ HTML;
      * @return string
      */
     public function simple_edit_post($cm, $isedit = false, $postid = 0, array $data = array()) {
-        global $DB, $CFG, $USER;
+        global $DB, $CFG, $USER, $OUTPUT;
 
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
@@ -1311,6 +1395,14 @@ HTML;
             $ownpost = true;
             $param  = 'reply';
             $legend = get_string('addareply', 'hsuforum');
+            $thresholdwarning = hsuforum_check_throttling($forum, $cm);
+            if (!empty($thresholdwarning)) {
+                $message = get_string($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
+                $data['thresholdwarning'] = $OUTPUT->notification($message);
+                if ($thresholdwarning->canpost === false) {
+                    $data['thresholdblocked'] = " hsuforum-threshold-blocked ";
+                }
+            }
         }
 
         $data += array(
@@ -1385,9 +1477,10 @@ HTML;
             'cancellabel'        => get_string('cancel'),
             'userpicture'        => $this->output->user_picture($USER, array('link' => false, 'size' => 100)),
             'extrahtml'          => '',
-            'advancedlabel'      => get_string('useadvancededitor', 'hsuforum')
+            'advancedlabel'      => get_string('useadvancededitor', 'hsuforum'),
+            'thresholdwarning'   => '' ,
+            'thresholdblocked'   => '' ,
         );
-
 
 
         $t            = (object) $t;
@@ -1425,10 +1518,11 @@ HTML;
         }
 
         return <<<HTML
-<div class="hsuforum-reply-wrapper">
+<div class="hsuforum-reply-wrapper$t->thresholdblocked">
     <form method="post" role="region" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
         <fieldset>
             <legend>$t->legend</legend>
+            $t->thresholdwarning
             <div class="hsuforum-validation-errors" role="alert"></div>
             <div class="hsuforum-post-figure">
                 $t->userpicture
@@ -1592,6 +1686,44 @@ HTML;
         }
         return '';
      }
+
+    /**
+     * Previous and next discussion navigation.
+     *
+     * @param stdClass|false $prevdiscussion
+     * @param stdClass|false $nextdiscussion
+     */
+    public function discussion_navigation($prevdiscussion, $nextdiscussion) {
+        global $PAGE;
+        $output = '';
+        $prevlink = '';
+        $nextlink = '';
+
+        if ($prevdiscussion) {
+            $prevurl = new moodle_url($PAGE->URL);
+            $prevurl->param('d', $prevdiscussion->id);
+            $prevlink = '<div class="navigateprevious">'.
+                '<div>'.get_string('previousdiscussion', 'hsuforum').'</div>'.
+                '<div><a href="'.$prevurl->out().'">'.format_string($prevdiscussion->name).'</a></div>'.
+                '</div>';
+        }
+        if ($nextdiscussion) {
+            $nexturl = new moodle_url($PAGE->URL);
+            $nexturl->param('d', $nextdiscussion->id);
+            $nextlink = '<div class="navigatenext">'.
+                '<div>'.get_string('nextdiscussion', 'hsuforum').'</div>'.
+                '<div><a href="'.$nexturl->out().'">'.format_string($nextdiscussion->name).'</a></div>'.
+                '</div>';
+        }
+
+        if ($prevlink !=='' || $nextlink !=='') {
+            $output .= '<div class="discussnavigation">';
+            $output .= $prevlink;
+            $output .= $nextlink;
+            $output .= '</div>';
+        }
+        return $output;
+    }
 
     /**
      * SVG icon sprite

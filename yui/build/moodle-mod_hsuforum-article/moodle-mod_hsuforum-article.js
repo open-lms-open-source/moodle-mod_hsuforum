@@ -238,13 +238,20 @@ Y.extend(DOM, Y.Base,
          * @param e
          */
         handleUpdateDiscussion: function (e) {
-            var node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', e.discussionid));
+            var node = Y.one('#discussionsview');
             if (node) {
-                // Updating existing discussion.
-                node.replace(e.html);
+                // We are viewing all disussions on one page (view.php).
+                node.setHTML(e.html);
             } else {
-                // Adding new discussion.
-                Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
+                // We are viewing a single discussion with the replies underneath.
+                node = Y.one(SELECTORS.DISCUSSION_BY_ID.replace('%d', e.discussionid));
+                if (node) {
+                    // Updating existing discussion.
+                    node.replace(e.html);
+                } else {
+                    // Adding new discussion.
+                    Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
+                }
             }
         },
 
@@ -260,9 +267,6 @@ Y.extend(DOM, Y.Base,
             if (Y.one(SELECTORS.NO_DISCUSSIONS)) {
                 Y.one(SELECTORS.NO_DISCUSSIONS).remove();
             }
-
-            // Update number of discussions.
-            this.incrementDiscussionCount(1);
         },
 
         /**
@@ -722,6 +726,7 @@ Y.extend(FORM, Y.Base,
             var fileinputs = wrapperNode.all('form input[type=file]');
 
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
+                data.yuiformsubmit = 1; // So we can detect and class this as an AJAX post later!
                 if (data.errors === true) {
                     wrapperNode.one(SELECTORS.VALIDATION_ERRORS).setHTML(data.html).addClass('notifyproblem');
                     wrapperNode.all('button').removeAttribute('disabled');
@@ -999,21 +1004,23 @@ Y.extend(ARTICLE, Y.Base,
             if(firstUnreadPost && location.hash === '#unread') {
                 // get the post parent to focus on
                 var post = document.getElementById(firstUnreadPost.id).parentNode;
-                post.scrollIntoView();
+                if (M.cfg.theme === 'express' && navigator.userAgent.match(/Trident|MSIE/)) {
+                    // This has issues in IE when the themer
+                    // uses negative margins to layout columns
+                    // so skip it.
+                } else {
+                    post.scrollIntoView();
+                }
                 post.focus();
             }
 
             if (Y.one(SELECTORS.SEARCH_PAGE) !== null) {
                 return;
             }
-            var rootNode = Y.one(SELECTORS.CONTAINER);
-            if (rootNode === null) {
-                return;
-            }
+
             var dom     = this.get('dom'),
                 form    = this.get('form'),
-                router  = this.get('router'),
-                addNode = Y.one(SELECTORS.ADD_DISCUSSION);
+                router  = this.get('router');
 
             /* Clean html on paste */
             Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
@@ -1059,11 +1066,9 @@ Y.extend(ARTICLE, Y.Base,
 
             }, document, '.hsuforum-use-advanced');
 
-            // Submit handlers.
-            rootNode.delegate('submit', form.handleFormSubmit, SELECTORS.FORM, form);
-            if (addNode instanceof Y.Node) {
-                addNode.on('submit', router.handleAddDiscussionRoute, router);
-            }
+            // We bind to document for these buttons as they get re-added on each discussion addition.
+            Y.delegate('submit', form.handleFormSubmit, document, SELECTORS.FORM, form);
+            Y.delegate('click', router.handleAddDiscussionRoute, document, SELECTORS.ADD_DISCUSSION, router);
 
             // On post created, update HTML, URL and log.
             form.on(EVENTS.POST_CREATED, dom.handleUpdateDiscussion, dom);

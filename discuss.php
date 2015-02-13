@@ -56,6 +56,22 @@
     $modcontext = context_module::instance($cm->id);
     require_capability('mod/hsuforum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'hsuforum');
 
+    if ($forum->type == 'single') {
+        // If we are viewing a simple single forum then we need to log forum as viewed.
+        $completion = new \completion_info($course);
+        $completion->set_module_viewed($cm);
+
+        $params = array(
+            'context' => $modcontext,
+            'objectid' => $forum->id
+        );
+        $event = \mod_hsuforum\event\course_module_viewed::create($params);
+        $event->add_record_snapshot('course_modules', $cm);
+        $event->add_record_snapshot('course', $course);
+        $event->add_record_snapshot('hsuforum', $forum);
+        $event->trigger();
+    }
+
     if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
         require_once("$CFG->libdir/rsslib.php");
 
@@ -174,7 +190,9 @@
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-     echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
+    if ($forum->type != 'single') {
+         echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
+    }
      echo $renderer->svg_sprite();
 
 
@@ -266,17 +284,23 @@
                     $forummenu[$section][$sectionname][$url] = format_string($forumcm->name);
                 }
             }
-            if (!empty($forummenu)) {
-                echo '<div class="movediscussionoption">';
-                $select = new url_select($forummenu, '',
-                        array(''=>get_string("movethisdiscussionto", "hsuforum")),
-                        'forummenu');
-                echo $OUTPUT->render($select);
-                echo "</div>";
-            }
         }
         echo "</div>";
     }
+    if (!empty($forummenu)) {
+        echo '<div class="movediscussionoption">';
+        $select = new url_select($forummenu, '',
+            array(''=>get_string("movethisdiscussionto", "hsuforum")),
+            'forummenu');
+        echo $OUTPUT->render($select);
+        echo "</div>";
+    }
+    if ($forum->type == 'single') {
+        echo  hsuforum_search_form($course, $forum->id);
+    }
+
+    $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);
+    echo $renderer->discussion_navigation($neighbours['prev'], $neighbours['next']);
     echo "</div>";
 
 echo $renderer->advanced_editor();

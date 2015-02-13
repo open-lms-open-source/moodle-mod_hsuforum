@@ -2,6 +2,12 @@
 #page-local-joulegrader-view .indent {
     border-bottom:1px solid #ccc;
 }
+
+#page-local-joulegrader-view .hsuforum-post-pubdate:after {
+    content: attr(title);
+    padding-left: 1em;
+}
+
 #local-joulegrader .content .mod-hsuforum-posts-container,
 #local-joulegrader .content .mod-hsuforum-posts-container .content {
     text-align: left;
@@ -11,6 +17,12 @@
 #local-joulegrader .content .mod-hsuforum-posts-container {
     margin: 0 4%;
 }
+
+/* export page print styles */
+#page-mod-hsuforum-route.pagelayout-embedded a[aria-pressed="false"]{
+    display:none;
+}
+
 
 .hsuforum_postincontext_dialog .yui3-widget-hd { cursor: move; }
 
@@ -147,6 +159,9 @@
 #page-mod-hsuforum-search #searchform label {
     display: block;
 }
+#page-mod-hsuforum-search .hsuforum-post:before {
+    display:none;
+}
 
 /* FORUM HEADER */
 .hsuforum-search .helptooltip {
@@ -172,7 +187,6 @@
     margin:0.5em 0;
     padding:0.5em 2.36%;
     background-color:white;
-    -ms-word-break: break-all;
     word-wrap: break-word;
     -webkit-hyphens: auto;
    -moz-hyphens: auto;
@@ -565,7 +579,7 @@ FUN WITH FORMS
 @media all and (min-width: 62em) {
     /* REALLY BIG SCREENS */
     #page-mod-hsuforum-view #region-main{
-        max-width:100%;
+        max-width:60.5em;
         padding:1em 2%;
     }
 
@@ -625,12 +639,14 @@ FUN WITH FORMS
 /* end meida 45 */
 
 /* recent activity, recent posts output in non-Snap themes */
+
 .section .activity.modtype_hsuforum .activityinstance div {
     display:block; /* overwrite core shame */
 }
 
 .block_flexpagemod_hsuforum .hsuforum-recent-heading,
-.hsuforum.modtype_hsuforum .hsuforum-recent-heading {
+.hsuforum.modtype_hsuforum .hsuforum-recent-heading,
+.section .activity.modtype_hsuforum .availabilityinfo {
     font-size:1em;
     clear:both;
 }
@@ -644,6 +660,7 @@ FUN WITH FORMS
 .hsuforum.modtype_hsuforum .snap-media-object {
     width:50%;
     float:left;
+    min-width: 200px;
 }
 
 .block_flexpagemod_hsuforum .snap-media-object > a,
@@ -713,21 +730,20 @@ FUN WITH FORMS
     margin-right: 1em;
 }
 
-.format-flexpage  .block_flexpagemod_hsuforum .snap-media-object h3 {
+.format-flexpage .block_flexpagemod_hsuforum .snap-media-object h3 {
     padding: 0;
 }
 
-.modtype_hsuforum .mod-indent-outer,
-.modtype_hsuforum .activityinstance,
-.format-flexpage  .block_flexpagemod_hsuforum .mod-indent-outer,
-.format-flexpage  .block_flexpagemod_hsuforum .activityinstance {
+.format-flexpage  .block_flexpagemod_hsuforum .activityinstance,
+.modtype_hsuforum .activityinstance{
     display: block !important;
 }
 
 .modtype_hsuforum.activity:before,
 .modtype_hsuforum.activity:after,
 .format-flexpage  .block_flexpagemod_hsuforum li.activity:before,
-.format-flexpage  .block_flexpagemod_hsuforum li.activity:after {
+.format-flexpage  .block_flexpagemod_hsuforum li.activity:after,
+.activity.modtype_hsuforum .unread:before {
     content: "";
     display: table;
 }
@@ -735,5 +751,48 @@ FUN WITH FORMS
 .modtype_hsuforum .no-overflow,
 .modtype_hsuforum.activity:after,
 .format-flexpage  .block_flexpagemod_hsuforum li.activity:after {
+    clear: both;
+}
+
+.discussnavigation {
+    width:auto;
+}
+
+.discussnavigation:after{
+    content:'';
+    clear:both;
+    line-height:1px;
+}
+
+.discussnavigation .navigateprevious, .discussnavigation .navigatenext {
+    width:50%;
+}
+
+.discussnavigation .navigateprevious div:first-child, .discussnavigation .navigatenext div:first-child{
+    font-variant: small-caps;
+}
+
+.discussnavigation .navigateprevious {
+    text-align:left;
+    float:left;
+}
+
+.discussnavigation .navigatenext {
+    text-align:right;
+    float:right;
+}
+
+.hsuforum-threshold-blocked .hsuforum-post-figure,
+.hsuforum-threshold-blocked .hsuforum-post-body {
+    display: none;
+}
+
+.format-flexpage .block_flexpagemod_hsuforum li.activity:before,
+.format-flexpage .block_flexpagemod_hsuforum li.activity:after,
+.modtype_hsuforum.activity:before,
+.modtype_hsuforum.activity:after,
+.modtype_hsuforum.activity .unread:before {
+    content: "";
+    display: table;
     clear: both;
 }

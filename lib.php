@@ -1823,10 +1823,11 @@ function hsuforum_get_user_grades($forum, $userid = 0) {
  * @return void
  */
 function hsuforum_update_grades($forum, $userid=0, $nullifnone=true) {
-    global $CFG, $DB;
+    global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
-    if ($forum->gradetype == HSUFORUM_GRADETYPE_NONE or ($forum->gradetype == HSUFORUM_GRADETYPE_RATING and !$forum->assessed)) {
+    if ($forum->gradetype == HSUFORUM_GRADETYPE_NONE or $forum->gradetype == HSUFORUM_GRADETYPE_MANUAL or
+        ($forum->gradetype == HSUFORUM_GRADETYPE_RATING and !$forum->assessed)) {
         hsuforum_grade_item_update($forum);
 
     } else if ($grades = hsuforum_get_user_grades($forum, $userid)) {
@@ -2856,6 +2857,95 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
 }
 
 /**
+ * Gets the neighbours (previous and next) of a discussion.
+ *
+ * The calculation is based on the timemodified of the discussion and does not handle
+ * the neighbours having an identical timemodified. The reason is that we do not have any
+ * other mean to sort the records, e.g. we cannot use IDs as a greater ID can have a lower
+ * timemodified.
+ *
+ * Please note that this does not check whether or not the discussion passed is accessible
+ * by the user, it simply uses it as a reference to find the neighbours. On the other hand,
+ * the returned neighbours are checked and are accessible to the current user.
+ *
+ * @param object $cm The CM record.
+ * @param object $discussion The discussion record.
+ * @return array That always contains the keys 'prev' and 'next'. When there is a result
+ *               they contain the record with minimal information such as 'id' and 'name'.
+ *               When the neighbour is not found the value is false.
+ */
+function hsuforum_get_discussion_neighbours($cm, $discussion) {
+    global $CFG, $DB, $USER;
+
+    if ($cm->instance != $discussion->forum) {
+        throw new coding_exception('Discussion is not part of the same forum.');
+    }
+
+    $neighbours = array('prev' => false, 'next' => false);
+    $now = round(time(), -2);
+    $params = array();
+
+    $modcontext = context_module::instance($cm->id);
+    $groupmode    = groups_get_activity_groupmode($cm);
+    $currentgroup = groups_get_activity_group($cm);
+
+    // Users must fulfill timed posts.
+    $timelimit = '';
+    if (!empty($CFG->forum_enabletimedposts)) {
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
+            $timelimit = ' AND ((d.timestart <= :tltimestart AND (d.timeend = 0 OR d.timeend > :tltimeend))';
+            $params['tltimestart'] = $now;
+            $params['tltimeend'] = $now;
+            if (isloggedin()) {
+                $timelimit .= ' OR d.userid = :tluserid';
+                $params['tluserid'] = $USER->id;
+            }
+            $timelimit .= ')';
+        }
+    }
+
+    // Limiting to posts accessible according to groups.
+    $groupselect = '';
+    if ($groupmode) {
+        if ($groupmode == VISIBLEGROUPS || has_capability('moodle/site:accessallgroups', $modcontext)) {
+            if ($currentgroup) {
+                $groupselect = 'AND (d.groupid = :groupid OR d.groupid = -1)';
+                $params['groupid'] = $currentgroup;
+            }
+        } else {
+            if ($currentgroup) {
+                $groupselect = 'AND (d.groupid = :groupid OR d.groupid = -1)';
+                $params['groupid'] = $currentgroup;
+            } else {
+                $groupselect = 'AND d.groupid = -1';
+            }
+        }
+    }
+
+    $params['forumid'] = $cm->instance;
+    $params['discid'] = $discussion->id;
+    $params['disctimemodified'] = $discussion->timemodified;
+
+    $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
+              FROM {hsuforum_discussions} d
+             WHERE d.forum = :forumid
+               AND d.id <> :discid
+                   $timelimit
+                   $groupselect";
+
+    $prevsql = $sql . " AND d.timemodified < :disctimemodified
+                   ORDER BY d.timemodified DESC";
+
+    $nextsql = $sql . " AND d.timemodified > :disctimemodified
+                   ORDER BY d.timemodified ASC";
+
+    $neighbours['prev'] = $DB->get_record_sql($prevsql, $params, IGNORE_MULTIPLE);
+    $neighbours['next'] = $DB->get_record_sql($nextsql, $params, IGNORE_MULTIPLE);
+
+    return $neighbours;
+}
+
+/**
  * @global object
  * @global object
  * @global object
@@ -3378,6 +3468,12 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
 function hsuforum_set_return() {
     global $CFG, $SESSION;
 
+    // If its an AJAX_SCRIPT then it makes no sense to set this variable.
+    if (defined(AJAX_SCRIPT) && AJAX_SCRIPT) {
+        unset($SESSION->fromdiscussion);
+        return;
+    }
+
     if (! isset($SESSION->fromdiscussion)) {
         if (!empty($_SERVER['HTTP_REFERER'])) {
             $referer = $_SERVER['HTTP_REFERER'];
@@ -3399,6 +3495,18 @@ function hsuforum_set_return() {
  */
 function hsuforum_go_back_to($default) {
     global $SESSION;
+
+    if (!empty($SESSION->fromdiscussion)
+        && (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT)) {
+        // If we have an ajax fromdiscussion session variable then we need to get rid of it because this is not an
+        // ajax page and we will end up redirecting incorrectly to route.php.
+        $murl = new moodle_url($SESSION->fromdiscussion);
+        $path = $murl->get_path();
+        if (strpos($path, '/mod/hsuforum/route.php') === 0) {
+            // OK - this is bad, we are not using AJAX but the redirect url is an AJAX url, so kill it.
+            unset($SESSION->fromdiscussion);
+        }
+    }
 
     if (!empty($SESSION->fromdiscussion)) {
         $returnto = $SESSION->fromdiscussion;
@@ -6167,6 +6275,8 @@ function hsuforum_check_throttling($forum, $cm = null) {
 
         return $warning;
     }
+
+    return false;
 }
 
 /**
@@ -6578,7 +6688,9 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
 
         $discsubscribers = ($viewingdiscussion or (optional_param('action', '', PARAM_ALPHA) == 'discsubscribers'));
-        if ($discsubscribers and !hsuforum_is_forcesubscribed($forumobject)) {
+        if ($discsubscribers
+                && !hsuforum_is_forcesubscribed($forumobject)
+                && $discussionid) {
             $url = new moodle_url('/mod/hsuforum/route.php', array(
                 'contextid'    => $PAGE->cm->context->id,
                 'action'       => 'discsubscribers',
@@ -7789,29 +7901,36 @@ function hsuforum_relative_time($timeinpast, $attributes = null) {
     if (!is_numeric($timeinpast)) {
         throw new coding_exception('Relative times must be calculated from the raw timestamp');
     }
-    $secondsago = time() - $timeinpast;
-    $secondsago = hsuforum_simpler_time($secondsago);
 
-    $relativetext = format_time($secondsago);
-    if ($secondsago != 0) {
-        $relativetext = get_string('ago', 'message', $relativetext);
-    }
+    $precisedatetime = userdate($timeinpast);
     $datetime = date(DateTime::W3C, $timeinpast);
+    $secondsago = time() - $timeinpast;
+
+    if (abs($secondsago) > (365 * DAYSECS)) {
+        $displaytime = $precisedatetime;
+    } else {
+        $secondsago = hsuforum_simpler_time($secondsago);
+        $displaytime = format_time($secondsago);
+        if ($secondsago != 0) {
+            $displaytime = get_string('ago', 'message', $displaytime);
+        }
+    }
 
     // Default time tag attributes.
     $defaultatts = array(
         'is' => 'relative-time',
-        'datetime' => $datetime
+        'datetime' => $datetime,
+        'title' => $precisedatetime,
     );
 
-    // Override default attributes with those passed in (if any);
-    if (!empty($attributes)){
-        foreach ($attributes as $key => $val){
+    // Override default attributes with those passed in (if any).
+    if (!empty($attributes)) {
+        foreach ($attributes as $key => $val) {
             $defaultatts[$key] = $val;
         }
     }
 
-    return html_writer::tag('time', $relativetext, $defaultatts);
+    return html_writer::tag('time', $displaytime, $defaultatts);
 }
 
 /**
