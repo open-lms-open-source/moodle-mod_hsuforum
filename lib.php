@@ -5086,8 +5086,8 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         $user = $USER;
     }
 
-    $canviewdiscussion = has_capability('mod/hsuforum:viewdiscussion', $modcontext, $user->id);
-    if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
+    $canviewdiscussion = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:viewdiscussion', $modcontext, $user->id);
+    if (!$canviewdiscussion && !\mod_hsuforum\local::cached_has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
         return false;
     }
 
@@ -5124,7 +5124,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
 
         return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)) ||
                 $firstpost->id == $post->id || $post->userid == $user->id || $firstpost->userid == $user->id ||
-                has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id));
+                local::cached_has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id));
     }
     return true;
 }
@@ -7437,6 +7437,16 @@ function hsuforum_extract_postuser($post, $forum, context_module $context) {
  * @return stdClass
  */
 function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
+
+    static $cache = [];
+
+    if (empty($forum->anonymous)
+        or !empty($post->reveal)) {
+        if (isset($cache[$user->id])) {
+            return $cache[$user->id];
+        }
+    }
+
     $postuser = hsuforum_anonymize_user($user, $forum, $post);
 
     if (property_exists($user, 'picture')) {
@@ -7444,11 +7454,17 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
         $postuser->user_picture->courseid = $forum->course;
         $postuser->user_picture->link     = (!hsuforum_is_anonymous_user($postuser));
     }
-    $postuser->fullname = fullname($postuser, has_capability('moodle/site:viewfullnames', $context));
+    $postuser->fullname = fullname($postuser, \mod_hsuforum\local::cached_has_capability('moodle/site:viewfullnames', $context));
 
-    if (!hsuforum_is_anonymous_user($postuser) and has_capability('moodle/course:manageactivities', $context, $postuser->id)) {
+    if (!hsuforum_is_anonymous_user($postuser) and \mod_hsuforum\local::cached_has_capability('moodle/course:manageactivities', $context, $postuser->id)) {
         $postuser->fullname = html_writer::tag('span', $postuser->fullname, array('class' => 'hsuforum_highlightposter'));
     }
+
+    if (empty($forum->anonymous)
+        or !empty($post->reveal)) {
+        $cache[$user->id] = $postuser;
+    }
+
     return $postuser;
 }
 

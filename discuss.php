@@ -25,6 +25,8 @@
  * @author Mark Nielsen
  */
 
+    use mod_hsuforum\local;
+
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
 
@@ -229,7 +231,7 @@
         echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
     }
 
-    if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
+    if ($forum->type == 'qanda' && !local::cached_has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
                 !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
         echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
     }
@@ -238,12 +240,12 @@
         echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)));
     }
 
-    $canrate = has_capability('mod/hsuforum:rate', $modcontext);
+    $canrate = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:rate', $modcontext);
     hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply, $canrate);
 
     echo '<div class="discussioncontrols">';
 
-    if (!empty($CFG->enableportfolios) && has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
+    if (!empty($CFG->enableportfolios) && local::cached_has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), 'mod_hsuforum');
@@ -258,7 +260,7 @@
     }
 
     if ($course->format !='singleactivity' && $forum->type != 'single'
-                && has_capability('mod/hsuforum:movediscussions', $modcontext)) {
+                && local::cached_has_capability('mod/hsuforum:movediscussions', $modcontext)) {
         echo '<div class="discussioncontrol movediscussion">';
         // Popup menu to move discussions to other forums. The discussion in a
         // single discussion forum can't be moved.
@@ -268,7 +270,7 @@
             // Check forum types and eliminate simple discussions.
             $forumcheck = $DB->get_records('hsuforum', array('course' => $course->id),'', 'id, type');
             foreach ($modinfo->instances['hsuforum'] as $forumcm) {
-                if (!$forumcm->uservisible || !has_capability('mod/hsuforum:startdiscussion',
+                if (!$forumcm->uservisible || !local::cached_has_capability('mod/hsuforum:startdiscussion',
                     context_module::instance($forumcm->id))) {
                     continue;
                 }
