@@ -65,7 +65,7 @@ class local {
      * @param integer|stdClass $user A user id or object. By default (null) checks the permissions of the current user.
      * @return boolean true if the user has all of these capabilities. Otherwise false.
      */
-    function cached_has_all_capabilities(array $capabilities, context $context, $user = null) {
+    public static function cached_has_all_capabilities(array $capabilities, context $context, $user = null) {
         foreach ($capabilities as $capability) {
             if (!self::cached_has_capability($capability, $context, $user)) {
                 return false;
