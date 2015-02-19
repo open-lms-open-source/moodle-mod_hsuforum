@@ -74,38 +74,4 @@ class local {
         return true;
     }
 
-
-    /**
-     * Get string from ram cache.
-     *
-     * @param $identifier
-     * @param string $component
-     * @param null $a
-     * @return mixed
-     */
-    public static function cached_get_string($identifier, $component = '', $a = null){
-        static $cache = [];
-
-        $hashkey = $identifier.$component;
-        if ($a !== null) {
-            if (is_string($a) || is_int($a)) {
-                $hashkey .= $a;
-            } else {
-                $hashkey .= serialize($a);
-            }
-        }
-
-        if (strlen($hashkey)>32){
-            // Use md5 to reduce length.
-            // Collision chances are super low -
-            // http://stackoverflow.com/questions/201705/how-many-random-elements-before-md5-produces-collisions
-            $hashkey = md5($hashkey);
-        }
-
-        if (!isset($cache[$hashkey])) {
-            $cache[$hashkey] = get_string($identifier, $component, $a);
-        }
-
-        return $cache[$hashkey];
-    }
 }

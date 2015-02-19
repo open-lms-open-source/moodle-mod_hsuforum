@@ -383,7 +383,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $forum = hsuforum_get_cm_forum($cm);
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
             // Return a message about why you cannot see the post
-            return "<div class='hsuforum-post-content-hidden'>".local::cached_get_string('forumbodyhidden','hsuforum')."</div>";
+            return "<div class='hsuforum-post-content-hidden'>".get_string('forumbodyhidden','hsuforum')."</div>";
         }
         if ($commands === false){
             $commands = array();
@@ -402,7 +402,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->fullname       = $postuser->fullname;
         $data->subject        = property_exists($post, 'breadcrumb') ? $post->breadcrumb : $this->raw_post_subject($post);
         $data->message        = $this->post_message($post, $cm, $search);
-        $data->created        = userdate($post->created, local::cached_get_string('articledateformat', 'hsuforum'));
+        $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
         $data->rawcreated     = $post->created;
         $data->datetime       = date(DATE_W3C, usertime($post->created));
         $data->privatereply   = $post->privatereply;
@@ -651,43 +651,43 @@ HTML;
         if (!empty($p->userurl)) {
             $byuser = html_writer::link($p->userurl, $p->fullname);
         }
-        $byline = local::cached_get_string('postbyx', 'hsuforum', $byuser);
+        $byline = get_string('postbyx', 'hsuforum', $byuser);
         if ($p->isreply) {
             $parent = $p->parentfullname;
             if (!empty($p->parentuserurl)) {
                 $parent = html_writer::link($p->parentuserurl, $p->parentfullname);
             }
             if (empty($p->parentuserpic)) {
-                $byline = local::cached_get_string('replybyx', 'hsuforum', $byuser);
+                $byline = get_string('replybyx', 'hsuforum', $byuser);
             } else {
-                $byline = local::cached_get_string('postbyxinreplytox', 'hsuforum', array(
+                $byline = get_string('postbyxinreplytox', 'hsuforum', array(
                         'parent' => $p->parentuserpic.$parent,
                         'author' => $byuser,
-                        'parentpost' => "<a title='".local::cached_get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
+                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
                 ));
             }
             if (!empty($p->privatereply)) {
                 if (empty($p->parentuserpic)) {
-                    $byline = local::cached_get_string('privatereplybyx', 'hsuforum', $byuser);
+                    $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
                 } else {
-                    $byline = local::cached_get_string('postbyxinprivatereplytox', 'hsuforum', array(
+                    $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
                             'author' => $byuser,
                             'parent' => $p->parentuserpic.$parent
                         ));
                 }
             }
         } else if (!empty($p->privatereply)) {
-            $byline = local::cached_get_string('privatereplybyx', 'hsuforum', $byuser);
+            $byline = get_string('privatereplybyx', 'hsuforum', $byuser);
         }
 
         $author = s(strip_tags($p->fullname));
         $unread = '';
         $unreadclass = '';
         if ($p->unread) {
-            $unread = "<span class='hsuforum-unreadcount'>".local::cached_get_string('unread', 'hsuforum')."</span>";
+            $unread = "<span class='hsuforum-unreadcount'>".get_string('unread', 'hsuforum')."</span>";
             $unreadclass = "hsuforum-post-unread";
         }
-        $options = local::cached_get_string('options', 'hsuforum');
+        $options = get_string('options', 'hsuforum');
         $datecreated = hsuforum_relative_time($p->rawcreated, array('class' => 'hsuforum-post-pubdate'));
 
 
@@ -703,7 +703,7 @@ HTML;
 
         $revealed = "";
         if ($p->revealed) {
-            $nonanonymous = local::cached_get_string('nonanonymous', 'mod_hsuforum');
+            $nonanonymous = get_string('nonanonymous', 'mod_hsuforum');
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
@@ -1610,10 +1610,10 @@ HTML;
 
         if ($canreply and empty($post->privatereply)) {
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
-            $replytitle = local::cached_get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
+            $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
-                local::cached_get_string('reply', 'hsuforum'),
+                get_string('reply', 'hsuforum'),
                 array(
                     'title' => $replytitle,
                     'class' => 'hsuforum-reply-link btn btn-default',
@@ -1629,14 +1629,14 @@ HTML;
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
             $commands['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
-                local::cached_get_string('edit', 'hsuforum')
+                get_string('edit', 'hsuforum')
             );
         }
 
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
             $commands['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
-                local::cached_get_string('delete', 'hsuforum')
+                get_string('delete', 'hsuforum')
             );
         }
 
@@ -1646,8 +1646,8 @@ HTML;
                 && $forum->type != 'single') {
             $commands['split'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
-                local::cached_get_string('prune', 'hsuforum'),
-                array('title' => local::cached_get_string('pruneheading', 'hsuforum'))
+                get_string('prune', 'hsuforum'),
+                array('title' => get_string('pruneheading', 'hsuforum'))
             );
         }
 
