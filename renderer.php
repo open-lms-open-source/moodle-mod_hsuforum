@@ -1577,7 +1577,7 @@ HTML;
         if (!$postuser->user_picture->link) {
             return null;
         }
-        return new moodle_url('/user/profile.php', array('id' => $postuser->id));
+        return new moodle_url('/user/profile.php', ['id' => $postuser->id, 'course' => $cm->course]);
     }
 
     protected function notification_area() {
