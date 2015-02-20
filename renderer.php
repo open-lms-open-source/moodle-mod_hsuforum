@@ -321,7 +321,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->fullthread = $fullthread;
         $data->revealed   = false;
         $data->rawcreated = $post->created;
-        $data->rawmodified = $post->modified;
+        $data->rawmodified = $discussion->timemodified;
 
         if ($forum->anonymous
                 && $postuser->id === $USER->id
