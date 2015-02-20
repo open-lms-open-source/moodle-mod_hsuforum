@@ -2456,7 +2456,6 @@ function hsuforum_mark_old_posts_as_mailed($endtime, $now=null) {
  * Get all the posts for a user in a forum suitable for rendering
  *
  * @global object
- * @global object
  * @uses CONTEXT_MODULE
  * @return array
  */
@@ -2492,6 +2491,50 @@ function hsuforum_get_user_posts($forumid, $userid, context_module $context = nu
                                    AND p.userid = ?
                                    $timedsql
                           ORDER BY p.modified ASC", $params);
+}
+
+/**
+ * Does a user have any posts in this forum?
+ *
+ * @global object
+ * @uses CONTEXT_MODULE
+ * @return array
+ */
+function hsuforum_get_users_with_posts($forumid, context_module $context = null) {
+    global $DB;
+
+    $timedsql = "";
+    $params['forumid'] = $forumid;
+
+    $config = get_config('hsuforum');
+
+    if (!empty($config->enabletimedposts)) {
+        if (is_null($context)) {
+            $cm = get_coursemodule_from_instance('hsuforum', $forumid);
+            $context = context_module::instance($cm->id);
+        }
+        if (!has_capability('mod/hsuforum:viewhiddentimedposts' , $context)) {
+            $now = time();
+            $timedsql = "AND (d.timestart < :now1 AND (d.timeend = 0 OR d.timeend > :now2))";
+            $params['now1'] = $now;
+            $params['now2'] = $now;
+        }
+    }
+
+    $sql = <<<SQL
+        SELECT DISTINCT p.userid
+          FROM {hsuforum} f
+
+          JOIN {hsuforum_discussions} d
+            ON d.forum = f.id
+
+          JOIN {hsuforum_posts} p
+            ON p.discussion = d.id
+
+         WHERE f.id = :forumid
+               $timedsql
+SQL;
+    return $DB->get_records_sql($sql, $params);
 }
 
 /**
