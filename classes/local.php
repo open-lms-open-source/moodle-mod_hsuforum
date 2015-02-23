@@ -50,28 +50,4 @@ class local {
         return $caps[$contextkey];
     }
 
-    /**
-     * Check if the user has all the capabilities in a list.
-     *
-     * This is just a utility method that calls has_capability in a loop. Try to put
-     * the capabilities that fewest users are likely to have first in the list for best
-     * performance.
-     *
-     * @category access
-     * @see has_capability()
-     *
-     * @param array $capabilities an array of capability names.
-     * @param context $context the context to check the capability in. You normally get this with instance method of a context class.
-     * @param integer|stdClass $user A user id or object. By default (null) checks the permissions of the current user.
-     * @return boolean true if the user has all of these capabilities. Otherwise false.
-     */
-    public static function cached_has_all_capabilities(array $capabilities, context $context, $user = null) {
-        foreach ($capabilities as $capability) {
-            if (!self::cached_has_capability($capability, $context, $user)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 }

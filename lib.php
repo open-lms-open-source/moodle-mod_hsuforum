@@ -5131,7 +5131,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
     }
 
     $canviewdiscussion = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:viewdiscussion', $modcontext, $user->id);
-    if (!$canviewdiscussion && !\mod_hsuforum\local::cached_has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
+    if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
         return false;
     }
 
@@ -5308,7 +5308,9 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     // Sort/Filter options
     if ($discussions && $numdiscussions > 0) {
         echo "<div id='hsuforum-filter-options'>";
-        groups_print_activity_menu($cm, $PAGE->url);
+        $gam = groups_print_activity_menu($cm, $PAGE->url, true);
+        $gam = str_ireplace(' method="get" ', ' method="get" class="disable-router" ', $gam);
+        echo $gam;
         if ($forum->type != 'single' && $numdiscussions > 1) {
             require_once(__DIR__.'/lib/discussion/sort.php');
             $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
