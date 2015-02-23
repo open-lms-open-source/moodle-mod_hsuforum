@@ -7456,10 +7456,6 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
     }
     $postuser->fullname = fullname($postuser, \mod_hsuforum\local::cached_has_capability('moodle/site:viewfullnames', $context));
 
-    if (!hsuforum_is_anonymous_user($postuser) and \mod_hsuforum\local::cached_has_capability('moodle/course:manageactivities', $context, $postuser->id)) {
-        $postuser->fullname = html_writer::tag('span', $postuser->fullname, array('class' => 'hsuforum_highlightposter'));
-    }
-
     if (empty($forum->anonymous)
         or !empty($post->reveal)) {
         $cache[$user->id] = $postuser;
