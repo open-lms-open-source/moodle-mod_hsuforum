@@ -5308,9 +5308,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     // Sort/Filter options
     if ($discussions && $numdiscussions > 0) {
         echo "<div id='hsuforum-filter-options'>";
-        $gam = groups_print_activity_menu($cm, $PAGE->url, true);
-        $gam = str_ireplace(' method="get" ', ' method="get" class="disable-router" ', $gam);
-        echo $gam;
+        groups_print_activity_menu($cm, $PAGE->url);
         if ($forum->type != 'single' && $numdiscussions > 1) {
             require_once(__DIR__.'/lib/discussion/sort.php');
             $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
