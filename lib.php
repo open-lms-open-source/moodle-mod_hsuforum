@@ -2494,7 +2494,8 @@ function hsuforum_get_user_posts($forumid, $userid, context_module $context = nu
 }
 
 /**
- * Does a user have any posts in this forum?
+ * Return all user ids that have at least one post in the forum.
+ *
  *
  * @global object
  * @uses CONTEXT_MODULE
