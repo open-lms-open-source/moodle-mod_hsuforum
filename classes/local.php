@@ -42,9 +42,9 @@ class local {
 
         $userid = is_object($user) ? $user->id : $user;
 
-        $contextkey = $userid.'_'.\get_class($context).'_'.$context->id.'_'.$capability;
+        $contextkey = $userid.'_'.$context->id.'_'.$capability;
         if (!isset($caps[$contextkey])) {
-            $caps[$contextkey] = \has_capability($capability, $context, $user);
+            $caps[$contextkey] = has_capability($capability, $context, $user);
         }
 
         return $caps[$contextkey];
