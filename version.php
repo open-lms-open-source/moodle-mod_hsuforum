@@ -27,9 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014121900;       // The current module version (Date: YYYYMMDDXX)
+$plugin->version   = 2014121901;       // The current module version (Date: YYYYMMDDXX)
 $plugin->requires  = 2014051203;       // Requires this Moodle version
 $plugin->component = 'mod_hsuforum';   // Full name of the plugin (used for diagnostics)
 $plugin->release   = '2.7.0 (Build: 20141229)';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->cron      = 60;
