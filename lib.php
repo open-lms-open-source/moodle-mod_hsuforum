@@ -7723,7 +7723,7 @@ function hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $
  * @throws comment_exception
  */
 function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
-    global $DB;
+    global $DB, $CFG;
 
     if ($options->commentarea != 'userposts_comments') {
         throw new comment_exception('invalidcommentarea');
@@ -7731,6 +7731,7 @@ function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
     if (!$user = $DB->get_record('user', array('id'=>$options->itemid))) {
         throw new comment_exception('invalidcommentitemid');
     }
+    /** @var context $context */
     $context = $options->context;
 
     if (!$cm = get_coursemodule_from_id('hsuforum', $context->instanceid)) {
@@ -7751,9 +7752,15 @@ function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
     // Make sure that the commenter is not getting the message.
     unset($recipients[$comment->userid]);
 
-    $gareaid = component_callback('local_joulegrader', 'area_from_context', array($context, 'hsuforum'));
-    $contexturl = new moodle_url('/local/joulegrader/view.php', array('courseid' => $cm->course,
-            'garea' => $gareaid, 'guser' => $user->id));
+    require($CFG->dirroot . '/local/mr/bootstrap.php');
+    if (!is_callable('mr_on') or mr_on('joulegrader', 'local')) {
+        $gareaid = component_callback('local_joulegrader', 'area_from_context', array($context, 'hsuforum'));
+        $contexturl = new moodle_url('/local/joulegrader/view.php', array('courseid' => $cm->course,
+                'garea' => $gareaid, 'guser' => $user->id));
+    } else {
+        $contexturl = $context->get_url();
+    }
+
 
     $params = array($comment, $recipients, $sender, $cm->name, $contexturl);
     component_callback('local_mrooms', 'comment_send_messages', $params);
