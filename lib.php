@@ -7723,7 +7723,7 @@ function hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $
  * @throws comment_exception
  */
 function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
-    global $DB, $CFG;
+    global $DB;
 
     if ($options->commentarea != 'userposts_comments') {
         throw new comment_exception('invalidcommentarea');
@@ -7752,8 +7752,8 @@ function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
     // Make sure that the commenter is not getting the message.
     unset($recipients[$comment->userid]);
 
-    require($CFG->dirroot . '/local/mr/bootstrap.php');
-    if (!is_callable('mr_on') or mr_on('joulegrader', 'local')) {
+    if (\core_component::get_plugin_directory('local', 'joulegrader') !== null) {
+        // Joule Grader is installed and control panel enabled.
         $gareaid = component_callback('local_joulegrader', 'area_from_context', array($context, 'hsuforum'));
         $contexturl = new moodle_url('/local/joulegrader/view.php', array('courseid' => $cm->course,
                 'garea' => $gareaid, 'guser' => $user->id));
