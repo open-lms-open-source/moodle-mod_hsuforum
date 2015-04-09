@@ -5168,7 +5168,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
 
         return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)) ||
                 $firstpost->id == $post->id || $post->userid == $user->id || $firstpost->userid == $user->id ||
-                local::cached_has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id));
+                \mod_hsuforum\local::cached_has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id));
     }
     return true;
 }
