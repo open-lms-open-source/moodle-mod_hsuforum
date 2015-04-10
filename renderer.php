@@ -352,6 +352,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     public function article_assets($cm) {
         $context = context_module::instance($cm->id);
         $this->article_js($context);
+        if (!isloggedin()) {
+            return '';
+        }
         $output = html_writer::tag(
             'script',
             $this->simple_edit_post($cm),
