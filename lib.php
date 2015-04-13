@@ -5306,18 +5306,23 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     echo hsuforum_search_form($course, $forum->id);
 
     // Sort/Filter options
-    if ($discussions && $numdiscussions > 0) {
+    $urlmenu = new moodle_url('/mod/hsuforum/view.php', array('id'=>$cm->id));
+    $groupselect = groups_print_activity_menu($cm, $urlmenu, true);
+
+    $sortselect = '';
+    if ($discussions && $forum->type != 'single' && $numdiscussions > 1) {
+        require_once(__DIR__.'/lib/discussion/sort.php');
+        $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
+        $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
+        $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
+        hsuforum_lib_discussion_sort::set_to_session($dsort);
+        $sortselect = $renderer->discussion_sorting($cm, $dsort);
+    }
+
+    if ($groupselect || $sortselect) {
         echo "<div id='hsuforum-filter-options'>";
-        $urlmenu = new moodle_url('/mod/hsuforum/view.php', array('id'=>$cm->id));
-        groups_print_activity_menu($cm, $urlmenu);
-        if ($forum->type != 'single' && $numdiscussions > 1) {
-            require_once(__DIR__.'/lib/discussion/sort.php');
-            $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
-            $dsort->set_key(optional_param('dsortkey', $dsort->get_key(), PARAM_ALPHA));
-            $dsort->set_direction(optional_param('dsortdirection', $dsort->get_direction(), PARAM_ALPHA));
-            hsuforum_lib_discussion_sort::set_to_session($dsort);
-            echo $renderer->discussion_sorting($cm, $dsort);
-        }
+        echo $groupselect;
+        echo $sortselect;
         echo "</div>";
     }
 
