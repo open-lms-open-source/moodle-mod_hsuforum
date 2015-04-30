@@ -204,8 +204,11 @@ class post_service {
         $post->flags         = null;
 
         $strre = get_string('re', 'hsuforum');
-        if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
+        if (!(\core_text::substr($post->subject, 0, \core_text::strlen($strre)) == $strre)) {
             $post->subject = $strre.' '.$post->subject;
+        }
+        if (\core_text::strlen($post->subject) > 255) {
+            $post->subject = \core_text::substr($post->subject, 0, 252).'...';
         }
         foreach ($options as $name => $value) {
             if (property_exists($post, $name)) {
