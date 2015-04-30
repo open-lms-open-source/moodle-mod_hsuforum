@@ -285,8 +285,19 @@ foreach ($posts as $post) {
 
     $options = new stdClass();
     $options->trusted = $post->messagetrust;
+    $modcontext = context_module::instance($cm->id);
     $post->message = highlight($strippedsearch,
-                    format_text($post->message, $post->messageformat, $options, $course->id),
+                    format_text(
+                        file_rewrite_pluginfile_urls(
+                            $post->message,
+                            'pluginfile.php',
+                            $modcontext->id,
+                            'mod_hsuforum', 'post',
+                            $post->id
+                        ),
+                        $post->messageformat,
+                        $options,
+                        $course->id),
                     0, '<fgw9sdpq4>', '</fgw9sdpq4>');
 
     foreach ($searchterms as $searchterm) {
