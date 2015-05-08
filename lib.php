@@ -3148,7 +3148,9 @@ function hsuforum_subscribed_users($course, $forum, $groupid=0, $context = null,
 
     $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
     $modinfo = get_fast_modinfo($cm->course);
-    return groups_filter_users_by_course_module_visible($modinfo->get_cm($cm->id), $results);
+    $mod = $modinfo->get_cm($cm->id);
+    $info = new \core_availability\info_module($mod);
+    return $info->filter_user_list($results);
 }
 
 
