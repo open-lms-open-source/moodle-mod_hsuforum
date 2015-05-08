@@ -19,7 +19,7 @@ Feature: Teachers can edit or delete any forum post
     And I log in as "teacher1"
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
+    And I add a "Advanced Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
     And I add a new discussion to "Test forum name" advanced forum with:
@@ -32,15 +32,14 @@ Feature: Teachers can edit or delete any forum post
       | Subject | Student post subject |
       | Message | Student post message |
 
-  @javascript
+  @javascript @_alert
   Scenario: A teacher can delete another user's posts
     Given I log out
     And I log in as "teacher1"
     When I follow "Course 1"
     And I follow "Test forum name"
     And I follow "Teacher post subject"
-    And I click on "Delete" "link" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ')][contains(., 'Student post subject')]" "xpath_element"
-    And I press "Continue"
+    And I click on "Delete" "link" confirming the dialogue
     Then I should not see "Student post subject"
     And I should not see "Student post message"
 
@@ -51,7 +50,8 @@ Feature: Teachers can edit or delete any forum post
     When I follow "Course 1"
     And I follow "Test forum name"
     And I follow "Teacher post subject"
-    And I click on "Edit" "link" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ')][contains(., 'Student post subject')]" "xpath_element"
+    And I click on "Edit" "link" in the "//li[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-post ')][contains(., 'Student post subject')]" "xpath_element"
+    And I follow "Use advanced editor"
     And I set the following fields to these values:
       | Subject | Edited student subject |
     And I press "Save changes"
@@ -62,5 +62,5 @@ Feature: Teachers can edit or delete any forum post
   @javascript
   Scenario: A student can't edit or delete another user's posts
     When I follow "Teacher post subject"
-    Then I should not see "Edit" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ')][contains(., 'Teacher post subject')]" "xpath_element"
-    And I should not see "Delete" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' forumpost ')][contains(., 'Teacher post subject')]" "xpath_element"
+    Then I should not see "Edit" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread-tools ')]" "xpath_element"
+    And I should not see "Delete" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread-tools ')]" "xpath_element"

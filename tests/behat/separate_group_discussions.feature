@@ -39,18 +39,19 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     And I log in as "teacher1"
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
+    And I add a "Advanced Forum" to section "1" and I fill the form with:
       | Forum name | Standard forum name |
       | Forum type | Standard forum for general use |
       | Description | Standard forum description |
       | Group mode | Separate groups |
     And I log out
 
+  @javascript
   Scenario: Teacher with accessallgroups can post in all groups
     Given I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Standard forum name"
-    When I click on "Add a new discussion topic" "button"
+    When I click on "Add a new discussion" "button"
     Then the "Group" select box should contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
@@ -64,7 +65,7 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     Given I log in as "noneditor1"
     And I follow "Course 1"
     And I follow "Standard forum name"
-    When I click on "Add a new discussion topic" "button"
+    When I click on "Add a new discussion" "button"
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
@@ -78,7 +79,7 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     Given I log in as "noneditor1"
     And I follow "Course 1"
     And I follow "Standard forum name"
-    When I click on "Add a new discussion topic" "button"
+    When I click on "Add a new discussion" "button"
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"

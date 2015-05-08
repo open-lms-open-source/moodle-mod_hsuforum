@@ -36,13 +36,13 @@ Feature: Posting to groups in a separate group discussion when restricted to gro
     And I log in as "admin"
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
+    And I add a "Advanced Forum" to section "1" and I fill the form with:
       | Forum name  | Multiple groups forum             |
       | Forum type  | Standard forum for general use    |
       | Description | Standard forum description        |
       | Group mode  | Separate groups                   |
       | Grouping    | G1                                |
-    And I add a "Forum" to section "1" and I fill the form with:
+    And I add a "Advanced Forum" to section "1" and I fill the form with:
       | Forum name  | Single groups forum               |
       | Forum type  | Standard forum for general use    |
       | Description | Standard forum description        |
@@ -54,13 +54,13 @@ Feature: Posting to groups in a separate group discussion when restricted to gro
     Given I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Multiple groups forum"
-    When I click on "Add a new discussion topic" "button"
+    When I click on "Add a new discussion" "button"
     Then the "Group" select box should contain "All participants"
     And the "Group" select box should contain "G1G1"
     And the "Group" select box should contain "G1G2"
     And I follow "Course 1"
     And I follow "Single groups forum"
-    And I click on "Add a new discussion topic" "button"
+    And I click on "Add a new discussion" "button"
     And the "Group" select box should contain "All participants"
     And the "Group" select box should contain "G2G1"
 
@@ -73,12 +73,12 @@ Feature: Posting to groups in a separate group discussion when restricted to gro
     Given I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Multiple groups forum"
-    When I click on "Add a new discussion topic" "button"
+    When I click on "Add a new discussion" "button"
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "G1G1"
     And the "Group" select box should contain "G1G2"
     And I follow "Course 1"
     And I follow "Single groups forum"
-    And I click on "Add a new discussion topic" "button"
+    And I click on "Add a new discussion" "button"
     And I should see "G2G1"
     And "Group" "select" should not exist

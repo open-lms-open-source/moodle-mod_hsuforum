@@ -29,7 +29,7 @@ Feature: Set a certain number of discussions as a completion condition for a for
     And I set the following fields to these values:
       | Enable completion tracking | Yes |
     And I press "Save changes"
-    When I add a "Forum" to section "1" and I fill the form with:
+    When I add a "Advanced Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
       | Completion tracking | Show activity as complete when conditions are met |

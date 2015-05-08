@@ -1043,7 +1043,9 @@ Y.extend(ARTICLE, Y.Base,
 
             // Advanced editor.
             Y.delegate('click', function(e){
-
+                if (M.cfg.behatsiterunning) {
+                    return true;
+                }
                 var editCont = Y.one('#hiddenadvancededitorcont'),
                     editor,
                     editArea,
