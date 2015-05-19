@@ -208,7 +208,12 @@ class post_service {
             $post->subject = $strre.' '.$post->subject;
         }
         if (\core_text::strlen($post->subject) > 255) {
-            $post->subject = \core_text::substr($post->subject, 0, 252).'...';
+            $shortened = shorten_text($post->subject, 255);
+            if ($shortened === $strre.' ...' || \core_text::strlen($shortened) > 255) {
+                // Make a 2nd pass with the 'exact' param true, as shortening on word boundary failed or exceeded 255 chars.
+                $shortened = shorten_text($post->subject, 255, true);
+            }
+            $post->subject = $shortened;
         }
         foreach ($options as $name => $value) {
             if (property_exists($post, $name)) {
