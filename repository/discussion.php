@@ -127,8 +127,8 @@ class hsuforum_repository_discussion extends hsuforum_repository_abstract {
             return array();
         }
         if (is_null($fields)) {
-            $fields = "u.alternatename,
-                      u.id,
+            $fields = "u.id,
+                      u.alternatename,
                       u.username,
                       u.firstname,
                       u.firstnamephonetic,
