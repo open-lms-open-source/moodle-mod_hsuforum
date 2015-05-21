@@ -128,12 +128,16 @@ class hsuforum_repository_discussion extends hsuforum_repository_abstract {
         }
         if (is_null($fields)) {
             $fields = "u.id,
+                      u.alternatename,
                       u.username,
                       u.firstname,
+                      u.firstnamephonetic,
                       u.lastname,
+                      u.lastnamephonetic,
                       u.maildisplay,
                       u.mailformat,
                       u.maildigest,
+                      u.middlename,
                       u.imagealt,
                       u.email,
                       u.emailstop,
