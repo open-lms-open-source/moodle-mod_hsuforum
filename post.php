@@ -394,6 +394,9 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     if (!empty($name) && confirm_sesskey()) {    // User has confirmed the prune
 
+        // Make sure post name does not go beyond 255 chars.
+        $name = \mod_hsuforum\local::shorten_post_name($name);
+
         $newdiscussion = new stdClass();
         $newdiscussion->course       = $discussion->course;
         $newdiscussion->forum        = $discussion->forum;

@@ -207,14 +207,10 @@ class post_service {
         if (!(\core_text::substr($post->subject, 0, \core_text::strlen($strre)) == $strre)) {
             $post->subject = $strre.' '.$post->subject;
         }
-        if (\core_text::strlen($post->subject) > 255) {
-            $shortened = shorten_text($post->subject, 255);
-            if ($shortened === $strre.' ...' || \core_text::strlen($shortened) > 255) {
-                // Make a 2nd pass with the 'exact' param true, as shortening on word boundary failed or exceeded 255 chars.
-                $shortened = shorten_text($post->subject, 255, true);
-            }
-            $post->subject = $shortened;
-        }
+
+        // Make sure post subject does not go beyond 255 chars.
+        $post->subject = \mod_hsuforum\local::shorten_post_name($post->subject);
+
         foreach ($options as $name => $value) {
             if (property_exists($post, $name)) {
                 $post->$name = $value;
