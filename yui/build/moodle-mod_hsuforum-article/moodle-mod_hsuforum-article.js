@@ -368,8 +368,9 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param e
      */
     handleRoute: function(e) {
-        // Allow the native behavior on middle/right-click, or when Ctrl or Command are pressed.
-        if (e.button !== 1 || e.ctrlKey || e.metaKey || e.currentTarget.hasClass('disable-router')) {
+        // Allow the native behavior on middle/right-click, when Ctrl or Command are pressed,
+        // or when the link has asked to disable router or is in a post.
+        if (e.button !== 1 || e.ctrlKey || e.metaKey || e.currentTarget.hasClass('disable-router') || e.currentTarget.ancestor('.posting')) {
             if (e.currentTarget.get('href').indexOf('#') >-1){
                 this.focusHash(e.currentTarget);
             }
