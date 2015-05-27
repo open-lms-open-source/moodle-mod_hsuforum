@@ -474,17 +474,18 @@ function hsuforum_cron() {
     $users = array();
     $userscount = 0; // Cached user counter - count($users) in PHP is horribly slow!!!
 
-    // status arrays
+    // Status arrays.
     $mailcount  = array();
     $errorcount = array();
 
-    // caches
+    // Caches.
     $discussions     = array();
     $forums          = array();
     $courses         = array();
     $coursemodules   = array();
     $subscribedusers = array();
     $discussionsubscribers = array();
+    $messageinboundhandlers = array();
 
     require_once(__DIR__.'/repository/discussion.php');
     $discussionrepo = new hsuforum_repository_discussion();
@@ -506,6 +507,10 @@ function hsuforum_cron() {
         $digests[$thisrow->forum][$thisrow->userid] = $thisrow->maildigest;
     }
     $digestsset->close();
+
+    // Create the generic messageinboundgenerator.
+    $messageinboundgenerator = new \core\message\inbound\address_manager();
+    $messageinboundgenerator->set_handler('\mod_hsuforum\message\inbound\reply_handler');
 
     if ($posts = hsuforum_get_unmailed_posts($starttime, $endtime, $timenow)) {
         // Mark them all now as being mailed.  It's unlikely but possible there
@@ -561,8 +566,11 @@ function hsuforum_cron() {
                 }
             }
 
+            // Save the Inbound Message datakey here to reduce DB queries later.
+            $messageinboundgenerator->set_data($pid);
+            $messageinboundhandlers[$pid] = $messageinboundgenerator->fetch_data_key();
 
-            // caching subscribed users of each forum
+            // Caching subscribed users of each forum.
             if (!isset($subscribedusers[$forumid])) {
                 $modcontext = context_module::instance($coursemodules[$forumid]->id);
                 if ($subusers = hsuforum_subscribed_users($courses[$courseid], $forums[$forumid], 0, $modcontext, "u.*")) {
@@ -613,13 +621,12 @@ function hsuforum_cron() {
         $hostname = $urlinfo['host'];
 
         foreach ($users as $userto) {
+            // Terminate if processing of any account takes longer than 2 minutes.
+            core_php_time_limit::raise(120);
 
-            core_php_time_limit::raise(120); // terminate if processing of any account takes longer than 2 minutes
+            mtrace('Processing user ' . $userto->id);
 
-            mtrace('Processing user '.$userto->id);
-
-            // Init user caches - we keep the cache for one cycle only,
-            // otherwise it could consume too much memory.
+            // Init user caches - we keep the cache for one cycle only, otherwise it could consume too much memory.
             if (isset($userto->username)) {
                 $userto = clone($userto);
             } else {
@@ -630,11 +637,11 @@ function hsuforum_cron() {
             $userto->canpost       = array();
             $userto->markposts     = array();
 
-            // set this so that the capabilities are cached, and environment matches receiving user
+            // Set this so that the capabilities are cached, and environment matches receiving user.
             cron_setup_user($userto);
 
-            // reset the caches
-            foreach ($coursemodules as $forumid=>$unused) {
+            // Reset the caches.
+            foreach ($coursemodules as $forumid => $unused) {
                 $coursemodules[$forumid]->cache       = new stdClass();
                 $coursemodules[$forumid]->cache->caps = array();
                 unset($coursemodules[$forumid]->uservisible);
@@ -642,29 +649,31 @@ function hsuforum_cron() {
 
             foreach ($posts as $pid => $post) {
 
-                // Set up the environment for the post, discussion, forum, course
                 $discussion = $discussions[$post->discussion];
                 $forum      = $forums[$discussion->forum];
                 $course     = $courses[$forum->course];
                 $cm         =& $coursemodules[$forum->id];
 
-                // Do some checks  to see if we can bail out now
-                // Only active enrolled users are in the list of subscribers
+                // Do some checks  to see if we can bail out now.
+
+                // Only active enrolled users are in the list of subscribers.
+                // This does not necessarily mean that the user is subscribed to the forum or to the discussion though.
                 if (!isset($subscribedusers[$forum->id][$userto->id])) {
                     if (!isset($discussionsubscribers[$post->discussion][$userto->id])) {
                         continue; // user does not subscribe to this forum
                     }
                 }
 
-                // Don't send email if the forum is Q&A and the user has not posted
-                // Initial topics are still mailed
+                // Don't send email if the forum is Q&A and the user has not posted.
+                // Initial topics are still mailed.
                 if ($forum->type == 'qanda' && !hsuforum_get_user_posted_time($discussion->id, $userto->id) && $pid != $discussion->firstpost) {
-                    mtrace('Did not email '.$userto->id.' because user has not posted in discussion');
+                    mtrace('Did not email ' . $userto->id . ' because user has not posted in discussion');
                     continue;
                 }
 
-                // Get info about the sending user
-                if (array_key_exists($post->userid, $users)) { // we might know him/her already
+                // Get info about the sending user.
+                if (array_key_exists($post->userid, $users)) {
+                    // We might know the user already.
                     $userfrom = $users[$post->userid];
                     if (!isset($userfrom->idnumber)) {
                         // Minimalised user info, fetch full record.
@@ -679,18 +688,17 @@ function hsuforum_cron() {
                         $userscount++;
                         $users[$userfrom->id] = $userfrom;
                     }
-
                 } else {
-                    mtrace('Could not find user '.$post->userid);
+                    mtrace('Could not find user ' . $post->userid . ', author of post ' . $post->id . '. Unable to send message.');
                     continue;
                 }
 
-                //if we want to check that userto and userfrom are not the same person this is probably the spot to do it
+                // Note: If we want to check that userto and userfrom are not the same person this is probably the spot to do it.
 
-                // setup global $COURSE properly - needed for roles and languages
+                // Setup global $COURSE properly - needed for roles and languages.
                 cron_setup_user($userto, $course);
 
-                // Fill caches
+                // Fill caches.
                 if (!isset($userto->viewfullnames[$forum->id])) {
                     $modcontext = context_module::instance($cm->id);
                     $userto->viewfullnames[$forum->id] = has_capability('moodle/site:viewfullnames', $modcontext);
@@ -712,21 +720,23 @@ function hsuforum_cron() {
                     }
                 }
 
-                // Make sure groups allow this user to see this email
-                if ($discussion->groupid > 0 and $groupmode = groups_get_activity_groupmode($cm, $course)) {   // Groups are being used
-                    if (!groups_group_exists($discussion->groupid)) { // Can't find group
-                        continue;                           // Be safe and don't send it to anyone
+                // Make sure groups allow this user to see this email.
+                if ($discussion->groupid > 0 and $groupmode = groups_get_activity_groupmode($cm, $course)) {
+                    // Groups are being used.
+                    if (!groups_group_exists($discussion->groupid)) {
+                        // Can't find group - be safe and don't this message.
+                        continue;
                     }
 
                     if (!groups_is_member($discussion->groupid) and !has_capability('moodle/site:accessallgroups', $modcontext)) {
-                        // do not send posts from other groups when in SEPARATEGROUPS or VISIBLEGROUPS
+                        // Do not send posts from other groups when in SEPARATEGROUPS or VISIBLEGROUPS.
                         continue;
                     }
                 }
 
-                // Make sure we're allowed to see it...
-                if (!hsuforum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
-                    mtrace('user '.$userto->id. ' can not see '.$post->id);
+                // Make sure we're allowed to see the post.
+                if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+                    mtrace('User ' . $userto->id .' can not see ' . $post->id . '. Not sending message.');
                     continue;
                 }
 
@@ -736,7 +746,7 @@ function hsuforum_cron() {
                 $maildigest = hsuforum_get_user_maildigest_bulk($digests, $userto, $forum->id);
 
                 if ($maildigest > 0) {
-                    // This user wants the mails to be in digest form
+                    // This user wants the mails to be in digest form.
                     $queue = new stdClass();
                     $queue->userid       = $userto->id;
                     $queue->discussionid = $discussion->id;
@@ -747,33 +757,46 @@ function hsuforum_cron() {
                 }
 
 
-                // Prepare to actually send the post now, and build up the content
+                // Prepare to actually send the post now, and build up the content.
 
                 $cleanforumname = str_replace('"', "'", strip_tags(format_string($forum->name)));
 
-                $userfrom->customheaders = array (  // Headers to make emails easier to track
-                           'Precedence: Bulk',
-                           'List-Id: "'.$cleanforumname.'" <moodleforum'.$forum->id.'@'.$hostname.'>',
-                           'List-Help: '.$CFG->wwwroot.'/mod/hsuforum/view.php?f='.$forum->id,
-                           'Message-ID: '.hsuforum_get_email_message_id($post->id, $userto->id, $hostname),
-                           'X-Course-Id: '.$course->id,
-                           'X-Course-Name: '.format_string($course->fullname, true)
-                );
+                $userfrom->customheaders = array (
+                    // Headers to make emails easier to track.
+                    'List-Id: "'        . $cleanforumname . '" <moodleforum' . $forum->id . '@' . $hostname.'>',
+                    'List-Help: '       . $CFG->wwwroot . '/mod/hsuforum/view.php?f=' . $forum->id,
+                    'Message-ID: '      . hsuforum_get_email_message_id($post->id, $userto->id, $hostname),
+                    'X-Course-Id: '     . $course->id,
+                    'X-Course-Name: '   . format_string($course->fullname, true),
 
-                if ($post->parent) {  // This post is a reply, so add headers for threading (see MDL-22551)
-                    $userfrom->customheaders[] = 'In-Reply-To: '.hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                    $userfrom->customheaders[] = 'References: '.hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
+                    // Headers to help prevent auto-responders.
+                    'Precedence: Bulk',
+                    'X-Auto-Response-Suppress: All',
+                    'Auto-Submitted: auto-generated',
+               );
+
+                if ($post->parent) {
+                    // This post is a reply, so add headers for threading (see MDL-22551)
+                    $userfrom->customheaders[] = 'In-Reply-To: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
+                    $userfrom->customheaders[] = 'References: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
                 }
 
                 $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
+
+                // Generate a reply-to address from using the Inbound Message handler.
+                $replyaddress = null;
+                if ($userto->canpost[$discussion->id] && array_key_exists($post->id, $messageinboundhandlers)) {
+                    $messageinboundgenerator->set_data($post->id, $messageinboundhandlers[$post->id]);
+                    $replyaddress = $messageinboundgenerator->generate($userto->id);
+                }
 
                 $a = new stdClass();
                 $a->courseshortname = $shortname;
                 $a->forumname = $cleanforumname;
                 $a->subject = format_string($post->subject, true);
-                $postsubject = html_to_text(get_string('postmailsubject', 'hsuforum', $a));
-                $posttext = hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto);
-                $posthtml = hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfrom, $userto);
+                $postsubject = html_to_text(get_string('postmailsubject', 'hsuforum', $a), 0);
+                $posttext = hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $replyaddress);
+                $posthtml = hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $replyaddress);
 
                 // Send the post now!
 
@@ -791,6 +814,7 @@ function hsuforum_cron() {
                 $eventdata->fullmessageformat = FORMAT_PLAIN;
                 $eventdata->fullmessagehtml  = $posthtml;
                 $eventdata->notification = 1;
+                $eventdata->replyto = $replyaddress;
 
                 // If hsuforum_replytouser is not set then send mail using the noreplyaddress.
                 if (empty($config->replytouser)) {
@@ -802,16 +826,18 @@ function hsuforum_cron() {
 
                 $smallmessagestrings = new stdClass();
                 $smallmessagestrings->user = fullname($postuser);
-                $smallmessagestrings->forumname = "$shortname: ".format_string($forum->name,true).": ".$discussion->name;
+                $smallmessagestrings->forumname = "$shortname: " . format_string($forum->name,true) . ": ".$discussion->name;
                 $smallmessagestrings->message = $post->message;
-                //make sure strings are in message recipients language
+
+                // Make sure strings are in message recipients language.
                 $eventdata->smallmessage = get_string_manager()->get_string('smallmessage', 'hsuforum', $smallmessagestrings, $userto->lang);
 
-                $eventdata->contexturl = "{$CFG->wwwroot}/mod/hsuforum/discuss.php?d={$discussion->id}#p{$post->id}";
+                $contexturl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id), 'p' . $post->id);
+                $eventdata->contexturl = $contexturl->out();
                 $eventdata->contexturlname = $discussion->name;
 
                 $mailresult = message_send($eventdata);
-                if (!$mailresult){
+                if (!$mailresult) {
                     mtrace("Error: mod/hsuforum/lib.php hsuforum_cron(): Could not send out mail for id $post->id to user $userto->id".
                          " ($userto->email) .. not trying again.");
                     $errorcount[$post->id]++;
@@ -823,10 +849,10 @@ function hsuforum_cron() {
                     }
                 }
 
-                mtrace('post '.$post->id. ': '.$post->subject);
+                mtrace('post ' . $post->id . ': ' . $post->subject);
             }
 
-            // mark processed posts as read
+            // Mark processed posts as read.
             hsuforum_mark_posts_read($userto, $userto->markposts);
             unset($userto);
         }
@@ -841,7 +867,7 @@ function hsuforum_cron() {
         }
     }
 
-    // release some memory
+    // Release some memory.
     unset($subscribedusers);
     unset($mailcount);
     unset($errorcount);
@@ -854,9 +880,9 @@ function hsuforum_cron() {
 
     mtrace('Starting digest processing...');
 
-    core_php_time_limit::raise(300); // terminate if not able to fetch all digests in 5 minutes
+    core_php_time_limit::raise(300); // Terminate if not able to fetch all digests in 5 minutes
 
-    if (!isset($config->digestmailtimelast)) {    // To catch the first time
+    if (!isset($config->digestmailtimelast)) {    // To catch the first time.
         set_config('digestmailtimelast', 0, 'hsuforum');
         $config->digestmailtimelast = 0;
     }
@@ -1062,7 +1088,12 @@ function hsuforum_cron() {
                             }
                         }
 
-                        $userfrom->customheaders = array ("Precedence: Bulk");
+                        // Headers to help prevent auto-responders.
+                        $userfrom->customheaders = array(
+                                "Precedence: Bulk",
+                                'X-Auto-Response-Suppress: All',
+                                'Auto-Submitted: auto-generated',
+                            );
 
                         $maildigest = hsuforum_get_user_maildigest_bulk($digests, $userto, $forum->id);
                         if ($maildigest == 2) {
@@ -1168,9 +1199,10 @@ function hsuforum_cron() {
  * @param object $userfrom
  * @param object $userto
  * @param boolean $bare
+ * @param string $replyaddress The inbound address that a user can reply to the generated e-mail with. [Since 2.8].
  * @return string The email body in plain text format.
  */
-function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $bare = false) {
+function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $bare = false, $replyaddress = null) {
     global $CFG, $USER;
 
     $modcontext = context_module::instance($cm->id);
@@ -1203,7 +1235,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
 
     if (!$bare) {
         $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
-        $posttext  = "$shortname -> $strforums -> ".format_string($forum->name,true);
+        $posttext  .= "$shortname -> $strforums -> ".format_string($forum->name,true);
 
         if ($discussion->name != $forum->name) {
             $posttext  .= " -> ".format_string($discussion->name,true);
@@ -1241,6 +1273,10 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     $posttext .= get_string("digestmailpost", "hsuforum");
     $posttext .= ": {$CFG->wwwroot}/mod/hsuforum/index.php?id={$forum->course}\n";
 
+    if ($replyaddress) {
+        $posttext .= "\n\n" . get_string('replytopostbyemail', 'mod_hsuforum');
+    }
+
     return $posttext;
 }
 
@@ -1255,9 +1291,10 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
  * @param object $post
  * @param object $userfrom
  * @param object $userto
+ * @param string $replyaddress The inbound address that a user can reply to the generated e-mail with. [Since 2.8].
  * @return string The email text in HTML format
  */
-function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfrom, $userto) {
+function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $replyaddress = null) {
     global $CFG;
 
     if ($userto->mailformat != 1) {  // Needs to be HTML
@@ -1293,6 +1330,10 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
                      format_string($discussion->name,true).'</a></div>';
     }
     $posthtml .= hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $canreply, true, false);
+
+    if ($replyaddress) {
+        $posthtml .= html_writer::tag('p', get_string('replytopostbyemail', 'mod_hsuforum'));
+    }
 
     $footerlinks = array();
     if ($canunsubscribe) {
@@ -1487,12 +1528,12 @@ function hsuforum_print_overview($courses,&$htmlarray) {
 
         // If the user has never entered into the course all posts are pending
         if ($course->lastaccess == 0) {
-            $coursessqls[] = '(f.course = ?)';
+            $coursessqls[] = '(d.course = ?)';
             $params[] = $course->id;
 
         // Only posts created after the course last access
         } else {
-            $coursessqls[] = '(f.course = ? AND p.created > ?)';
+            $coursessqls[] = '(d.course = ? AND p.created > ?)';
             $params[] = $course->id;
             $params[] = $course->lastaccess;
         }
@@ -1500,14 +1541,13 @@ function hsuforum_print_overview($courses,&$htmlarray) {
     $params[] = $USER->id;
     $coursessql = implode(' OR ', $coursessqls);
 
-    $sql = "SELECT d.id, d.forum, f.course, d.groupid, COUNT(*) as count "
-                .'FROM {hsuforum} f '
-                .'JOIN {hsuforum_discussions} d ON d.forum = f.id '
+    $sql = "SELECT d.id, d.forum, d.course, d.groupid, COUNT(*) as count "
+                .'FROM {hsuforum_discussions} d '
                 .'JOIN {hsuforum_posts} p ON p.discussion = d.id '
                 ."WHERE ($coursessql) "
                 .'AND p.userid != ? '
-                .'GROUP BY d.id, d.forum, f.course, d.groupid '
-                .'ORDER BY f.course, d.forum';
+                .'GROUP BY d.id, d.forum, d.course, d.groupid '
+                .'ORDER BY d.course, d.forum';
 
     // Avoid warnings.
     if (!$discussions = $DB->get_records_sql($sql, $params)) {
@@ -3646,7 +3686,9 @@ function hsuforum_print_attachments($post, $cm, $type) {
         require_once($CFG->libdir.'/portfoliolib.php');
     }
 
-    $files = $fs->get_area_files($context->id, 'mod_hsuforum', 'attachment', $post->id, "timemodified", false);
+    // We retrieve all files according to the time that they were created.  In the case that several files were uploaded
+    // at the sametime (e.g. in the case of drag/drop upload) we revert to using the filename.
+    $files = $fs->get_area_files($context->id, 'mod_hsuforum', 'attachment', $post->id, "filename", false);
     if ($files) {
         if ($canexport) {
             $button = new portfolio_add_button();
@@ -3954,11 +3996,11 @@ function hsuforum_add_attachment($post, $forum, $cm, $mform=null, $unused=null, 
  * @global object
  * @param object $post
  * @param mixed $mform
- * @param string $message
+ * @param string $unused formerly $message, renamed in 2.8 as it was unused.
  * @param \mod_hsuforum\upload_file $uploader
  * @return int
  */
-function hsuforum_add_new_post($post, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
+function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
@@ -3981,7 +4023,7 @@ function hsuforum_add_new_post($post, $mform, &$message, \mod_hsuforum\upload_fi
     $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options($context, null), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
-    hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
+    hsuforum_add_attachment($post, $forum, $cm, $mform, null, $uploader);
 
     // Update discussion modified date
     if (empty($post->privatereply)) {
@@ -7243,7 +7285,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
 
             // Check whether the requested user is enrolled or has access to view the course
             // if they don't we immediately have a problem.
-            if (!can_access_course($course, $user)) {
+            if (!can_access_course($course, $user) && !is_enrolled($coursecontext, $user)) {
                 if ($musthaveaccess) {
                     print_error('notenrolled', 'hsuforum');
                 }
@@ -8052,4 +8094,31 @@ function hsuforum_str_empty($str) {
     $str = str_ireplace('&nbsp;', '', $str);
     $str = trim($str);
     return ($str === '');
+}
+
+/**
+ * Determine the current context if one was not already specified.
+ *
+ * If a context of type context_module is specified, it is immediately
+ * returned and not checked.
+ *
+ * @param int $forumid The ID of the forum
+ * @param context_module $context The current context.
+ * @return context_module The context determined
+ */
+function hsuforum_get_context($forumid, $context = null) {
+    global $PAGE;
+
+    if (!$context || !($context instanceof context_module)) {
+        // Find out forum context. First try to take current page context to save on DB query.
+        if ($PAGE->cm && $PAGE->cm->modname === 'hsuforum' && $PAGE->cm->instance == $forumid
+                && $PAGE->context->contextlevel == CONTEXT_MODULE && $PAGE->context->instanceid == $PAGE->cm->id) {
+            $context = $PAGE->context;
+        } else {
+            $cm = get_coursemodule_from_instance('hsuforum', $forumid);
+            $context = \context_module::instance($cm->id);
+        }
+    }
+
+    return $context;
 }
