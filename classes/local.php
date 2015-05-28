@@ -50,4 +50,20 @@ class local {
         return $caps[$contextkey];
     }
 
+    /**
+     * Prevent name from exceeding 255 chars.
+     */
+    public static function shorten_post_name($name) {
+        $strre = get_string('re', 'hsuforum');
+        if (\core_text::strlen($name) > 255) {
+            $shortened = shorten_text($name, 255);
+            if (trim(str_ireplace($strre, '', $shortened)) === '...' || \core_text::strlen($shortened) > 255) {
+                // Make a 2nd pass with the 'exact' param true, as shortening on word boundary failed or exceeded 255 chars.
+                $shortened = shorten_text($name, 255, true);
+            }
+            $name = $shortened;
+        }
+        return $name;
+    }
+
 }
