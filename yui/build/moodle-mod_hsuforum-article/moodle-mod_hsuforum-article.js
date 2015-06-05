@@ -372,6 +372,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         if (e.button !== 1 || e.ctrlKey || e.metaKey
             || e.currentTarget.hasClass('disable-router')
             || e.currentTarget.hasClass('autolink')
+            || e.currentTarget.ancestor('.posting')
         ) {
             if (e.currentTarget.get('href').indexOf('#') >-1){
                 this.focusHash(e.currentTarget);
