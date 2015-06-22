@@ -1337,8 +1337,10 @@ HTML;
         $extrahtml = '';
         if (groups_get_activity_groupmode($cm)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
-            if (count($groupdata) > 1 && has_capability('mod/hsuforum:movediscussions', $context)) {
-                $groupinfo = array('0' => get_string('allparticipants'));
+            if (count($groupdata) > 1) {
+                if (has_capability('moodle/site:accessallgroups', $context)) {
+                    $groupinfo[0] = get_string('allparticipants');
+                }
                 foreach ($groupdata as $grouptemp) {
                     $groupinfo[$grouptemp->id] = $grouptemp->name;
                 }
