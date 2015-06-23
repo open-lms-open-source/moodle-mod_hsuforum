@@ -321,7 +321,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
         // Call the external function passing forum ids.
         $discussions = mod_hsuforum_external::get_forum_discussions(array($forum1->id, $forum2->id));
-        var_dump($discussions);
         $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_returns(), $discussions);
         $this->assertEquals($expecteddiscussions, $discussions);
         // Some debugging is going to be produced, this is because we switch PAGE contexts in the get_forum_discussions function,
