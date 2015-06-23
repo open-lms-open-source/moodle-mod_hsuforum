@@ -40,7 +40,8 @@ $functions = array(
         'classname' => 'mod_hsuforum_external',
         'methodname' => 'get_forum_discussions',
         'classpath' => 'mod/hsuforum/externallib.php',
-        'description' => 'Returns a list of forum discussions contained within a given set of forums.',
+        'description' => 'DEPRECATED (use mod_hsuforum_get_forum_discussions_paginated instead):
+                            Returns a list of forum discussions contained within a given set of forums.',
         'type' => 'read',
         'capabilities' => 'mod/hsuforum:viewdiscussion, mod/hsuforum:viewqandawithoutposting'
     ),

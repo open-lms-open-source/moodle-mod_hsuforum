@@ -313,4 +313,66 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             $this->assertFalse(hsuforum_is_subscribed($user->id, $forum));
         }
     }
+
+    /**
+     * Create a new course, forum, and user with a number of discussions and replies.
+     *
+     * @param int $discussioncount The number of discussions to create
+     * @param int $replycount The number of replies to create in each discussion
+     * @return array Containing the created forum object, and the ids of the created discussions.
+     */
+    protected function create_multiple_discussions_with_replies($discussioncount, $replycount) {
+        $this->resetAfterTest();
+
+        // Setup the content.
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $record = new stdClass();
+        $record->course = $course->id;
+        $forum = $this->getDataGenerator()->create_module('hsuforum', $record);
+
+        // Create 10 discussions with replies.
+        $discussionids = array();
+        for ($i = 0; $i < $discussioncount; $i++) {
+            $discussion = $this->create_single_discussion_with_replies($forum, $user, $replycount);
+            $discussionids[] = $discussion->id;
+        }
+        return array($forum, $discussionids);
+    }
+
+    /**
+     * Create a discussion with a number of replies.
+     *
+     * @param object $forum The forum which has been created
+     * @param object $user The user making the discussion and replies
+     * @param int $replycount The number of replies
+     * @return object $discussion
+     */
+    protected function create_single_discussion_with_replies($forum, $user, $replycount) {
+        global $DB;
+
+        $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
+
+        $record = new stdClass();
+        $record->course = $forum->course;
+        $record->forum = $forum->id;
+        $record->userid = $user->id;
+        $discussion = $generator->create_discussion($record);
+
+        // Retrieve the first post.
+        $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
+
+        // Create the replies.
+        $post = new stdClass();
+        $post->userid = $user->id;
+        $post->discussion = $discussion->id;
+        $post->parent = $replyto->id;
+
+        for ($i = 0; $i < $replycount; $i++) {
+            $generator->create_post($post);
+        }
+
+        return $discussion;
+    }
+
 }
