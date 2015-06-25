@@ -763,7 +763,7 @@ function hsuforum_cron() {
 
                 $userfrom->customheaders = array (
                     // Headers to make emails easier to track.
-                    'List-Id: "'        . $cleanforumname . '" <moodleforum' . $forum->id . '@' . $hostname.'>',
+                    'List-Id: "'        . $cleanforumname . '" <moodlehsuforum' . $forum->id . '@' . $hostname.'>',
                     'List-Help: '       . $CFG->wwwroot . '/mod/hsuforum/view.php?f=' . $forum->id,
                     'Message-ID: '      . hsuforum_get_email_message_id($post->id, $userto->id, $hostname),
                     'X-Course-Id: '     . $course->id,
