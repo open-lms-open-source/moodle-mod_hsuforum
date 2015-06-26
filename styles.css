@@ -662,6 +662,9 @@ FUN WITH FORMS
     float:left;
     min-width: 200px;
 }
+.editing .hsuforum.modtype_hsuforum:not(.snap-activity) .snap-media-object {
+    width: 100%;
+}
 
 .block_flexpagemod_hsuforum .snap-media-object > a,
 .modtype_hsuforum .snap-media-object > a,
@@ -735,7 +738,8 @@ FUN WITH FORMS
 }
 
 .format-flexpage  .block_flexpagemod_hsuforum .activityinstance,
-.modtype_hsuforum .activityinstance{
+.modtype_hsuforum .mod-indent-outer,
+.modtype_hsuforum .activityinstance {
     display: block !important;
 }
 
