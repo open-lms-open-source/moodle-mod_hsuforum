@@ -737,6 +737,10 @@ FUN WITH FORMS
     padding: 0;
 }
 
+.block_flexpagemod_hsuforum .mod-indent-outer {
+    margin-bottom: 1em;
+}
+
 .format-flexpage  .block_flexpagemod_hsuforum .activityinstance,
 .modtype_hsuforum .mod-indent-outer,
 .modtype_hsuforum .activityinstance {
