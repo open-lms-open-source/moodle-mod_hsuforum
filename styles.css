@@ -739,6 +739,18 @@ FUN WITH FORMS
 
 .block_flexpagemod_hsuforum .mod-indent-outer {
     margin-bottom: 1em;
+    display: block !important;
+}
+
+.block_flexpagemod_hsuforum .instancename {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: block;
+}
+
+.block_flexpagemod_hsuforum .hsuforum-recent-heading {
+    padding: 10px 0px;
 }
 
 .format-flexpage  .block_flexpagemod_hsuforum .activityinstance,
