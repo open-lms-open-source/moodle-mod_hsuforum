@@ -298,7 +298,19 @@
         echo "</div>";
     }
     if ($forum->type == 'single') {
-        echo  hsuforum_search_form($course, $forum->id);
+        echo hsuforum_search_form($course, $forum->id);
+        echo \html_writer::link(
+            new \moodle_url(
+                '/mod/hsuforum/index.php',
+                array (
+                    'id' => $course->id
+                )
+            ),
+            get_string('manageforumsubscriptions', 'mod_hsuforum'),
+            array (
+                'class' => 'managesubslink'
+            )
+        );
     }
 
     $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);

@@ -796,3 +796,7 @@ FUN WITH FORMS
     display: table;
     clear: both;
 }
+
+.path-mod-hsuforum .discussioncontrols .managesubslink {
+    float: left;
+}
