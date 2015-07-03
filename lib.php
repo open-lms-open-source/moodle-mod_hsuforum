@@ -785,7 +785,7 @@ function hsuforum_cron() {
 
                 // Generate a reply-to address from using the Inbound Message handler.
                 $replyaddress = null;
-                if ($userto->canpost[$discussion->id] && array_key_exists($post->id, $messageinboundhandlers)) {
+                if ($userto->canpost[$discussion->id] && array_key_exists($post->id, $messageinboundhandlers) && empty($post->privatereply)) {
                     $messageinboundgenerator->set_data($post->id, $messageinboundhandlers[$post->id]);
                     $replyaddress = $messageinboundgenerator->generate($userto->id);
                 }
@@ -1115,6 +1115,9 @@ function hsuforum_cron() {
 
                         } else {
                             // The full treatment
+                            if (!empty($post->privatereply)) {
+                                $canreply = false;
+                            }
                             $posttext .= hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, true);
                             $posthtml .= hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $canreply, true, false);
 
@@ -1218,7 +1221,9 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     } else {
         $canreply = $userto->canpost[$discussion->id];
     }
-
+    if (!empty($post->privatereply)) {
+        $canreply = false;
+    }
     $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
 
     $by = New stdClass;
@@ -1273,7 +1278,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     $posttext .= get_string("digestmailpost", "hsuforum");
     $posttext .= ": {$CFG->wwwroot}/mod/hsuforum/index.php?id={$forum->course}\n";
 
-    if ($replyaddress) {
+    if ($canreply && $replyaddress) {
         $posttext .= "\n\n" . get_string('replytopostbyemail', 'mod_hsuforum');
     }
 
@@ -1306,6 +1311,9 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
     } else {
         $canreply = $userto->canpost[$discussion->id];
     }
+    if (!empty($post->privatereply)) {
+        $canreply = false;
+    }
 
     $strforums = get_string('forums', 'hsuforum');
     $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
@@ -1331,7 +1339,7 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
     }
     $posthtml .= hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $canreply, true, false);
 
-    if ($replyaddress) {
+    if ($canreply && $replyaddress) {
         $posthtml .= html_writer::tag('p', get_string('replytopostbyemail', 'mod_hsuforum'));
     }
 
