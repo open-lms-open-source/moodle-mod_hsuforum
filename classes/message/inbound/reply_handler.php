@@ -25,6 +25,8 @@
 
 namespace mod_hsuforum\message\inbound;
 
+use mod_hsuforum\local;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
@@ -158,7 +160,7 @@ class reply_handler extends \core\message\inbound\handler {
         $addpost->forum        = $forum->id;
         $addpost->discussion   = $discussion->id;
         $addpost->modified     = $messagedata->timestamp;
-        $addpost->subject      = $subject;
+        $addpost->subject      = local::shorten_post_name($subject);
         $addpost->parent       = $post->id;
         $addpost->itemid       = file_get_unused_draft_itemid();
         $addpost->reveal       = 0;
