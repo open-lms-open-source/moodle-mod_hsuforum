@@ -1008,10 +1008,15 @@ Y.extend(ARTICLE, Y.Base,
             if(firstUnreadPost && location.hash === '#unread') {
                 // get the post parent to focus on
                 var post = document.getElementById(firstUnreadPost.id).parentNode;
-                if (M.cfg.theme === 'express' && navigator.userAgent.match(/Trident|MSIE/)) {
-                    // This has issues in IE when the themer
-                    // uses negative margins to layout columns
-                    // so skip it.
+                // Workaround issues that IE has with negative margins in themes.
+                if (navigator.userAgent.match(/Trident|MSIE/)) {
+                    var y, e;
+                    y = post.offsetTop;
+                    e = post;
+                    while ((e = e.offsetParent)) {
+                        y += e.offsetTop;
+                    }
+                    window.scrollTo(0, y);
                 } else {
                     post.scrollIntoView();
                 }
