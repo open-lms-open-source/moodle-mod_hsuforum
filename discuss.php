@@ -30,8 +30,19 @@
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
 
-    $d      = required_param('d', PARAM_INT);                // Discussion ID
-    $root = optional_param('root', 0, PARAM_INT);        // If set, then display this post and all children.
+    // Get the discussion id, and deal with broken requests by browsers...
+    // that don't understand the AJAX links. I'm looking at you IE.
+    $d = optional_param('d', null, PARAM_INT); // Forum discussion id
+
+    if ($d === null) { // Fallback to id if present.
+        $d = optional_param('id', null, PARAM_INT);
+
+        if ($d === null) {
+            print_error('missingparameter');
+        }
+    }
+
+    $root   = optional_param('root', 0, PARAM_INT);          // If set, then display this post and all children.
     $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum
     $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
     $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.

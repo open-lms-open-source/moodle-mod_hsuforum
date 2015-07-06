@@ -968,7 +968,7 @@ HTML;
         if ($action === 'add_discussion' ) {
             return "view.php?id=$cmid";
         } else if ($action === 'reply') {
-            return "discuss.php?id=$discussionid";
+            return "discuss.php?d=$discussionid";
         }
     }
 
