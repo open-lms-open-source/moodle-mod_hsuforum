@@ -161,6 +161,9 @@ class reply_handler extends \core\message\inbound\handler {
         $addpost->subject      = $subject;
         $addpost->parent       = $post->id;
         $addpost->itemid       = file_get_unused_draft_itemid();
+        $addpost->reveal       = 0;
+        $addpost->privatereply = 0;
+        $addpost->flags        = null;
 
         if (!empty($messagedata->html)) {
             $addpost->message = $messagedata->html;
