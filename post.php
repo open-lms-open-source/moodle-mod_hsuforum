@@ -928,6 +928,9 @@ echo $OUTPUT->heading(format_string($forum->name), 2);
 if (!empty($parent) && !hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
     print_error('cannotreply', 'hsuforum');
 }
+if (!empty($parent) && !empty($parent->privatereply)) {
+    print_error('cannotreply', 'hsuforum');
+}
 if (empty($parent) && empty($edit) && !hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
     print_error('cannotcreatediscussion', 'hsuforum');
 }
