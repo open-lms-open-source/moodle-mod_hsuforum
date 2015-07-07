@@ -167,13 +167,9 @@ class reply_handler extends \core\message\inbound\handler {
         $addpost->privatereply = 0;
         $addpost->flags        = null;
 
-        if (!empty($messagedata->html)) {
-            $addpost->message = $messagedata->html;
-            $addpost->messageformat = FORMAT_HTML;
-        } else {
-            $addpost->message = $messagedata->plain;
-            $addpost->messageformat = FORMAT_PLAIN;
-        }
+        list ($message, $format) = self::remove_quoted_text($messagedata);
+        $addpost->message = $message;
+        $addpost->messageformat = $format;
 
         // We don't trust text coming from e-mail.
         $addpost->messagetrust = false;

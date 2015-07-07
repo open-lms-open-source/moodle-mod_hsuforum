@@ -72,6 +72,24 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $record->course = $course2->id;
         $forum2 = self::getDataGenerator()->create_module('hsuforum', $record);
 
+        // Add discussions to the forums.
+        $record = new stdClass();
+        $record->course = $course1->id;
+        $record->userid = $user->id;
+        $record->forum = $forum1->id;
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+        // Expect one discussion.
+        $forum1->numdiscussions = 1;
+
+        $record = new stdClass();
+        $record->course = $course2->id;
+        $record->userid = $user->id;
+        $record->forum = $forum2->id;
+        $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+        $discussion3 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+        // Expect two discussions.
+        $forum2->numdiscussions = 2;
+
         // Check the forum was correctly created.
         $this->assertEquals(2, $DB->count_records_select('hsuforum', 'id = :forum1 OR id = :forum2',
                 array('forum1' => $forum1->id, 'forum2' => $forum2->id)));
@@ -97,19 +115,28 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $roleid2 = $this->assignUserCapability('mod/hsuforum:viewdiscussion', $context2->id, $newrole);
 
         // Create what we expect to be returned when querying the two courses.
+        unset($forum1->displaywordcount);
+        unset($forum2->displaywordcount);
+
         $expectedforums = array();
         $expectedforums[$forum1->id] = (array) $forum1;
         $expectedforums[$forum2->id] = (array) $forum2;
 
         // Call the external function passing course ids.
         $forums = mod_hsuforum_external::get_forums_by_courses(array($course1->id, $course2->id));
-        external_api::clean_returnvalue(mod_hsuforum_external::get_forums_by_courses_returns(), $forums);
-        $this->assertEquals($expectedforums, $forums);
+        $forums = external_api::clean_returnvalue(mod_hsuforum_external::get_forums_by_courses_returns(), $forums);
+        $this->assertCount(2, $forums);
+        foreach ($forums as $forum) {
+            $this->assertEquals($expectedforums[$forum['id']], $forum);
+        }
 
         // Call the external function without passing course id.
         $forums = mod_hsuforum_external::get_forums_by_courses();
-        external_api::clean_returnvalue(mod_hsuforum_external::get_forums_by_courses_returns(), $forums);
-        $this->assertEquals($expectedforums, $forums);
+        $forums = external_api::clean_returnvalue(mod_hsuforum_external::get_forums_by_courses_returns(), $forums);
+        $this->assertCount(2, $forums);
+        foreach ($forums as $forum) {
+            $this->assertEquals($expectedforums[$forum['id']], $forum);
+        }
 
         // Unenrol user from second course and alter expected forums.
         $enrol->unenrol_user($instance2, $user->id);
@@ -117,25 +144,14 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
         // Call the external function without passing course id.
         $forums = mod_hsuforum_external::get_forums_by_courses();
-        external_api::clean_returnvalue(mod_hsuforum_external::get_forums_by_courses_returns(), $forums);
-        $this->assertEquals($expectedforums, $forums);
+        $forums = external_api::clean_returnvalue(mod_hsuforum_external::get_forums_by_courses_returns(), $forums);
+        $this->assertCount(1, $forums);
+        $this->assertEquals($expectedforums[$forum1->id], $forums[0]);
 
-        // Call for the second course we unenrolled the user from, ensure exception thrown.
-        try {
-            mod_hsuforum_external::get_forums_by_courses(array($course2->id));
-            $this->fail('Exception expected due to being unenrolled from the course.');
-        } catch (moodle_exception $e) {
-            $this->assertEquals('requireloginerror', $e->errorcode);
-        }
-
-        // Call without required capability, ensure exception thrown.
-        $this->unassignUserCapability('mod/hsuforum:viewdiscussion', null, null, $course1->id);
-        try {
-            $forums = mod_hsuforum_external::get_forums_by_courses(array($course1->id));
-            $this->fail('Exception expected due to missing capability.');
-        } catch (moodle_exception $e) {
-            $this->assertEquals('nopermissions', $e->errorcode);
-        }
+        // Call for the second course we unenrolled the user from.
+        $forums = mod_hsuforum_external::get_forums_by_courses(array($course2->id));
+        $forums = external_api::clean_returnvalue(mod_hsuforum_external::get_forums_by_courses_returns(), $forums);
+        $this->assertCount(0, $forums);
     }
 
     /**
@@ -248,7 +264,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
         // Create what we expect to be returned when querying the forums.
         $expecteddiscussions = array();
-        $expecteddiscussions[$discussion1->id] = array(
+        $expecteddiscussions[] = array(
                 'id' => $discussion1->id,
                 'course' => $discussion1->course,
                 'forum' => $discussion1->forum,
@@ -275,7 +291,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
                 'lastuserpicture' => $user4->picture,
                 'lastuseremail' => $user4->email
             );
-        $expecteddiscussions[$discussion2->id] = array(
+        $expecteddiscussions[] = array(
                 'id' => $discussion2->id,
                 'course' => $discussion2->course,
                 'forum' => $discussion2->forum,
@@ -305,7 +321,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
         // Call the external function passing forum ids.
         $discussions = mod_hsuforum_external::get_forum_discussions(array($forum1->id, $forum2->id));
-        external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_returns(), $discussions);
         $this->assertEquals($expecteddiscussions, $discussions);
         // Some debugging is going to be produced, this is because we switch PAGE contexts in the get_forum_discussions function,
         // the switch happens when the validate_context function is called inside a foreach loop.
@@ -338,7 +354,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         } catch (moodle_exception $e) {
             $this->assertEquals('requireloginerror', $e->errorcode);
         }
-        $this->assertDebuggingCalled();
     }
 
     /**
@@ -399,7 +414,9 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         // So the user automatically gets mod/hsuforum:viewdiscussion on all forums of the course.
         $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
         $this->getDataGenerator()->enrol_user($user2->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($user3->id, $course1->id);
+
+        // Delete one user, to test that we still receive posts by this user.
+        delete_user($user3);
 
         // Create what we expect to be returned when querying the discussion.
         $expectedposts = array(
@@ -410,7 +427,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'id' => $discussion1reply1->id,
             'discussion' => $discussion1reply1->discussion,
             'parent' => $discussion1reply1->parent,
-            'userid' => $discussion1reply1->userid,
+            'userid' => (int) $discussion1reply1->userid,
             'created' => $discussion1reply1->created,
             'modified' => $discussion1reply1->modified,
             'mailed' => $discussion1reply1->mailed,
@@ -422,7 +439,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'attachment' => $discussion1reply1->attachment,
             'totalscore' => $discussion1reply1->totalscore,
             'mailnow' => $discussion1reply1->mailnow,
-            'children' => array(4),
+            'children' => array($discussion1reply2->id),
             'canreply' => true,
             'postread' => false,
             'userfullname' => fullname($user2)
