@@ -369,7 +369,11 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      */
     handleRoute: function(e) {
         // Allow the native behavior on middle/right-click, or when Ctrl or Command are pressed.
-        if (e.button !== 1 || e.ctrlKey || e.metaKey || e.currentTarget.hasClass('disable-router')) {
+        if (e.button !== 1 || e.ctrlKey || e.metaKey
+            || e.currentTarget.hasClass('disable-router')
+            || e.currentTarget.hasClass('autolink')
+            || e.currentTarget.ancestor('.posting')
+        ) {
             if (e.currentTarget.get('href').indexOf('#') >-1){
                 this.focusHash(e.currentTarget);
             }
@@ -1004,10 +1008,15 @@ Y.extend(ARTICLE, Y.Base,
             if(firstUnreadPost && location.hash === '#unread') {
                 // get the post parent to focus on
                 var post = document.getElementById(firstUnreadPost.id).parentNode;
-                if (M.cfg.theme === 'express' && navigator.userAgent.match(/Trident|MSIE/)) {
-                    // This has issues in IE when the themer
-                    // uses negative margins to layout columns
-                    // so skip it.
+                // Workaround issues that IE has with negative margins in themes.
+                if (navigator.userAgent.match(/Trident|MSIE/)) {
+                    var y, e;
+                    y = post.offsetTop;
+                    e = post;
+                    while ((e = e.offsetParent)) {
+                        y += e.offsetTop;
+                    }
+                    window.scrollTo(0, y);
                 } else {
                     post.scrollIntoView();
                 }
@@ -1032,7 +1041,9 @@ Y.extend(ARTICLE, Y.Base,
 
             // Advanced editor.
             Y.delegate('click', function(e){
-
+                if (M.cfg.behatsiterunning) {
+                    return true;
+                }
                 var editCont = Y.one('#hiddenadvancededitorcont'),
                     editor,
                     editArea,

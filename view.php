@@ -56,7 +56,7 @@
 
     $course = $DB->get_record('course', array('id' => $forum->course));
 
-    if (!$cm && !$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
+    if (empty($cm) && !$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
         print_error('missingparameter');
     }
 

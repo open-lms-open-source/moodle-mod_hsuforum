@@ -42,7 +42,7 @@ class behat_mod_hsuforum extends behat_base {
     /**
      * Adds a topic to the forum specified by it's name. Useful for the News forum and blog-style forums.
      *
-     * @Given /^I add a new topic to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" forum with:$/
+     * @Given /^I add a new topic to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" advanced forum with:$/
      * @param string $forumname
      * @param TableNode $table
      */
@@ -75,6 +75,7 @@ class behat_mod_hsuforum extends behat_base {
             new Given('I follow "' . $this->escape($forumname) . '"'),
             new Given('I follow "' . $this->escape($postsubject) . '"'),
             new Given('I follow "' . get_string('reply', 'hsuforum') . '"'),
+            new Given('I follow "Use advanced editor"'),
             new Given('I set the following fields to these values:', $table),
             new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"'),
             new Given('I wait to be redirected')
@@ -99,6 +100,7 @@ class behat_mod_hsuforum extends behat_base {
         return array(
             new Given('I follow "' . $this->escape($forumname) . '"'),
             new Given('I press "' . $buttonstr . '"'),
+            new Given('I follow "Use advanced editor"'),
             new Given('I set the following fields to these values:', $table),
             new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"'),
             new Given('I wait to be redirected')

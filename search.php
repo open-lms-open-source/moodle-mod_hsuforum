@@ -285,8 +285,19 @@ foreach ($posts as $post) {
 
     $options = new stdClass();
     $options->trusted = $post->messagetrust;
+    $modcontext = context_module::instance($cm->id);
     $post->message = highlight($strippedsearch,
-                    format_text($post->message, $post->messageformat, $options, $course->id),
+                    format_text(
+                        file_rewrite_pluginfile_urls(
+                            $post->message,
+                            'pluginfile.php',
+                            $modcontext->id,
+                            'mod_hsuforum', 'post',
+                            $post->id
+                        ),
+                        $post->messageformat,
+                        $options,
+                        $course->id),
                     0, '<fgw9sdpq4>', '</fgw9sdpq4>');
 
     foreach ($searchterms as $searchterm) {
@@ -307,13 +318,8 @@ foreach ($posts as $post) {
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "hsuforum")."</a>";
 
     $commands = array('seeincontext' => $fulllink);
-    if (empty($post->parent)) {
-        $parent = null;
-    } else {
-        $parent = $DB->get_record('hsuforum_posts', array('id' =>$post->parent));
-    }
     $postcm = $modinfo->instances['hsuforum'][$discussion->forum];
-    $rendereredpost = $renderer->post($postcm, $discussion, $post, false, $parent, $commands, 0, $strippedsearch);
+    $rendereredpost = $renderer->post($postcm, $discussion, $post, false, null, $commands, 0, $strippedsearch);
     echo html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
 }
 echo html_writer::end_tag('ol');

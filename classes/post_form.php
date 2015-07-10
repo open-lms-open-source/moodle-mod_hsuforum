@@ -200,7 +200,7 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addElement('advcheckbox', 'reveal', get_string('reveal', 'hsuforum'));
             $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
         }
-        if (!empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
+        if (!empty($forum->allowprivatereplies) and !empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
             if ($post->userid != $USER->id) {
                 $mform->addElement('hidden', 'privatereply', 0);
                 $mform->setType('privatereply', PARAM_INT);

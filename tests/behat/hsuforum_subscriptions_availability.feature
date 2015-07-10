@@ -20,72 +20,34 @@ Feature: As a teacher I need to see an accurate list of subscribed users
       | student1 | C1 | student |
       | student2 | C1 | student |
       | student3 | C1 | student |
-    And the following "groups" exist:
-      | name | course | idnumber |
-      | Group 1 | C1 | G1 |
-      | Group 2 | C1 | G2 |
-    And the following "group members" exist:
-      | user        | group |
-      | student1    | G1    |
-      | student2    | G2    |
-    And the following "groupings" exist:
-      | name        | course | idnumber |
-      | Grouping 1  | C1     | GG1      |
-    And the following "grouping groups" exist:
-      | grouping | group |
-      | GG1      | G1    |
-    And I log in as "admin"
-    And I set the following administration settings values:
-      | Enable group members only | 1 |
-    And I log out
     And I log in as "teacher"
     And I follow "Course 1"
     And I turn editing mode on
 
   @javascript
   Scenario: A forced forum lists all subscribers
-    When I add a "Forum" to section "1" and I fill the form with:
+    When I add a "Advanced Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
     And I follow "Forced Forum 1"
-    And I follow "Show/edit current subscribers"
+    And I follow "Show/edit forum subscribers"
     Then I should see "Student 1"
     And I should see "Teacher Teacher"
     And I should see "Student 2"
     And I should see "Student 3"
-    And I click on "Edit settings" "link" in the "Administration" "block"
-    And I set the following fields to these values:
-      | Grouping                          | Grouping 1 |
-      | Available for group members only  | 1          |
-    And I press "Save and display"
-    And I follow "Show/edit current subscribers"
-    And I should see "Student 1"
-    And I should see "Teacher Teacher"
-    And I should not see "Student 2"
-    And I should not see "Student 3"
 
   @javascript
   Scenario: An automatic forum lists all subscribers
-    When I add a "Forum" to section "1" and I fill the form with:
+    When I add a "Advanced Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Auto subscription |
     And I follow "Forced Forum 1"
-    And I follow "Show/edit current subscribers"
+    And I follow "Show/edit forum subscribers"
     Then I should see "Student 1"
     And I should see "Teacher Teacher"
     And I should see "Student 2"
     And I should see "Student 3"
-    And I click on "Edit settings" "link" in the "Administration" "block"
-    And I set the following fields to these values:
-      | Grouping                          | Grouping 1 |
-      | Available for group members only  | 1          |
-    And I press "Save and display"
-    And I follow "Show/edit current subscribers"
-    And I should see "Student 1"
-    And I should see "Teacher Teacher"
-    And I should not see "Student 2"
-    And I should not see "Student 3"

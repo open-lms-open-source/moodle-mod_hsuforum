@@ -183,6 +183,10 @@ class hsuforum_lib_discussion_subscribe {
      */
     public function can_subscribe() {
         $forumid = $this->get_forum()->id;
+        list($course, $cm) = get_course_and_cm_from_instance($forumid, 'hsuforum');
+        if (is_guest(context_module::instance($cm->id))) {
+            return false;
+        }
         if (empty(self::$cancache[$forumid]) or !array_key_exists($this->get_userid(), self::$cancache[$forumid])) {
             self::$cancache[$forumid][$this->get_userid()] = $this->_can_subscribe();
         }

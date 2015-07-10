@@ -15,20 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Message Inbound Handlers for mod_hsuforum.
  *
- * @package    mod
- * @subpackage hsuforum
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @package    mod_hsuforum
+ * @copyright  2014 Andrew Nicols
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @author Mark Nielsen
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015052600;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2014111006;       // Requires this Moodle version
-$plugin->component = 'mod_hsuforum';   // Full name of the plugin (used for diagnostics)
-$plugin->release   = '2.8.0 (Build: 20150708)';
-$plugin->maturity  = MATURITY_STABLE;
+$handlers = array(
+    array(
+        'classname' => '\mod_hsuforum\message\inbound\reply_handler',
+    ),
+);

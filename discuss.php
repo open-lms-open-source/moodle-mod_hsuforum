@@ -25,11 +25,24 @@
  * @author Mark Nielsen
  */
 
+    use mod_hsuforum\local;
+
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
 
-    $d      = required_param('d', PARAM_INT);                // Discussion ID
-    $root = optional_param('root', 0, PARAM_INT);        // If set, then display this post and all children.
+    // Get the discussion id, and deal with broken requests by browsers...
+    // that don't understand the AJAX links. I'm looking at you IE.
+    $d = optional_param('d', null, PARAM_INT); // Forum discussion id
+
+    if ($d === null) { // Fallback to id if present.
+        $d = optional_param('id', null, PARAM_INT);
+
+        if ($d === null) {
+            print_error('missingparameter');
+        }
+    }
+
+    $root   = optional_param('root', 0, PARAM_INT);          // If set, then display this post and all children.
     $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum
     $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
     $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
@@ -229,7 +242,7 @@
         echo $OUTPUT->notification(get_string('thisforumisthrottled','hsuforum',$a));
     }
 
-    if ($forum->type == 'qanda' && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
+    if ($forum->type == 'qanda' && !local::cached_has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
                 !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
         echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
     }
@@ -238,12 +251,12 @@
         echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)));
     }
 
-    $canrate = has_capability('mod/hsuforum:rate', $modcontext);
+    $canrate = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:rate', $modcontext);
     hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply, $canrate);
 
     echo '<div class="discussioncontrols">';
 
-    if (!empty($CFG->enableportfolios) && has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
+    if (!empty($CFG->enableportfolios) && local::cached_has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
         $button->set_callback_options('hsuforum_portfolio_caller', array('discussionid' => $discussion->id), 'mod_hsuforum');
@@ -258,7 +271,7 @@
     }
 
     if ($course->format !='singleactivity' && $forum->type != 'single'
-                && has_capability('mod/hsuforum:movediscussions', $modcontext)) {
+                && local::cached_has_capability('mod/hsuforum:movediscussions', $modcontext)) {
         echo '<div class="discussioncontrol movediscussion">';
         // Popup menu to move discussions to other forums. The discussion in a
         // single discussion forum can't be moved.
@@ -268,7 +281,7 @@
             // Check forum types and eliminate simple discussions.
             $forumcheck = $DB->get_records('hsuforum', array('course' => $course->id),'', 'id, type');
             foreach ($modinfo->instances['hsuforum'] as $forumcm) {
-                if (!$forumcm->uservisible || !has_capability('mod/hsuforum:startdiscussion',
+                if (!$forumcm->uservisible || !local::cached_has_capability('mod/hsuforum:startdiscussion',
                     context_module::instance($forumcm->id))) {
                     continue;
                 }
@@ -296,7 +309,19 @@
         echo "</div>";
     }
     if ($forum->type == 'single') {
-        echo  hsuforum_search_form($course, $forum->id);
+        echo hsuforum_search_form($course, $forum->id);
+        echo \html_writer::link(
+            new \moodle_url(
+                '/mod/hsuforum/index.php',
+                array (
+                    'id' => $course->id
+                )
+            ),
+            get_string('manageforumsubscriptions', 'mod_hsuforum'),
+            array (
+                'class' => 'managesubslink'
+            )
+        );
     }
 
     $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);

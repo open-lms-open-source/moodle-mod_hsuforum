@@ -25,6 +25,8 @@
  * @author Mark Nielsen
  */
 
+use mod_hsuforum\local;
+
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 
 /**
@@ -321,7 +323,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->fullthread = $fullthread;
         $data->revealed   = false;
         $data->rawcreated = $post->created;
-        $data->rawmodified = $post->modified;
+        $data->rawmodified = $discussion->timemodified;
 
         if ($forum->anonymous
                 && $postuser->id === $USER->id
@@ -350,6 +352,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     public function article_assets($cm) {
         $context = context_module::instance($cm->id);
         $this->article_js($context);
+        if (!isloggedin()) {
+            return '';
+        }
         $output = html_writer::tag(
             'script',
             $this->simple_edit_post($cm),
@@ -885,7 +890,7 @@ HTML;
 
         $context = context_module::instance($cm->id);
 
-        if (!has_capability('mod/hsuforum:viewflags', $context)) {
+        if (!local::cached_has_capability('mod/hsuforum:viewflags', $context)) {
             return array();
         }
         if (!property_exists($post, 'flags')) {
@@ -894,7 +899,7 @@ HTML;
         require_once(__DIR__.'/lib/flag.php');
 
         $flaglib   = new hsuforum_lib_flag();
-        $canedit   = has_capability('mod/hsuforum:editanypost', $context);
+        $canedit   = local::cached_has_capability('mod/hsuforum:editanypost', $context);
         $returnurl = $this->return_url($cm->id, $discussion);
 
         $flaghtml = array();
@@ -963,7 +968,7 @@ HTML;
         if ($action === 'add_discussion' ) {
             return "view.php?id=$cmid";
         } else if ($action === 'reply') {
-            return "discuss.php?id=$discussionid";
+            return "discuss.php?d=$discussionid";
         }
     }
 
@@ -1332,8 +1337,10 @@ HTML;
         $extrahtml = '';
         if (groups_get_activity_groupmode($cm)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
-            if (count($groupdata) > 1 && has_capability('mod/hsuforum:movediscussions', $context)) {
-                $groupinfo = array('0' => get_string('allparticipants'));
+            if (count($groupdata) > 1) {
+                if (has_capability('moodle/site:accessallgroups', $context)) {
+                    $groupinfo[0] = get_string('allparticipants');
+                }
                 foreach ($groupdata as $grouptemp) {
                     $groupinfo[$grouptemp->id] = $grouptemp->name;
                 }
@@ -1577,7 +1584,7 @@ HTML;
         if (!$postuser->user_picture->link) {
             return null;
         }
-        return new moodle_url('/user/profile.php', array('id' => $postuser->id));
+        return new moodle_url('/user/view.php', ['id' => $postuser->id, 'course' => $cm->course]);
     }
 
     protected function notification_area() {
@@ -1624,21 +1631,21 @@ HTML;
         if (!$post->parent && $forum->type == 'news' && $discussion->timestart > time()) {
             $age = 0;
         }
-        if (($ownpost && $age < $CFG->maxeditingtime) || has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
+        if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
             $commands['edit'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
                 get_string('edit', 'hsuforum')
             );
         }
 
-        if (($ownpost && $age < $CFG->maxeditingtime && has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
+        if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
             $commands['delete'] = html_writer::link(
                 new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
                 get_string('delete', 'hsuforum')
             );
         }
 
-        if (has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id))
+        if (local::cached_has_capability('mod/hsuforum:splitdiscussions', context_module::instance($cm->id))
                 && $post->parent
                 && !$post->privatereply
                 && $forum->type != 'single') {
@@ -1650,7 +1657,7 @@ HTML;
         }
 
 
-        if ($CFG->enableportfolios && empty($forum->anonymous) && (has_capability('mod/hsuforum:exportpost', context_module::instance($cm->id)) || ($ownpost && has_capability('mod/hsuforum:exportownpost', context_module::instance($cm->id))))) {
+        if ($CFG->enableportfolios && empty($forum->anonymous) && (local::cached_has_capability('mod/hsuforum:exportpost', context_module::instance($cm->id)) || ($ownpost && local::cached_has_capability('mod/hsuforum:exportownpost', context_module::instance($cm->id))))) {
             require_once($CFG->libdir.'/portfoliolib.php');
             $button = new portfolio_add_button();
             $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id), 'mod_hsuforum');
