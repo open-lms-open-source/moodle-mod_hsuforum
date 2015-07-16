@@ -183,9 +183,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $output .= $this->svg_sprite();
         $this->view($course, $cm, $forum, $context);
 
-        $url = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
-        $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
-        $output .= \html_writer::link($url, $manageforumsubscriptions);
+        // Don't allow non logged in users, or guest to try to manage subscriptions.
+        if (isloggedin() && !isguestuser()) {
+            $url = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
+            $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
+            $output .= \html_writer::link($url, $manageforumsubscriptions);
+        }
 
         $output = ob_get_contents().$output;
 
