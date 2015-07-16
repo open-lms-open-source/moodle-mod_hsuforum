@@ -347,11 +347,6 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
                          $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
 
             echo $renderer->post($cm, $discussion, $post, false, null, false);
-
-            if (empty($post->edit)) {
-                $posts = hsuforum_get_all_discussion_posts($discussion->id);
-                hsuforum_print_posts_nested($course, $cm, $forum, $discussion, $post, false, false, $posts);
-            }
         } else {
             echo $OUTPUT->header();
             echo $OUTPUT->heading(format_string($forum->name), 2);
