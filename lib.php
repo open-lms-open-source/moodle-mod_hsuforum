@@ -7980,11 +7980,13 @@ function hsuforum_get_user_digest_options($user = null) {
 
     // We need to add the default digest option at the end - it relies on
     // the contents of the existing values.
-    $digestoptions['-1'] = get_string('emaildigestdefault', 'mod_hsuforum',
-            $digestoptions[$user->maildigest]);
+    if (isset($user->maildigest)) {
+        $digestoptions['-1'] = get_string('emaildigestdefault', 'mod_hsuforum',
+                $digestoptions[$user->maildigest]);
 
-    // Resort the options to be in a sensible order.
-    ksort($digestoptions);
+        // Resort the options to be in a sensible order.
+        ksort($digestoptions);
+    }
 
     return $digestoptions;
 }

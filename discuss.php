@@ -310,18 +310,22 @@
     }
     if ($forum->type == 'single') {
         echo hsuforum_search_form($course, $forum->id);
-        echo \html_writer::link(
-            new \moodle_url(
-                '/mod/hsuforum/index.php',
+
+        // Don't allow non logged in users, or guest to try to manage subscriptions.
+        if (isloggedin() && !isguestuser()) {
+            echo \html_writer::link(
+                new \moodle_url(
+                    '/mod/hsuforum/index.php',
+                    array (
+                        'id' => $course->id
+                    )
+                ),
+                get_string('manageforumsubscriptions', 'mod_hsuforum'),
                 array (
-                    'id' => $course->id
+                    'class' => 'managesubslink'
                 )
-            ),
-            get_string('manageforumsubscriptions', 'mod_hsuforum'),
-            array (
-                'class' => 'managesubslink'
-            )
-        );
+            );
+        }
     }
 
     $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);
