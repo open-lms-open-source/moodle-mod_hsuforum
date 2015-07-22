@@ -21,6 +21,30 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
     },
 
     /**
+     * Get path from url
+     * @param url
+     * @returns {string}
+     */
+    getPath: function(url) {
+        var root = M.cfg.wwwroot.substr(M.cfg.wwwroot.indexOf('://')+3);
+        var path = url.substr(url.indexOf(root)+root.length);
+        return (path);
+    },
+
+    /**
+     * Override router save method
+     * @param saveUrl
+     * @returns {*}
+     */
+    save: function(saveUrl) {
+        if (saveUrl.indexOf('://') > -1) {
+            // Fix issue with moodle in sub path of url by converting url to just the path.
+            saveUrl = this.getPath(saveUrl);
+        }
+        return this._queue(saveUrl);
+    },
+
+    /**
      * View a discussion
      *
      * @method discussion
