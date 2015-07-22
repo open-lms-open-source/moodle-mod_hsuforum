@@ -1296,7 +1296,7 @@ HTML;
      * @return string
      */
     public function simple_edit_discussion($cm, $postid = 0, array $data = array()) {
-        global $DB, $USER, $OUTPUT;
+        global $DB, $USER, $OUTPUT, $COURSE;
 
         $context = context_module::instance($cm->id);
         $forum = hsuforum_get_cm_forum($cm);
@@ -1351,7 +1351,7 @@ HTML;
                     }
                 } else {
                     // Yes - User is restricted to posting in their own group.
-                    $usergroups = groups_get_user_groups($cm->get_course()->id);
+                    $usergroups = groups_get_user_groups($COURSE->id);
 
                     foreach ($usergroups as $grouping => $groups) {
                         foreach ($groups as $groupid) {
