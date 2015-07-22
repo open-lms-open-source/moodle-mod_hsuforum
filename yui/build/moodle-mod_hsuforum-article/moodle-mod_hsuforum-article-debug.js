@@ -317,6 +317,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @method initializer
      */
     initializer: function() {
+        this.set('root', M.cfg.wwwroot.replace(this._regexUrlOrigin, '')+'/mod/hsuforum');
     },
 
     /**
