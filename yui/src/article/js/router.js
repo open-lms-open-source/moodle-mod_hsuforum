@@ -13,7 +13,6 @@
  * @extends Y.Router
  */
 var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
-
     /**
      *
      * @method initializer
