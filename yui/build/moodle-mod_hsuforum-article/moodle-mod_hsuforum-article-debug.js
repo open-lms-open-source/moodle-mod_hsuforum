@@ -312,7 +312,6 @@ M.mod_hsuforum.Dom = DOM;
  * @extends Y.Router
  */
 var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
-
     /**
      *
      * @method initializer
