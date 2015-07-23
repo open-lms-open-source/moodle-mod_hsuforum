@@ -656,10 +656,29 @@ FUN WITH FORMS
     margin-bottom: 0.3em;
     font-size:small;
 }
+
+.block_flexpagemod_hsuforum .snap-media-body {
+    display: block !important;
+}
+
+#region-main .block_flexpagemod_hsuforum .content .activityinstance {
+    display: block !important;
+    padding: 0px;
+}
+
+#region-main .block_flexpagemod_hsuforum .content .activityinstance .snap-media-object {
+    width: 100%;
+}
+
+#region-post .block_flexpagemod_hsuforum .mod-indent-outer,
+#region-pre .block_flexpagemod_hsuforum .mod-indent-outer {
+    padding: 0px;
+}
+
 .block_flexpagemod_hsuforum .snap-media-object,
 .hsuforum.modtype_hsuforum .snap-media-object {
-    width:50%;
-    float:left;
+    width: 50%;
+    display: block !important;
     min-width: 200px;
 }
 .editing .hsuforum.modtype_hsuforum:not(.snap-activity) .snap-media-object {
