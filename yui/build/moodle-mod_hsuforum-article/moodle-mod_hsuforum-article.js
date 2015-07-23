@@ -311,12 +311,12 @@ M.mod_hsuforum.Dom = DOM;
  * @extends Y.Router
  */
 var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
+
     /**
      *
      * @method initializer
      */
     initializer: function() {
-        this.set('root', M.cfg.wwwroot.replace(this._regexUrlOrigin, '')+'/mod/hsuforum');
     },
 
     /**
@@ -471,7 +471,9 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
          * @required
          */
         root: {
-            value: '/mod/hsuforum'
+            valueFn: function() {
+                return M.cfg.wwwroot.replace(this._regexUrlOrigin, '')+'/mod/hsuforum';
+            }
         },
 
         /**
