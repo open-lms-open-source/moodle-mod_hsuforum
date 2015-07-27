@@ -1341,13 +1341,25 @@ HTML;
         if (groups_get_activity_groupmode($cm)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
             if (count($groupdata) > 1) {
+                // Do we need to filter the list of groups in the dropdown list?
                 if (has_capability('moodle/site:accessallgroups', $context)) {
+                    // No - User has access to all groups.
                     $groupinfo[0] = get_string('allparticipants');
+
+                    foreach ($groupdata as $grouptemp) {
+                        $groupinfo[$grouptemp->id] = $grouptemp->name;
+                    }
+                } else {
+                    // Yes - User is restricted to posting in their own group.
+                    $usergroups = groups_get_user_groups($cm->course);
+
+                    foreach ($usergroups as $grouping => $groups) {
+                        foreach ($groups as $groupid) {
+                            $groupinfo[$groupid] = $groupdata[$groupid]->name;
+                        }
+                    }
                 }
-                foreach ($groupdata as $grouptemp) {
-                    $groupinfo[$grouptemp->id] = $grouptemp->name;
-                }
-                $extrahtml = html_writer::tag('span', get_string('group'));
+                $extrahtml = html_writer::tag('span', get_string('group') . ' ');
                 $extrahtml .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
                 $extrahtml = html_writer::tag('label', $extrahtml);
             } else {
