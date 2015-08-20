@@ -1338,6 +1338,8 @@ HTML;
         ));
 
         $extrahtml = '';
+        $groupinfo = array();
+
         if (groups_get_activity_groupmode($cm)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
             if (count($groupdata) > 1) {
