@@ -2107,12 +2107,13 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
  * @global object
  * @param int $userid
  * @param int $courseid if 0, we look for forums throughout the whole site.
+ * @param bool excludeanonymous - if true will exclude all anonymous forums.
  * @return array of forum objects, or false if no matches
  *         Forum objects have the following attributes:
  *         id, type, course, cmid, cmvisible, cmgroupmode, accessallgroups,
  *         viewhiddentimedposts
  */
-function hsuforum_get_readable_forums($userid, $courseid=0) {
+function hsuforum_get_readable_forums($userid, $courseid=0, $excludeanonymous = false) {
 
     global $CFG, $DB, $USER;
     require_once($CFG->dirroot.'/course/lib.php');
@@ -2146,7 +2147,11 @@ function hsuforum_get_readable_forums($userid, $courseid=0) {
             continue;
         }
 
-        $courseforums = $DB->get_records('hsuforum', array('course' => $course->id));
+        $params = ['course' => $course->id];
+        if ($excludeanonymous) {
+            $params['anonymous'] = 0;
+        }
+        $courseforums = $DB->get_records('hsuforum', $params);
 
         foreach ($modinfo->instances['hsuforum'] as $forumid => $cm) {
             if (!$cm->uservisible or !isset($courseforums[$forumid])) {
