@@ -598,6 +598,13 @@ FUN WITH FORMS
         margin-left:3%;
         min-width:80%;
     }
+
+
+    /* recent activity on course page in snap themes */
+    #region-main .snap-activity.modtype_hsuforum .snap-media-object{
+        width:50%;
+        float:left;
+    }
 }
 
 
@@ -638,10 +645,11 @@ FUN WITH FORMS
 
 /* end meida 45 */
 
-/* recent activity, recent posts output in non-Snap themes */
 
-.section .activity.modtype_hsuforum .activityinstance div {
-    display:block; /* overwrite core shame */
+/* recent activity, recent posts output in non-Snap themes */
+.editing .course-content .section .activity.modtype_hsuforum .activityinstance {
+  padding-right:0;
+  width:90%;
 }
 
 .block_flexpagemod_hsuforum .hsuforum-recent-heading,
@@ -655,34 +663,7 @@ FUN WITH FORMS
 .block_recent_activity .snap-media-object {
     margin-bottom: 0.3em;
     font-size:small;
-}
-
-.block_flexpagemod_hsuforum .snap-media-body {
-    display: block !important;
-}
-
-#region-main .block_flexpagemod_hsuforum .content .activityinstance {
-    display: block !important;
-    padding: 0px;
-}
-
-#region-main .block_flexpagemod_hsuforum .content .activityinstance .snap-media-object {
-    width: 100%;
-}
-
-#region-post .block_flexpagemod_hsuforum .mod-indent-outer,
-#region-pre .block_flexpagemod_hsuforum .mod-indent-outer {
-    padding: 0px;
-}
-
-.block_flexpagemod_hsuforum .snap-media-object,
-.hsuforum.modtype_hsuforum .snap-media-object {
-    width: 50%;
-    display: block !important;
-    min-width: 200px;
-}
-.editing .hsuforum.modtype_hsuforum:not(.snap-activity) .snap-media-object {
-    width: 100%;
+    width: 300px;
 }
 
 .block_flexpagemod_hsuforum .snap-media-object > a,
@@ -709,7 +690,9 @@ FUN WITH FORMS
 .activity.modtype_hsuforum .snap-media-body,
 .block_recent_activity .snap-media-body {
     overflow: hidden;
+    width:240px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: block !important;
 }
 
 .block_flexpagemod_hsuforum .snap-media-body p,
@@ -758,7 +741,6 @@ FUN WITH FORMS
 
 .block_flexpagemod_hsuforum .mod-indent-outer {
     margin-bottom: 1em;
-    display: block !important;
 }
 
 .block_flexpagemod_hsuforum .instancename {
@@ -770,12 +752,6 @@ FUN WITH FORMS
 
 .block_flexpagemod_hsuforum .hsuforum-recent-heading {
     padding: 10px 0px;
-}
-
-.format-flexpage  .block_flexpagemod_hsuforum .activityinstance,
-.modtype_hsuforum .mod-indent-outer,
-.modtype_hsuforum .activityinstance {
-    display: block !important;
 }
 
 .modtype_hsuforum.activity:before,
