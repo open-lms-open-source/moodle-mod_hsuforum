@@ -616,10 +616,10 @@ FUN WITH FORMS
     .hsuforum-thread-figure,
     .hsuform-post-date,
     .hsuforum-postflagging {
-		clear:both;
-        display:block;
-		width:100%;
-		float:none;
+		clear: both;
+    display: block;
+		width: 100%;
+		float: none;
 	}
     .hsuforum-post-figure{
         float:left;
@@ -647,9 +647,15 @@ FUN WITH FORMS
 
 
 /* recent activity, recent posts output in non-Snap themes */
+.editing .sitetopic .section .activity.modtype_hsuforum .activityinstance,
 .editing .course-content .section .activity.modtype_hsuforum .activityinstance {
   padding-right:0;
   width:90%;
+}
+/* express specific overwrite of inline */
+.sitetopic .section .activity.modtype_hsuforum .activityinstance div,
+.course-content .section .activity.modtype_hsuforum .activityinstance div {
+  display: inline-block;
 }
 
 .block_flexpagemod_hsuforum .hsuforum-recent-heading,
@@ -663,7 +669,7 @@ FUN WITH FORMS
 .block_recent_activity .snap-media-object {
     margin-bottom: 0.3em;
     font-size:small;
-    width: 300px;
+    width: 310px;
 }
 
 .block_flexpagemod_hsuforum .snap-media-object > a,
