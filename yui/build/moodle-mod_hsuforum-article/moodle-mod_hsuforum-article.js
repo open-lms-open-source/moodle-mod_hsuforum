@@ -6,7 +6,7 @@ var CSS = {
         POST_EDIT: 'hsuforum-post-edit'
     },
     SELECTORS = {
-        ADD_DISCUSSION: '#newdiscussionform',
+        ADD_DISCUSSION: '#newdiscussionform input[type=submit]',
         ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
         ALL_FORMS: '.hsuforum-reply-wrapper form',
         CONTAINER: '.mod-hsuforum-posts-container',
@@ -414,7 +414,12 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         // Put editor back to its original place in DOM.
         M.mod_hsuforum.restoreEditor();
 
-        var formNode = e.currentTarget,
+        if (typeof(e.currentTarget) === 'undefined') {
+            // Page possiibly hasn't finished loading.
+            return;
+        }
+
+        var formNode = e.currentTarget.ancestor('form'),
             forumId  = formNode.one(SELECTORS.INPUT_FORUM).get('value');
 
         this.save(formNode.get('action') + '?forum=' + forumId);
@@ -1223,8 +1228,11 @@ M.mod_hsuforum.dispatchClick = function(el) {
 M.mod_hsuforum.restoreEditor = function() {
     var editCont = Y.one('#hiddenadvancededitorcont');
     if (editCont) {
-        var editArea = Y.one('#hiddenadvancededitoreditable'),
-        editor = editArea.ancestor('.editor_atto'),
+        var editArea = Y.one('#hiddenadvancededitoreditable');
+        if (!editArea) {
+            return;
+        }
+        var editor = editArea.ancestor('.editor_atto'),
         advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
         contentEditable = false;
 

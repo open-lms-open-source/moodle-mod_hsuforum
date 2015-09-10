@@ -116,7 +116,12 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         // Put editor back to its original place in DOM.
         M.mod_hsuforum.restoreEditor();
 
-        var formNode = e.currentTarget,
+        if (typeof(e.currentTarget) === 'undefined') {
+            // Page possiibly hasn't finished loading.
+            return;
+        }
+
+        var formNode = e.currentTarget.ancestor('form'),
             forumId  = formNode.one(SELECTORS.INPUT_FORUM).get('value');
 
         this.save(formNode.get('action') + '?forum=' + forumId);

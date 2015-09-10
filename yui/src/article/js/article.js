@@ -325,8 +325,11 @@ M.mod_hsuforum.dispatchClick = function(el) {
 M.mod_hsuforum.restoreEditor = function() {
     var editCont = Y.one('#hiddenadvancededitorcont');
     if (editCont) {
-        var editArea = Y.one('#hiddenadvancededitoreditable'),
-        editor = editArea.ancestor('.editor_atto'),
+        var editArea = Y.one('#hiddenadvancededitoreditable');
+        if (!editArea) {
+            return;
+        }
+        var editor = editArea.ancestor('.editor_atto'),
         advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
         contentEditable = false;
 
