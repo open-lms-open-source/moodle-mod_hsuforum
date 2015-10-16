@@ -199,7 +199,6 @@ $string['hsuforum:editanypost'] = 'Edit any post';
 $string['hsuforum:exportdiscussion'] = 'Export whole discussion';
 $string['hsuforum:exportownpost'] = 'Export own post';
 $string['hsuforum:exportpost'] = 'Export post';
-$string['forumintro'] = 'Description';
 $string['hsuforum:managesubscriptions'] = 'Manage subscriptions';
 $string['hsuforum:movediscussions'] = 'Move discussions';
 $string['hsuforum:postwithoutthrottling'] = 'Exempt from post threshold';
