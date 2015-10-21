@@ -821,3 +821,8 @@ FUN WITH FORMS
 .path-mod-hsuforum .discussioncontrols .managesubslink {
     float: left;
 }
+
+
+.path-mod-hsuforum #id_displayperiod {
+    margin-bottom:1em;
+}

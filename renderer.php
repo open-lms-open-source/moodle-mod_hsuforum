@@ -28,6 +28,7 @@
 use mod_hsuforum\local;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
+require_once($CFG->dirroot.'/lib/formslib.php');
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -1312,6 +1313,8 @@ HTML;
             }
         } else {
             $params  = array('forum' => $cm->instance);
+            $post = new stdClass();
+            $post->parent = false;
             $legend = get_string('addyourdiscussion', 'hsuforum');
             $thresholdwarning = hsuforum_check_throttling($forum, $cm);
             if (!empty($thresholdwarning)) {
@@ -1372,6 +1375,34 @@ HTML;
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
                 get_string('reveal', 'hsuforum'));
         }
+
+        $config = get_config('hsuforum');
+        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
+
+            // This is a bit hacky.
+            // We want to render the timestart and timeend fields in exactly the same way as it's done in post_form.php
+            // where it uses a moodle form.
+            // However, we don't want a moodle form as we will be submitting the data via ajax.
+            // So this code creates the html via a moodle form but then just pulls out the fieldset html and adds it
+            // Into the extrahtml variable.
+            $mform = new MoodleQuickForm('timedpostfields', 'post', '');
+            $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'hsuforum'));
+            $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
+            $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
+            $mform->addElement('date_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
+            $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
+            $fhtml = $mform->toHtml();
+            $doc = new DOMDocument();
+            $doc->loadHTML($fhtml);
+            $fieldset = $doc->getElementsByTagName('fieldset');
+            $newdoc = new DOMDocument();
+            $clone = $fieldset->item(0)->cloneNode(true);
+            $newdoc->appendChild($newdoc->importNode($clone, true));
+
+            $extrahtml .= $newdoc->saveHTML();
+
+        }
+
         $data += array(
             'postid'      => $postid,
             'context'     => $context,
