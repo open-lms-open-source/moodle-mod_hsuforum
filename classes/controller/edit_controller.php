@@ -208,7 +208,7 @@ class edit_controller extends controller_abstract {
      *
      * @return json_response
      */
-    public function   update_post_action() {
+    public function update_post_action() {
         global $DB, $PAGE;
 
         try {

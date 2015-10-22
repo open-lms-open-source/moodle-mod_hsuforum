@@ -130,7 +130,6 @@ class post_service {
         }
         $post->itemid = empty($options['itemid']) ? 0 : $options['itemid'];
 
-
         // If this post is actually the discussion, then update timestart and timeend.
         If (intval($post->parent) === 0) {
             if (isset($options['timestart'])) {
