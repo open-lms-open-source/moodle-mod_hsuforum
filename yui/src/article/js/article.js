@@ -136,6 +136,10 @@ Y.extend(ARTICLE, Y.Base,
             /* Clean html on paste */
             Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
 
+            // Implement toggling for the start and time elements for discussions.
+            var discussiontimesselector = '.hsuforum-discussion .fdate_selector input';
+            Y.delegate('click', form.handleTimeToggle, document, discussiontimesselector, form);
+
             // We bind to document otherwise screen readers read everything as clickable.
             Y.delegate('click', form.handleCancelForm, document, SELECTORS.LINK_CANCEL, form);
             Y.delegate('click', router.handleRoute, document, SELECTORS.CONTAINER_LINKS, router);

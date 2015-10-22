@@ -1382,7 +1382,6 @@ HTML;
             // This is a bit hacky.
             // We want to render the timestart and timeend fields in exactly the same way as it's done in post_form.php
             // where it uses a moodle form.
-            // However, we don't want a moodle form as we will be submitting the data via ajax.
             // So this code creates the html via a moodle form but then just pulls out the fieldset html and adds it
             // Into the extrahtml variable.
             $mform = new MoodleQuickForm('timedpostfields', 'post', '');
@@ -1391,6 +1390,12 @@ HTML;
             $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
             $mform->addElement('date_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
             $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
+            if (isset($data['timestart'])) {
+                $mform->setDefault('timestart', $data['timestart']);
+            }
+            if (isset($data['timeend'])) {
+                $mform->setDefault('timeend', $data['timeend']);
+            }
             $fhtml = $mform->toHtml();
             $doc = new DOMDocument();
             $doc->loadHTML($fhtml);
@@ -1400,7 +1405,6 @@ HTML;
             $newdoc->appendChild($newdoc->importNode($clone, true));
 
             $extrahtml .= $newdoc->saveHTML();
-
         }
 
         $data += array(

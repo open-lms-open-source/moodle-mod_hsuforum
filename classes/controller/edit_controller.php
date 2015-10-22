@@ -128,6 +128,33 @@ class edit_controller extends controller_abstract {
     }
 
     /**
+     * Get discussion times from params.
+     *
+     * @return array
+     * @throws coding_exception
+     */
+    protected function get_form_discussion_times() {
+        $timestartarr  = optional_param_array('timestart', false, PARAM_INT);
+        $startenabled  = !empty($timestartarr['enabled']);
+        $timestart = 0;
+        if ($startenabled) {
+            if (!empty($timestartarr['month']) && !empty($timestartarr['day']) && !empty($timestartarr['year'])) {
+                $timestart = mktime(0, 0, 0, $timestartarr['month'], $timestartarr['day'], $timestartarr['year']);
+            }
+        }
+
+        $timeendarr  = optional_param_array('timeend', false, PARAM_INT);
+        $endenabled  = !empty($timeendarr['enabled']);
+        $timeend = 0;
+        if ($endenabled) {
+            if (!empty($timeendarr['month']) && !empty($timeendarr['day']) && !empty($timeendarr['year'])) {
+                $timeend = mktime(0, 0, 0, $timeendarr['month'], $timeendarr['day'], $timeendarr['year']);
+            }
+        }
+        return [$timestart, $timeend];
+    }
+
+    /**
      * Add a discussion
      *
      * Since we are uploading files to this action using
@@ -151,6 +178,8 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
 
+            list($timestart, $timeend) = $this->get_form_discussion_times();
+
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
             $context = $PAGE->context;
@@ -166,6 +195,8 @@ class edit_controller extends controller_abstract {
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
+                'timestart'     => $timestart,
+                'timeend'       => $timeend
             ));
         } catch (\Exception $e) {
             return new json_response($e);
@@ -177,7 +208,7 @@ class edit_controller extends controller_abstract {
      *
      * @return json_response
      */
-    public function update_post_action() {
+    public function   update_post_action() {
         global $DB, $PAGE;
 
         try {
@@ -192,6 +223,8 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
+
+            list($timestart, $timeend) = $this->get_form_discussion_times();
 
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
@@ -218,6 +251,8 @@ class edit_controller extends controller_abstract {
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
                 'privatereply'  => $privatereply,
+                'timestart'     => $timestart,
+                'timeend'       => $timeend
             ));
         } catch (\Exception $e) {
             return new json_response($e);

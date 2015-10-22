@@ -175,6 +175,14 @@ Y.extend(FORM, Y.Base,
             },100);
         },
 
+        handleTimeToggle: function(e) {
+            if (e.currentTarget.get('checked')) {
+                e.currentTarget.ancestor('.fdate_selector').all('select').set('disabled', '');
+            } else {
+                e.currentTarget.ancestor('.fdate_selector').all('select').set('disabled', 'disabled');
+            }
+        },
+
         /**
          * Displays the reply form for a discussion
          * or for a post.
