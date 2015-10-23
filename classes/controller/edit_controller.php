@@ -280,10 +280,12 @@ class edit_controller extends controller_abstract {
 
         if (!empty($post->parent)) {
             $html = $this->formservice->edit_post_form($PAGE->cm, $post);
+            return new json_response(['html' => $html]);
         } else {
             $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post);
+            return new json_response(['html' => $html, 'isdiscussion' => true]);
         }
-        return new json_response(array('html' => $html));
+
     }
 
     /**

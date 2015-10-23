@@ -1378,33 +1378,8 @@ HTML;
 
         $config = get_config('hsuforum');
         if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
-
-            // This is a bit hacky.
-            // We want to render the timestart and timeend fields in exactly the same way as it's done in post_form.php
-            // where it uses a moodle form.
-            // So this code creates the html via a moodle form but then just pulls out the fieldset html and adds it
-            // Into the extrahtml variable.
-            $mform = new MoodleQuickForm('timedpostfields', 'post', '');
-            $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'hsuforum'));
-            $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
-            $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
-            $mform->addElement('date_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
-            $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
-            if (isset($data['timestart'])) {
-                $mform->setDefault('timestart', $data['timestart']);
-            }
-            if (isset($data['timeend'])) {
-                $mform->setDefault('timeend', $data['timeend']);
-            }
-            $fhtml = $mform->toHtml();
-            $doc = new DOMDocument();
-            $doc->loadHTML($fhtml);
-            $fieldset = $doc->getElementsByTagName('fieldset');
-            $newdoc = new DOMDocument();
-            $clone = $fieldset->item(0)->cloneNode(true);
-            $newdoc->appendChild($newdoc->importNode($clone, true));
-
-            $extrahtml .= $newdoc->saveHTML();
+            // Target for pulling in date form.
+            $extrahtml .= '<div class="dateformtarget"></div>';
         }
 
         $data += array(

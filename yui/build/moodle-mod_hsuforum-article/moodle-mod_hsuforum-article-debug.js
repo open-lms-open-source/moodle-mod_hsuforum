@@ -238,6 +238,7 @@ Y.extend(DOM, Y.Base,
          * @param e
          */
         handleUpdateDiscussion: function (e) {
+            // Put date fields back to original place in DOM.
             Y.log('Updating discussion HTML to include: ' + e.discussionid, 'info', 'Dom');
             var node = Y.one('#discussionsview');
             if (node) {
@@ -453,6 +454,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param next
      */
     hideForms: function(req, res, next) {
+        this.get('article').get('form').restoreDateFields();
         this.get('article').get('form').removeAllForms();
         next();
     }
@@ -808,6 +810,9 @@ Y.extend(FORM, Y.Base,
         handleCancelForm: function(e) {
             e.preventDefault();
 
+            // Put date fields back to original place in DOM.
+            this.restoreDateFields();
+
             // Put editor back to its original place in DOM.
             M.mod_hsuforum.restoreEditor();
 
@@ -872,6 +877,41 @@ Y.extend(FORM, Y.Base,
         },
 
         /**
+         * Add date fields to current date form target.
+         */
+        applyDateFields: function() {
+            var datefs = Y.one('#dateform fieldset');
+            if (!datefs) {
+                return;
+            }
+            datefs.addClass('dateform_fieldset');
+            Y.one('.dateformtarget').append(datefs);
+            // Stop calendar button from routing.
+            Y.all('.dateformtarget .fitem_fdate_selector a').addClass('disable-router');
+            Y.all('.dateformtarget .fitem_fdate_selector a').on('click', function(e) {
+                e.stopPropagation();
+                return;
+            });
+            // Set initial toggle state for date fields.
+            datefs.all('.fdate_selector').each(function(el){
+                if (el.one('input').get('checked')) {
+                    el.all('select').set('disabled', '');
+                } else {
+                    el.all('select').set('disabled', 'disabled');
+                }
+            });
+        },
+
+        /**
+         * Put date fields back to where they were.
+         *
+         * @method restoreDateFields
+         */
+        restoreDateFields: function () {
+            Y.one('#dateform').append(Y.one('.dateform_fieldset'));
+        },
+
+        /**
          * Show the add discussion form
          *
          * @method showAddDiscussionForm
@@ -883,6 +923,7 @@ Y.extend(FORM, Y.Base,
                 .one(SELECTORS.INPUT_SUBJECT)
                 .focus();
 
+            this.applyDateFields();
             this.attachFormWarnings();
         },
 
@@ -898,6 +939,7 @@ Y.extend(FORM, Y.Base,
                 postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
                 return;
             }
+            var self = this;
             this.get('io').send({
                 discussionid: postNode.getData('discussionid'),
                 postid: postNode.getData('postid'),
@@ -911,6 +953,12 @@ Y.extend(FORM, Y.Base,
                     postNode.addClass(CSS.POST_EDIT);
                 }
                 postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
+
+                if (data.isdiscussion) {
+                    self.applyDateFields();
+                } else {
+                    console.log(data);
+                }
 
                 this.attachFormWarnings();
             }, this);
@@ -1115,10 +1163,7 @@ Y.extend(ARTICLE, Y.Base,
             form.on(EVENTS.POST_CREATED, this.handleLiveLog, this);
 
             // On post updated, update HTML and URL and log.
-            form.on(EVENTS.POST_UPDATED, dom.handleUpdateDiscussion, dom);
-            form.on(EVENTS.POST_UPDATED, router.handleViewDiscussion, router);
-            form.on(EVENTS.POST_UPDATED, dom.handleNotification, dom);
-            form.on(EVENTS.POST_UPDATED, this.handleLiveLog, this);
+            form.on(EVENTS.POST_UPDATED, this.handlePostUpdated, this);
 
             // On discussion created, update HTML, display notification, update URL and log it.
             form.on(EVENTS.DISCUSSION_CREATED, dom.handleUpdateDiscussion, dom);
@@ -1140,6 +1185,17 @@ Y.extend(ARTICLE, Y.Base,
 
             // On form cancel, update the URL to view the discussion/post.
             form.on(EVENTS.FORM_CANCELED, router.handleViewDiscussion, router);
+        },
+
+        handlePostUpdated: function(e) {
+            var dom     = this.get('dom'),
+                form    = this.get('form'),
+                router  = this.get('router');
+            form.restoreDateFields();
+            dom.handleUpdateDiscussion(e);
+            router.handleViewDiscussion(e);
+            dom.handleNotification(e);
+            this.handleLiveLog(e);
         },
 
         /**

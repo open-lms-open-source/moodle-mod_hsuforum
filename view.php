@@ -23,6 +23,8 @@
  * @author Mark Nielsen
  */
 
+    use mod_hsuforum\form\date_form;
+
     require_once('../../config.php');
     require_once($CFG->libdir.'/completionlib.php');
 
@@ -88,6 +90,15 @@
 
     echo $OUTPUT->header();
     echo ('<div id="discussionsview">');
+
+    $config = get_config('hsuforum');
+    if (!empty($config->enabletimedposts)) {
+        echo '<div id="dateform">';
+        $df = new date_form();
+        $df->set_data($discussion);
+        $df->display();
+        echo '</div>';
+    }
 
 /// Some capability checks.
     if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {

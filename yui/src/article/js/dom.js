@@ -183,6 +183,7 @@ Y.extend(DOM, Y.Base,
          * @param e
          */
         handleUpdateDiscussion: function (e) {
+            // Put date fields back to original place in DOM.
             Y.log('Updating discussion HTML to include: ' + e.discussionid, 'info', 'Dom');
             var node = Y.one('#discussionsview');
             if (node) {

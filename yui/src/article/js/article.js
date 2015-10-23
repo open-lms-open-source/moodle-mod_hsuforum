@@ -194,10 +194,7 @@ Y.extend(ARTICLE, Y.Base,
             form.on(EVENTS.POST_CREATED, this.handleLiveLog, this);
 
             // On post updated, update HTML and URL and log.
-            form.on(EVENTS.POST_UPDATED, dom.handleUpdateDiscussion, dom);
-            form.on(EVENTS.POST_UPDATED, router.handleViewDiscussion, router);
-            form.on(EVENTS.POST_UPDATED, dom.handleNotification, dom);
-            form.on(EVENTS.POST_UPDATED, this.handleLiveLog, this);
+            form.on(EVENTS.POST_UPDATED, this.handlePostUpdated, this);
 
             // On discussion created, update HTML, display notification, update URL and log it.
             form.on(EVENTS.DISCUSSION_CREATED, dom.handleUpdateDiscussion, dom);
@@ -219,6 +216,17 @@ Y.extend(ARTICLE, Y.Base,
 
             // On form cancel, update the URL to view the discussion/post.
             form.on(EVENTS.FORM_CANCELED, router.handleViewDiscussion, router);
+        },
+
+        handlePostUpdated: function(e) {
+            var dom     = this.get('dom'),
+                form    = this.get('form'),
+                router  = this.get('router');
+            form.restoreDateFields();
+            dom.handleUpdateDiscussion(e);
+            router.handleViewDiscussion(e);
+            dom.handleNotification(e);
+            this.handleLiveLog(e);
         },
 
         /**

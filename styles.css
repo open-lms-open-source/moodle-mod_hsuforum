@@ -825,7 +825,10 @@ FUN WITH FORMS
     float: left;
 }
 
-
 .path-mod-hsuforum #id_displayperiod {
     margin-bottom:1em;
+}
+
+#dateform {
+    display:none;
 }

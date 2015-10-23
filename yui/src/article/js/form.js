@@ -307,6 +307,9 @@ Y.extend(FORM, Y.Base,
         handleCancelForm: function(e) {
             e.preventDefault();
 
+            // Put date fields back to original place in DOM.
+            this.restoreDateFields();
+
             // Put editor back to its original place in DOM.
             M.mod_hsuforum.restoreEditor();
 
@@ -371,6 +374,41 @@ Y.extend(FORM, Y.Base,
         },
 
         /**
+         * Add date fields to current date form target.
+         */
+        applyDateFields: function() {
+            var datefs = Y.one('#dateform fieldset');
+            if (!datefs) {
+                return;
+            }
+            datefs.addClass('dateform_fieldset');
+            Y.one('.dateformtarget').append(datefs);
+            // Stop calendar button from routing.
+            Y.all('.dateformtarget .fitem_fdate_selector a').addClass('disable-router');
+            Y.all('.dateformtarget .fitem_fdate_selector a').on('click', function(e) {
+                e.stopPropagation();
+                return;
+            });
+            // Set initial toggle state for date fields.
+            datefs.all('.fdate_selector').each(function(el){
+                if (el.one('input').get('checked')) {
+                    el.all('select').set('disabled', '');
+                } else {
+                    el.all('select').set('disabled', 'disabled');
+                }
+            });
+        },
+
+        /**
+         * Put date fields back to where they were.
+         *
+         * @method restoreDateFields
+         */
+        restoreDateFields: function () {
+            Y.one('#dateform').append(Y.one('.dateform_fieldset'));
+        },
+
+        /**
          * Show the add discussion form
          *
          * @method showAddDiscussionForm
@@ -382,6 +420,7 @@ Y.extend(FORM, Y.Base,
                 .one(SELECTORS.INPUT_SUBJECT)
                 .focus();
 
+            this.applyDateFields();
             this.attachFormWarnings();
         },
 
@@ -397,6 +436,7 @@ Y.extend(FORM, Y.Base,
                 postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
                 return;
             }
+            var self = this;
             this.get('io').send({
                 discussionid: postNode.getData('discussionid'),
                 postid: postNode.getData('postid'),
@@ -410,6 +450,12 @@ Y.extend(FORM, Y.Base,
                     postNode.addClass(CSS.POST_EDIT);
                 }
                 postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
+
+                if (data.isdiscussion) {
+                    self.applyDateFields();
+                } else {
+                    console.log(data);
+                }
 
                 this.attachFormWarnings();
             }, this);
