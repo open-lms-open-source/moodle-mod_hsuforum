@@ -218,6 +218,8 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
             }
         }
+        $mform->disabledIf('gradepass', 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
+        
         $key = array_search('scale', $mform->_dependencies['assessed']['eq'][0]);
         if ($key !== false) {
             unset($mform->_dependencies['assessed']['eq'][0][$key]);
