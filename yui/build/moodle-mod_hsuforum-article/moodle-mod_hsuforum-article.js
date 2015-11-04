@@ -949,8 +949,6 @@ Y.extend(FORM, Y.Base,
 
                 if (data.isdiscussion) {
                     self.applyDateFields();
-                } else {
-                    console.log(data);
                 }
 
                 this.attachFormWarnings();

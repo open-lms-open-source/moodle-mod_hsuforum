@@ -134,12 +134,37 @@ class edit_controller extends controller_abstract {
      * @throws coding_exception
      */
     protected function get_form_discussion_times() {
+        global $USER, $CFG;
         $timestartarr  = optional_param_array('timestart', false, PARAM_INT);
         $startenabled  = !empty($timestartarr['enabled']);
+
+        // Get the calendar type used - see MDL-18375.
+        $calendartype = \core_calendar\type_factory::get_calendar_instance();
+
+        if (isset($USER->timezone)) {
+            $timezone = $USER->timezone;
+        } else if (isset($CFG->timezone)) {
+            $timezone = $CFG->timezone;
+        } else {
+            $timezone = 99;
+        }
+
         $timestart = 0;
         if ($startenabled) {
             if (!empty($timestartarr['month']) && !empty($timestartarr['day']) && !empty($timestartarr['year'])) {
-                $timestart = mktime(0, 0, 0, $timestartarr['month'], $timestartarr['day'], $timestartarr['year']);
+                $gregoriandate = $calendartype->convert_to_gregorian($timestartarr['year'],
+                    $timestartarr['month'],
+                    $timestartarr['day'],
+                    0,
+                    0);
+                $timestart = make_timestamp($gregoriandate['year'],
+                    $gregoriandate['month'],
+                    $gregoriandate['day'],
+                    $gregoriandate['hour'],
+                    $gregoriandate['minute'],
+                    0,
+                    $timezone,
+                    true);
             }
         }
 
@@ -148,7 +173,19 @@ class edit_controller extends controller_abstract {
         $timeend = 0;
         if ($endenabled) {
             if (!empty($timeendarr['month']) && !empty($timeendarr['day']) && !empty($timeendarr['year'])) {
-                $timeend = mktime(0, 0, 0, $timeendarr['month'], $timeendarr['day'], $timeendarr['year']);
+                $gregoriandate = $calendartype->convert_to_gregorian($timeendarr['year'],
+                    $timeendarr['month'],
+                    $timeendarr['day'],
+                    0,
+                    0);
+                $timeend = make_timestamp($gregoriandate['year'],
+                    $gregoriandate['month'],
+                    $gregoriandate['day'],
+                    $gregoriandate['hour'],
+                    $gregoriandate['minute'],
+                    0,
+                    $timezone,
+                    true);
             }
         }
         return [$timestart, $timeend];
