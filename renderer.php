@@ -297,7 +297,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->subject  = $this->raw_post_subject($post);
         $data->message  = $this->post_message($post, $cm);
         $data->created  = userdate($post->created, $format);
-        $data->datetime = date(DATE_W3C, usertime($post->created));
         $data->modified = userdate($discussion->timemodified, $format);
         $data->replies  = $discussion->replies;
         $data->replyavatars = array();
@@ -410,7 +409,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->message        = $this->post_message($post, $cm, $search);
         $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
         $data->rawcreated     = $post->created;
-        $data->datetime       = date(DATE_W3C, usertime($post->created));
         $data->privatereply   = $post->privatereply;
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
