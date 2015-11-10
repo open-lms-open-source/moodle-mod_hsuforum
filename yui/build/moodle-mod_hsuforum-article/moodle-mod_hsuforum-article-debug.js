@@ -908,7 +908,9 @@ Y.extend(FORM, Y.Base,
          * @method restoreDateFields
          */
         restoreDateFields: function () {
-            Y.one('#dateform').append(Y.one('.dateform_fieldset'));
+            if (Y.one('#dateform')) {
+                Y.one('#dateform').append(Y.one('.dateform_fieldset'));
+            }
         },
 
         /**
