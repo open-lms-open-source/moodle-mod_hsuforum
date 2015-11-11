@@ -874,18 +874,21 @@ Y.extend(FORM, Y.Base,
          * Add date fields to current date form target.
          */
         applyDateFields: function() {
+
             var datefs = Y.one('#dateform fieldset');
             if (!datefs) {
                 return;
             }
             datefs.addClass('dateform_fieldset');
+            // Remove legend if present
+            if (datefs.one('legend')) {
+                datefs.one('legend').remove();
+            }
+
             Y.one('.dateformtarget').append(datefs);
             // Stop calendar button from routing.
             Y.all('.dateformtarget .fitem_fdate_selector a').addClass('disable-router');
-            Y.all('.dateformtarget .fitem_fdate_selector a').on('click', function(e) {
-                e.stopPropagation();
-                return;
-            });
+
             // Set initial toggle state for date fields.
             datefs.all('.fdate_selector').each(function(el){
                 if (el.one('input').get('checked')) {
