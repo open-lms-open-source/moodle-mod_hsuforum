@@ -377,6 +377,9 @@ Y.extend(FORM, Y.Base,
             postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
         },
 
+        /**
+         * Reset values of date fields to today's date and remove enabled status if required.
+         */
         resetDateFields: function() {
             if (!Y.one('#discussion_dateform fieldset')) {
                 return;
