@@ -28,6 +28,7 @@ use mod_hsuforum\attachments;
 use mod_hsuforum\event\discussion_created;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
+use mod_hsuforum\local;
 use moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
@@ -160,6 +161,14 @@ class discussion_service {
         if (hsuforum_str_empty($discussion->message)) {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
+
+        // Check restriction times.
+        list ($start, $end) = local::get_form_discussion_times();
+
+        if ($start && $end && $start > $end) {
+            $errors[] = new \moodle_exception('errortimestartgreater', 'hsuforum');
+        }
+
         if ($uploader->was_file_uploaded()) {
             try {
                 $uploader->validate_files();

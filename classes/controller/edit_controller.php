@@ -31,6 +31,7 @@ use mod_hsuforum\response\json_response;
 use mod_hsuforum\service\discussion_service;
 use mod_hsuforum\service\form_service;
 use mod_hsuforum\service\post_service;
+use mod_hsuforum\local;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -128,70 +129,6 @@ class edit_controller extends controller_abstract {
     }
 
     /**
-     * Get discussion times from params.
-     *
-     * @return array
-     * @throws coding_exception
-     */
-    protected function get_form_discussion_times() {
-        global $USER, $CFG;
-        $timestartarr  = optional_param_array('timestart', false, PARAM_INT);
-        $startenabled  = !empty($timestartarr['enabled']);
-
-        // Get the calendar type used - see MDL-18375.
-        $calendartype = \core_calendar\type_factory::get_calendar_instance();
-
-        if (isset($USER->timezone)) {
-            $timezone = $USER->timezone;
-        } else if (isset($CFG->timezone)) {
-            $timezone = $CFG->timezone;
-        } else {
-            $timezone = 99;
-        }
-
-        $timestart = 0;
-        if ($startenabled) {
-            if (!empty($timestartarr['month']) && !empty($timestartarr['day']) && !empty($timestartarr['year'])) {
-                $gregoriandate = $calendartype->convert_to_gregorian($timestartarr['year'],
-                    $timestartarr['month'],
-                    $timestartarr['day'],
-                    0,
-                    0);
-                $timestart = make_timestamp($gregoriandate['year'],
-                    $gregoriandate['month'],
-                    $gregoriandate['day'],
-                    $gregoriandate['hour'],
-                    $gregoriandate['minute'],
-                    0,
-                    $timezone,
-                    true);
-            }
-        }
-
-        $timeendarr  = optional_param_array('timeend', false, PARAM_INT);
-        $endenabled  = !empty($timeendarr['enabled']);
-        $timeend = 0;
-        if ($endenabled) {
-            if (!empty($timeendarr['month']) && !empty($timeendarr['day']) && !empty($timeendarr['year'])) {
-                $gregoriandate = $calendartype->convert_to_gregorian($timeendarr['year'],
-                    $timeendarr['month'],
-                    $timeendarr['day'],
-                    0,
-                    0);
-                $timeend = make_timestamp($gregoriandate['year'],
-                    $gregoriandate['month'],
-                    $gregoriandate['day'],
-                    $gregoriandate['hour'],
-                    $gregoriandate['minute'],
-                    0,
-                    $timezone,
-                    true);
-            }
-        }
-        return [$timestart, $timeend];
-    }
-
-    /**
      * Add a discussion
      *
      * Since we are uploading files to this action using
@@ -215,7 +152,7 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
 
-            list($timestart, $timeend) = $this->get_form_discussion_times();
+            list($timestart, $timeend) = local::get_form_discussion_times();
 
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
@@ -261,7 +198,7 @@ class edit_controller extends controller_abstract {
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
 
-            list($timestart, $timeend) = $this->get_form_discussion_times();
+            list($timestart, $timeend) = local::get_form_discussion_times();
 
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;

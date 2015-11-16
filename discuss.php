@@ -205,7 +205,8 @@
     echo $OUTPUT->header();
 
     if (!empty($config->enabletimedposts)) {
-        echo '<div id="dateform">';
+        echo '<div id="discussion_dateform">';
+        var_dump($discussion);
         $df = new date_form();
         $df->set_data($discussion);
         $df->display();

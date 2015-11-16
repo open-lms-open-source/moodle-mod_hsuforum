@@ -89,16 +89,17 @@
     $discussionview = $renderer->render_discussionsview($forum);
 
     echo $OUTPUT->header();
-    echo ('<div id="discussionsview">');
 
     $config = get_config('hsuforum');
     if (!empty($config->enabletimedposts)) {
-        echo '<div id="dateform">';
+        echo '<div id="discussion_dateform">';
         $df = new date_form();
         $df->set_data($discussion);
         $df->display();
         echo '</div>';
     }
+
+    echo ('<div id="discussionsview">');
 
 /// Some capability checks.
     if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {

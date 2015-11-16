@@ -846,6 +846,10 @@ Y.extend(FORM, Y.Base,
             var wrapperNode = e.currentTarget.ancestor(SELECTORS.FORM_REPLY_WRAPPER);
 
             this._submitReplyForm(wrapperNode, function(data) {
+
+                // Put date fields back to original place in DOM.
+                this.restoreDateFields();
+
                 switch (data.eventaction) {
                     case 'postupdated':
                         this.fire(EVENTS.POST_UPDATED, data);
@@ -876,12 +880,31 @@ Y.extend(FORM, Y.Base,
             postNode.one(SELECTORS.EDITABLE_MESSAGE).focus();
         },
 
+        resetDateFields: function() {
+            if (!Y.one('#discussion_dateform fieldset')) {
+                return;
+            }
+
+            var today = new Date(),
+            dd = today.getDate(),
+            mm = today.getMonth()+1,
+            yyyy = today.getFullYear(),
+            fields = ['start', 'end'];
+
+            for (var f in fields) {
+                Y.one('#id_time'+fields[f]+'_enabled').set('checked', '');
+                Y.one('#id_time'+fields[f]+'_day').set('value', dd);
+                Y.one('#id_time'+fields[f]+'_month').set('value', mm);
+                Y.one('#id_time'+fields[f]+'_year').set('value', yyyy);
+            }
+        },
+
         /**
          * Add date fields to current date form target.
          */
         applyDateFields: function() {
 
-            var datefs = Y.one('#dateform fieldset');
+            var datefs = Y.one('#discussion_dateform fieldset');
             if (!datefs) {
                 return;
             }
@@ -911,8 +934,8 @@ Y.extend(FORM, Y.Base,
          * @method restoreDateFields
          */
         restoreDateFields: function () {
-            if (Y.one('#dateform')) {
-                Y.one('#dateform').append(Y.one('.dateform_fieldset'));
+            if (Y.one('#discussion_dateform')) {
+                Y.one('#discussion_dateform').append(Y.one('.dateform_fieldset'));
             }
         },
 
@@ -928,6 +951,7 @@ Y.extend(FORM, Y.Base,
                 .one(SELECTORS.INPUT_SUBJECT)
                 .focus();
 
+            this.resetDateFields();
             this.applyDateFields();
             this.attachFormWarnings();
         },
