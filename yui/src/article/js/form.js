@@ -409,6 +409,7 @@ Y.extend(FORM, Y.Base,
                 return;
             }
             datefs.addClass('dateform_fieldset');
+            datefs.removeClass('hidden');
             // Remove legend if present
             if (datefs.one('legend')) {
                 datefs.one('legend').remove();

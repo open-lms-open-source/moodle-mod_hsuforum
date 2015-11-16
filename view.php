@@ -62,6 +62,8 @@
         print_error('missingparameter');
     }
 
+    $discussion = false;
+
     if ($forum->type == 'single') {
         $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
         $discussion = array_pop($discussions);
@@ -94,7 +96,9 @@
     if (!empty($config->enabletimedposts)) {
         echo '<div id="discussion_dateform">';
         $df = new date_form();
-        $df->set_data($discussion);
+        if (!empty($discussion)) {
+            $df->set_data($discussion);
+        }
         $df->display();
         echo '</div>';
     }
