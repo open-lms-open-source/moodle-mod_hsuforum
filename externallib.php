@@ -149,8 +149,15 @@ class mod_hsuforum_external extends external_api {
                     'completiondiscussions' => new external_value(PARAM_INT, 'Student must create discussions'),
                     'completionreplies' => new external_value(PARAM_INT, 'Student must post replies'),
                     'completionposts' => new external_value(PARAM_INT, 'Student must post discussions or replies'),
-                    'cmid' => new external_value(PARAM_INT, 'Course module id')
-                ), 'forum'
+                    'cmid' => new external_value(PARAM_INT, 'Course module id'),
+                    'showrecent' => new external_value(PARAM_INT, 'Show recent posts on course page'),
+                    'showsubstantive' => new external_value(PARAM_INT, 'Show toggle to mark posts as substantive'),
+                    'showbookmark' => new external_value(PARAM_INT, 'Show toggle to bookmark posts'),
+                    'allowprivatereplies' => new external_value(PARAM_INT, 'Allow private replies'),
+                    'anonymous' => new external_value(PARAM_INT, 'Allow anonymous posts'),
+                    'gradetype' => new external_value(PARAM_INT, 'Gradetype'),
+                    'numdiscussions' => new external_value(PARAM_INT, 'Number of discussions'),
+                ), 'hsuforum'
             )
         );
     }
