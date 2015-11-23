@@ -5124,7 +5124,7 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
     }
 
     if ($forum->type == 'qanda' &&
-            !hsuforum_user_has_posted($forum->id, $discussion->id, $user->id) &&
+            !hsuforum_user_has_posted($forum->id, $discussion->discussion, $user->id) &&
             !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
         return false;
     }
