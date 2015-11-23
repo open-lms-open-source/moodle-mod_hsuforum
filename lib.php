@@ -5123,10 +5123,15 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
         return false;
     }
 
-    if ($forum->type == 'qanda' &&
-            !hsuforum_user_has_posted($forum->id, $discussion->discussion, $user->id) &&
-            !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
-        return false;
+    if ($forum->type == 'qanda') {
+        $did = $discussion->id;
+        if (property_exists($discussion, 'discussion')) {
+            $did = $discussion->discussion;
+        }
+        if (!hsuforum_user_has_posted($forum->id, $did, $user->id)
+                && !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
+            return false;
+        }
     }
     return true;
 }
