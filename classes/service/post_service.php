@@ -269,6 +269,10 @@ class post_service {
             $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
         }
 
+        if ($discussion->timestart && $discussion->timeend && $discussion->timestart > $discussion->timeend) {
+            $errors[] = new \moodle_exception('errortimestartgreater', 'hsuforum');
+        }
+
         if ($post->privatereply) {
             if (!has_capability('mod/hsuforum:allowprivate', $context)
                 || !$forum->allowprivatereplies
