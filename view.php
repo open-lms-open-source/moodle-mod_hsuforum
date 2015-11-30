@@ -23,6 +23,8 @@
  * @author Mark Nielsen
  */
 
+    use mod_hsuforum\form\date_form;
+
     require_once('../../config.php');
     require_once($CFG->libdir.'/completionlib.php');
 
@@ -60,6 +62,8 @@
         print_error('missingparameter');
     }
 
+    $discussion = false;
+
     if ($forum->type == 'single') {
         $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
         $discussion = array_pop($discussions);
@@ -87,6 +91,18 @@
     $discussionview = $renderer->render_discussionsview($forum);
 
     echo $OUTPUT->header();
+
+    $config = get_config('hsuforum');
+    if (!empty($config->enabletimedposts)) {
+        echo '<div id="discussion_dateform">';
+        $df = new date_form();
+        if (!empty($discussion)) {
+            $df->set_data($discussion);
+        }
+        $df->display();
+        echo '</div>';
+    }
+
     echo ('<div id="discussionsview">');
 
 /// Some capability checks.

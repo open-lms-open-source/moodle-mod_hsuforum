@@ -28,6 +28,7 @@
 use mod_hsuforum\local;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
+require_once($CFG->dirroot.'/lib/formslib.php');
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -1310,6 +1311,8 @@ HTML;
             }
         } else {
             $params  = array('forum' => $cm->instance);
+            $post = new stdClass();
+            $post->parent = false;
             $legend = get_string('addyourdiscussion', 'hsuforum');
             $thresholdwarning = hsuforum_check_throttling($forum, $cm);
             if (!empty($thresholdwarning)) {
@@ -1370,6 +1373,13 @@ HTML;
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
                 get_string('reveal', 'hsuforum'));
         }
+
+        $config = get_config('hsuforum');
+        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
+            // Target for pulling in date form.
+            $extrahtml .= '<div class="dateformtarget"></div>';
+        }
+
         $data += array(
             'postid'      => $postid,
             'context'     => $context,

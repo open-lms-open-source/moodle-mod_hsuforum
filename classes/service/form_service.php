@@ -123,6 +123,8 @@ class form_service {
             'reveal' => $post->reveal,
             'groupid' => ($discussion->groupid == -1) ? 0 : $discussion->groupid,
             'itemid'  => $itemid,
+            'timestart' => $discussion->timestart,
+            'timeend' => $discussion->timeend
         ));
     }
 }

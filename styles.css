@@ -433,6 +433,9 @@ FUN WITH FORMS
     margin-bottom:0.5em;
 }
 
+.hsuforum-form .fitem_fdate_selector label {
+    display:inline;
+}
 
 .hsuforum-form .hsuforum-textarea {
     cursor: text;
@@ -820,4 +823,16 @@ FUN WITH FORMS
 
 .path-mod-hsuforum .discussioncontrols .managesubslink {
     float: left;
+}
+
+.path-mod-hsuforum #id_displayperiod {
+    margin-bottom:1em;
+}
+
+#discussion_dateform {
+    display: none;
+}
+
+.dateformtarget {
+    margin-bottom:1em;
 }
