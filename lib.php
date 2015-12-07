@@ -1762,8 +1762,8 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
     }
 
     if($out) {
-        $out = "<h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>".$out;
-
+        $out = "<div class='hsuforum-recent clearfix'>
+        <h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>".$out."</div>";
     }
     return $out;
 }

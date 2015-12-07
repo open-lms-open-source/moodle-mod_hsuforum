@@ -655,11 +655,7 @@ FUN WITH FORMS
   padding-right:0;
   width:90%;
 }
-/* express specific overwrite of inline */
-.sitetopic .section .activity.modtype_hsuforum .activityinstance div,
-.course-content .section .activity.modtype_hsuforum .activityinstance div {
-  display: inline-block;
-}
+
 
 .block_flexpagemod_hsuforum .hsuforum-recent-heading,
 .hsuforum.modtype_hsuforum .hsuforum-recent-heading,
