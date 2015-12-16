@@ -816,9 +816,20 @@ Y.extend(FORM, Y.Base,
             if (node) {
                 node.removeClass(CSS.POST_EDIT)
                     .removeClass(CSS.DISCUSSION_EDIT);
+                e.target.ancestor(SELECTORS.FORM_REPLY_WRAPPER).remove(true);
+            } else {
+                node = e.target.ancestor(SELECTORS.ADD_DISCUSSION_TARGET);
+                e.target.ancestor(SELECTORS.FORM_REPLY_WRAPPER).remove(true);
+                if (node) {
+                    // This is a discussion we were adding and are now cancelling, return.
+                    return;
+                } else {
+                    // We couldn't find a discussion or post target, this is an error, log + return.
+                    return;
+                }
             }
-            e.target.ancestor(SELECTORS.FORM_REPLY_WRAPPER).remove(true);
 
+            // Handle post form cancel.
             this.fire(EVENTS.FORM_CANCELED, {
                 discussionid: node.getData('discussionid'),
                 postid: node.getData('postid')
@@ -875,25 +886,71 @@ Y.extend(FORM, Y.Base,
         },
 
         /**
-         * Reset values of date fields to today's date and remove enabled status if required.
+         * Set individual date restriction field
+         *
+         * @param {string} field
+         * @param {bool} enabled
+         * @param {int} timeuts
          */
-        resetDateFields: function() {
+        setDateField: function(field, enabled, timeuts) {
+            var dt = new Date(timeuts * 1000),
+                dd = dt.getDate(),
+                mm = dt.getMonth()+1,
+                yyyy = dt.getFullYear();
+
+            if (enabled) {
+                Y.one('#id_time' + field + '_enabled').set('checked', 'checked');
+            } else {
+                Y.one('#id_time' + field + '_enabled').removeAttribute('checked');
+            }
+            Y.one('#id_time'+field+'_day').set('value', dd);
+            Y.one('#id_time'+field+'_month').set('value', mm);
+            Y.one('#id_time'+field+'_year').set('value', yyyy);
+
+            this.setDateFieldsClassState();
+        },
+
+        /**
+         * Reset individual date field.
+         * @param field
+         */
+        resetDateField: function(field) {
             if (!Y.one('#discussion_dateform fieldset')) {
                 return;
             }
 
-            var today = new Date(),
-            dd = today.getDate(),
-            mm = today.getMonth()+1,
-            yyyy = today.getFullYear(),
-            fields = ['start', 'end'];
+            var nowuts = Math.floor(Date.now() / 1000);
+
+            this.setDateField(field, false, nowuts);
+        },
+
+        /**
+         * Reset values of date fields to today's date and remove enabled status if required.
+         */
+        resetDateFields: function() {
+            var fields = ['start', 'end'];
 
             for (var f in fields) {
-                Y.one('#id_time'+fields[f]+'_enabled').set('checked', '');
-                Y.one('#id_time'+fields[f]+'_day').set('value', dd);
-                Y.one('#id_time'+fields[f]+'_month').set('value', mm);
-                Y.one('#id_time'+fields[f]+'_year').set('value', yyyy);
+                this.resetDateField(fields[f]);
             }
+        },
+
+        /**
+         * Apply disabled state if necessary.
+         */
+        setDateFieldsClassState: function() {
+            var datefs = Y.one('fieldset.dateform_fieldset');
+            if (!datefs) {
+                return;
+            }
+            // Set initial toggle state for date fields.
+            datefs.all('.fdate_selector').each(function(el){
+                if (el.one('input').get('checked')) {
+                    el.all('select').set('disabled', '');
+                } else {
+                    el.all('select').set('disabled', 'disabled');
+                }
+            });
         },
 
         /**
@@ -916,14 +973,26 @@ Y.extend(FORM, Y.Base,
             // Stop calendar button from routing.
             Y.all('.dateformtarget .fitem_fdate_selector a').addClass('disable-router');
 
-            // Set initial toggle state for date fields.
-            datefs.all('.fdate_selector').each(function(el){
-                if (el.one('input').get('checked')) {
-                    el.all('select').set('disabled', '');
-                } else {
-                    el.all('select').set('disabled', 'disabled');
-                }
-            });
+            this.setDateFieldsClassState();
+        },
+
+        /**
+         * Set date fields.
+         *
+         * @param int startuts
+         * @param int enduts
+         */
+        setDateFields: function(startuts, enduts) {
+            if (startuts == 0) {
+                this.resetDateField('start');
+            } else {
+                this.setDateField('start', true, startuts);
+            }
+            if (enduts == 0) {
+                this.resetDateField('end');
+            } else {
+                this.setDateField('end', true, enduts);
+            }
         },
 
         /**
@@ -982,6 +1051,7 @@ Y.extend(FORM, Y.Base,
 
                 if (data.isdiscussion) {
                     self.applyDateFields();
+                    self.setDateFields(data.timestart, data.timeend);
                 }
 
                 this.attachFormWarnings();

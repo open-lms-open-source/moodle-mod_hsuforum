@@ -26,7 +26,7 @@
  */
 
     use mod_hsuforum\local;
-    use mod_hsuforum\form\date_form;
+    use mod_hsuforum\renderables\discussion_dateform;
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
@@ -204,14 +204,7 @@
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-    if (!empty($config->enabletimedposts)) {
-        echo '<div id="discussion_dateform">';
-        var_dump($discussion);
-        $df = new date_form();
-        $df->set_data($discussion);
-        $df->display();
-        echo '</div>';
-    }
+    $renderer->render(new discussion_dateform($modcontext));
 
     if ($forum->type != 'single') {
          echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";

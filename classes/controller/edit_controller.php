@@ -257,9 +257,13 @@ class edit_controller extends controller_abstract {
             return new json_response(['html' => $html]);
         } else {
             $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post);
-            return new json_response(['html' => $html, 'isdiscussion' => true]);
+            return new json_response([
+                'html'          => $html,
+                'isdiscussion'  => true,
+                'timestart'     => $discussion->timestart,
+                'timeend'       => $discussion->timeend
+            ]);
         }
-
     }
 
     /**

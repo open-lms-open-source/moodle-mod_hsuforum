@@ -26,6 +26,7 @@
  */
 
 use mod_hsuforum\local;
+use mod_hsuforum\renderables\discussion_dateform;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
@@ -96,6 +97,19 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 hsuforum_print_latest_discussions($course, $forum, -1, $dsort->get_sort_sql(), -1, -1, $page, $config->manydiscussions, $cm);
                 break;
         }
+    }
+
+    /**
+     * Render dateform.
+     * @param discussion_dateform $dateform
+     */
+    public function render_discussion_dateform(discussion_dateform $dateform) {
+        if (!$dateform->output) {
+            return '';
+        }
+        echo '<div id="discussion_dateform">';
+        $dateform->get_dateform()->display();
+        echo '</div>';
     }
 
     /**

@@ -23,7 +23,7 @@
  * @author Mark Nielsen
  */
 
-    use mod_hsuforum\form\date_form;
+    use mod_hsuforum\renderables\discussion_dateform;
 
     require_once('../../config.php');
     require_once($CFG->libdir.'/completionlib.php');
@@ -92,16 +92,7 @@
 
     echo $OUTPUT->header();
 
-    $config = get_config('hsuforum');
-    if (!empty($config->enabletimedposts)) {
-        echo '<div id="discussion_dateform">';
-        $df = new date_form();
-        if (!empty($discussion)) {
-            $df->set_data($discussion);
-        }
-        $df->display();
-        echo '</div>';
-    }
+    $renderer->render(new discussion_dateform($context));
 
     echo ('<div id="discussionsview">');
 
