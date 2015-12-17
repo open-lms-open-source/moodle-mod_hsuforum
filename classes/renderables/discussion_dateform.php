@@ -42,9 +42,10 @@ class discussion_dateform implements \renderable {
 
     /**
      * @param \context_module $context
+     * @param null|stdClass $discussion
      * @throws \coding_exception
      */
-    function __construct(\context_module $context) {
+    public function __construct(\context_module $context, $discussion = null) {
         $config = get_config('hsuforum');
         if (empty($config->enabletimedposts) || !has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
             return;

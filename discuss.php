@@ -204,7 +204,7 @@
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-    $renderer->render(new discussion_dateform($modcontext));
+    echo $renderer->render(new discussion_dateform($modcontext, $discussion));
 
     if ($forum->type != 'single') {
          echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";

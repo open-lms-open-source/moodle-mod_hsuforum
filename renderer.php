@@ -102,14 +102,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     /**
      * Render dateform.
      * @param discussion_dateform $dateform
+     * @return string
      */
     public function render_discussion_dateform(discussion_dateform $dateform) {
         if (!$dateform->output) {
             return '';
         }
-        echo '<div id="discussion_dateform">';
-        $dateform->get_dateform()->display();
-        echo '</div>';
+        $output = '<div id="discussion_dateform">';
+        $output .= $dateform->get_dateform()->render();
+        $output .= '</div>';
+        return $output;
     }
 
     /**

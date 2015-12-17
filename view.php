@@ -92,7 +92,7 @@
 
     echo $OUTPUT->header();
 
-    $renderer->render(new discussion_dateform($context));
+    echo $renderer->render(new discussion_dateform($context));
 
     echo ('<div id="discussionsview">');
 
