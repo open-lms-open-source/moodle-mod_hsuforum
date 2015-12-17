@@ -108,4 +108,23 @@ class behat_mod_hsuforum extends behat_base {
 
     }
 
+    /**
+     * Set regular field (not moodle form field) to a specific value.
+     *
+     * @Given /^I set editable div "([^"]*)" "([^"]*)" to "([^"]*)"$/
+     * @param string $ellocator
+     * @param string $selectortype
+     * @param string $value
+     * @throws \Behat\Mink\Exception\ElementException
+     */
+    public function i_set_editable_div_to ($ellocator, $selectortype, $value) {
+        // Getting Mink selector and locator.
+        list($selector, $locator) = $this->transform_selector($selectortype, $ellocator);
+
+        // Will throw an ElementNotFoundException if it does not exist.
+        $this->find($selector, $locator)->setValue($value);
+    }
+
+
+
 }
