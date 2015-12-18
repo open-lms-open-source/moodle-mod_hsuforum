@@ -33,11 +33,9 @@ Feature: Teacheres and students can create discussions
     And I follow "Course 1"
     And I follow "Test forum name"
     And I wait until the page is ready
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 
   @javascript
@@ -48,11 +46,9 @@ Feature: Teacheres and students can create discussions
     And I follow "Course 1"
     And I follow "Test forum name"
     And I wait until the page is ready
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 
   @javascript
@@ -63,11 +59,9 @@ Feature: Teacheres and students can create discussions
     And I follow "Course 1"
     And I follow "Test forum name"
     And I wait until the page is ready
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 
   @javascript
@@ -78,11 +72,9 @@ Feature: Teacheres and students can create discussions
     And I follow "Course 1"
     And I follow "Test forum name"
     And I wait until the page is ready
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 
   @javascript
@@ -100,11 +92,9 @@ Feature: Teacheres and students can create discussions
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 to be cancelled description"
     And I follow "Cancel"
     And I should not see "Add your discussion"
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 
   @javascript
@@ -122,11 +112,9 @@ Feature: Teacheres and students can create discussions
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 to be cancelled description"
     And I follow "Cancel"
     And I should not see "Add your discussion"
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 
   @javascript
@@ -144,11 +132,9 @@ Feature: Teacheres and students can create discussions
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 to be cancelled description"
     And I follow "Cancel"
     And I should not see "Add your discussion"
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 
   @javascript
@@ -166,10 +152,8 @@ Feature: Teacheres and students can create discussions
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 to be cancelled description"
     And I follow "Cancel"
     And I should not see "Add your discussion"
-    And I press "Add a new discussion"
-    And I set the field "subject" to "Test discussion 1"
-    And ".hsuforum-textarea" "css_element" should exist
-    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 description"
-    And I press "Submit"
+    And I create the following inline discussions:
+      | subject            | message                       |
+      | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
 

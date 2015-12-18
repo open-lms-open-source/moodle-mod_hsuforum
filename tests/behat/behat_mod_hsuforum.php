@@ -132,4 +132,67 @@ class behat_mod_hsuforum extends behat_base {
         }
         $div->setValue($value);
     }
+
+    /**
+     * Sets the specified value to the field.
+     *
+     * @Given /^I set the date field "(?P<field_string>(?:[^"]|\\")*)" to "(?P<field_value_string>(?:[^"]|\\")*)"$/
+     * @throws ElementNotFoundException Thrown by behat_base::find
+     * @param string $field
+     * @param string $datestr
+     * @return void
+     */
+    public function i_set_date_field_to($field, $datestr) {
+        $value = strtotime($datestr);
+
+        // We delegate to behat_form_field class, it will
+        // guess the type properly as it is a select tag.
+        $dayfield = $this->find_field('id_'.$field.'_day');
+        $monthfield = $this->find_field('id_'.$field.'_month');
+        $yearfield = $this->find_field('id_'.$field.'_year');
+
+        $dayfield->setValue(date('j', $value));
+        $monthfield->setValue(date('n', $value));
+        $yearfield->setValue(date('Y', $value));
+    }
+
+    /**
+     * Adds an inline discussion to a forum.
+     *
+     * @Given /^I create the following inline discussions:$/
+     * @param string $postname The subject of the post
+     * @param string $forumname The forum name
+     * @param TableNode $table
+     */
+    public function add_inline_discussions(TableNode $table) {
+        $steps = [];
+
+        //file_put_contents ('/Users/gthomas2/temp/test.txt', var_export($data, true));
+
+        foreach ($table->getHash() as $row) {
+            $rsteps = [
+                new Given ('I press "Add a new discussion"'),
+                new Given ('I set the field "subject" to "' . $row['subject'] . '"'),
+                new Given ('I set editable div ".hsuforum-textarea" "css_element" to "' . $row['message'] . '"'),
+            ];
+
+            if (isset($data['timestart'])) {
+                $rsteps[] = new Given('I set the field "id_timestart_enabled" to "1"');
+                $rsteps[] = new Given('I set the date field "timestart" to "' . $row['timestart'] . '"');
+            }
+            if (isset($data['timeend'])) {
+                $rsteps[] = new Given('I set the field "id_timeend_enabled" to "1"');
+                $rsteps[] = new Given('I set the date field "timeend" to "' . $row['timeend'] . '"');
+            }
+
+            $rsteps[] = new Given ('I press "Submit"');
+            $rsteps[] = new Given ('I should see "Your post was successfully added."');
+            $steps += $rsteps;
+        }
+
+        return $steps;
+    }
+
+
+
 }
