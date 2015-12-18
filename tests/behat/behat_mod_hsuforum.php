@@ -28,7 +28,8 @@
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
 use Behat\Behat\Context\Step\Given as Given,
-    Behat\Gherkin\Node\TableNode as TableNode;
+    Behat\Gherkin\Node\TableNode as TableNode,
+    WebDriver\Key;
 /**
  * Forum-related steps definitions.
  *
@@ -122,9 +123,13 @@ class behat_mod_hsuforum extends behat_base {
         list($selector, $locator) = $this->transform_selector($selectortype, $ellocator);
 
         // Will throw an ElementNotFoundException if it does not exist.
-        $this->find($selector, $locator)->setValue($value);
+        $div = $this->find($selector, $locator);
+
+        // Need to empty div before setting value - as per https://github.com/minkphp/Mink/issues/520 which is
+        // not in the moodle mink driver code.
+        for ($i = 0; $i < strlen($div->getText()); $i++) {
+            $value = Key::BACKSPACE . Key::DELETE . $value;
+        }
+        $div->setValue($value);
     }
-
-
-
 }
