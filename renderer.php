@@ -1358,7 +1358,9 @@ HTML;
 
                     foreach ($usergroups as $grouping => $groups) {
                         foreach ($groups as $groupid) {
-                            $groupinfo[$groupid] = $groupdata[$groupid]->name;
+                            if (isset($groupdata[$groupid])) {
+                                $groupinfo[$groupid] = $groupdata[$groupid]->name;
+                            }
                         }
                     }
                 }
