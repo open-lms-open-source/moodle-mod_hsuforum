@@ -4206,9 +4206,14 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
         $post->mailnow    = 0;
     }
 
+    $draftid = file_get_submitted_draft_itemid('hiddenadvancededitor');
+    if (!$draftid) {
+        $draftid = file_get_submitted_draft_itemid('message');
+    }
+
     $post->id = $DB->insert_record("hsuforum_posts", $post);
-    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
-            mod_hsuforum_post_form::editor_options($context, null), $post->message);
+    $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
+            mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
     hsuforum_add_attachment($post, $forum, $cm, $mform, null, $uploader);
 
@@ -4260,10 +4265,15 @@ function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_fil
         $discussion->timestart = $post->timestart;
         $discussion->timeend   = $post->timeend;
     }
-    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
+
+    $draftid = file_get_submitted_draft_itemid('hiddenadvancededitor');
+    if (!$draftid) {
+        $draftid = file_get_submitted_draft_itemid('message');
+    }
+
+    $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
     $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
-
     $DB->update_record('hsuforum_discussions', $discussion);
 
     hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
@@ -4359,14 +4369,16 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
         hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_add_discussion');
     }
 
-    $draftid = optional_param('hiddenadvancededitordraftid', false, PARAM_INT);
+    $draftid = file_get_submitted_draft_itemid('hiddenadvancededitor');
+    if (!$draftid) {
+        $draftid = file_get_submitted_draft_itemid('message');
+    }
 
-    // Update discussion post with files.
     if ($draftid) {
         $context = context_module::instance($cm->id);
-        $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post',
-            $post->id, array('subdirs' => true), $post->message);
-        $DB->update_record('hsuforum_posts', (object)['id' => $post->id, 'message' => $post->message]);
+        $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
+            mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
+        $DB->set_field('hsuforum_posts', 'message', $post->message, array('id' => $post->id));
     }
 
     return $post->discussion;

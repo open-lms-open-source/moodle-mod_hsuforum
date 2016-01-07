@@ -255,11 +255,13 @@ class edit_controller extends controller_abstract {
             $PAGE->activityrecord, $PAGE->context, $discussion, $post
         );
 
+        $draftid = required_param('draftid', PARAM_INT);
+
         if (!empty($post->parent)) {
-            $html = $this->formservice->edit_post_form($PAGE->cm, $post);
+            $html = $this->formservice->edit_post_form($PAGE->cm, $post, $draftid);
             return new json_response(['html' => $html]);
         } else {
-            $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post);
+            $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post, $draftid);
             return new json_response([
                 'html'          => $html,
                 'isdiscussion'  => true,

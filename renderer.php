@@ -1747,7 +1747,7 @@ HTML;
         $data = $advancededitor->get_data();
         if (get_class($data->editor) == 'atto_texteditor'){
             $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
-            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitordraftid" value="'.$data->draftitemid.'" />';
+            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
             return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
         }
         return '';

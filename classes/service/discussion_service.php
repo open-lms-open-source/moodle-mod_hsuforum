@@ -85,6 +85,9 @@ class discussion_service {
             $groupstopostto[] = $options['groupid'];
         }
 
+        /** @var \mod_hsuforum_renderer $renderer */
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+
         foreach ($groupstopostto as $groupid) {
             $options['groupid'] = $groupid;
 
@@ -92,9 +95,6 @@ class discussion_service {
             $errors = $this->validate_discussion($cm, $forum, $context, $discussion, $uploader);
 
             if (!empty($errors)) {
-                /** @var \mod_hsuforum_renderer $renderer */
-                $renderer = $PAGE->get_renderer('mod_hsuforum');
-
                 return new json_response((object) array(
                     'errors' => true,
                     'html'   => $renderer->validation_errors($errors),
@@ -105,8 +105,6 @@ class discussion_service {
         }
 
         $message = get_string('postaddedsuccess', 'hsuforum');
-
-        $renderer = $PAGE->get_renderer('mod_hsuforum');
 
         return new json_response((object) array(
             'eventaction'      => 'discussioncreated',

@@ -241,4 +241,15 @@ class behat_mod_hsuforum extends behat_base {
         ];
         return $steps;
     }
+
+    /**
+     * Image exists on page.
+     * @param string $fixturefilename
+     *
+     * @Given /^Image "(?P<filename>(?:[^"]|\\")*)" should exist$/
+     */
+    public function image_exists($filename) {
+        $images = $this->find_all('css', 'img[src*="'.$filename.'"]');
+        return !empty($images);
+    }
 }
