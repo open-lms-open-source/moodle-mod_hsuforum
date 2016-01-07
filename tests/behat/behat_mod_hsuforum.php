@@ -205,4 +205,37 @@ class behat_mod_hsuforum extends behat_base {
         $this->getSession()->visit($href);
     }
 
+    /**
+     * @param string $fixturefilename this is a filename relative to the snap fixtures folder.
+     * @param string $input
+     *
+     * @Given /^Advanced Forums I upload file "(?P<fixturefilename_string>(?:[^"]|\\")*)" using input "(?P<input_string>(?:[^"]|\\")*)"$/
+     */
+    public function i_upload_file_using_input($fixturefilename, $input) {
+        global $CFG;
+        $fixturefilename = clean_param($fixturefilename, PARAM_FILE);
+        $filepath = $CFG->dirroot.'/mod/hsuforum/tests/fixtures/'.$fixturefilename;
+        $file = $this->find('css', $input);
+        $file->attachFile($filepath);
+    }
+
+    /**
+     * Upload image via inline advanced editor.
+     * @param string $fixturefilename
+     *
+     * @Given /^Advanced Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor$/
+     */
+    public function i_upload_image_using_inline_advanced_editor($fixturefilename) {
+        $steps = [
+            new Given('I follow "Use advanced editor"'),
+            new Given('I click on ".atto_image_button" "css_element"'),
+            new Given('I press "Browse repositories..."'),
+            new Given('I click on "Upload a file" "link"'),
+            new Given('Advanced Forums I upload file "'.$fixturefilename.'" using input "input[name=\"repo_upload_file\"]"'),
+            new Given('I press "Upload this file"'),
+            new Given('I set the field "Describe this image" to "Test fixture"'),
+            new Given('I press "Save image"')
+        ];
+        return $steps;
+    }
 }

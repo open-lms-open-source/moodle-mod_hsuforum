@@ -24,6 +24,7 @@
  */
 
     use mod_hsuforum\renderables\discussion_dateform;
+    use mod_hsuforum\renderables\advanced_editor;
 
     require_once('../../config.php');
     require_once($CFG->libdir.'/completionlib.php');
@@ -108,5 +109,5 @@
     echo $discussionview;
 
     echo '</div>';
-    echo $renderer->advanced_editor();
+    echo $renderer->render(new advanced_editor($context));
     echo $OUTPUT->footer($course);

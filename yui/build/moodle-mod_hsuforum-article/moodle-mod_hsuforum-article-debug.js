@@ -1218,9 +1218,6 @@ Y.extend(ARTICLE, Y.Base,
 
             // Advanced editor.
             Y.delegate('click', function(e){
-                if (M.cfg.behatsiterunning) {
-                    return true;
-                }
                 var editCont = Y.one('#hiddenadvancededitorcont'),
                     editor,
                     editArea,
@@ -1523,6 +1520,9 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         editor.show();
         contentEditable.insert(editor, 'before');
         contentEditable.insert(Y.one('#hiddenadvancededitor'), 'before');
+        var clonedraftid = Y.one('#hiddenadvancededitordraftid').cloneNode();
+        clonedraftid.id = 'hiddenadvancededitordraftidclone';
+        contentEditable.insert(clonedraftid, 'before');
         editArea.setContent(contentEditable.getContent());
 
         // Focus on editarea.

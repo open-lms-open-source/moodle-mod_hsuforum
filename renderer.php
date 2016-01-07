@@ -27,6 +27,7 @@
 
 use mod_hsuforum\local;
 use mod_hsuforum\renderables\discussion_dateform;
+use mod_hsuforum\renderables\advanced_editor;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
@@ -300,6 +301,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $data           = new stdClass;
+        $data->context  = context_module::instance($cm->id);
         $data->id       = $discussion->id;
         $data->postid   = $post->id;
         $data->unread   = $discussion->unread;
@@ -1717,18 +1719,20 @@ HTML;
         return $commands;
     }
 
-
-
-    public function advanced_editor(){
-        // Only output editor if preferred editor is Atto - tiny mce not supported yet.
-        editors_head_setup();
-        $editor = editors_get_preferred_editor(FORMAT_HTML);
-        if (get_class($editor) == 'atto_texteditor'){
-            $editor->use_editor('hiddenadvancededitor');
-            return '<div id="hiddenadvancededitorcont"><textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
+    /**
+     * Render dateform.
+     * @param discussion_dateform $dateform
+     * @return string
+     */
+    public function render_advanced_editor(advanced_editor $advancededitor) {
+        $data = $advancededitor->get_data();
+        if (get_class($data->editor) == 'atto_texteditor'){
+            $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
+            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitordraftid" value="'.$data->draftitemid.'" />';
+            return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
         }
         return '';
-     }
+    }
 
     /**
      * Previous and next discussion navigation.

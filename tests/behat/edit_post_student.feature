@@ -38,7 +38,7 @@ Feature: Students can edit or delete their forum posts within a set time limit
   Scenario: Edit forum post
     When I follow "Forum post subject"
     And I follow "Edit"
-    And I follow "Use advanced editor"
+    And Advanced Forums I follow href "Use advanced editor"
     And I set the following fields to these values:
       | Subject | Edited post subject |
       | Message | Edited post body |

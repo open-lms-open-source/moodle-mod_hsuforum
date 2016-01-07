@@ -81,12 +81,13 @@ class discussion_service {
             /** @var \mod_hsuforum_renderer $renderer */
             $renderer = $PAGE->get_renderer('mod_hsuforum');
 
-            return new json_response((object) array(
+            return new json_response ((object) array(
                 'errors' => true,
                 'html'   => $renderer->validation_errors($errors),
             ));
         }
         $this->save_discussion($discussion, $uploader);
+
         $this->trigger_discussion_created($course, $context, $cm, $forum, $discussion);
 
         $message = get_string('postaddedsuccess', 'hsuforum');
@@ -185,8 +186,9 @@ class discussion_service {
      * @param object $discussion
      * @param upload_file $uploader
      */
-    public function save_discussion($discussion, upload_file $uploader) {
+    public function save_discussion(&$discussion, upload_file $uploader) {
         $message        = '';
+
         $discussion->id = hsuforum_add_discussion($discussion, null, $message);
 
         $file = $uploader->process_file_upload($discussion->firstpost);

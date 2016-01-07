@@ -4176,6 +4176,16 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
         hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_add_discussion');
     }
 
+    $draftid = optional_param('hiddenadvancededitordraftid', false, PARAM_INT);
+
+    // Update discussion post with files.
+    if ($draftid) {
+        $context = context_module::instance($cm->id);
+        $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post',
+            $post->id, array('subdirs' => true), $post->message);
+        $DB->update_record('hsuforum_posts', (object)['id' => $post->id, 'message' => $post->message]);
+    }
+
     return $post->discussion;
 }
 

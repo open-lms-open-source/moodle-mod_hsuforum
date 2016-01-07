@@ -51,7 +51,7 @@ Feature: Teachers can edit or delete any forum post
     And I follow "Test forum name"
     And I follow "Teacher post subject"
     And I click on "Edit" "link" in the "//li[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-post ')][contains(., 'Student post subject')]" "xpath_element"
-    And I follow "Use advanced editor"
+    And Advanced Forums I follow href "Use advanced editor"
     And I set the following fields to these values:
       | Subject | Edited student subject |
     And I press "Save changes"
