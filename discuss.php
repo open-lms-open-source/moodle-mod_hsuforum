@@ -155,14 +155,8 @@
         }
     }
 
-    $params = array(
-        'context' => $modcontext,
-        'objectid' => $discussion->id,
-    );
-    $event = \mod_hsuforum\event\discussion_viewed::create($params);
-    $event->add_record_snapshot('hsuforum_discussions', $discussion);
-    $event->add_record_snapshot('hsuforum', $forum);
-    $event->trigger();
+    // Trigger discussion viewed event.
+    hsuforum_discussion_view($modcontext, $forum, $discussion);
 
     unset($SESSION->fromdiscussion);
 

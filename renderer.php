@@ -181,15 +181,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             notice(get_string('noviewdiscussionspermission', 'hsuforum'));
         }
 
-        $params = array(
-            'context' => $context,
-            'objectid' => $forum->id
-        );
-        $event = \mod_hsuforum\event\course_module_viewed::create($params);
-        $event->add_record_snapshot('course_modules', $cm);
-        $event->add_record_snapshot('course', $course);
-        $event->add_record_snapshot('hsuforum', $forum);
-        $event->trigger();
+        // Mark viewed and trigger the course_module_viewed event.
+        hsuforum_view($forum, $course, $cm, $context);
 
         if (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT) {
             // Return here if we post or set subscription etc (but not if we are calling this via ajax).

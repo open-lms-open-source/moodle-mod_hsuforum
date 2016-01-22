@@ -110,13 +110,12 @@ if ($isspecificcourse) {
     // We are going to search for all of the users posts in all courses!
     // a general require login here as we arn't actually within any course.
     require_login();
-    $PAGE->set_context(context_system::instance());
+    $PAGE->set_context(context_user::instance($user->id));
 
     // Now we need to get all of the courses to search.
     // All courses where the user has posted within a forum will be returned.
     $courses = hsuforum_get_courses_user_posted_in($user, $discussionsonly);
 }
-
 
 $params = array(
     'context' => $PAGE->context,
@@ -166,7 +165,7 @@ if (empty($result->posts)) {
 
     // Get the page heading
     if ($isspecificcourse) {
-        $pageheading = format_string($course->shortname, true, array('context' => $coursecontext));
+        $pageheading = format_string($course->fullname, true, array('context' => $coursecontext));
     } else {
         $pageheading = get_string('pluginname', 'mod_hsuforum');
     }
@@ -181,9 +180,43 @@ if (empty($result->posts)) {
         } else {
             $notification = get_string('nopostsmadebyyou', 'hsuforum');
         }
+        // These are the user's forum interactions.
+        // Shut down the navigation 'Users' node.
+        $usernode = $PAGE->navigation->find('users', null);
+        $usernode->make_inactive();
+        // Edit navbar.
+        if (isset($courseid) && $courseid != SITEID) {
+            // Create as much of the navbar automatically.
+            $newusernode = $PAGE->navigation->find('user' . $user->id, null);
+            $newusernode->make_active();
+            // Check to see if this is a discussion or a post.
+            if ($mode == 'posts') {
+                $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                        array('id' => $user->id, 'course' => $courseid)));
+            } else {
+                $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                        array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
+            }
+        }
     } else if ($canviewuser) {
         $PAGE->navigation->extend_for_user($user);
         $PAGE->navigation->set_userid_for_parent_checks($user->id); // see MDL-25805 for reasons and for full commit reference for reversal when fixed.
+
+        // Edit navbar.
+        if (isset($courseid) && $courseid != SITEID) {
+            // Create as much of the navbar automatically.
+            $usernode = $PAGE->navigation->find('user' . $user->id, null);
+            $usernode->make_active();
+            // Check to see if this is a discussion or a post.
+            if ($mode == 'posts') {
+                $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                        array('id' => $user->id, 'course' => $courseid)));
+            } else {
+                $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                        array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
+            }
+        }
+
         $fullname = fullname($user);
         if ($discussionsonly) {
             $notification = get_string('nodiscussionsstartedby', 'hsuforum', $fullname);
@@ -204,9 +237,22 @@ if (empty($result->posts)) {
 
     // Display a page letting the user know that there's nothing to display;
     $PAGE->set_title($pagetitle);
-    $PAGE->set_heading($pageheading);
+    if ($isspecificcourse) {
+        $PAGE->set_heading($pageheading);
+    } else {
+        $PAGE->set_heading(fullname($user));
+    }
     echo $OUTPUT->header();
-    echo $OUTPUT->heading($pagetitle);
+    if (!$isspecificcourse) {
+        echo $OUTPUT->heading($pagetitle);
+    } else {
+        $userheading = array(
+                'heading' => fullname($user),
+                'user' => $user,
+                'usercontext' => $usercontext
+            );
+        echo $OUTPUT->context_header($userheading, 2);
+    }
     echo $OUTPUT->notification($notification);
     if (!$url->compare($PAGE->url)) {
         echo $OUTPUT->continue_button($url);
@@ -321,7 +367,7 @@ if ($discussionsonly) {
 if ($isspecificcourse) {
     $a = new stdClass;
     $a->fullname = $userfullname;
-    $a->coursename = format_string($course->shortname, true, array('context' => $coursecontext));
+    $a->coursename = format_string($course->fullname, true, array('context' => $coursecontext));
     $pageheading = $a->coursename;
     if ($discussionsonly) {
         $pagetitle = get_string('discussionsstartedbyuserincourse', 'mod_hsuforum', $a);
@@ -334,9 +380,24 @@ if ($isspecificcourse) {
 }
 
 $PAGE->set_title($pagetitle);
-$PAGE->set_heading($pagetitle);
+$PAGE->set_heading($pageheading);
+
 $PAGE->navigation->extend_for_user($user);
 $PAGE->navigation->set_userid_for_parent_checks($user->id); // see MDL-25805 for reasons and for full commit reference for reversal when fixed.
+
+// Edit navbar.
+if (isset($courseid) && $courseid != SITEID) {
+    $usernode = $PAGE->navigation->find('user' . $user->id , null);
+    $usernode->make_active();
+    // Check to see if this is a discussion or a post.
+    if ($mode == 'posts') {
+        $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                array('id' => $user->id, 'course' => $courseid)));
+    } else {
+        $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
+    }
+}
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($inpageheading);

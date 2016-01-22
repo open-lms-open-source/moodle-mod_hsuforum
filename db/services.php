@@ -53,5 +53,23 @@ $functions = array(
         'description' => 'Returns a list of forum posts for a discussion.',
         'type' => 'read',
         'capabilities' => 'mod/hsuforum:viewdiscussion, mod/hsuforum:viewqandawithoutposting'
-    )
+     ),
+
+     'mod_hsuforum_view_forum' => array(
+         'classname' => 'mod_hsuforum_external',
+         'methodname' => 'view_forum',
+         'classpath' => 'mod/hsuforum/externallib.php',
+         'description' => 'Simulate the view.php web interface page: trigger events, completion, etc...',
+         'type' => 'write',
+         'capabilities' => 'mod/hsuforum:viewdiscussion'
+     ),
+
+     'mod_hsuforum_view_forum_discussion' => array(
+         'classname' => 'mod_hsuforum_external',
+         'methodname' => 'view_forum_discussion',
+         'classpath' => 'mod/hsuforum/externallib.php',
+         'description' => 'Simulate the hsuforum/discuss.php web interface page: trigger events, completion, etc...',
+         'type' => 'write',
+         'capabilities' => 'mod/hsuforum:viewdiscussion'
+     ),
 );

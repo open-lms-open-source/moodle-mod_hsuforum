@@ -50,7 +50,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addRule('name', null, 'required', null, 'client');
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $this->standard_intro_elements();
+        $this->standard_intro_elements(get_string('forumintro', 'hsuforum'));
 
         if (empty($config->hiderecentposts)) {
             // Display recent posts on course page?
@@ -144,6 +144,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $choices[2] = get_string('posts', 'hsuforum');
             $mform->addElement('select', 'rsstype', get_string('rsstype'), $choices);
             $mform->addHelpButton('rsstype', 'rsstype', 'hsuforum');
+            if (isset($CFG->hsuforum_rsstype)) {
+                $mform->setDefault('rsstype', $CFG->hsuforum_rsstype);
+            }
 
             $choices = array();
             $choices[0] = '0';
@@ -162,6 +165,9 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $mform->addElement('select', 'rssarticles', get_string('rssarticles'), $choices);
             $mform->addHelpButton('rssarticles', 'rssarticles', 'hsuforum');
             $mform->disabledIf('rssarticles', 'rsstype', 'eq', '0');
+            if (isset($CFG->hsuforum_rssarticles)) {
+                $mform->setDefault('rssarticles', $CFG->hsuforum_rssarticles);
+            }
         }
 
 //-------------------------------------------------------------------------------
@@ -219,7 +225,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             }
         }
         $mform->disabledIf('gradepass', 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
-        
+
         $key = array_search('scale', $mform->_dependencies['assessed']['eq'][0]);
         if ($key !== false) {
             unset($mform->_dependencies['assessed']['eq'][0][$key]);
