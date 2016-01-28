@@ -31,6 +31,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 require_once($CFG->dirroot . '/repository/lib.php');
+require_once($CFG->libdir . '/completionlib.php');
 
 /**
  * A Handler to process replies to forum posts.
@@ -73,14 +74,14 @@ class reply_handler extends \core\message\inbound\handler {
         // Load the post being replied to.
         $post = $DB->get_record('hsuforum_posts', array('id' => $record->datavalue));
         if (!$post) {
-            mtrace("--> Unable to find a post matching with id {$record->datavalue}");
+            mtrace("--> Unable to find an hsuforum post matching with id {$record->datavalue}");
             return false;
         }
 
         // Load the discussion that this post is in.
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
         if (!$post) {
-            mtrace("--> Unable to find the discussion for post {$record->datavalue}");
+            mtrace("--> Unable to find the hsuforum discussion for post {$record->datavalue}");
             return false;
         }
 
@@ -180,7 +181,7 @@ class reply_handler extends \core\message\inbound\handler {
             if (empty($forum->maxattachments) || $forum->maxbytes == 1 ||
                     !has_capability('mod/hsuforum:createattachment', $modcontext)) {
                 // Attachments are not allowed.
-                mtrace("--> User does not have permission to attach files in this forum. Rejecting e-mail.");
+                mtrace("--> User does not have permission to attach files in this hsuforum. Rejecting e-mail.");
 
                 $data = new \stdClass();
                 $data->forum = $forum;
@@ -249,7 +250,15 @@ class reply_handler extends \core\message\inbound\handler {
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
 
-        mtrace("--> Created a post {$addpost->id} in {$discussion->id}.");
+        // Update completion state.
+        $completion = new \completion_info($course);
+        if ($completion->is_enabled($cm) && ($forum->completionreplies || $forum->completionposts)) {
+            $completion->update_state($cm, COMPLETION_COMPLETE);
+
+            mtrace("--> Updating completion status for user {$USER->id} in hsuforum {$forum->id} for post {$addpost->id}.");
+        }
+
+        mtrace("--> Created an hsuforum post {$addpost->id} in {$discussion->id}.");
         return $addpost;
     }
 

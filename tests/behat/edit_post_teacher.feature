@@ -32,14 +32,15 @@ Feature: Teachers can edit or delete any forum post
       | Subject | Student post subject |
       | Message | Student post message |
 
-  @javascript @_alert
+  @javascript
   Scenario: A teacher can delete another user's posts
     Given I log out
     And I log in as "teacher1"
     When I follow "Course 1"
     And I follow "Test forum name"
     And I follow "Teacher post subject"
-    And I click on "Delete" "link" confirming the dialogue
+    And I follow "Delete"
+    And I should see "Test forum description"
     Then I should not see "Student post subject"
     And I should not see "Student post message"
 

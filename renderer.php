@@ -1350,34 +1350,55 @@ HTML;
         ));
 
         $extrahtml = '';
-        $groupinfo = array();
 
         if (groups_get_activity_groupmode($cm)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
-            if (count($groupdata) > 1) {
-                // Do we need to filter the list of groups in the dropdown list?
-                if (has_capability('moodle/site:accessallgroups', $context)) {
-                    // No - User has access to all groups.
-                    $groupinfo[0] = get_string('allparticipants');
 
-                    foreach ($groupdata as $grouptemp) {
-                        $groupinfo[$grouptemp->id] = $grouptemp->name;
-                    }
+            $groupinfo = array();
+            foreach ($groupdata as $groupid => $group) {
+                // Check whether this user can post in this group.
+                // We must make this check because all groups are returned for a visible grouped activity.
+                if (hsuforum_user_can_post_discussion($forum, $groupid, null, $cm, $context)) {
+                    // Build the data for the groupinfo select.
+                    $groupinfo[$groupid] = $group->name;
                 } else {
-                    // Yes - User is restricted to posting in their own group.
-                    $usergroups = groups_get_user_groups($cm->course);
-
-                    foreach ($usergroups as $grouping => $groups) {
-                        foreach ($groups as $groupid) {
-                            if (isset($groupdata[$groupid])) {
-                                $groupinfo[$groupid] = $groupdata[$groupid]->name;
-                            }
-                        }
-                    }
+                    unset($groupdata[$groupid]);
                 }
-                $extrahtml = html_writer::tag('span', get_string('group') . ' ');
-                $extrahtml .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
-                $extrahtml = html_writer::tag('label', $extrahtml);
+            }
+            $groupcount = count($groupinfo);
+
+            /* TODO: uncomment when backend for this feature added in follow on bug.
+            $canposttoowngroups = empty($postid)
+                                    && $groupcount > 1
+                                    && empty($post->parent)
+                                    && has_capability('mod/hsuforum:canposttomygroups', $context);
+
+            if ($canposttoowngroups) {
+                $extrahtml .= html_writer::tag('label', html_writer::checkbox('posttomygroups', 1, false).
+                    get_string('posttomygroups', 'hsuforum'));
+            }
+            */
+
+            if (hsuforum_user_can_post_discussion($forum, -1, null, $cm, $context)) {
+                // Note: We must reverse in this manner because array_unshift renumbers the array.
+                $groupinfo = array_reverse($groupinfo, true );
+                $groupinfo[-1] = get_string('allparticipants');
+                $groupinfo = array_reverse($groupinfo, true );
+                $groupcount++;
+            }
+
+            $canselectgroupfornew = empty($postid) && $groupcount > 1;
+
+            $canselectgroupformove = $groupcount
+                                        && !empty($postid)
+                                        && has_capability('mod/hsuforum:movediscussions', $context);
+
+            $canselectgroup = empty($post->parent) && ($canselectgroupfornew || $canselectgroupformove);
+
+            if ($canselectgroup) {
+                $groupselect = html_writer::tag('span', get_string('group') . ' ');
+                $groupselect .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                $extrahtml .= html_writer::tag('label', $groupselect);
             } else {
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));
             }

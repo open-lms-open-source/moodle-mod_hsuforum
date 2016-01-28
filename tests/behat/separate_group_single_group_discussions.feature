@@ -67,7 +67,7 @@ Feature: Posting to groups in a separate group discussion when restricted to gro
     And I follow link "Use advanced editor" ignoring js onclick
     And the "Group" select box should contain "All participants"
     And the "Group" select box should contain "G2G1"
-    And I should see "Post a copy to all groups"
+    And I should not see "Post a copy to all groups"
 
   @javascript
   Scenario: Teacher in all groups but without accessallgroups can post in either group but not to All Participants

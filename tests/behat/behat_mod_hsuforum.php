@@ -71,16 +71,15 @@ class behat_mod_hsuforum extends behat_base {
      * @param TableNode $table
      */
     public function i_reply_post_from_forum_with($postsubject, $forumname, TableNode $table) {
-
-        return array(
-            new Given('I follow "' . $this->escape($forumname) . '"'),
-            new Given('I follow "' . $this->escape($postsubject) . '"'),
-            new Given('I follow "' . get_string('reply', 'hsuforum') . '"'),
-            new Given('I follow "Use advanced editor"'),
-            new Given('I set the following fields to these values:', $table),
-            new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"'),
-            new Given('I wait to be redirected')
-        );
+        $steps[] = new Given('I follow "' . $this->escape($forumname) . '"');
+        $steps[] = new Given('I follow "' . $this->escape($postsubject) . '"');
+        if ($this->running_javascript()) {
+            $steps[] = new Given('I follow link "Use advanced editor" ignoring js onclick');
+        }
+        $steps[] = new Given('I set the following fields to these values:', $table);
+        $steps[] = new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"');
+        $steps[] = new Given('I wait to be redirected');
+        return $steps;
 
     }
 
@@ -97,16 +96,15 @@ class behat_mod_hsuforum extends behat_base {
      */
     protected function add_new_discussion($forumname, TableNode $table, $buttonstr) {
 
-        // Escaping $forumname as it has been stripped automatically by the transformer.
-        return array(
-            new Given('I follow "' . $this->escape($forumname) . '"'),
-            new Given('I press "' . $buttonstr . '"'),
-            new Given('I follow "Use advanced editor"'),
-            new Given('I set the following fields to these values:', $table),
-            new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"'),
-            new Given('I wait to be redirected')
-        );
-
+        $steps[] = new Given('I follow "' . $this->escape($forumname) . '"');
+        $steps[] = new Given('I press "' . $buttonstr . '"');
+        if ($this->running_javascript()) {
+            $steps[] = new Given('I follow link "Use advanced editor" ignoring js onclick');
+        }
+        $steps[] = new Given('I set the following fields to these values:', $table);
+        $steps[] = new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"');
+        $steps[] = new Given('I wait to be redirected');
+        return $steps;
     }
 
     /**
@@ -167,27 +165,27 @@ class behat_mod_hsuforum extends behat_base {
     public function add_inline_discussions(TableNode $table) {
         $steps = [];
 
-        //file_put_contents ('/Users/gthomas2/temp/test.txt', var_export($data, true));
-
         foreach ($table->getHash() as $row) {
-            $rsteps = [
-                new Given ('I press "Add a new discussion"'),
-                new Given ('I set the field "subject" to "' . $row['subject'] . '"'),
-                new Given ('I set editable div ".hsuforum-textarea" "css_element" to "' . $row['message'] . '"'),
-            ];
+            $rowsteps[] = new Given ('I press "Add a new discussion"');
+            $rowsteps[] = new Given ('I set the field "subject" to "' . $row['subject'] . '"');
+            $rowsteps[] = new Given ('I set editable div ".hsuforum-textarea" "css_element" to "' . $row['message'] . '"');
 
-            if (isset($data['timestart'])) {
-                $rsteps[] = new Given('I set the field "id_timestart_enabled" to "1"');
-                $rsteps[] = new Given('I set the date field "timestart" to "' . $row['timestart'] . '"');
-            }
-            if (isset($data['timeend'])) {
-                $rsteps[] = new Given('I set the field "id_timeend_enabled" to "1"');
-                $rsteps[] = new Given('I set the date field "timeend" to "' . $row['timeend'] . '"');
+            if (isset($row['group'])) {
+                $rowsteps[] = new Given('I set the field "groupinfo" to "' . $row['group'] . '"');
             }
 
-            $rsteps[] = new Given ('I press "Submit"');
-            $rsteps[] = new Given ('I should see "Your post was successfully added."');
-            $steps += $rsteps;
+            if (isset($row['timestart'])) {
+                $rowsteps[] = new Given('I set the field "id_timestart_enabled" to "1"');
+                $rowsteps[] = new Given('I set the date field "timestart" to "' . $row['timestart'] . '"');
+            }
+            if (isset($row['timeend'])) {
+                $rowsteps[] = new Given('I set the field "id_timeend_enabled" to "1"');
+                $rowsteps[] = new Given('I set the date field "timeend" to "' . $row['timeend'] . '"');
+            }
+
+            $rowsteps[] = new Given ('I press "Submit"');
+            $rowsteps[] = new Given ('I should see "Your post was successfully added."');
+            $steps += $rowsteps;
         }
 
         return $steps;
