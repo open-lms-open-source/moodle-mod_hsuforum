@@ -174,10 +174,15 @@ class behat_mod_hsuforum extends behat_base {
                 $rowsteps[] = new Given('I set the field "groupinfo" to "' . $row['group'] . '"');
             }
 
+            if (isset($row['posttomygroups'])) {
+                $rowsteps[] = new Given('I set the field "posttomygroups" to "' . $row['posttomygroups'] . '"');
+            }
+
             if (isset($row['timestart'])) {
                 $rowsteps[] = new Given('I set the field "id_timestart_enabled" to "1"');
                 $rowsteps[] = new Given('I set the date field "timestart" to "' . $row['timestart'] . '"');
             }
+
             if (isset($row['timeend'])) {
                 $rowsteps[] = new Given('I set the field "id_timeend_enabled" to "1"');
                 $rowsteps[] = new Given('I set the date field "timeend" to "' . $row['timeend'] . '"');

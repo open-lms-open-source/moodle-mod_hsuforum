@@ -1367,7 +1367,6 @@ HTML;
             }
             $groupcount = count($groupinfo);
 
-            /* TODO: uncomment when backend for this feature added in follow on bug.
             $canposttoowngroups = empty($postid)
                                     && $groupcount > 1
                                     && empty($post->parent)
@@ -1377,7 +1376,6 @@ HTML;
                 $extrahtml .= html_writer::tag('label', html_writer::checkbox('posttomygroups', 1, false).
                     get_string('posttomygroups', 'hsuforum'));
             }
-            */
 
             if (hsuforum_user_can_post_discussion($forum, -1, null, $cm, $context)) {
                 // Note: We must reverse in this manner because array_unshift renumbers the array.

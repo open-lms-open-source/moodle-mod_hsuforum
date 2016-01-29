@@ -151,6 +151,7 @@ class edit_controller extends controller_abstract {
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
+            $posttomygroups = optional_param('posttomygroups', 0, PARAM_BOOL);
 
             list($timestart, $timeend) = local::get_form_discussion_times();
 
@@ -162,7 +163,7 @@ class edit_controller extends controller_abstract {
             if (empty($groupid)) {
                 $groupid = -1;
             }
-            return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, array(
+            $options = array(
                 'subject'       => $subject,
                 'name'          => $subject,
                 'groupid'       => $groupid,
@@ -170,8 +171,9 @@ class edit_controller extends controller_abstract {
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
                 'timestart'     => $timestart,
-                'timeend'       => $timeend
-            ));
+                'timeend'       => $timeend,
+            );
+            return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, $options, $posttomygroups);
         } catch (\Exception $e) {
             $retobj = (object) ['errors' => $e];
             return new json_response($retobj);
