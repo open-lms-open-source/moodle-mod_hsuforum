@@ -44,5 +44,5 @@ Feature: Add advanced forum activities and discussions
     And I follow "Post with attachment"
     And I should see "empty.txt"
     And I follow "Edit"
-    And Advanced Forums I follow href "Use advanced editor"
+    And I follow link "Use advanced editor" ignoring js onclick
     And the field "Attachment" matches value "empty.txt"
