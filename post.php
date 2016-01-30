@@ -392,7 +392,16 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('cannotsplit', 'hsuforum');
     }
 
-    if (!empty($name) && confirm_sesskey()) {    // User has confirmed the prune
+    $PAGE->set_cm($cm);
+    $PAGE->set_context($modcontext);
+
+    $prunemform = new mod_hsuforum_prune_form(null, array('prune' => $prune, 'confirm' => $prune));
+
+
+    if ($prunemform->is_cancelled()) {
+        redirect(hsuforum_go_back_to("discuss.php?d=$post->discussion"));
+    } else if ($fromform = $prunemform->get_data()) {
+        // User submits the data.
 
         // Make sure post name does not go beyond 255 chars.
         $name = \mod_hsuforum\local::shorten_post_name($name);
@@ -421,7 +430,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         hsuforum_change_discussionid($post->id, $newid);
 
-        // update last post in each discussion
+        // Update last post in each discussion.
         hsuforum_discussion_update_last_post($discussion->id);
         hsuforum_discussion_update_last_post($newid);
 
@@ -461,14 +470,12 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         redirect(hsuforum_go_back_to("discuss.php?d=$newid"));
 
-    } else { // User just asked to prune something
-
+    } else {
+        // Display the prune form.
         $course = $DB->get_record('course', array('id' => $forum->course));
 
-        $PAGE->set_cm($cm);
         $renderer = $PAGE->get_renderer('mod_hsuforum');
         $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
-        $PAGE->set_context($modcontext);
         $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
         $PAGE->set_title("$discussion->name: $post->subject");
@@ -480,11 +487,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         if (!empty($post->privatereply)) {
             echo $OUTPUT->notification(get_string('splitprivatewarning', 'hsuforum'));
         }
-        echo '<center>';
 
-        include('prune.html');
-
-        echo '</center>';
+        $prunemform->display();
 
         // We don't have the valid unread status. Set to read so we don't see
         // the unread tag.
@@ -808,6 +812,7 @@ if ($fromform = $mform_post->get_data()) {
 
         // If we are posting a copy to all groups the user has access to.
         if (isset($fromform->posttomygroups)) {
+            require_capability('mod/hsuforum:canposttomygroups', $modcontext);
             $allowedgroups = groups_get_activity_allowed_groups($cm);
             $groupstopostto = array_keys($allowedgroups);
         } else {

@@ -1257,6 +1257,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
 
     $posttext .= "\n";
     $posttext .= $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id;
+    $posttext .= "\n";
     $posttext .= format_string($post->subject,true);
     if ($bare) {
         $posttext .= " ($CFG->wwwroot/mod/hsuforum/discuss.php?d=$discussion->id#p$post->id)";
