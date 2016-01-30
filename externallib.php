@@ -483,4 +483,135 @@ class mod_hsuforum_external extends external_api {
         );
     }
 
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.9
+     */
+    public static function view_forum_parameters() {
+        return new external_function_parameters(
+            array(
+                'forumid' => new external_value(PARAM_INT, 'forum instance id')
+            )
+        );
+    }
+
+    /**
+     * Simulate the hsuforum/view.php web interface page: trigger events, completion, etc...
+     *
+     * @param int $forumid the forum instance id
+     * @return array of warnings and status result
+     * @since Moodle 2.9
+     * @throws moodle_exception
+     */
+    public static function view_forum($forumid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $params = self::validate_parameters(self::view_forum_parameters(),
+                                            array(
+                                                'forumid' => $forumid
+                                            ));
+        $warnings = array();
+
+        // Request and permission validation.
+        $forum = $DB->get_record('hsuforum', array('id' => $params['forumid']), 'id', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'hsuforum');
+
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
+        require_capability('mod/hsuforum:viewdiscussion', $context, null, true, 'noviewdiscussionspermission', 'forum');
+
+        // Call the hsuforum/lib API.
+        hsuforum_view($forum, $course, $cm, $context);
+
+        $result = array();
+        $result['status'] = true;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 2.9
+     */
+    public static function view_forum_returns() {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_BOOL, 'status: true if success'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 2.9
+     */
+    public static function view_forum_discussion_parameters() {
+        return new external_function_parameters(
+            array(
+                'discussionid' => new external_value(PARAM_INT, 'discussion id')
+            )
+        );
+    }
+
+    /**
+     * Simulate the hsuforum/discuss.php web interface page: trigger events
+     *
+     * @param int $discussionid the discussion id
+     * @return array of warnings and status result
+     * @since Moodle 2.9
+     * @throws moodle_exception
+     */
+    public static function view_forum_discussion($discussionid) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $params = self::validate_parameters(self::view_forum_discussion_parameters(),
+                                            array(
+                                                'discussionid' => $discussionid
+                                            ));
+        $warnings = array();
+
+        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $params['discussionid']), '*', MUST_EXIST);
+        $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'hsuforum');
+
+        // Validate the module context. It checks everything that affects the module visibility (including groupings, etc..).
+        $modcontext = context_module::instance($cm->id);
+        self::validate_context($modcontext);
+
+        require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'forum');
+
+        // Call the hsuforum/lib API.
+        hsuforum_discussion_view($modcontext, $forum, $discussion);
+
+        $result = array();
+        $result['status'] = true;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 2.9
+     */
+    public static function view_forum_discussion_returns() {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_BOOL, 'status: true if success'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
 }

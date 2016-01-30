@@ -101,6 +101,34 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('hsuforum/enablerssfeeds', get_string('enablerssfeeds', 'admin'),
                        $str, 0, $options));
 
+    if (!empty($CFG->enablerssfeeds)) {
+        $options = array(
+            0 => get_string('none'),
+            1 => get_string('discussions', 'hsuforum'),
+            2 => get_string('posts', 'hsuforum')
+        );
+        $settings->add(new admin_setting_configselect('hsuforum_rsstype', get_string('rsstypedefault', 'hsuforum'),
+                get_string('configrsstypedefault', 'hsuforum'), 0, $options));
+
+        $options = array(
+            0  => '0',
+            1  => '1',
+            2  => '2',
+            3  => '3',
+            4  => '4',
+            5  => '5',
+            10 => '10',
+            15 => '15',
+            20 => '20',
+            25 => '25',
+            30 => '30',
+            40 => '40',
+            50 => '50'
+        );
+        $settings->add(new admin_setting_configselect('hsuforum_rssarticles', get_string('rssarticles', 'hsuforum'),
+                get_string('configrssarticlesdefault', 'hsuforum'), 0, $options));
+    }
+
     $settings->add(new admin_setting_configcheckbox('hsuforum/enabletimedposts', get_string('timedposts', 'hsuforum'),
                        get_string('configenabletimedposts', 'hsuforum'), 0));
 

@@ -193,6 +193,16 @@ class behat_mod_hsuforum extends behat_base {
         return $steps;
     }
 
-
+    /**
+     * Bypass javascript attributed to link and just go straight to href.
+     * @param string $link
+     *
+     * @Given /^I follow link "(?P<link>(?:[^"]|\\")*)" ignoring js onclick$/
+     */
+    public function i_follow_href($link) {
+        $el = $this->find_link($link);
+        $href = $el->getAttribute('href');
+        $this->getSession()->visit($href);
+    }
 
 }

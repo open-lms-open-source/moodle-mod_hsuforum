@@ -804,7 +804,7 @@ function hsuforum_cron() {
 
                 $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
 
-                $eventdata = new stdClass();
+                $eventdata = new \core\message\message();
                 $eventdata->component        = 'mod_hsuforum';
                 $eventdata->name             = 'posts';
                 $eventdata->userfrom         = $postuser;
@@ -815,13 +815,18 @@ function hsuforum_cron() {
                 $eventdata->fullmessagehtml  = $posthtml;
                 $eventdata->notification = 1;
                 $eventdata->replyto = $replyaddress;
+                if (!empty($replyaddress)) {
+                    // Add extra text to email messages if they can reply back.
+                    $textfooter = "\n\n" . get_string('replytopostbyemail', 'mod_hsuforum');
+                    $htmlfooter = html_writer::tag('p', get_string('replytopostbyemail', 'mod_hsuforum'));
+                    $additionalcontent = array('fullmessage' => array('footer' => $textfooter),
+                                     'fullmessagehtml' => array('footer' => $htmlfooter));
+                    $eventdata->set_additional_content('email', $additionalcontent);
+                }
 
                 // If hsuforum_replytouser is not set then send mail using the noreplyaddress.
                 if (empty($config->replytouser)) {
-                    // Clone userfrom as it is referenced by $users.
-                    $cloneduserfrom = clone($userfrom);
-                    $cloneduserfrom->email = $CFG->noreplyaddress;
-                    $eventdata->userfrom = $cloneduserfrom;
+                    $eventdata->userfrom = core_user::get_noreply_user();
                 }
 
                 $smallmessagestrings = new stdClass();
@@ -874,7 +879,7 @@ function hsuforum_cron() {
 
     cron_setup_user();
 
-    $sitetimezone = $CFG->timezone;
+    $sitetimezone = core_date::get_server_timezone();
 
     // Now see if there are any digest mails waiting to be sent, and if we should send them
 
@@ -1228,7 +1233,7 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
 
     $by = New stdClass;
     $by->name = fullname($postuser, $viewfullnames);
-    $by->date = userdate($post->modified, "", $userto->timezone);
+    $by->date = userdate($post->modified, "", core_date::get_user_timezone($userto));
 
     $strbynameondate = get_string('bynameondate', 'hsuforum', $by);
 
@@ -1252,7 +1257,6 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
 
     $posttext .= "\n";
     $posttext .= $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id;
-    $posttext .= "\n---------------------------------------------------------------------\n";
     $posttext .= format_string($post->subject,true);
     if ($bare) {
         $posttext .= " ($CFG->wwwroot/mod/hsuforum/discuss.php?d=$discussion->id#p$post->id)";
@@ -1262,25 +1266,19 @@ function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $user
     $posttext .= format_text_email($post->message, $post->messageformat);
     $posttext .= "\n\n";
     $posttext .= hsuforum_print_attachments($post, $cm, "text");
+    $posttext .= "\n---------------------------------------------------------------------\n";
 
     if (!$bare && $canreply) {
-        $posttext .= "---------------------------------------------------------------------\n";
         $posttext .= get_string("postmailinfo", "hsuforum", $shortname)."\n";
         $posttext .= "$CFG->wwwroot/mod/hsuforum/post.php?reply=$post->id\n";
     }
     if (!$bare && $canunsubscribe) {
-        $posttext .= "\n---------------------------------------------------------------------\n";
         $posttext .= get_string("unsubscribe", "hsuforum");
         $posttext .= ": $CFG->wwwroot/mod/hsuforum/subscribe.php?id=$forum->id\n";
     }
 
-    $posttext .= "\n---------------------------------------------------------------------\n";
     $posttext .= get_string("digestmailpost", "hsuforum");
     $posttext .= ": {$CFG->wwwroot}/mod/hsuforum/index.php?id={$forum->course}\n";
-
-    if ($canreply && $replyaddress) {
-        $posttext .= "\n\n" . get_string('replytopostbyemail', 'mod_hsuforum');
-    }
 
     return $posttext;
 }
@@ -1338,10 +1336,6 @@ function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $user
                      format_string($discussion->name,true).'</a></div>';
     }
     $posthtml .= hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $canreply, true, false);
-
-    if ($canreply && $replyaddress) {
-        $posthtml .= html_writer::tag('p', get_string('replytopostbyemail', 'mod_hsuforum'));
-    }
 
     $footerlinks = array();
     if ($canunsubscribe) {
@@ -2096,6 +2090,20 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
         $posts[$p->parent]->children[$pid] =& $posts[$pid];
     }
 
+    // Start with the last child of the first post.
+    $post = &$posts[reset($posts)->id];
+
+    $lastpost = false;
+    while (!$lastpost) {
+        if (!isset($post->children)) {
+            $post->lastpost = true;
+            $lastpost = true;
+        } else {
+             // Go to the last child of this post.
+            $post = &$posts[end($post->children)->id];
+        }
+    }
+
     return $posts;
 }
 
@@ -2298,23 +2306,9 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
 
     if ($lexer->parse($searchstring)) {
         $parsearray = $parser->get_parsed_array();
-
-    // Experimental feature under 1.8! MDL-8830
-    // Use alternative text searches if defined
-    // This feature only works under mysql until properly implemented for other DBs
-    // Requires manual creation of text index for hsuforum_posts before enabling it:
-    // CREATE FULLTEXT INDEX foru_post_tix ON [prefix]hsuforum_posts (subject, message)
-    // Experimental feature under 1.8! MDL-8830
-        $usetextsearches = get_config('hsuforum', 'usetextsearches');
-        if (!empty($usetextsearches)) {
-            list($messagesearch, $msparams) = search_generate_text_SQL($parsearray, 'p.message', 'p.subject',
-                                                 'p.userid', 'u.id', 'u.firstname',
-                                                 'u.lastname', 'p.modified', 'd.forum');
-        } else {
-            list($messagesearch, $msparams) = search_generate_SQL($parsearray, 'p.message', 'p.subject',
-                                                 'p.userid', 'u.id', 'u.firstname',
-                                                 'u.lastname', 'p.modified', 'd.forum');
-        }
+        list($messagesearch, $msparams) = search_generate_SQL($parsearray, 'p.message', 'p.subject',
+                                                              'p.userid', 'u.id', 'u.firstname',
+                                                              'u.lastname', 'p.modified', 'd.forum');
         $params = array_merge($params, $msparams);
     }
 
@@ -3349,7 +3343,7 @@ function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $user
     } else {
         $by->name = $fullname;
     }
-    $by->date = userdate($post->modified, '', $userto->timezone);
+    $by->date = userdate($post->modified, '', core_date::get_user_timezone($userto));
     $output .= '<div class="author">'.get_string('bynameondate', 'hsuforum', $by).'</div>';
 
     $output .= '</td></tr>';
@@ -8137,4 +8131,89 @@ function hsuforum_get_context($forumid, $context = null) {
     }
 
     return $context;
+}
+
+/**
+ * Mark the activity completed (if required) and trigger the course_module_viewed event.
+ *
+ * @param  stdClass $forum   forum object
+ * @param  stdClass $course  course object
+ * @param  stdClass $cm      course module object
+ * @param  stdClass $context context object
+ * @since Moodle 2.9
+ */
+function hsuforum_view($forum, $course, $cm, $context) {
+
+    // Completion.
+    $completion = new completion_info($course);
+    $completion->set_module_viewed($cm);
+
+    // Trigger course_module_viewed event.
+
+    $params = array(
+        'context' => $context,
+        'objectid' => $forum->id
+    );
+
+    $event = \mod_hsuforum\event\course_module_viewed::create($params);
+    $event->add_record_snapshot('course_modules', $cm);
+    $event->add_record_snapshot('course', $course);
+    $event->add_record_snapshot('hsuforum', $forum);
+    $event->trigger();
+}
+
+/**
+ * Trigger the discussion viewed event
+ *
+ * @param  stdClass $modcontext module context object
+ * @param  stdClass $forum      forum object
+ * @param  stdClass $discussion discussion object
+ * @since Moodle 2.9
+ */
+function hsuforum_discussion_view($modcontext, $forum, $discussion) {
+    $params = array(
+        'context' => $modcontext,
+        'objectid' => $discussion->id,
+    );
+
+    $event = \mod_hsuforum\event\discussion_viewed::create($params);
+    $event->add_record_snapshot('hsuforum_discussions', $discussion);
+    $event->add_record_snapshot('hsuforum', $forum);
+    $event->trigger();
+}
+
+/**
+ * Add nodes to myprofile page.
+ *
+ * @param \core_user\output\myprofile\tree $tree Tree object
+ * @param stdClass $user user object
+ * @param bool $iscurrentuser
+ * @param stdClass $course Course object
+ *
+ * @return bool
+ */
+function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
+    if (isguestuser($user)) {
+        // The guest user cannot post, so it is not possible to view any posts.
+        // May as well just bail aggressively here.
+        return false;
+    }
+    $postsurl = new moodle_url('/mod/hsuforum/user.php', array('id' => $user->id));
+    if (!empty($course)) {
+        $postsurl->param('course', $course->id);
+    }
+    $string = get_string('forumposts', 'mod_hsuforum');
+    $node = new core_user\output\myprofile\node('miscellaneous', 'forumposts', $string, null, $postsurl);
+    $tree->add_node($node);
+
+    $discussionssurl = new moodle_url('/mod/hsuforum/user.php', array('id' => $user->id, 'mode' => 'discussions'));
+    if (!empty($course)) {
+        $discussionssurl->param('course', $course->id);
+    }
+    $string = get_string('myprofileotherdis', 'mod_hsuforum');
+    $node = new core_user\output\myprofile\node('miscellaneous', 'forumdiscussions', $string, null,
+        $discussionssurl);
+    $tree->add_node($node);
+
+    return true;
 }

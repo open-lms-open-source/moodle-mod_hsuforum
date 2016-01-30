@@ -52,9 +52,11 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     And I follow "Course 1"
     And I follow "Standard forum name"
     When I click on "Add a new discussion" "button"
+    And I follow link "Use advanced editor" ignoring js onclick
     Then the "Group" select box should contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
+    And I should see "Post a copy to all groups"
 
   @javascript
   Scenario: Teacher in all groups but without accessallgroups can only post in their groups
@@ -66,9 +68,11 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     And I follow "Course 1"
     And I follow "Standard forum name"
     When I click on "Add a new discussion" "button"
+    And I follow link "Use advanced editor" ignoring js onclick
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
+    And I should see "Post a copy to all groups"
 
   @javascript
   Scenario: Teacher in some groups and without accessallgroups can only post in their groups
@@ -80,6 +84,8 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     And I follow "Course 1"
     And I follow "Standard forum name"
     When I click on "Add a new discussion" "button"
+    And I follow link "Use advanced editor" ignoring js onclick
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
+    And I should see "Post a copy to all groups"

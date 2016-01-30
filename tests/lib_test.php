@@ -314,6 +314,83 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         }
     }
 
+    public function test_forum_view() {
+        global $CFG;
+
+        $CFG->enablecompletion = 1;
+        $this->resetAfterTest();
+
+        // Setup test data.
+        $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id),
+                                                            array('completion' => 2, 'completionview' => 1));
+        $context = context_module::instance($forum->cmid);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+
+        $this->setAdminUser();
+        hsuforum_view($forum, $course, $cm, $context);
+
+        $events = $sink->get_events();
+        // 2 additional events thanks to completion.
+        $this->assertCount(3, $events);
+        $event = array_pop($events);
+
+        // Checking that the event contains the expected values.
+        $this->assertInstanceOf('\mod_hsuforum\event\course_module_viewed', $event);
+        $this->assertEquals($context, $event->get_context());
+        $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
+        $this->assertEquals($url, $event->get_url());
+        $this->assertEventContextNotUsed($event);
+        $this->assertNotEmpty($event->get_name());
+
+        // Check completion status.
+        $completion = new completion_info($course);
+        $completiondata = $completion->get_data($cm);
+        $this->assertEquals(1, $completiondata->completionstate);
+
+    }
+
+    /**
+     * Test hsuforum_discussion_view.
+     */
+    public function test_forum_discussion_view() {
+        global $CFG, $USER;
+
+        $this->resetAfterTest();
+
+        // Setup test data.
+        $course = $this->getDataGenerator()->create_course();
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
+        $discussion = $this->create_single_discussion_with_replies($forum, $USER, 2);
+
+        $context = context_module::instance($forum->cmid);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+
+        $this->setAdminUser();
+        hsuforum_discussion_view($context, $forum, $discussion);
+
+        $events = $sink->get_events();
+        $this->assertCount(1, $events);
+        $event = array_pop($events);
+
+        // Checking that the event contains the expected values.
+        $this->assertInstanceOf('\mod_hsuforum\event\discussion_viewed', $event);
+        $this->assertEquals($context, $event->get_context());
+        $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
+            $discussion->id, $forum->cmid);
+        $this->assertEventLegacyLogData($expected, $event);
+        $this->assertEventContextNotUsed($event);
+
+        $this->assertNotEmpty($event->get_name());
+
+    }
+
     /**
      * Create a new course, forum, and user with a number of discussions and replies.
      *
