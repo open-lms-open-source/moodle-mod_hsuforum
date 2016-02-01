@@ -716,7 +716,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $DB->set_field('hsuforum_discussions', 'groupid', -1, array('groupid' => 0));
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2016010702, 'hsuforum');
+        upgrade_mod_savepoint(true, 2016012600, 'hsuforum');
     }
 
     return true;
