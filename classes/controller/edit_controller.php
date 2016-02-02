@@ -173,7 +173,8 @@ class edit_controller extends controller_abstract {
                 'timeend'       => $timeend
             ));
         } catch (\Exception $e) {
-            return new json_response($e);
+            $retobj = (object) ['errors' => $e];
+            return new json_response($retobj);
         }
     }
 

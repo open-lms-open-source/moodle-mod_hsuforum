@@ -2679,6 +2679,61 @@ function hsuforum_get_firstpost_from_discussion($discussionid) {
 }
 
 /**
+ * Returns an array of counts of replies to each discussion
+ *
+ * @global object
+ * @global object
+ * @param int $forumid
+ * @param string $forumsort
+ * @param int $limit
+ * @param int $page
+ * @param int $perpage
+ * @return array
+ */
+function hsuforum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $page=-1, $perpage=0) {
+    global $CFG, $DB;
+
+    if ($limit > 0) {
+        $limitfrom = 0;
+        $limitnum  = $limit;
+    } else if ($page != -1) {
+        $limitfrom = $page*$perpage;
+        $limitnum  = $perpage;
+    } else {
+        $limitfrom = 0;
+        $limitnum  = 0;
+    }
+
+    if ($forumsort == "") {
+        $orderby = "";
+        $groupby = "";
+
+    } else {
+        $orderby = "ORDER BY $forumsort";
+        $groupby = ", ".strtolower($forumsort);
+        $groupby = str_replace('desc', '', $groupby);
+        $groupby = str_replace('asc', '', $groupby);
+    }
+
+    if (($limitfrom == 0 and $limitnum == 0) or $forumsort == "") {
+        $sql = "SELECT p.discussion, COUNT(p.id) AS replies, MAX(p.id) AS lastpostid
+                  FROM {hsuforum_posts} p
+                       JOIN {hsuforum_discussions} d ON p.discussion = d.id
+                 WHERE p.parent > 0 AND d.forum = ?
+              GROUP BY p.discussion";
+        return $DB->get_records_sql($sql, array($forumid));
+
+    } else {
+        $sql = "SELECT p.discussion, (COUNT(p.id) - 1) AS replies, MAX(p.id) AS lastpostid
+                  FROM {hsuforum_posts} p
+                       JOIN {hsuforum_discussions} d ON p.discussion = d.id
+                 WHERE d.forum = ?
+              GROUP BY p.discussion $groupby $orderby";
+        return $DB->get_records_sql($sql, array($forumid), $limitfrom, $limitnum);
+    }
+}
+
+/**
  * @global object
  * @global object
  * @global object
@@ -3037,6 +3092,80 @@ function hsuforum_get_discussion_neighbours($cm, $discussion) {
     return $neighbours;
 }
 
+/**
+ *
+ * @global object
+ * @global object
+ * @global object
+ * @uses CONTEXT_MODULE
+ * @uses VISIBLEGROUPS
+ * @param object $cm
+ * @return array
+ */
+function hsuforum_get_discussions_unread($cm) {
+    global $CFG, $DB, $USER;
+
+    $config = get_config('hsuforum');
+
+    $now = round(time(), -2);
+    $cutoffdate = $now - ($config->oldpostdays*24*60*60);
+
+    $params = array();
+    $groupmode    = groups_get_activity_groupmode($cm);
+    $currentgroup = groups_get_activity_group($cm);
+
+    if ($groupmode) {
+        $modcontext = context_module::instance($cm->id);
+
+        if ($groupmode == VISIBLEGROUPS or has_capability('moodle/site:accessallgroups', $modcontext)) {
+            if ($currentgroup) {
+                $groupselect = "AND (d.groupid = :currentgroup OR d.groupid = -1)";
+                $params['currentgroup'] = $currentgroup;
+            } else {
+                $groupselect = "";
+            }
+
+        } else {
+            //separate groups without access all
+            if ($currentgroup) {
+                $groupselect = "AND (d.groupid = :currentgroup OR d.groupid = -1)";
+                $params['currentgroup'] = $currentgroup;
+            } else {
+                $groupselect = "AND d.groupid = -1";
+            }
+        }
+    } else {
+        $groupselect = "";
+    }
+
+    if (!empty($config->enabletimedposts)) {
+        $timedsql = "AND d.timestart < :now1 AND (d.timeend = 0 OR d.timeend > :now2)";
+        $params['now1'] = $now;
+        $params['now2'] = $now;
+    } else {
+        $timedsql = "";
+    }
+
+    $sql = "SELECT d.id, COUNT(p.id) AS unread
+              FROM {hsuforum_discussions} d
+                   JOIN {hsuforum_posts} p     ON p.discussion = d.id
+                   LEFT JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = $USER->id)
+             WHERE d.forum = {$cm->instance}
+                   AND p.modified >= :cutoffdate AND r.id is NULL
+                   $groupselect
+                   $timedsql
+          GROUP BY d.id";
+    $params['cutoffdate'] = $cutoffdate;
+
+    if ($unreads = $DB->get_records_sql($sql, $params)) {
+        foreach ($unreads as $unread) {
+            $unreads[$unread->id] = $unread->unread;
+        }
+        return $unreads;
+    } else {
+        return array();
+    }
+}
 /**
  * @global object
  * @global object
@@ -3513,6 +3642,15 @@ function hsuforum_rating_validate($params) {
         if (!groups_group_exists($discussion->groupid)) { // Can't find group
             throw new rating_exception('cannotfindgroup');//something is wrong
         }
+        if (!empty($discussion->unread) && $discussion->unread !== '-') {
+            $replystring .= ' <span class="sep">/</span> <span class="unread">';
+            if ($discussion->unread == 1) {
+                $replystring .= get_string('unreadpostsone', 'hsuforum');
+            } else {
+                $replystring .= get_string('unreadpostsnumber', 'hsuforum', $discussion->unread);
+            }
+            $replystring .= '</span>';
+        }
 
         if (!groups_is_member($discussion->groupid) and !has_capability('moodle/site:accessallgroups', $context)) {
             // do not allow rating of posts from other groups when in SEPARATEGROUPS or VISIBLEGROUPS
@@ -3569,7 +3707,7 @@ function hsuforum_set_return() {
     }
 
     if (! isset($SESSION->fromdiscussion)) {
-        $referer = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
+        $referer = get_local_referer(false);
         // If the referer is NOT a login screen then save it.
         if (! strncasecmp("$CFG->wwwroot/login", $referer, 300)) {
             $SESSION->fromdiscussion = $referer;
@@ -3577,10 +3715,52 @@ function hsuforum_set_return() {
     }
 }
 
+/**
+ * Can the current user see ratings for a given itemid?
+ *
+ * @param array $params submitted data
+ *            contextid => int contextid [required]
+ *            component => The component for this module - should always be mod_hsuforum [required]
+ *            ratingarea => object the context in which the rated items exists [required]
+ *            itemid => int the ID of the object being rated [required]
+ *            scaleid => int scale id [optional]
+ * @return bool
+ * @throws coding_exception
+ * @throws rating_exception
+ */
+function mod_hsuforum_rating_can_see_item_ratings($params) {
+    global $DB, $USER;
+
+    // Check the component is mod_hsuforum.
+    if (!isset($params['component']) || $params['component'] != 'mod_hsuforum') {
+        throw new rating_exception('invalidcomponent');
+    }
+
+    // Check the ratingarea is post (the only rating area in forum).
+    if (!isset($params['ratingarea']) || $params['ratingarea'] != 'post') {
+        throw new rating_exception('invalidratingarea');
+    }
+
+    if (!isset($params['itemid'])) {
+        throw new rating_exception('invaliditemid');
+    }
+
+    $post = $DB->get_record('hsuforum_posts', array('id' => $params['itemid']), '*', MUST_EXIST);
+    $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
+    $forum = $DB->get_record('hsuforum', array('id' => $discussion->forum), '*', MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id , false, MUST_EXIST);
+
+    // Perform some final capability checks.
+    if (!hsuforum_user_can_see_post($forum, $discussion, $post, $USER, $cm)) {
+        return false;
+    }
+    return true;
+}
 
 /**
  * @global object
- * @param string $default
+ * @param string|\moodle_url $default
  * @return string
  */
 function hsuforum_go_back_to($default) {
@@ -4176,6 +4356,16 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
         hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_add_discussion');
     }
 
+    $draftid = optional_param('hiddenadvancededitordraftid', false, PARAM_INT);
+
+    // Update discussion post with files.
+    if ($draftid) {
+        $context = context_module::instance($cm->id);
+        $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post',
+            $post->id, array('subdirs' => true), $post->message);
+        $DB->update_record('hsuforum_posts', (object)['id' => $post->id, 'message' => $post->message]);
+    }
+
     return $post->discussion;
 }
 
@@ -4330,7 +4520,7 @@ function hsuforum_delete_discussion($discussion, $fulldelete, $course, $cm, $for
  * @return bool
  */
 function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompletion=false) {
-    global $DB, $CFG;
+    global $DB, $CFG, $USER;
     require_once($CFG->libdir.'/completionlib.php');
 
     $context = context_module::instance($cm->id);
@@ -4377,6 +4567,22 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
                 $completion->update_state($cm, COMPLETION_INCOMPLETE, $post->userid);
             }
         }
+
+        $params = array(
+            'context' => $context,
+            'objectid' => $post->id,
+            'other' => array(
+                'discussionid' => $post->discussion,
+                'forumid' => $forum->id,
+                'forumtype' => $forum->type,
+            )
+        );
+        if ($post->userid !== $USER->id) {
+            $params['relateduserid'] = $post->userid;
+        }
+        $event = \mod_hsuforum\event\post_deleted::create($params);
+        $event->add_record_snapshot('hsuforum_posts', $post);
+        $event->trigger();
 
         return true;
     }
@@ -5118,16 +5324,6 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
         return false;
     }
 
-    if ($forum->type == 'qanda') {
-        $did = $discussion->id;
-        if (property_exists($discussion, 'discussion')) {
-            $did = $discussion->discussion;
-        }
-        if (!hsuforum_user_has_posted($forum->id, $did, $user->id)
-                && !has_capability('mod/hsuforum:viewqandawithoutposting', $context)) {
-            return false;
-        }
-    }
     return true;
 }
 
@@ -6457,16 +6653,20 @@ function hsuforum_reset_userdata($data) {
         $types       = array();
     } else if (!empty($data->reset_hsuforum_types)){
         $removeposts = true;
-        $typesql     = "";
         $types       = array();
+        $sqltypes    = array();
         $hsuforum_types_all = hsuforum_get_hsuforum_types_all();
         foreach ($data->reset_hsuforum_types as $type) {
             if (!array_key_exists($type, $hsuforum_types_all)) {
                 continue;
             }
-            $typesql .= " AND f.type=?";
             $types[] = $hsuforum_types_all[$type];
-            $params[] = $type;
+            $sqltypes[] = $type;
+        }
+        if (!empty($sqltypes)) {
+            list($typesql, $typeparams) = $DB->get_in_or_equal($sqltypes);
+            $typesql = " AND f.type " . $typesql;
+            $params = array_merge($params, $typeparams);
         }
         $typesstr = get_string('resetforums', 'hsuforum').': '.implode(', ', $types);
     }
@@ -8203,8 +8403,8 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
     if (!empty($course)) {
         $postsurl->param('course', $course->id);
     }
-    $string = get_string('forumposts', 'mod_hsuforum');
-    $node = new core_user\output\myprofile\node('miscellaneous', 'forumposts', $string, null, $postsurl);
+    $string = get_string('myprofileotherpost', 'mod_hsuforum');
+    $node = new core_user\output\myprofile\node('miscellaneous', 'hsuforumposts', $string, null, $postsurl);
     $tree->add_node($node);
 
     $discussionssurl = new moodle_url('/mod/hsuforum/user.php', array('id' => $user->id, 'mode' => 'discussions'));
@@ -8212,7 +8412,7 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
         $discussionssurl->param('course', $course->id);
     }
     $string = get_string('myprofileotherdis', 'mod_hsuforum');
-    $node = new core_user\output\myprofile\node('miscellaneous', 'forumdiscussions', $string, null,
+    $node = new core_user\output\myprofile\node('miscellaneous', 'hsuforumdiscussions', $string, null,
         $discussionssurl);
     $tree->add_node($node);
 

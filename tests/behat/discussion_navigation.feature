@@ -56,10 +56,11 @@ Background:
     And I should see "Discussion 2"
     And I should not see "Discussion 3"
     And I follow "Reply"
-    And I follow "Use advanced editor"
+    And I follow link "Use advanced editor" ignoring js onclick
     And I set the following fields to these values:
       | Message | Answer to discussion |
     And I press "Post to forum"
+    And I wait to be redirected
     And I should not see "Discussion 2"
     And I should see "Discussion 3"
     And I follow "Discussion 3"
@@ -103,7 +104,7 @@ Background:
     When I log in as "student1"
     And I follow "Course 1"
     And I follow "Test forum name"
-    And I set the field "Visible groups" to "All participants"
+    And I select "All participants" from the "Visible groups" singleselect
     And I follow "Discussion 1 Group 0"
     Then I should see "Discussion 2 Group 0"
     And I should not see "Group 1"
@@ -119,7 +120,7 @@ Background:
     And I should see "Discussion 2 Group 1"
     And I should see "Discussion 2 Group 2"
     And I follow "Test forum name"
-    And I set the field "Visible groups" to "Group 1"
+    And I select "Group 1" from the "Visible groups" singleselect
     And I follow "Discussion 1 Group 1"
     Then I should see "Discussion 2 Group 0"
     And I should see "Discussion 2 Group 1"

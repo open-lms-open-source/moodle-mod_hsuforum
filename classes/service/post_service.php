@@ -89,7 +89,7 @@ class post_service {
         if (!empty($errors)) {
             return $this->create_error_response($errors);
         }
-        $this->save_post($discussion, $post, $uploader);
+        $this->save_post($discussion, $post, $uploader, $cm);
         $this->trigger_post_created($course, $context, $cm, $forum, $discussion, $post);
 
         return new json_response((object) array(
@@ -144,7 +144,7 @@ class post_service {
         if (!empty($errors)) {
             return $this->create_error_response($errors);
         }
-        $this->save_post($discussion, $post, $uploader);
+        $this->save_post($discussion, $post, $uploader, $cm);
 
         // If the user has access to all groups and they are changing the group, then update the post.
         if (empty($post->parent) && has_capability('mod/hsuforum:movediscussions', $context)) {
@@ -297,8 +297,11 @@ class post_service {
      * @param object $discussion
      * @param object $post
      * @param upload_file $uploader
+     * @param \cm_info $cm
      */
-    public function save_post($discussion, $post, upload_file $uploader) {
+    public function save_post($discussion, $post, upload_file $uploader, \cm_info $cm) {
+        global $DB;
+
         $message = '';
 
         // Because the following functions require these...
@@ -307,10 +310,18 @@ class post_service {
         $post->timestart = $discussion->timestart;
         $post->timeend   = $discussion->timeend;
 
+        $draftid = optional_param('hiddenadvancededitordraftid', false, PARAM_INT);
         if (!empty($post->id)) {
             hsuforum_update_post($post, null, $message, $uploader);
         } else {
-            hsuforum_add_new_post($post, null, $message, $uploader);
+            $postid = hsuforum_add_new_post($post, null, $message, $uploader);
+            $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
+        }
+        // Update post record via db, can't call hsuforum_update_post as it will process file uploads again.
+        if ($draftid) {
+            $post->message = file_save_draft_area_files($draftid, $cm->context->id, 'mod_hsuforum', 'post',
+                $post->id, array('subdirs' => true), $post->message);
+            $DB->update_record('hsuforum_posts', (object)['id' => $post->id, 'message' => $post->message]);
         }
     }
 

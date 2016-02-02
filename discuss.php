@@ -27,6 +27,7 @@
 
     use mod_hsuforum\local;
     use mod_hsuforum\renderables\discussion_dateform;
+    use mod_hsuforum\renderables\advanced_editor;
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
@@ -329,6 +330,6 @@
     echo $renderer->discussion_navigation($neighbours['prev'], $neighbours['next']);
     echo "</div>";
 
-echo $renderer->advanced_editor();
+echo $renderer->render(new advanced_editor($modcontext));
 
 echo $OUTPUT->footer();

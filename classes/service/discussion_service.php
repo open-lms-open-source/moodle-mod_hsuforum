@@ -87,6 +87,7 @@ class discussion_service {
             ));
         }
         $this->save_discussion($discussion, $uploader);
+
         $this->trigger_discussion_created($course, $context, $cm, $forum, $discussion);
 
         $message = get_string('postaddedsuccess', 'hsuforum');
@@ -187,6 +188,7 @@ class discussion_service {
      */
     public function save_discussion($discussion, upload_file $uploader) {
         $message        = '';
+
         $discussion->id = hsuforum_add_discussion($discussion, null, $message);
 
         $file = $uploader->process_file_upload($discussion->firstpost);
