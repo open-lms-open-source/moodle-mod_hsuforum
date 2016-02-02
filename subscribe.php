@@ -152,16 +152,16 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
     if (hsuforum_unsubscribe($user->id, $forum->id)) {
         redirect($returnto, get_string("nownotsubscribed", "hsuforum", $info), 1);
     } else {
-        print_error('cannotunsubscribe', 'hsuforum', $_SERVER["HTTP_REFERER"]);
+        print_error('cannotunsubscribe', 'hsuforum', get_local_referer(false));
     }
 
 } else {  // subscribe
     if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE &&
                 !has_capability('mod/hsuforum:managesubscriptions', $context)) {
-        print_error('disallowsubscribe', 'hsuforum', $_SERVER["HTTP_REFERER"]);
+        print_error('disallowsubscribe', 'hsuforum', get_local_referer(false));
     }
     if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
-        print_error('noviewdiscussionspermission', 'hsuforum', $_SERVER["HTTP_REFERER"]);
+        print_error('noviewdiscussionspermission', 'hsuforum', get_local_referer(false));
     }
     if (is_null($sesskey)) {    // we came here via link in email
         $PAGE->set_title($course->shortname);

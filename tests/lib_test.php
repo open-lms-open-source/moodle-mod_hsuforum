@@ -314,6 +314,83 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         }
     }
 
+    public function test_forum_view() {
+        global $CFG;
+
+        $CFG->enablecompletion = 1;
+        $this->resetAfterTest();
+
+        // Setup test data.
+        $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id),
+                                                            array('completion' => 2, 'completionview' => 1));
+        $context = context_module::instance($forum->cmid);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+
+        $this->setAdminUser();
+        hsuforum_view($forum, $course, $cm, $context);
+
+        $events = $sink->get_events();
+        // 2 additional events thanks to completion.
+        $this->assertCount(3, $events);
+        $event = array_pop($events);
+
+        // Checking that the event contains the expected values.
+        $this->assertInstanceOf('\mod_hsuforum\event\course_module_viewed', $event);
+        $this->assertEquals($context, $event->get_context());
+        $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
+        $this->assertEquals($url, $event->get_url());
+        $this->assertEventContextNotUsed($event);
+        $this->assertNotEmpty($event->get_name());
+
+        // Check completion status.
+        $completion = new completion_info($course);
+        $completiondata = $completion->get_data($cm);
+        $this->assertEquals(1, $completiondata->completionstate);
+
+    }
+
+    /**
+     * Test hsuforum_discussion_view.
+     */
+    public function test_forum_discussion_view() {
+        global $CFG, $USER;
+
+        $this->resetAfterTest();
+
+        // Setup test data.
+        $course = $this->getDataGenerator()->create_course();
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
+        $discussion = $this->create_single_discussion_with_replies($forum, $USER, 2);
+
+        $context = context_module::instance($forum->cmid);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+
+        // Trigger and capture the event.
+        $sink = $this->redirectEvents();
+
+        $this->setAdminUser();
+        hsuforum_discussion_view($context, $forum, $discussion);
+
+        $events = $sink->get_events();
+        $this->assertCount(1, $events);
+        $event = array_pop($events);
+
+        // Checking that the event contains the expected values.
+        $this->assertInstanceOf('\mod_hsuforum\event\discussion_viewed', $event);
+        $this->assertEquals($context, $event->get_context());
+        $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
+            $discussion->id, $forum->cmid);
+        $this->assertEventLegacyLogData($expected, $event);
+        $this->assertEventContextNotUsed($event);
+
+        $this->assertNotEmpty($event->get_name());
+
+    }
+
     /**
      * Create a new course, forum, and user with a number of discussions and replies.
      *
@@ -373,6 +450,109 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         }
 
         return $discussion;
+    }
+
+    /**
+     * Tests for mod_hsuforum_rating_can_see_item_ratings().
+     *
+     * @throws coding_exception
+     * @throws rating_exception
+     */
+    public function test_mod_hsuforum_rating_can_see_item_ratings() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Setup test data.
+        $course = new stdClass();
+        $course->groupmode = SEPARATEGROUPS;
+        $course->groupmodeforce = true;
+        $course = $this->getDataGenerator()->create_course($course);
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
+        $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+        $context = context_module::instance($cm->id);
+
+        // Create users.
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        $user3 = $this->getDataGenerator()->create_user();
+        $user4 = $this->getDataGenerator()->create_user();
+
+        // Groups and stuff.
+        $role = $DB->get_record('role', array('shortname' => 'teacher'), '*', MUST_EXIST);
+        $this->getDataGenerator()->enrol_user($user1->id, $course->id, $role->id);
+        $this->getDataGenerator()->enrol_user($user2->id, $course->id, $role->id);
+        $this->getDataGenerator()->enrol_user($user3->id, $course->id, $role->id);
+        $this->getDataGenerator()->enrol_user($user4->id, $course->id, $role->id);
+
+        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        groups_add_member($group1, $user1);
+        groups_add_member($group1, $user2);
+        groups_add_member($group2, $user3);
+        groups_add_member($group2, $user4);
+
+        $record = new stdClass();
+        $record->course = $forum->course;
+        $record->forum = $forum->id;
+        $record->userid = $user1->id;
+        $record->groupid = $group1->id;
+        $discussion = $generator->create_discussion($record);
+
+        // Retrieve the first post.
+        $post = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
+
+        $ratingoptions = new stdClass;
+        $ratingoptions->context = $context;
+        $ratingoptions->ratingarea = 'post';
+        $ratingoptions->component = 'mod_hsuforum';
+        $ratingoptions->itemid  = $post->id;
+        $ratingoptions->scaleid = 2;
+        $ratingoptions->userid  = $user2->id;
+        $rating = new rating($ratingoptions);
+        $rating->update_rating(2);
+
+        // Now try to access it as various users.
+        unassign_capability('moodle/site:accessallgroups', $role->id);
+        $params = array('contextid' => 2,
+                        'component' => 'mod_hsuforum',
+                        'ratingarea' => 'post',
+                        'itemid' => $post->id,
+                        'scaleid' => 2);
+        $this->setUser($user1);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user2);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user3);
+        $this->assertFalse(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user4);
+        $this->assertFalse(mod_hsuforum_rating_can_see_item_ratings($params));
+
+        // Now try with accessallgroups cap and make sure everything is visible.
+        assign_capability('moodle/site:accessallgroups', CAP_ALLOW, $role->id, $context->id);
+        $this->setUser($user1);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user2);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user3);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user4);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+
+        // Change group mode and verify visibility.
+        $course->groupmode = VISIBLEGROUPS;
+        $DB->update_record('course', $course);
+        unassign_capability('moodle/site:accessallgroups', $role->id);
+        $this->setUser($user1);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user2);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user3);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+        $this->setUser($user4);
+        $this->assertTrue(mod_hsuforum_rating_can_see_item_ratings($params));
+
     }
 
 }

@@ -14,32 +14,21 @@ Feature: Students can edit or delete their forum posts within a set time limit
     And the following "course enrolments" exist:
       | user | course | role |
       | student1 | C1 | student |
-    And I log in as "admin"
-    And I expand "Site administration" node
-    And I expand "Security" node
-    And I follow "Site policies"
-    And I set the field "Maximum time to edit posts" to "1 minutes"
-    And I press "Save changes"
-    And I am on homepage
-    And I follow "Course 1"
-    And I turn editing mode on
-    And I add a "Advanced Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
-    And I log out
-    And I follow "Course 1"
+    And the following "activities" exist:
+      | activity   | name                   | intro                   | course  | idnumber  |
+      | hsuforum   | Test forum name        | Test forum description  | C1      | forum     |
     And I log in as "student1"
+    And I follow "Course 1"
     And I add a new discussion to "Test forum name" advanced forum with:
       | Subject | Forum post subject |
       | Message | This is the body |
 
  @javascript
   Scenario: Edit forum post
-    When I follow "Forum post subject"
+    Given I follow "Forum post subject"
     And I follow "Edit"
-    And I follow "Use advanced editor"
-    And I set the following fields to these values:
+    And I follow link "Use advanced editor" ignoring js onclick
+    When I set the following fields to these values:
       | Subject | Edited post subject |
       | Message | Edited post body |
     And I press "Save changes"
@@ -47,17 +36,31 @@ Feature: Students can edit or delete their forum posts within a set time limit
     Then I should see "Edited post subject"
     And I should see "Edited post body"
 
-  @javascript @_alert
+  @javascript
   Scenario: Delete forum post
-    When I follow "Forum post subject"
-    And I click on "Delete" "link" confirming the dialogue
+    Given I follow "Forum post subject"
+    When I follow "Delete"
+    And I should see "Test forum description"
     Then I should not see "Forum post subject"
 
   @javascript
   Scenario: Time limit expires
-    # TODO there's got to be a better way than adding an 80 second delay.
-    # Previously this value was 70 seconds but it was faliing on my local setup.
-    When I wait "80" seconds
+    Given the following config values are set as admin:
+      | maxeditingtime | 1 minutes |
+    And I log out
+    And I log in as "admin"
+    And I am on site homepage
+    And I follow "Course 1"
+    And I turn editing mode on
+    And I add a "Advanced Forum" to section "1" and I fill the form with:
+      | Forum name | Test forum name |
+      | Forum type | Standard forum for general use |
+      | Description | Test forum description |
+    And I log out
+    And I log in as "student1"
+    And I follow "Course 1"
+    When I wait "61" seconds
+    And I follow "Test forum name"
     And I follow "Forum post subject"
     Then I should not see "Edit"
     And I should not see "Delete"

@@ -4,7 +4,7 @@ var CSS = {
         POST_EDIT: 'hsuforum-post-edit'
     },
     SELECTORS = {
-        ADD_DISCUSSION: '#newdiscussionform',
+        ADD_DISCUSSION: '#newdiscussionform input[type=submit]',
         ADD_DISCUSSION_TARGET: '.hsuforum-add-discussion-target',
         ALL_FORMS: '.hsuforum-reply-wrapper form',
         CONTAINER: '.mod-hsuforum-posts-container',

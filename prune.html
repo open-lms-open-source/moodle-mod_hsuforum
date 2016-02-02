@@ -1,9 +1,0 @@
-<form id="pruneform" method="get" action="post.php">
-
-<label for=prunename><?php print_string("discussionname", "hsuforum"); ?></label>
-<input type="text" id=prunename name="name" value="<?php p($post->subject) ?>" />
-<input type="hidden" name="prune"   value="<?php p($prune) ?>" />
-<input type="hidden" name="confirm" value="<?php p($prune) ?>" />
-<input type="hidden" name="sesskey" value="<?php echo sesskey() ?>" />
-<input type="submit" value="<?php print_string('prune', 'hsuforum'); ?>" />
-</form>

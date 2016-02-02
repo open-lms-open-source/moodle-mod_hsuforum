@@ -102,7 +102,7 @@ $strsubscribers = get_string("subscribers", "hsuforum");
 $PAGE->navbar->add($strsubscribers);
 $PAGE->set_title($strsubscribers);
 $PAGE->set_heading($COURSE->fullname);
-if (has_capability('mod/hsuforum:managesubscriptions', $context)) {
+if (has_capability('mod/hsuforum:managesubscriptions', $context) && hsuforum_is_forcesubscribed($forum) === false) {
     if ($edit != -1) {
         $USER->subscriptionsediting = $edit;
     }
@@ -113,7 +113,11 @@ if (has_capability('mod/hsuforum:managesubscriptions', $context)) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('forum', 'hsuforum').' '.$strsubscribers);
 if (empty($USER->subscriptionsediting)) {
-    echo $forumoutput->subscriber_overview(hsuforum_subscribed_users($course, $forum, $currentgroup, $context), $forum->name, $forum, $course);
+    $subscribers = hsuforum_subscribed_users($course, $forum, $currentgroup, $context);
+    if (hsuforum_is_forcesubscribed($forum)) {
+        $subscribers = mod_hsuforum_filter_hidden_users($cm, $context, $subscribers);
+    }
+    echo $forumoutput->subscriber_overview($subscribers, $forum->name, $forum, $course);
 } else if (hsuforum_is_forcesubscribed($forum)) {
     $subscriberselector->set_force_subscribed(true);
     echo $forumoutput->subscribed_users($subscriberselector);
@@ -121,3 +125,32 @@ if (empty($USER->subscriptionsediting)) {
     echo $forumoutput->subscriber_selection_form($existingselector, $subscriberselector);
 }
 echo $OUTPUT->footer();
+
+
+/**
+ * Filters a list of users for whether they can see a given activity.
+ * If the course module is hidden (closed-eye icon), then only users who have
+ * the permission to view hidden activities will appear in the output list.
+ *
+ * @todo MDL-48625 This filtering should be handled in core libraries instead.
+ *
+ * @param stdClass $cm the course module record of the activity.
+ * @param context_module $context the activity context, to save re-fetching it.
+ * @param array $users the list of users to filter.
+ * @return array the filtered list of users.
+ */
+function mod_hsuforum_filter_hidden_users(stdClass $cm, context_module $context, array $users) {
+    if ($cm->visible) {
+        return $users;
+    } else {
+        // Filter for users that can view hidden activities.
+        $filteredusers = array();
+        $hiddenviewers = get_users_by_capability($context, 'moodle/course:viewhiddenactivities');
+        foreach ($hiddenviewers as $hiddenviewer) {
+            if (array_key_exists($hiddenviewer->id, $users)) {
+                $filteredusers[$hiddenviewer->id] = $users[$hiddenviewer->id];
+            }
+        }
+        return $filteredusers;
+    }
+}

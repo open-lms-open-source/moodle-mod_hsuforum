@@ -85,9 +85,6 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
         // Forcibly reduce the maxeditingtime to a one second to ensure that
         // messages are sent out.
         $CFG->maxeditingtime = 1;
-
-        // Ensure that we don't prevent e-mail as this will cause unit test failures.
-        $CFG->noemailever = false;
     }
 
     /**
@@ -155,7 +152,8 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
         // Fake all of the post editing times because digests aren't sent until
         // the start of an hour where the modification time on the message is before
         // the start of that hour
-        $digesttime = usergetmidnight(time(), $CFG->timezone) + (get_config('hsuforum', 'digestmailtime') * 3600) - (60 * 60);
+        $sitetimezone = core_date::get_server_timezone();
+        $digesttime = usergetmidnight(time(), $sitetimezone) + (get_config('hsuforum', 'digestmailtime') * 3600) - (60 * 60);
         $DB->set_field('hsuforum_posts', 'modified', $digesttime, array('mailed' => 0));
         $DB->set_field('hsuforum_posts', 'created', $digesttime, array('mailed' => 0));
     }

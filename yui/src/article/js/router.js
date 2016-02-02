@@ -116,7 +116,12 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         // Put editor back to its original place in DOM.
         M.mod_hsuforum.restoreEditor();
 
-        var formNode = e.currentTarget,
+        if (typeof(e.currentTarget) === 'undefined') {
+            // Page possiibly hasn't finished loading.
+            return;
+        }
+
+        var formNode = e.currentTarget.ancestor('form'),
             forumId  = formNode.one(SELECTORS.INPUT_FORUM).get('value');
 
         this.save(formNode.get('action') + '?forum=' + forumId);
@@ -149,6 +154,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param next
      */
     hideForms: function(req, res, next) {
+        this.get('article').get('form').restoreDateFields();
         this.get('article').get('form').removeAllForms();
         next();
     }
@@ -172,7 +178,9 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
          * @required
          */
         root: {
-            value: '/mod/hsuforum'
+            valueFn: function() {
+                return M.cfg.wwwroot.replace(this._regexUrlOrigin, '')+'/mod/hsuforum';
+            }
         },
 
         /**

@@ -31,6 +31,7 @@ use mod_hsuforum\response\json_response;
 use mod_hsuforum\service\discussion_service;
 use mod_hsuforum\service\form_service;
 use mod_hsuforum\service\post_service;
+use mod_hsuforum\local;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -151,6 +152,8 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $messageformat = required_param('messageformat', PARAM_INT);
 
+            list($timestart, $timeend) = local::get_form_discussion_times();
+
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
             $context = $PAGE->context;
@@ -166,9 +169,12 @@ class edit_controller extends controller_abstract {
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
+                'timestart'     => $timestart,
+                'timeend'       => $timeend
             ));
         } catch (\Exception $e) {
-            return new json_response($e);
+            $retobj = (object) ['errors' => $e];
+            return new json_response($retobj);
         }
     }
 
@@ -192,6 +198,8 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
+
+            list($timestart, $timeend) = local::get_form_discussion_times();
 
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
@@ -218,6 +226,8 @@ class edit_controller extends controller_abstract {
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
                 'privatereply'  => $privatereply,
+                'timestart'     => $timestart,
+                'timeend'       => $timeend
             ));
         } catch (\Exception $e) {
             return new json_response($e);
@@ -245,10 +255,16 @@ class edit_controller extends controller_abstract {
 
         if (!empty($post->parent)) {
             $html = $this->formservice->edit_post_form($PAGE->cm, $post);
+            return new json_response(['html' => $html]);
         } else {
             $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post);
+            return new json_response([
+                'html'          => $html,
+                'isdiscussion'  => true,
+                'timestart'     => $discussion->timestart,
+                'timeend'       => $discussion->timeend
+            ]);
         }
-        return new json_response(array('html' => $html));
     }
 
     /**

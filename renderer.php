@@ -26,8 +26,11 @@
  */
 
 use mod_hsuforum\local;
+use mod_hsuforum\renderables\discussion_dateform;
+use mod_hsuforum\renderables\advanced_editor;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
+require_once($CFG->dirroot.'/lib/formslib.php');
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -98,6 +101,21 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     /**
+     * Render dateform.
+     * @param discussion_dateform $dateform
+     * @return string
+     */
+    public function render_discussion_dateform(discussion_dateform $dateform) {
+        if (!$dateform->output) {
+            return '';
+        }
+        $output = '<div id="discussion_dateform">';
+        $output .= $dateform->get_dateform()->render();
+        $output .= '</div>';
+        return $output;
+    }
+
+    /**
      * Render all discussions view, including add discussion button, etc...
      *
      * @param stdClass $forum - forum row
@@ -164,15 +182,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             notice(get_string('noviewdiscussionspermission', 'hsuforum'));
         }
 
-        $params = array(
-            'context' => $context,
-            'objectid' => $forum->id
-        );
-        $event = \mod_hsuforum\event\course_module_viewed::create($params);
-        $event->add_record_snapshot('course_modules', $cm);
-        $event->add_record_snapshot('course', $course);
-        $event->add_record_snapshot('hsuforum', $forum);
-        $event->trigger();
+        // Mark viewed and trigger the course_module_viewed event.
+        hsuforum_view($forum, $course, $cm, $context);
 
         if (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT) {
             // Return here if we post or set subscription etc (but not if we are calling this via ajax).
@@ -290,6 +301,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         $data           = new stdClass;
+        $data->context  = context_module::instance($cm->id);
         $data->id       = $discussion->id;
         $data->postid   = $post->id;
         $data->unread   = $discussion->unread;
@@ -297,7 +309,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->subject  = $this->raw_post_subject($post);
         $data->message  = $this->post_message($post, $cm);
         $data->created  = userdate($post->created, $format);
-        $data->datetime = date(DATE_W3C, usertime($post->created));
         $data->modified = userdate($discussion->timemodified, $format);
         $data->replies  = $discussion->replies;
         $data->replyavatars = array();
@@ -410,7 +421,6 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->message        = $this->post_message($post, $cm, $search);
         $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
         $data->rawcreated     = $post->created;
-        $data->datetime       = date(DATE_W3C, usertime($post->created));
         $data->privatereply   = $post->privatereply;
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
@@ -1312,6 +1322,8 @@ HTML;
             }
         } else {
             $params  = array('forum' => $cm->instance);
+            $post = new stdClass();
+            $post->parent = false;
             $legend = get_string('addyourdiscussion', 'hsuforum');
             $thresholdwarning = hsuforum_check_throttling($forum, $cm);
             if (!empty($thresholdwarning)) {
@@ -1338,18 +1350,55 @@ HTML;
         ));
 
         $extrahtml = '';
+
         if (groups_get_activity_groupmode($cm)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
-            if (count($groupdata) > 1) {
-                if (has_capability('moodle/site:accessallgroups', $context)) {
-                    $groupinfo[0] = get_string('allparticipants');
+
+            $groupinfo = array();
+            foreach ($groupdata as $groupid => $group) {
+                // Check whether this user can post in this group.
+                // We must make this check because all groups are returned for a visible grouped activity.
+                if (hsuforum_user_can_post_discussion($forum, $groupid, null, $cm, $context)) {
+                    // Build the data for the groupinfo select.
+                    $groupinfo[$groupid] = $group->name;
+                } else {
+                    unset($groupdata[$groupid]);
                 }
-                foreach ($groupdata as $grouptemp) {
-                    $groupinfo[$grouptemp->id] = $grouptemp->name;
-                }
-                $extrahtml = html_writer::tag('span', get_string('group'));
-                $extrahtml .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
-                $extrahtml = html_writer::tag('label', $extrahtml);
+            }
+            $groupcount = count($groupinfo);
+
+            /* TODO: uncomment when backend for this feature added in follow on bug.
+            $canposttoowngroups = empty($postid)
+                                    && $groupcount > 1
+                                    && empty($post->parent)
+                                    && has_capability('mod/hsuforum:canposttomygroups', $context);
+
+            if ($canposttoowngroups) {
+                $extrahtml .= html_writer::tag('label', html_writer::checkbox('posttomygroups', 1, false).
+                    get_string('posttomygroups', 'hsuforum'));
+            }
+            */
+
+            if (hsuforum_user_can_post_discussion($forum, -1, null, $cm, $context)) {
+                // Note: We must reverse in this manner because array_unshift renumbers the array.
+                $groupinfo = array_reverse($groupinfo, true );
+                $groupinfo[-1] = get_string('allparticipants');
+                $groupinfo = array_reverse($groupinfo, true );
+                $groupcount++;
+            }
+
+            $canselectgroupfornew = empty($postid) && $groupcount > 1;
+
+            $canselectgroupformove = $groupcount
+                                        && !empty($postid)
+                                        && has_capability('mod/hsuforum:movediscussions', $context);
+
+            $canselectgroup = empty($post->parent) && ($canselectgroupfornew || $canselectgroupformove);
+
+            if ($canselectgroup) {
+                $groupselect = html_writer::tag('span', get_string('group') . ' ');
+                $groupselect .= html_writer::select($groupinfo, 'groupinfo', $data['groupid'], false);
+                $extrahtml .= html_writer::tag('label', $groupselect);
             } else {
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));
             }
@@ -1358,6 +1407,13 @@ HTML;
             $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
                 get_string('reveal', 'hsuforum'));
         }
+
+        $config = get_config('hsuforum');
+        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
+            // Target for pulling in date form.
+            $extrahtml .= '<div class="dateformtarget"></div>';
+        }
+
         $data += array(
             'postid'      => $postid,
             'context'     => $context,
@@ -1684,18 +1740,20 @@ HTML;
         return $commands;
     }
 
-
-
-    public function advanced_editor(){
-        // Only output editor if preferred editor is Atto - tiny mce not supported yet.
-        editors_head_setup();
-        $editor = editors_get_preferred_editor(FORMAT_HTML);
-        if (get_class($editor) == 'atto_texteditor'){
-            $editor->use_editor('hiddenadvancededitor');
-            return '<div id="hiddenadvancededitorcont"><textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
+    /**
+     * Render dateform.
+     * @param discussion_dateform $dateform
+     * @return string
+     */
+    public function render_advanced_editor(advanced_editor $advancededitor) {
+        $data = $advancededitor->get_data();
+        if (get_class($data->editor) == 'atto_texteditor'){
+            $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
+            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitordraftid" value="'.$data->draftitemid.'" />';
+            return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
         }
         return '';
-     }
+    }
 
     /**
      * Previous and next discussion navigation.

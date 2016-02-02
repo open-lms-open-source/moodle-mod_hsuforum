@@ -164,7 +164,6 @@ class file_adapter implements adapter_interface {
         } else {
             send_file($this->exportfile, pathinfo($this->exportfile, PATHINFO_BASENAME), 0, 0, false, true, '', true);
         }
-        fulldelete($this->tempdirectory);
     }
 
     /**
@@ -220,7 +219,7 @@ class file_adapter implements adapter_interface {
      * @return string
      */
     protected function create_temp_directory() {
-        return make_temp_directory('mod_hsuforum_export_'.time());
+        return make_request_directory();
     }
 
     /**

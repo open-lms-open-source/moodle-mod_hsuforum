@@ -433,6 +433,9 @@ FUN WITH FORMS
     margin-bottom:0.5em;
 }
 
+.hsuforum-form .fitem_fdate_selector label {
+    display:inline;
+}
 
 .hsuforum-form .hsuforum-textarea {
     cursor: text;
@@ -598,6 +601,13 @@ FUN WITH FORMS
         margin-left:3%;
         min-width:80%;
     }
+
+
+    /* recent activity on course page in snap themes */
+    #region-main .snap-activity.modtype_hsuforum .snap-media-object{
+        width:50%;
+        float:left;
+    }
 }
 
 
@@ -609,10 +619,10 @@ FUN WITH FORMS
     .hsuforum-thread-figure,
     .hsuform-post-date,
     .hsuforum-postflagging {
-		clear:both;
-        display:block;
-		width:100%;
-		float:none;
+		clear: both;
+    display: block;
+		width: 100%;
+		float: none;
 	}
     .hsuforum-post-figure{
         float:left;
@@ -638,11 +648,14 @@ FUN WITH FORMS
 
 /* end meida 45 */
 
-/* recent activity, recent posts output in non-Snap themes */
 
-.section .activity.modtype_hsuforum .activityinstance div {
-    display:block; /* overwrite core shame */
+/* recent activity, recent posts output in non-Snap themes */
+.editing .sitetopic .section .activity.modtype_hsuforum .activityinstance,
+.editing .course-content .section .activity.modtype_hsuforum .activityinstance {
+  padding-right:0;
+  width:90%;
 }
+
 
 .block_flexpagemod_hsuforum .hsuforum-recent-heading,
 .hsuforum.modtype_hsuforum .hsuforum-recent-heading,
@@ -655,12 +668,7 @@ FUN WITH FORMS
 .block_recent_activity .snap-media-object {
     margin-bottom: 0.3em;
     font-size:small;
-}
-.block_flexpagemod_hsuforum .snap-media-object,
-.hsuforum.modtype_hsuforum .snap-media-object {
-    width:50%;
-    float:left;
-    min-width: 200px;
+    width: 310px;
 }
 
 .block_flexpagemod_hsuforum .snap-media-object > a,
@@ -687,7 +695,9 @@ FUN WITH FORMS
 .activity.modtype_hsuforum .snap-media-body,
 .block_recent_activity .snap-media-body {
     overflow: hidden;
+    width:240px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: block !important;
 }
 
 .block_flexpagemod_hsuforum .snap-media-body p,
@@ -734,9 +744,19 @@ FUN WITH FORMS
     padding: 0;
 }
 
-.format-flexpage  .block_flexpagemod_hsuforum .activityinstance,
-.modtype_hsuforum .activityinstance{
-    display: block !important;
+.block_flexpagemod_hsuforum .mod-indent-outer {
+    margin-bottom: 1em;
+}
+
+.block_flexpagemod_hsuforum .instancename {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: block;
+}
+
+.block_flexpagemod_hsuforum .hsuforum-recent-heading {
+    padding: 10px 0px;
 }
 
 .modtype_hsuforum.activity:before,
@@ -799,4 +819,16 @@ FUN WITH FORMS
 
 .path-mod-hsuforum .discussioncontrols .managesubslink {
     float: left;
+}
+
+.path-mod-hsuforum #id_displayperiod {
+    margin-bottom:1em;
+}
+
+#discussion_dateform {
+    display: none;
+}
+
+.dateformtarget {
+    margin-bottom:1em;
 }

@@ -55,7 +55,7 @@ $sitecontext = context_system::instance();
 
 if (!isloggedin() or isguestuser()) {
 
-    if (!isloggedin() and !get_referer()) {
+    if (!isloggedin() and !get_local_referer()) {
         // No referer+not logged in - probably coming in via email  See MDL-9052
         require_login();
     }
@@ -89,7 +89,7 @@ if (!isloggedin() or isguestuser()) {
     $PAGE->set_context($modcontext);
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
-    $referer = clean_param(get_referer(false), PARAM_LOCALURL);
+    $referer = get_local_referer(false);
 
     echo $OUTPUT->header();
     echo $OUTPUT->confirm(get_string('noguestpost', 'hsuforum').'<br /><br />'.get_string('liketologin'), get_login_url(), $referer);
@@ -119,8 +119,10 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
             if (!is_enrolled($coursecontext)) {
                 if (enrol_selfenrol_available($course->id)) {
                     $SESSION->wantsurl = qualified_me();
-                    $SESSION->enrolcancel = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
-                    redirect($CFG->wwwroot.'/enrol/index.php?id='.$course->id, get_string('youneedtoenrol'));
+                    $SESSION->enrolcancel = get_local_referer(false);
+                    redirect(new moodle_url('/enrol/index.php', array('id' => $course->id,
+                        'returnurl' => '/mod/hsuforum/view.php?f=' . $forum->id)),
+                        get_string('youneedtoenrol'));
                 }
             }
         }
@@ -131,11 +133,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error("activityiscurrentlyhidden");
     }
 
-    if (isset($_SERVER["HTTP_REFERER"])) {
-        $SESSION->fromurl = $_SERVER["HTTP_REFERER"];
-    } else {
-        $SESSION->fromurl = '';
-    }
+    $SESSION->fromurl = get_local_referer(false);
 
     // Load up the $post variable.
 
@@ -191,8 +189,10 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         if (!isguestuser()) {
             if (!is_enrolled($coursecontext)) {  // User is a guest here!
                 $SESSION->wantsurl = qualified_me();
-                $SESSION->enrolcancel = clean_param($_SERVER['HTTP_REFERER'], PARAM_LOCALURL);
-                redirect($CFG->wwwroot.'/enrol/index.php?id='.$course->id, get_string('youneedtoenrol'));
+                $SESSION->enrolcancel = get_local_referer(false);
+                redirect(new moodle_url('/enrol/index.php', array('id' => $course->id,
+                    'returnurl' => '/mod/hsuforum/view.php?f=' . $forum->id)),
+                    get_string('youneedtoenrol'));
             }
         }
         print_error('nopostforum', 'hsuforum');
@@ -338,7 +338,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         if ($replycount) {
             if (!has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
                 print_error("couldnotdeletereplies", "hsuforum",
-                      hsuforum_go_back_to("discuss.php?d=$post->discussion"));
+                      hsuforum_go_back_to(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id)));
             }
             echo $OUTPUT->header();
             echo $OUTPUT->heading(format_string($forum->name), 2);
@@ -388,7 +388,16 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('cannotsplit', 'hsuforum');
     }
 
-    if (!empty($name) && confirm_sesskey()) {    // User has confirmed the prune
+    $PAGE->set_cm($cm);
+    $PAGE->set_context($modcontext);
+
+    $prunemform = new mod_hsuforum_prune_form(null, array('prune' => $prune, 'confirm' => $prune));
+
+
+    if ($prunemform->is_cancelled()) {
+        redirect(hsuforum_go_back_to(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $post->discussion))));
+    } else if ($fromform = $prunemform->get_data()) {
+        // User submits the data.
 
         // Make sure post name does not go beyond 255 chars.
         $name = \mod_hsuforum\local::shorten_post_name($name);
@@ -417,7 +426,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         hsuforum_change_discussionid($post->id, $newid);
 
-        // update last post in each discussion
+        // Update last post in each discussion.
         hsuforum_discussion_update_last_post($discussion->id);
         hsuforum_discussion_update_last_post($newid);
 
@@ -455,16 +464,14 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
 
-        redirect(hsuforum_go_back_to("discuss.php?d=$newid"));
+        redirect(hsuforum_go_back_to(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $newid))));
 
-    } else { // User just asked to prune something
-
+    } else {
+        // Display the prune form.
         $course = $DB->get_record('course', array('id' => $forum->course));
 
-        $PAGE->set_cm($cm);
         $renderer = $PAGE->get_renderer('mod_hsuforum');
         $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
-        $PAGE->set_context($modcontext);
         $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
         $PAGE->set_title("$discussion->name: $post->subject");
@@ -476,11 +483,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         if (!empty($post->privatereply)) {
             echo $OUTPUT->notification(get_string('splitprivatewarning', 'hsuforum'));
         }
-        echo '<center>';
 
-        include('prune.html');
-
-        echo '</center>';
+        $prunemform->display();
 
         // We don't have the valid unread status. Set to read so we don't see
         // the unread tag.
@@ -622,8 +626,6 @@ if ($fromform = $mform_post->get_data()) {
     // WARNING: the $fromform->message array has been overwritten, do not use it anymore!
     $fromform->messagetrust  = trusttext_trusted($modcontext);
 
-    $contextcheck = isset($fromform->groupinfo) && has_capability('mod/hsuforum:movediscussions', $modcontext);
-
     if ($fromform->edit) {           // Updating a post
         unset($fromform->groupid);
         $fromform->id = $fromform->edit;
@@ -647,10 +649,15 @@ if ($fromform = $mform_post->get_data()) {
         }
 
         // If the user has access to all groups and they are changing the group, then update the post.
-        if ($contextcheck) {
+        if (isset($fromform->groupinfo) && has_capability('mod/hsuforum:movediscussions', $modcontext)) {
             if (empty($fromform->groupinfo)) {
                 $fromform->groupinfo = -1;
             }
+
+            if (!hsuforum_user_can_post_discussion($forum, $fromform->groupinfo, null, $cm, $modcontext)) {
+                print_error('cannotupdatepost', 'hsuforum');
+            }
+
             $DB->set_field('hsuforum_discussions' ,'groupid' , $fromform->groupinfo, array('firstpost' => $fromform->id));
         }
 
@@ -693,9 +700,9 @@ if ($fromform = $mform_post->get_data()) {
             // Single discussion forums are an exception. We show
             // the forum itself since it only has one discussion
             // thread.
-            $discussionurl = "view.php?f=$forum->id";
+            $discussionurl = new moodle_url("/mod/hsuforum/view.php", array('f' => $forum->id));
         } else {
-            $discussionurl = "discuss.php?d=$discussion->id#p$fromform->id";
+            $discussionurl = new moodle_url("/mod/hsuforum/discuss.php", array('d' => $discussion->id), 'p' . $fromform->id);
         }
 
         $params = array(
@@ -716,7 +723,7 @@ if ($fromform = $mform_post->get_data()) {
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
 
-        redirect(hsuforum_go_back_to("$discussionurl"), $message.$subscribemessage, $timemessage);
+        redirect(hsuforum_go_back_to($discussionurl), $message.$subscribemessage, $timemessage);
 
         exit;
 
@@ -752,9 +759,9 @@ if ($fromform = $mform_post->get_data()) {
                 // Single discussion forums are an exception. We show
                 // the forum itself since it only has one discussion
                 // thread.
-                $discussionurl = "view.php?f=$forum->id";
+                $discussionurl = new moodle_url("/mod/hsuforum/view.php", array('f' => $forum->id), 'p'.$fromform->id);
             } else {
-                $discussionurl = "discuss.php?d=$discussion->id";
+                $discussionurl = new moodle_url("/mod/hsuforum/discuss.php", array('d' => $discussion->id), 'p'.$fromform->id);
             }
             $post   = $DB->get_record('hsuforum_posts', array('id' => $fromform->id), '*', MUST_EXIST);
             $params = array(
@@ -778,7 +785,7 @@ if ($fromform = $mform_post->get_data()) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
-            redirect(hsuforum_go_back_to("$discussionurl#p$fromform->id"), $message.$subscribemessage, $timemessage);
+            redirect(hsuforum_go_back_to($discussionurl), $message.$subscribemessage, $timemessage);
 
         } else {
             print_error("couldnotadd", "hsuforum", $errordestination);
@@ -786,25 +793,14 @@ if ($fromform = $mform_post->get_data()) {
         exit;
 
     } else { // Adding a new discussion.
-        // Before we add this we must check that the user will not exceed the blocking threshold.
-        hsuforum_check_blocking_threshold($thresholdwarning);
-
-        if (!hsuforum_user_can_post_discussion($forum, $fromform->groupid, -1, $cm, $modcontext)) {
-            print_error('cannotcreatediscussion', 'hsuforum');
-        }
-        // If the user has access all groups capability let them choose the group.
-        if ($contextcheck) {
-            $fromform->groupid = $fromform->groupinfo;
-        }
-        if (empty($fromform->groupid)) {
-            $fromform->groupid = -1;
-        }
+        // The location to redirect to after successfully posting.
+        $redirectto = new moodle_url('view.php', array('f' => $fromform->forum));
 
         $fromform->mailnow = empty($fromform->mailnow) ? 0 : 1;
         $fromform->reveal = empty($fromform->reveal) ? 0 : 1;
 
         $discussion = $fromform;
-        $discussion->name    = $fromform->subject;
+        $discussion->name = $fromform->subject;
 
         $newstopic = false;
         if ($forum->type == 'news' && !$fromform->parent) {
@@ -813,51 +809,88 @@ if ($fromform = $mform_post->get_data()) {
         $discussion->timestart = $fromform->timestart;
         $discussion->timeend = $fromform->timeend;
 
-        $message = '';
-        if ($discussion->id = hsuforum_add_discussion($discussion, $mform_post, $message)) {
+        $allowedgroups = array();
+        $groupstopostto = array();
 
-            $params = array(
-                'context' => $modcontext,
-                'objectid' => $discussion->id,
-                'other' => array(
-                    'forumid' => $forum->id,
-                )
-            );
-            $event = \mod_hsuforum\event\discussion_created::create($params);
-            $event->add_record_snapshot('hsuforum_discussions', $discussion);
-            $event->trigger();
+        // If we are posting a copy to all groups the user has access to.
+        if (isset($fromform->posttomygroups)) {
+            // Post to each of my groups.
+            require_capability('mod/hsuforum:canposttomygroups', $modcontext);
 
-            $timemessage = 2;
-            if (!empty($message)) { // if we're printing stuff about the file upload
-                $timemessage = 4;
+            // Fetch all of this user's groups.
+            // Note: all groups are returned when in visible groups mode so we must manually filter.
+            $allowedgroups = groups_get_activity_allowed_groups($cm);
+            foreach ($allowedgroups as $groupid => $group) {
+                if (hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
+                    $groupstopostto[] = $groupid;
+                }
             }
-
-            if ($fromform->mailnow) {
-                $message .= get_string("postmailnow", "hsuforum");
-                $timemessage = 4;
-            } else {
-                $message .= '<p>'.get_string("postaddedsuccess", "hsuforum") . '</p>';
-                $message .= '<p>'.get_string("postaddedtimeleft", "hsuforum", format_time($CFG->maxeditingtime)) . '</p>';
-            }
-
-            if ($subscribemessage = hsuforum_post_subscription($discussion, $forum)) {
-                $timemessage = 6;
-            }
-
-            // Update completion status
-            $completion=new completion_info($course);
-            if($completion->is_enabled($cm) &&
-                ($forum->completiondiscussions || $forum->completionposts)) {
-                $completion->update_state($cm,COMPLETION_COMPLETE);
-            }
-
-            redirect(hsuforum_go_back_to("view.php?f=$fromform->forum"), $message.$subscribemessage, $timemessage);
-
+        } else if (isset($fromform->groupinfo)) {
+            // Use the value provided in the dropdown group selection.
+            $groupstopostto[] = $fromform->groupinfo;
+            $redirectto->param('group', $fromform->groupinfo);
+        } else if (isset($fromform->groupid) && !empty($fromform->groupid)) {
+            // Use the value provided in the hidden form element instead.
+            $groupstopostto[] = $fromform->groupid;
+            $redirectto->param('group', $fromform->groupid);
         } else {
-            print_error("couldnotadd", "hsuforum", $errordestination);
+            // Use the value for all participants instead.
+            $groupstopostto[] = -1;
         }
 
-        exit;
+        // Before we post this we must check that the user will not exceed the blocking threshold.
+        hsuforum_check_blocking_threshold($thresholdwarning);
+
+        foreach ($groupstopostto as $group) {
+            if (!hsuforum_user_can_post_discussion($forum, $group, -1, $cm, $modcontext)) {
+                print_error('cannotcreatediscussion', 'hsuforum');
+            }
+
+            $discussion->groupid = $group;
+            $message = '';
+            if ($discussion->id = hsuforum_add_discussion($discussion, $mform_post, $message)) {
+
+                $params = array(
+                    'context' => $modcontext,
+                    'objectid' => $discussion->id,
+                    'other' => array(
+                        'forumid' => $forum->id,
+                    )
+                );
+                $event = \mod_hsuforum\event\discussion_created::create($params);
+                $event->add_record_snapshot('hsuforum_discussions', $discussion);
+                $event->trigger();
+
+                $timemessage = 2;
+                if (!empty($message)) { // If we're printing stuff about the file upload.
+                    $timemessage = 4;
+                }
+
+                if ($fromform->mailnow) {
+                    $message .= get_string("postmailnow", "hsuforum");
+                    $timemessage = 4;
+                } else {
+                    $message .= '<p>'.get_string("postaddedsuccess", "hsuforum") . '</p>';
+                    $message .= '<p>'.get_string("postaddedtimeleft", "hsuforum", format_time($CFG->maxeditingtime)) . '</p>';
+                }
+
+                if ($subscribemessage = hsuforum_post_subscription($fromform, $forum, $discussion)) {
+                    $timemessage = 6;
+                }
+            } else {
+                print_error("couldnotadd", "hsuforum", $errordestination);
+            }
+        }
+
+        // Update completion status.
+        $completion = new completion_info($course);
+        if ($completion->is_enabled($cm) &&
+                ($forum->completiondiscussions || $forum->completionposts)) {
+            $completion->update_state($cm, COMPLETION_COMPLETE);
+        }
+
+        // Redirect back to the discussion.
+        redirect(hsuforum_go_back_to($redirectto->out()), $message . $subscribemessage, $timemessage);
     }
 }
 

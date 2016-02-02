@@ -276,6 +276,14 @@ class mod_hsuforum_generator extends testing_module_generator {
             $record['reveal'] = 0;
         }
 
+        if (!isset($record['flags'])) {
+            $record['flags'] = null;
+        }
+
+        if (!isset($record['privatereply'])) {
+            $record['privatereply'] = 0;
+        }
+
         $record = (object) $record;
 
         // Add the post.

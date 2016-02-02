@@ -23,6 +23,9 @@
  * @author Mark Nielsen
  */
 
+    use mod_hsuforum\renderables\discussion_dateform;
+    use mod_hsuforum\renderables\advanced_editor;
+
     require_once('../../config.php');
     require_once($CFG->libdir.'/completionlib.php');
 
@@ -60,6 +63,8 @@
         print_error('missingparameter');
     }
 
+    $discussion = false;
+
     if ($forum->type == 'single') {
         $discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
         $discussion = array_pop($discussions);
@@ -87,6 +92,9 @@
     $discussionview = $renderer->render_discussionsview($forum);
 
     echo $OUTPUT->header();
+
+    echo $renderer->render(new discussion_dateform($context));
+
     echo ('<div id="discussionsview">');
 
 /// Some capability checks.
@@ -101,5 +109,5 @@
     echo $discussionview;
 
     echo '</div>';
-    echo $renderer->advanced_editor();
+    echo $renderer->render(new advanced_editor($context));
     echo $OUTPUT->footer($course);
