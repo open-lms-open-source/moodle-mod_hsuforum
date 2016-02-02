@@ -249,6 +249,7 @@ Y.extend(DOM, Y.Base,
                 if (node) {
                     // Updating existing discussion.
                     node.replace(e.html);
+                    this.initRatings();
                 } else {
                     // Adding new discussion.
                     Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
