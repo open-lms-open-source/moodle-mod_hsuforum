@@ -53,8 +53,7 @@ Feature: Forums in 'No groups' mode allow posting to All participants for all us
     And I should not see "Group A"
     And I should not see "Group B"
     When I click on "Add a new discussion" "button"
-    # Not yet implemented
-    # Then I should not see "Post a copy to all groups"
+    Then I should not see "Post a copy to all groups"
     And I should not see "Group" in the "form" "css_element"
     And I create the following inline discussions:
       | subject            | message            |
@@ -85,8 +84,7 @@ Feature: Forums in 'No groups' mode allow posting to All participants for all us
     And I should not see "Group A"
     And I should not see "Group B"
     When I click on "Add a new discussion" "button"
-    # Not yet implemented
-    # Then I should not see "Post a copy to all groups"
+    Then I should not see "Post a copy to all groups"
     And I should not see "Group" in the "form" "css_element"
     And I create the following inline discussions:
       | subject            | message            |

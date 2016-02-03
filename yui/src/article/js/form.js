@@ -175,6 +175,16 @@ Y.extend(FORM, Y.Base,
             },100);
         },
 
+        handlePostToGroupsToggle: function(e) {
+            var formNode = e.currentTarget.ancestor('form');
+            var selectNode = formNode.one('#menugroupinfo');
+            if (e.currentTarget.get('checked')) {
+                selectNode.set('disabled', 'disabled');
+            } else {
+                selectNode.set('disabled', '');
+            }
+        },
+
         handleTimeToggle: function(e) {
             if (e.currentTarget.get('checked')) {
                 e.currentTarget.ancestor('.fdate_selector').all('select').set('disabled', '');
