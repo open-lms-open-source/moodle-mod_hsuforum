@@ -3024,6 +3024,8 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
 function hsuforum_get_discussion_neighbours($cm, $discussion) {
     global $CFG, $DB, $USER;
 
+    $config = get_config('hsuforum');
+
     if ($cm->instance != $discussion->forum) {
         throw new coding_exception('Discussion is not part of the same forum.');
     }
@@ -3036,9 +3038,10 @@ function hsuforum_get_discussion_neighbours($cm, $discussion) {
     $groupmode    = groups_get_activity_groupmode($cm);
     $currentgroup = groups_get_activity_group($cm);
 
+
     // Users must fulfill timed posts.
     $timelimit = '';
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($config->enabletimedposts)) {
         if (!has_capability('mod/hsuforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = ' AND ((d.timestart <= :tltimestart AND (d.timeend = 0 OR d.timeend > :tltimeend))';
             $params['tltimestart'] = $now;
