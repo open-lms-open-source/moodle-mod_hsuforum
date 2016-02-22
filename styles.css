@@ -382,7 +382,8 @@ ACTIONS
     display:inline-block;
 }
 
-.hsuforum-toggle:hover {
+.hsuforum-toggle:hover,
+.hsuforum-toggle:focus {
     -webkit-transform: scale(1.06);
     -ms-transform: scale(1.06);
     transform: scale(1.06);
