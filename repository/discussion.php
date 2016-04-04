@@ -208,14 +208,9 @@ class hsuforum_repository_discussion extends hsuforum_repository_abstract {
      * @return hsuforum_repository_discussion
      */
     public function unsubscribe_all($forumid, $userid) {
-        $this->get_db()->execute("
-            DELETE s
-              FROM {hsuforum_subscriptions_disc} s
-        INNER JOIN {hsuforum_discussions} d ON d.id = s.discussion
-             WHERE s.userid = ?
-               AND d.forum = ?
-        ", array($userid, $forumid));
-
+        $sql = "DELETE FROM {hsuforum_subscriptions_disc}
+                WHERE userid = :uid AND discussion IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :fid)";
+        $this->get_db()->execute($sql, array('fid' => $forumid, 'uid' => $userid));
         return $this;
     }
 }

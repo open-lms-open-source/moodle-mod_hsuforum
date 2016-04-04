@@ -315,7 +315,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
-            $replyusers = $DB->get_records_sql("SELECT DISTINCT $fields FROM {hsuforum_posts} hp JOIN {user} u ON hp.userid = u.id WHERE hp.discussion = ? AND hp.privatereply = 0 ORDER BY hp.modified DESC", array($discussion->id));
+            $sql = "SELECT DISTINCT $fields, hp.max
+                    FROM {user} u
+                    JOIN (
+                        SELECT userid, max(modified) as max
+                        FROM {hsuforum_posts}
+                        WHERE privatereply = 0 AND discussion = ?
+                        GROUP BY userid
+                    ) hp ON hp.userid = u.id
+                    ORDER BY hp.max DESC";
+            $replyusers = $DB->get_records_sql($sql, array($discussion->id));
             if (!empty($replyusers) && !$forum->anonymous) {
                 foreach ($replyusers as $replyuser) {
                     if ($replyuser->id === $postuser->id) {
