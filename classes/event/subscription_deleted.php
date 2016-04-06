@@ -111,4 +111,15 @@ class subscription_deleted extends \core\event\base {
             throw new \coding_exception('Context level must be CONTEXT_MODULE.');
         }
     }
+
+    public static function get_objectid_mapping() {
+        return array('db' => 'hsuforum_subscriptions', 'restore' => 'hsuforum_subscription');
+    }
+
+    public static function get_other_mapping() {
+        $othermapped = array();
+        $othermapped['forumid'] = array('db' => 'hsuforum', 'restore' => 'hsuforum');
+
+        return $othermapped;
+    }
 }

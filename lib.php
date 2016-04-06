@@ -50,6 +50,11 @@ if (!defined('HSUFORUM_CRON_USER_CACHE')) {
     define('HSUFORUM_CRON_USER_CACHE', 5000);
 }
 
+/**
+ * HSUFORUM_POSTS_ALL_USER_GROUPS - All the posts in groups where the user is enrolled.
+ */
+define('HSUFORUM_POSTS_ALL_USER_GROUPS', -2);
+
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 
 /**
@@ -462,11 +467,19 @@ function hsuforum_cron_minimise_user_record(stdClass $user) {
  * @todo MDL-44734 The function will be split up into seperate tasks.
  */
 function hsuforum_cron() {
-    global $CFG, $USER, $DB;
+    global $CFG, $USER, $DB, $PAGE;
 
     $site = get_site();
 
     $config = get_config('hsuforum');
+
+    // The main renderers.
+    $htmlout = $PAGE->get_renderer('mod_hsuforum', 'email', 'htmlemail');
+    $textout = $PAGE->get_renderer('mod_hsuforum', 'email', 'textemail');
+    $htmldigestfullout = $PAGE->get_renderer('mod_hsuforum', 'emaildigestfull', 'htmlemail');
+    $textdigestfullout = $PAGE->get_renderer('mod_hsuforum', 'emaildigestfull', 'textemail');
+    $htmldigestbasicout = $PAGE->get_renderer('mod_hsuforum', 'emaildigestbasic', 'htmlemail');
+    $textdigestbasicout = $PAGE->get_renderer('mod_hsuforum', 'emaildigestbasic', 'textemail');
 
     // All users that are subscribed to any post that needs sending,
     // please increase $CFG->extramemorylimit on large sites that
@@ -598,7 +611,7 @@ function hsuforum_cron() {
             // caching subscribed users of each discussion
             if (!isset($discussionsubscribers[$discussionid])) {
                 $modcontext = context_module::instance($coursemodules[$forumid]->id);
-                if ($subusers = $discussionrepo->get_subscribed_users($forums[$forumid], $discussions[$discussionid], $modcontext, 0, null, array(), 'u.email ASC')) {
+                if ($subusers = $discussionrepo->get_subscribed_users($forums[$forumid], $discussions[$discussionid], $modcontext, 0, 'u.*', array(), 'u.email ASC')) {
                     // Get a list of the users subscribed to discussions in the hsuforum.
                     foreach ($subusers as $postuser) {
                         unset($postuser->description); // not necessary
@@ -625,7 +638,6 @@ function hsuforum_cron() {
             core_php_time_limit::raise(120);
 
             mtrace('Processing user ' . $userto->id);
-
             // Init user caches - we keep the cache for one cycle only, otherwise it could consume too much memory.
             if (isset($userto->username)) {
                 $userto = clone($userto);
@@ -781,6 +793,12 @@ function hsuforum_cron() {
                     $userfrom->customheaders[] = 'References: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
                 }
 
+                if ($post->parent) {
+                    // This post is a reply, so add headers for threading (see MDL-22551).
+                    $userfrom->customheaders[] = 'In-Reply-To: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
+                    $userfrom->customheaders[] = 'References: '  . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
+                }
+
                 $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
 
                 // Generate a reply-to address from using the Inbound Message handler.
@@ -790,13 +808,34 @@ function hsuforum_cron() {
                     $replyaddress = $messageinboundgenerator->generate($userto->id);
                 }
 
+                if (!isset($userto->canpost[$discussion->id])) {
+                    $canreply = hsuforum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
+                } else {
+                    $canreply = $userto->canpost[$discussion->id];
+                }
+
+                $data = new \mod_hsuforum\output\hsuforum_post_email(
+                        $course,
+                        $cm,
+                        $forum,
+                        $discussion,
+                        $post,
+                        $userfrom,
+                        $userto,
+                        $canreply
+                    );
+
+                if (!isset($userto->viewfullnames[$forum->id])) {
+                    $data->viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
+                } else {
+                    $data->viewfullnames = $userto->viewfullnames[$forum->id];
+                }
+
                 $a = new stdClass();
-                $a->courseshortname = $shortname;
+                $a->courseshortname = $data->get_coursename();
                 $a->forumname = $cleanforumname;
-                $a->subject = format_string($post->subject, true);
+                $a->subject = $data->get_subject();
                 $postsubject = html_to_text(get_string('postmailsubject', 'hsuforum', $a), 0);
-                $posttext = hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $replyaddress);
-                $posthtml = hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $replyaddress);
 
                 // Send the post now!
 
@@ -810,9 +849,9 @@ function hsuforum_cron() {
                 $eventdata->userfrom         = $postuser;
                 $eventdata->userto           = $userto;
                 $eventdata->subject          = $postsubject;
-                $eventdata->fullmessage      = $posttext;
+                $eventdata->fullmessage      = $textout->render($data);
                 $eventdata->fullmessageformat = FORMAT_PLAIN;
-                $eventdata->fullmessagehtml  = $posthtml;
+                $eventdata->fullmessagehtml  = $htmlout->render($data);
                 $eventdata->notification = 1;
                 $eventdata->replyto = $replyaddress;
                 if (!empty($replyaddress)) {
@@ -1101,31 +1140,41 @@ function hsuforum_cron() {
                             );
 
                         $maildigest = hsuforum_get_user_maildigest_bulk($digests, $userto, $forum->id);
+                        if (!isset($userto->canpost[$discussion->id])) {
+                            $canreply = hsuforum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
+                        } else {
+                            $canreply = $userto->canpost[$discussion->id];
+                        }
+                        if (!empty($post->privatereply)) {
+                            $canreply = false;
+                        }
+
+                        $data = new \mod_hsuforum\output\hsuforum_post_email(
+                                $course,
+                                $cm,
+                                $forum,
+                                $discussion,
+                                $post,
+                                $userfrom,
+                                $userto,
+                                $canreply
+                            );
+
+                        if (!isset($userto->viewfullnames[$forum->id])) {
+                            $data->viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
+                        } else {
+                            $data->viewfullnames = $userto->viewfullnames[$forum->id];
+                        }
                         if ($maildigest == 2) {
-                            $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
-                            // Subjects and link only
-                            $posttext .= "\n";
-                            $posttext .= $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id;
-                            $by = new stdClass();
-                            $by->name = fullname($postuser);
-                            $by->date = userdate($post->modified);
-                            $posttext .= "\n".format_string($post->subject,true).' '.get_string("bynameondate", "hsuforum", $by);
-                            $posttext .= "\n---------------------------------------------------------------------";
-
-
-                            if (!hsuforum_is_anonymous_user($postuser)) {
-                                $by->name = "<a target=\"_blank\" href=\"$CFG->wwwroot/user/view.php?id=$postuser->id&amp;course=$course->id\">$by->name</a>";
-                            }
-                            $posthtml .= '<div><a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id.'#p'.$post->id.'">'.format_string($post->subject,true).'</a> '.get_string("bynameondate", "hsuforum", $by).'</div>';
-
+                            // Subjects and link only.
+                             $posttext .= $textdigestbasicout->render($data);
+                             $posthtml .= $htmldigestbasicout->render($data);
                         } else {
                             // The full treatment
-                            if (!empty($post->privatereply)) {
-                                $canreply = false;
-                            }
-                            $posttext .= hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, true);
-                            $posthtml .= hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $canreply, true, false);
+                            $posttext .= $textdigestfullout->render($data);
+                            $posthtml .= $htmldigestfullout->render($data);
 
+                            // Create an array of postid's for this user to mark as read.
                             $cutoffdate = $timenow - ($config->oldpostdays*24*60*60);
                             if ($post->modified < $cutoffdate) {
                                 $userto->markposts[$post->id] = $post->id;
@@ -1192,165 +1241,6 @@ function hsuforum_cron() {
 
     return true;
 }
-
-/**
- * Builds and returns the body of the email notification in plain text.
- *
- * @global object
- * @global object
- * @uses CONTEXT_MODULE
- * @param object $course
- * @param object $cm
- * @param object $forum
- * @param object $discussion
- * @param object $post
- * @param object $userfrom
- * @param object $userto
- * @param boolean $bare
- * @param string $replyaddress The inbound address that a user can reply to the generated e-mail with. [Since 2.8].
- * @return string The email body in plain text format.
- */
-function hsuforum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $bare = false, $replyaddress = null) {
-    global $CFG, $USER;
-
-    $modcontext = context_module::instance($cm->id);
-
-    if (!isset($userto->viewfullnames[$forum->id])) {
-        $viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
-    } else {
-        $viewfullnames = $userto->viewfullnames[$forum->id];
-    }
-
-    if (!isset($userto->canpost[$discussion->id])) {
-        $canreply = hsuforum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
-    } else {
-        $canreply = $userto->canpost[$discussion->id];
-    }
-    if (!empty($post->privatereply)) {
-        $canreply = false;
-    }
-    $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
-
-    $by = New stdClass;
-    $by->name = fullname($postuser, $viewfullnames);
-    $by->date = userdate($post->modified, "", core_date::get_user_timezone($userto));
-
-    $strbynameondate = get_string('bynameondate', 'hsuforum', $by);
-
-    $strforums = get_string('forums', 'hsuforum');
-
-    $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
-
-    $posttext = '';
-
-    if (!$bare) {
-        $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
-        $posttext  .= "$shortname -> $strforums -> ".format_string($forum->name,true);
-
-        if ($discussion->name != $forum->name) {
-            $posttext  .= " -> ".format_string($discussion->name,true);
-        }
-    }
-
-    // add absolute file links
-    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_hsuforum', 'post', $post->id);
-
-    $posttext .= "\n";
-    $posttext .= $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id;
-    $posttext .= "\n";
-    $posttext .= format_string($post->subject,true);
-    if ($bare) {
-        $posttext .= " ($CFG->wwwroot/mod/hsuforum/discuss.php?d=$discussion->id#p$post->id)";
-    }
-    $posttext .= "\n".$strbynameondate."\n";
-    $posttext .= "---------------------------------------------------------------------\n";
-    $posttext .= format_text_email($post->message, $post->messageformat);
-    $posttext .= "\n\n";
-    $posttext .= hsuforum_print_attachments($post, $cm, "text");
-    $posttext .= "\n---------------------------------------------------------------------\n";
-
-    if (!$bare && $canreply) {
-        $posttext .= get_string("postmailinfo", "hsuforum", $shortname)."\n";
-        $posttext .= "$CFG->wwwroot/mod/hsuforum/post.php?reply=$post->id\n";
-    }
-    if (!$bare && $canunsubscribe) {
-        $posttext .= get_string("unsubscribe", "hsuforum");
-        $posttext .= ": $CFG->wwwroot/mod/hsuforum/subscribe.php?id=$forum->id\n";
-    }
-
-    $posttext .= get_string("digestmailpost", "hsuforum");
-    $posttext .= ": {$CFG->wwwroot}/mod/hsuforum/index.php?id={$forum->course}\n";
-
-    return $posttext;
-}
-
-/**
- * Builds and returns the body of the email notification in html format.
- *
- * @global object
- * @param object $course
- * @param object $cm
- * @param object $forum
- * @param object $discussion
- * @param object $post
- * @param object $userfrom
- * @param object $userto
- * @param string $replyaddress The inbound address that a user can reply to the generated e-mail with. [Since 2.8].
- * @return string The email text in HTML format
- */
-function hsuforum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $replyaddress = null) {
-    global $CFG;
-
-    if ($userto->mailformat != 1) {  // Needs to be HTML
-        return '';
-    }
-
-    if (!isset($userto->canpost[$discussion->id])) {
-        $canreply = hsuforum_user_can_post($forum, $discussion, $userto, $cm, $course);
-    } else {
-        $canreply = $userto->canpost[$discussion->id];
-    }
-    if (!empty($post->privatereply)) {
-        $canreply = false;
-    }
-
-    $strforums = get_string('forums', 'hsuforum');
-    $canunsubscribe = ! hsuforum_is_forcesubscribed($forum);
-    $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
-
-    $posthtml = '<head>';
-/*    foreach ($CFG->stylesheets as $stylesheet) {
-        //TODO: MDL-21120
-        $posthtml .= '<link rel="stylesheet" type="text/css" href="'.$stylesheet.'" />'."\n";
-    }*/
-    $posthtml .= '</head>';
-    $posthtml .= "\n<body id=\"email\">\n\n";
-
-    $posthtml .= '<div class="navbar">'.
-    '<a target="_blank" href="'.$CFG->wwwroot.'/course/view.php?id='.$course->id.'">'.$shortname.'</a> &raquo; '.
-    '<a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/index.php?id='.$course->id.'">'.$strforums.'</a> &raquo; '.
-    '<a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/view.php?f='.$forum->id.'">'.format_string($forum->name,true).'</a>';
-    if ($discussion->name == $forum->name) {
-        $posthtml .= '</div>';
-    } else {
-        $posthtml .= ' &raquo; <a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id.'">'.
-                     format_string($discussion->name,true).'</a></div>';
-    }
-    $posthtml .= hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto, false, $canreply, true, false);
-
-    $footerlinks = array();
-    if ($canunsubscribe) {
-        $footerlinks[] = '<a href="' . $CFG->wwwroot . '/mod/hsuforum/subscribe.php?id=' . $forum->id . '">' . get_string('unsubscribe', 'hsuforum') . '</a>';
-        $footerlinks[] = '<a href="' . $CFG->wwwroot . '/mod/hsuforum/unsubscribeall.php">' . get_string('unsubscribeall', 'hsuforum') . '</a>';
-    }
-    $footerlinks[] = "<a href='{$CFG->wwwroot}/mod/hsuforum/index.php?id={$forum->course}'>" . get_string('digestmailpost', 'hsuforum') . '</a>';
-    $posthtml .= '<hr /><div class="mdl-align unsubscribelink">' . implode('&nbsp;', $footerlinks) . '</div>';
-
-    $posthtml .= '</body>';
-
-    return $posthtml;
-}
-
 
 /**
  *
@@ -1549,8 +1439,11 @@ function hsuforum_print_overview($courses,&$htmlarray) {
                 .'JOIN {hsuforum_posts} p ON p.discussion = d.id '
                 ."WHERE ($coursessql) "
                 .'AND p.userid != ? '
+                .'AND (d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?)) '
                 .'GROUP BY d.id, d.forum, d.course, d.groupid '
                 .'ORDER BY d.course, d.forum';
+    $params[] = time();
+    $params[] = time();
 
     // Avoid warnings.
     if (!$discussions = $DB->get_records_sql($sql, $params)) {
@@ -1593,8 +1486,12 @@ function hsuforum_print_overview($courses,&$htmlarray) {
             $params[] = $groupid;
         }
         $sql = substr($sql,0,-3); // take off the last OR
-        $sql .= ') AND p.modified >= ? AND r.id is NULL GROUP BY d.forum,d.course';
+        $sql .= ') AND p.modified >= ? AND r.id is NULL ';
+        $sql .= 'AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)) ';
+        $sql .= 'GROUP BY d.forum,d.course';
         $params[] = $cutoffdate;
+        $params[] = time();
+        $params[] = time();
 
         if (!$unread = $DB->get_records_sql($sql, $params)) {
             $unread = array();
@@ -2442,18 +2339,21 @@ function hsuforum_get_unmailed_posts($starttime, $endtime, $now=null) {
         if (empty($now)) {
             $now = time();
         }
+        $selectsql = "AND (p.created >= :ptimestart OR d.timestart >= :pptimestart)";
+        $params['pptimestart'] = $starttime;
         $timedsql = "AND (d.timestart < :dtimestart AND (d.timeend = 0 OR d.timeend > :dtimeend))";
         $params['dtimestart'] = $now;
         $params['dtimeend'] = $now;
     } else {
         $timedsql = "";
+        $selectsql = "AND p.created >= :ptimestart";
     }
 
     return $DB->get_records_sql("SELECT p.*, d.course, d.forum
                                  FROM {hsuforum_posts} p
                                  JOIN {hsuforum_discussions} d ON d.id = p.discussion
                                  WHERE p.mailed = :mailed
-                                 AND p.created >= :ptimestart
+                                 $selectsql
                                  AND (p.created < :ptimeend OR p.mailnow = :mailnow)
                                  $timedsql
                                  ORDER BY p.modified ASC", $params);
@@ -2836,9 +2736,12 @@ function hsuforum_count_discussions($forum, $cm, $course) {
  * @param bool $userlastmodified
  * @param int $page
  * @param int $perpage
+ * @param int $groupid if groups enabled, get discussions for this group overriding the current group.
+ *                     Use HSUFORUM_POSTS_ALL_USER_GROUPS for all the user groups
  * @return moodle_recordset|array
  */
-function hsuforum_get_discussions($cm, $forumsort="d.timemodified DESC", $forumselect=true, $limit=-1, $userlastmodified=false, $page=-1, $perpage=0, $returnrs = true) {
+function hsuforum_get_discussions($cm, $forumsort="", $forumselect=true, $unused=-1, $limit=-1,
+                                $userlastmodified=false, $page=-1, $perpage=0, $groupid = -1, $returnrs=true) {
     global $CFG, $DB, $USER;
 
     require_once(__DIR__.'/lib/discussion/subscribe.php');
@@ -2919,11 +2822,26 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
     }
 
     $groupmode    = groups_get_activity_groupmode($cm);
-    $currentgroup = groups_get_activity_group($cm);
 
     if ($groupmode) {
+
         if (empty($modcontext)) {
             $modcontext = context_module::instance($cm->id);
+        }
+
+        // Special case, we received a groupid to override currentgroup.
+        if ($groupid > 0) {
+            $course = get_course($cm->course);
+            if (!groups_group_visible($groupid, $course, $cm)) {
+                // User doesn't belong to this group, return nothing.
+                return array();
+            }
+            $currentgroup = $groupid;
+        } else if ($groupid === -1) {
+            $currentgroup = groups_get_activity_group($cm);
+        } else {
+            // Get discussions for all groups current user can see.
+            $currentgroup = null;
         }
 
         if ($groupmode == VISIBLEGROUPS or has_capability('moodle/site:accessallgroups', $modcontext)) {
@@ -2935,8 +2853,19 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
             }
 
         } else {
-            //seprate groups without access all
-            if ($currentgroup) {
+            // Separate groups.
+
+            // Get discussions for all groups current user can see.
+            if ($currentgroup === null) {
+                $mygroups = array_keys(groups_get_all_groups($cm->course, $USER->id, $cm->groupingid, 'g.id'));
+                if (empty($mygroups)) {
+                     $groupselect = "AND d.groupid = -1";
+                } else {
+                    list($insqlgroups, $inparamsgroups) = $DB->get_in_or_equal($mygroups);
+                    $groupselect = "AND (d.groupid = -1 OR d.groupid $insqlgroups)";
+                    $params = array_merge($params, $inparamsgroups);
+                }
+            } else if ($currentgroup) {
                 $groupselect = "AND (d.groupid = ? OR d.groupid = -1)";
                 $params[] = $currentgroup;
             } else {
@@ -2946,10 +2875,8 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
     } else {
         $groupselect = "";
     }
-
-
     if (empty($forumsort)) {
-        $forumsort = "d.timemodified DESC";
+        $forumsort = hsuforum_get_default_sort_order();
     }
     if (empty($forumselect)) {
         $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid,p.reveal,p.flags,p.privatereply";
@@ -2961,7 +2888,8 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $umfields = "";
         $umtable  = "";
     } else {
-        $umfields = ', up.reveal AS umreveal, ' . get_all_user_name_fields(true, 'um', null, 'um');
+        $umfields = ', up.reveal AS umreveal, ' . get_all_user_name_fields(true, 'um', null, 'um') . ', um.email AS umemail, um.picture AS umpicture,
+                        um.imagealt AS umimagealt';
         $umtable  = " LEFT JOIN {user} um ON (d.usermodified = um.id)
                       LEFT OUTER JOIN {hsuforum_posts} up ON lastpost.postid = up.id";
     }
@@ -3011,22 +2939,26 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
  * other mean to sort the records, e.g. we cannot use IDs as a greater ID can have a lower
  * timemodified.
  *
+ * For blog-style forums, the calculation is based on the original creation time of the
+ * blog post.
+ *
  * Please note that this does not check whether or not the discussion passed is accessible
  * by the user, it simply uses it as a reference to find the neighbours. On the other hand,
  * the returned neighbours are checked and are accessible to the current user.
  *
  * @param object $cm The CM record.
  * @param object $discussion The discussion record.
+ * @param object $forum The forum instance record.
  * @return array That always contains the keys 'prev' and 'next'. When there is a result
  *               they contain the record with minimal information such as 'id' and 'name'.
  *               When the neighbour is not found the value is false.
  */
-function hsuforum_get_discussion_neighbours($cm, $discussion) {
+function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
     global $CFG, $DB, $USER;
 
     $config = get_config('hsuforum');
 
-    if ($cm->instance != $discussion->forum) {
+    if ($cm->instance != $discussion->forum or $discussion->forum != $forum->id or $forum->id != $cm->instance) {
         throw new coding_exception('Discussion is not part of the same forum.');
     }
 
@@ -3072,27 +3004,110 @@ function hsuforum_get_discussion_neighbours($cm, $discussion) {
         }
     }
 
-    $params['forumid'] = $cm->instance;
-    $params['discid'] = $discussion->id;
-    $params['disctimemodified'] = $discussion->timemodified;
+    if ($forum->type === 'blog') {
+        $params['forumid'] = $cm->instance;
+        $params['discid1'] = $discussion->id;
+        $params['discid2'] = $discussion->id;
 
-    $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
-              FROM {hsuforum_discussions} d
-             WHERE d.forum = :forumid
-               AND d.id <> :discid
-                   $timelimit
-                   $groupselect";
+        $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
+                  FROM {hsuforum_discussions} d
+                  JOIN {hsuforum_posts} p ON d.firstpost = p.id
+                 WHERE d.forum = :forumid
+                   AND d.id <> :discid1
+                       $timelimit
+                       $groupselect";
 
-    $prevsql = $sql . " AND d.timemodified < :disctimemodified
-                   ORDER BY d.timemodified DESC";
+        $sub = "SELECT pp.created
+                  FROM {hsuforum_discussions} dd
+                  JOIN {hsuforum_posts} pp ON dd.firstpost = pp.id
+                 WHERE dd.id = :discid2";
 
-    $nextsql = $sql . " AND d.timemodified > :disctimemodified
-                   ORDER BY d.timemodified ASC";
+        $prevsql = $sql . " AND p.created < ($sub)
+                       ORDER BY p.created DESC";
 
-    $neighbours['prev'] = $DB->get_record_sql($prevsql, $params, IGNORE_MULTIPLE);
-    $neighbours['next'] = $DB->get_record_sql($nextsql, $params, IGNORE_MULTIPLE);
+        $nextsql = $sql . " AND p.created > ($sub)
+                       ORDER BY p.created ASC";
+
+        $neighbours['prev'] = $DB->get_record_sql($prevsql, $params, IGNORE_MULTIPLE);
+        $neighbours['next'] = $DB->get_record_sql($nextsql, $params, IGNORE_MULTIPLE);
+
+    } else {
+        $params['forumid'] = $cm->instance;
+        $params['discid'] = $discussion->id;
+        $params['disctimemodified'] = $discussion->timemodified;
+
+        $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
+                  FROM {hsuforum_discussions} d
+                 WHERE d.forum = :forumid
+                   AND d.id <> :discid
+                       $timelimit
+                       $groupselect";
+
+        if (empty($config->enabletimedposts)) {
+            $prevsql = $sql . " AND d.timemodified < :disctimemodified";
+            $nextsql = $sql . " AND d.timemodified > :disctimemodified";
+
+        } else {
+            // Normally we would just use the timemodified for sorting
+            // discussion posts. However, when timed discussions are enabled,
+            // then posts need to be sorted base on the later of timemodified
+            // or the release date of the post (timestart).
+            $params['disctimecompare'] = $discussion->timemodified;
+            if ($discussion->timemodified < $discussion->timestart) {
+                $params['disctimecompare'] = $discussion->timestart;
+            }
+
+            // Here we need to take into account the release time (timestart)
+            // if one is set, of the neighbouring posts and compare it to the
+            // timestart or timemodified of *this* post depending on if the
+            // release date of this post is in the future or not.
+            // This stops discussions that appear later because of the
+            // timestart value from being buried under discussions that were
+            // made afterwards.
+            $prevsql = $sql . " AND CASE WHEN d.timemodified < d.timestart
+                                    THEN d.timestart ELSE d.timemodified END < :disctimecompare";
+            $nextsql = $sql . " AND CASE WHEN d.timemodified < d.timestart
+                                    THEN d.timestart ELSE d.timemodified END > :disctimecompare";
+        }
+        $prevsql .= ' ORDER BY '.hsuforum_get_default_sort_order();
+        $nextsql .= ' ORDER BY '.hsuforum_get_default_sort_order(false);
+
+        $neighbours['prev'] = $DB->get_record_sql($prevsql, $params, IGNORE_MULTIPLE);
+        $neighbours['next'] = $DB->get_record_sql($nextsql, $params, IGNORE_MULTIPLE);
+    }
 
     return $neighbours;
+}
+
+/**
+ * Get the sql to use in the ORDER BY clause for forum discussions.
+ *
+ * This has the ordering take timed discussion windows into account.
+ *
+ * @param bool $desc True for DESC, False for ASC.
+ * @param string $compare The field in the SQL to compare to normally sort by.
+ * @param string $prefix The prefix being used for the discussion table.
+ * @return string
+ */
+function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodified', $prefix = 'd') {
+    global $CFG;
+
+    $config = get_config('hsuforum');
+
+    if (!empty($prefix)) {
+        $prefix .= '.';
+    }
+
+    $dir = $desc ? 'DESC' : 'ASC';
+
+    $sort = "{$prefix}timemodified";
+    if (!empty($config->enabletimedposts)) {
+        $sort = "CASE WHEN {$compare} < {$prefix}timestart
+                 THEN {$prefix}timestart
+                 ELSE {$compare}
+                 END";
+    }
+    return "$sort $dir";
 }
 
 /**
@@ -3411,132 +3426,6 @@ function hsuforum_get_course_forum($courseid, $type) {
     }
     $sectionid = course_add_cm_to_section($courseid, $mod->coursemodule, 0);
     return $DB->get_record("hsuforum", array("id" => "$forum->id"));
-}
-
-
-/**
- * Given the data about a posting, builds up the HTML to display it and
- * returns the HTML in a string.  This is designed for sending via HTML email.
- *
- * @global object
- * @param object $course
- * @param object $cm
- * @param object $forum
- * @param object $discussion
- * @param object $post
- * @param object $userform
- * @param object $userto
- * @param bool $ownpost
- * @param bool $reply
- * @param bool $link
- * @param bool $rate
- * @param string $footer
- * @return string
- */
-function hsuforum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto,
-                              $ownpost=false, $reply=false, $link=false, $rate=false, $footer="") {
-
-    global $CFG, $OUTPUT;
-
-    $modcontext = context_module::instance($cm->id);
-
-    if (!isset($userto->viewfullnames[$forum->id])) {
-        $viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
-    } else {
-        $viewfullnames = $userto->viewfullnames[$forum->id];
-    }
-
-    $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
-
-    // add absolute file links
-    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_hsuforum', 'post', $post->id);
-
-    // format the post body
-    $options = new stdClass();
-    $options->para = true;
-    $formattedtext = format_text($post->message, $post->messageformat, $options, $course->id);
-
-    $output = '<table border="0" cellpadding="3" cellspacing="0" class="forumpost">';
-
-    $output .= '<tr class="header"><td width="35" valign="top" class="picture left">';
-    $output .= $OUTPUT->user_picture($postuser, array('courseid'=>$course->id, 'link' => (!hsuforum_is_anonymous_user($postuser))));
-    $output .= '</td>';
-
-    if ($post->parent) {
-        $output .= '<td class="topic">';
-    } else {
-        $output .= '<td class="topic starter">';
-    }
-    $output .= '<div class="subject">'.format_string($post->subject).'</div>';
-
-    $fullname = fullname($postuser, $viewfullnames);
-    $by = new stdClass();
-    if (!hsuforum_is_anonymous_user($postuser)) {
-        $by->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$postuser->id.'&amp;course='.$course->id.'">'.$fullname.'</a>';
-    } else {
-        $by->name = $fullname;
-    }
-    $by->date = userdate($post->modified, '', core_date::get_user_timezone($userto));
-    $output .= '<div class="author">'.get_string('bynameondate', 'hsuforum', $by).'</div>';
-
-    $output .= '</td></tr>';
-
-    $output .= '<tr><td class="left side" valign="top">';
-
-    if (isset($userfrom->groups)) {
-        $groups = $userfrom->groups[$forum->id];
-    } else {
-        $groups = groups_get_all_groups($course->id, $userfrom->id, $cm->groupingid);
-    }
-
-    if ($groups) {
-        $output .= print_group_picture($groups, $course->id, false, true, true);
-    } else {
-        $output .= '&nbsp;';
-    }
-
-    $output .= '</td><td class="content">';
-
-    $attachments = hsuforum_print_attachments($post, $cm, 'html');
-    if ($attachments !== '') {
-        $output .= '<div class="attachments">';
-        $output .= $attachments;
-        $output .= '</div>';
-    }
-
-    $output .= $formattedtext;
-
-// Commands
-    $commands = array();
-
-    if ($post->parent) {
-        $commands[] = '<a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.
-                      $post->discussion.'&amp;parent='.$post->parent.'">'.get_string('parent', 'hsuforum').'</a>';
-    }
-
-    if ($reply) {
-        $commands[] = '<a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/post.php?reply='.$post->id.'">'.
-                      get_string('reply', 'hsuforum').'</a>';
-    }
-
-    $output .= '<div class="commands">';
-    $output .= implode(' | ', $commands);
-    $output .= '</div>';
-
-// Context link to post if required
-    if ($link) {
-        $output .= '<div class="link">';
-        $output .= '<a target="_blank" href="'.$CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id.'">'.
-                     get_string('postincontext', 'hsuforum').'</a>';
-        $output .= '</div>';
-    }
-
-    if ($footer) {
-        $output .= '<div class="footer">'.$footer.'</div>';
-    }
-    $output .= '</td></tr></table>'."\n\n";
-
-    return $output;
 }
 
 /**
@@ -4223,7 +4112,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
         $DB->set_field("hsuforum_discussions", "usermodified", $post->userid, array("id" => $post->discussion));
     }
 
-    hsuforum_mark_post_read($post->userid, $post, $post->forum);
+    hsuforum_mark_post_read($post->userid, $post, $forum->id);
 
     // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
     hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_add_new_post');
@@ -5467,7 +5356,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     $context = context_module::instance($cm->id);
 
     if (empty($sort)) {
-        $sort = "d.timemodified DESC";
+        $sort = hsuforum_get_default_sort_order();
     }
 
     $olddiscussionlink = false;
@@ -5521,7 +5410,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     // Get all the recent discussions we're allowed to see
     $getuserlastmodified = true;
-    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, $maxdiscussions, $getuserlastmodified, $page, $perpage, false);
+    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, -1, false);
 
     // If we want paging
     $numdiscussions = null;
@@ -5626,6 +5515,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     }
 
     $canviewparticipants = has_capability('moodle/course:viewparticipants',$context);
+    $canviewhiddentimedposts = has_capability('mod/hsuforum:viewhiddentimedposts', $context);
 
     $strdatestring = get_string('strftimerecentfull');
 

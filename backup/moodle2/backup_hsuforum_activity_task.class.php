@@ -85,7 +85,7 @@ class backup_hsuforum_activity_task extends backup_activity_task {
         $content= preg_replace($search, '$@HSUFORUMVIEWBYF*$2@$', $content);
 
         // Link to forum discussion with parent syntax
-        $search="/(".$base."\/mod\/hsuforum\/discuss.php\?d\=)([0-9]+)\&parent\=([0-9]+)/";
+        $search = "/(".$base."\/mod\/hsuforum\/discuss.php\?d\=)([0-9]+)(?:\&amp;|\&)parent\=([0-9]+)/";
         $content= preg_replace($search, '$@HSUFORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
 
         // Link to forum discussion with relative syntax

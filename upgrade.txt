@@ -1,5 +1,13 @@
 This files describes API changes in /mod/hsuforum/*,
 information provided here is intended especially for developers.
+
+=== 3.0 ===
+ * External function get_forums_by_courses now returns and additional field "cancreatediscussions" that indicates if the user
+   can create discussions in the forum.
+ * A new optional parameter (groupid) has been added to get_forum_discussions.
+   This parameter can override the automatically calculated current group.
+ * New constant HSUFORUM_POSTS_ALL_USER_GROUPS, to be used as parameter in functions where we'd need to retrieve all the user posts.
+
 === 2.7 ===
 * All forum tracking options removed and tracking forced
 * Manual marking of posts as read is now removed

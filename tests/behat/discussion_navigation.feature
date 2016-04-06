@@ -55,6 +55,7 @@ Background:
     And I follow "Discussion 1"
     And I should see "Discussion 2"
     And I should not see "Discussion 3"
+    And I wait "1" seconds
     And I follow "Reply"
     And I follow link "Use advanced editor" ignoring js onclick
     And I set the following fields to these values:

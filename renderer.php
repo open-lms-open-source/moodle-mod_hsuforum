@@ -86,14 +86,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         }
 
         switch ($forum->type) {
+            case 'blog':
+                hsuforum_print_latest_discussions($course, $forum, -1, 'p.created DESC', -1, -1, $page, $config->manydiscussions, $cm);
+                break;
             case 'eachuser':
                 if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
                     echo '<p class="mdl-align">';
                     print_string("allowsdiscussions", "hsuforum");
                     echo '</p>';
                 }
-            // Fall through to following cases.
-            case 'blog':
+                // Fall through to following cases.
             default:
                 hsuforum_print_latest_discussions($course, $forum, -1, $dsort->get_sort_sql(), -1, -1, $page, $config->manydiscussions, $cm);
                 break;
@@ -360,6 +362,18 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $subscribe = new hsuforum_lib_discussion_subscribe($forum, context_module::instance($cm->id));
         $data->subscribe = $this->discussion_subscribe_link($cm, $discussion, $subscribe) ;
 
+        $config = get_config('hsuforum');
+        $timeddiscussion = !empty($config->enabletimedposts) && ($discussion->timestart || $discussion->timeend);
+        $timedoutsidewindow = ($timeddiscussion && ($discussion->timestart > time() || ($discussion->timeend != 0 && $discussion->timeend < time())));
+
+        $canviewhiddentimedposts = has_capability('mod/hsuforum:viewhiddentimedposts', context_module::instance($cm->id));
+        $canalwaysseetimedpost = ($USER->id == $postuser->id) || $canviewhiddentimedposts;
+        if ($timeddiscussion && $canalwaysseetimedpost) {
+            $data->timed = $PAGE->get_renderer('mod_forum')->timed_discussion_tooltip($post, empty($timedoutsidewindow));
+        } else {
+            $data->timed = '';
+        }
+
         return $this->discussion_template($data, $forum->type);
     }
 
@@ -475,6 +489,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
     }
 
     public function discussion_template($d, $forumtype) {
+        global $PAGE;
+
         $replies = '';
         if(!empty($d->replies)) {
             $xreplies = hsuforum_xreplies($d->replies);
@@ -522,7 +538,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 .$unread
                 .$participants
                 .$latestpost
-                .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags</div>"
+                .'<div class="hsuforum-thread-flags">'."{$d->subscribe} $d->postflags $d->timed</div>"
             .'</div>';
 
         if ($d->fullthread) {
@@ -540,6 +556,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $nonanonymous = get_string('nonanonymous', 'mod_hsuforum');
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
+
 
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
@@ -811,7 +828,10 @@ HTML;
         } else {
             $cm = $modinfo->instances['hsuforum'][$forum->id];
             $canviewemail = in_array('email', get_extra_user_fields(context_module::instance($cm->id)));
-            $output .= $this->output->heading(get_string("subscribersto","hsuforum", "'".format_string($entityname)."'"));
+            $strparams = new stdclass();
+            $strparams->name = format_string($forum->name);
+            $strparams->count = count($users);
+            $output .= $this->output->heading(get_string("subscriberstowithcount", "hsuforum", $strparams));
             $table = new html_table();
             $table->cellpadding = 5;
             $table->cellspacing = 5;
@@ -842,6 +862,50 @@ HTML;
         $output .= $existingusers->display(true);
         $output .= $this->output->box_end();
         return $output;
+    }
+
+    /**
+     * Generate the HTML for an icon to be displayed beside the subject of a timed discussion.
+     *
+     * @param object $discussion
+     * @param bool $visiblenow Indicicates that the discussion is currently
+     * visible to all users.
+     * @return string
+     */
+    public function timed_discussion_tooltip($discussion, $visiblenow) {
+        $dates = array();
+        if ($discussion->timestart) {
+            $dates[] = get_string('displaystart', 'mod_hsuforum').': '.userdate($discussion->timestart);
+        }
+        if ($discussion->timeend) {
+            $dates[] = get_string('displayend', 'mod_hsuforum').': '.userdate($discussion->timeend);
+        }
+
+        $str = $visiblenow ? 'timedvisible' : 'timedhidden';
+        $dates[] = get_string($str, 'mod_hsuforum');
+
+        $tooltip = implode("\n", $dates);
+        return $this->pix_icon('i/calendar', $tooltip, 'moodle', array('class' => 'smallicon timedpost'));
+    }
+
+    /**
+     * Display a forum post in the relevant context.
+     *
+     * @param \mod_hsuforum\output\hsuforum_post $post The post to display.
+     * @return string
+     */
+    public function render_hsuforum_post_email(\mod_hsuforum\output\hsuforum_post_email $post) {
+        $data = $post->export_for_template($this, $this->target === RENDERER_TARGET_TEXTEMAIL);
+        return $this->render_from_template('mod_hsuforum/' . $this->hsuforum_post_template(), $data);
+    }
+
+    /**
+     * The template name for this renderer.
+     *
+     * @return string
+     */
+    public function hsuforum_post_template() {
+        return 'hsuforum_post';
     }
 
     /**
