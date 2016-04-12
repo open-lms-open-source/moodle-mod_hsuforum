@@ -315,7 +315,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
-            $sql = "SELECT DISTINCT $fields, hp.max
+            $sql = "SELECT $fields, hp.max
                     FROM {user} u
                     JOIN (
                         SELECT userid, max(modified) as max
