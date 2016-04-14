@@ -35,18 +35,18 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And Advanced Forums I upload image "testgif_small.gif" using inline advanced editor
     And I press "Submit"
    Then I should see "Your post was successfully added."
-    And ".posting img" "css_element" should exist
+    And Image "testgif_small.gif" should exist
     And I follow "test discussion subject"
     And I follow "Edit"
     And Advanced Forums I upload image "testgif2_small.gif" using inline advanced editor
     And I press "Submit"
-   Then ".posting img:nth-of-type(2)" "css_element" should exist
+   Then Image "testgif2_small.gif" should exist
     And I follow "test discussion subject"
     And I set the field "subject" to "test post subject"
     And I set editable div ".hsuforum-textarea" "css_element" to "Test post body"
     And Advanced Forums I upload image "testgif3_small.gif" using inline advanced editor
     And I press "Submit"
-    And ".posting:nth-of-type(2) img" "css_element" should exist
+    And Image "testgif3_small.gif" should exist
 
   @javascript
   Scenario: Student can add / edit discussions and posts with message containing image set by enhanced editor

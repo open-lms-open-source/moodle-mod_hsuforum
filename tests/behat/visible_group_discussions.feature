@@ -64,8 +64,7 @@ Feature: Posting to all groups in a visible group discussion is restricted to us
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
     And the "Group" select box should contain "Group C"
-    # following feature not quite done yet
-    # And I should see "Post a copy to all groups"
+    And I should see "Post a copy to all groups"
 
   Scenario: Teacher with accessallgroups can post in groups they are a member of
     Given I log in as "teacher1"
@@ -201,6 +200,30 @@ Feature: Posting to all groups in a visible group discussion is restricted to us
       | Post a copy to all groups | 1                       |
     And I press "Post to forum"
     And I wait to be redirected
+    # Posting to all groups means that we should be redirected to the page we started from.
+    And the field "Visible groups" matches value "All participants"
+    And I select "Group A" from the "Visible groups" singleselect
+    Then I should see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I select "Group B" from the "Visible groups" singleselect
+    Then I should see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I select "Group C" from the "Visible groups" singleselect
+    Then I should see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    # No point testing the "All participants".
+
+  @javascript
+  Scenario: Teacher with accessallgroups can post to all groups via ajax
+    Given I log in as "teacher1"
+    And I follow "Course 1"
+    And I follow "Standard forum name"
+    And I create the following inline discussions:
+      | subject                  | message                  | posttomygroups |
+      | Teacher 1 -> Post to all | Teacher 1 -> Post to all | 1              |
     # Posting to all groups means that we should be redirected to the page we started from.
     And the field "Visible groups" matches value "All participants"
     And I select "Group A" from the "Visible groups" singleselect

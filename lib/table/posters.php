@@ -58,7 +58,7 @@ class hsuforum_lib_table_posters extends table_sql {
              SUM(CASE WHEN p.parent != 0 THEN 1 ELSE 0 END) AS replies,
              SUM(CASE WHEN p.flags LIKE '%substantive%' THEN 1 ELSE 0 END) AS substantive",
             '{hsuforum_posts} p, {hsuforum_discussions} d, {hsuforum} f, {user} u',
-            "u.id = p.userid AND p.discussion = d.id AND d.forum = f.id AND f.id = :forumid$usersql GROUP BY p.userid",
+            "u.id = p.userid AND p.discussion = d.id AND d.forum = f.id AND f.id = :forumid$usersql GROUP BY u.id",
             $params
         );
         $this->set_count_sql("

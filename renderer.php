@@ -315,7 +315,16 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if ($data->replies > 0) {
             // Get actual replies
             $fields = user_picture::fields('u');
-            $replyusers = $DB->get_records_sql("SELECT DISTINCT $fields FROM {hsuforum_posts} hp JOIN {user} u ON hp.userid = u.id WHERE hp.discussion = ? AND hp.privatereply = 0 ORDER BY hp.modified DESC", array($discussion->id));
+            $sql = "SELECT $fields, hp.max
+                    FROM {user} u
+                    JOIN (
+                        SELECT userid, max(modified) as max
+                        FROM {hsuforum_posts}
+                        WHERE privatereply = 0 AND discussion = ?
+                        GROUP BY userid
+                    ) hp ON hp.userid = u.id
+                    ORDER BY hp.max DESC";
+            $replyusers = $DB->get_records_sql($sql, array($discussion->id));
             if (!empty($replyusers) && !$forum->anonymous) {
                 foreach ($replyusers as $replyuser) {
                     if ($replyuser->id === $postuser->id) {
@@ -1367,7 +1376,6 @@ HTML;
             }
             $groupcount = count($groupinfo);
 
-            /* TODO: uncomment when backend for this feature added in follow on bug.
             $canposttoowngroups = empty($postid)
                                     && $groupcount > 1
                                     && empty($post->parent)
@@ -1377,7 +1385,6 @@ HTML;
                 $extrahtml .= html_writer::tag('label', html_writer::checkbox('posttomygroups', 1, false).
                     get_string('posttomygroups', 'hsuforum'));
             }
-            */
 
             if (hsuforum_user_can_post_discussion($forum, -1, null, $cm, $context)) {
                 // Note: We must reverse in this manner because array_unshift renumbers the array.
@@ -1749,7 +1756,7 @@ HTML;
         $data = $advancededitor->get_data();
         if (get_class($data->editor) == 'atto_texteditor'){
             $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
-            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitordraftid" value="'.$data->draftitemid.'" />';
+            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
             return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
         }
         return '';

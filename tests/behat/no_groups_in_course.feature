@@ -77,8 +77,7 @@ Feature: Posting to forums in a course with no groups behaves correctly
     And I follow "Course 1"
     And I follow "Standard forum"
     When I click on "Add a new discussion" "button"
-    # not implemented yet
-    # Then I should not see "Post a copy to all groups"
+    Then I should not see "Post a copy to all groups"
     And I create the following inline discussions:
       | subject                     | message                     |
       | Teacher -> All participants | Teacher -> All participants |
@@ -90,8 +89,7 @@ Feature: Posting to forums in a course with no groups behaves correctly
     And I follow "Course 1"
     And I follow "Separate forum"
     When I click on "Add a new discussion" "button"
-    # not implemented yet
-    # Then I should not see "Post a copy to all groups"
+    Then I should not see "Post a copy to all groups"
     And I create the following inline discussions:
       | subject                     | message                     |
       | Teacher -> All participants | Teacher -> All participants |
@@ -103,8 +101,7 @@ Feature: Posting to forums in a course with no groups behaves correctly
     And I follow "Course 1"
     And I follow "Visible forum"
     When I click on "Add a new discussion" "button"
-    # not implemented yet
-    # Then I should not see "Post a copy to all groups"
+    Then I should not see "Post a copy to all groups"
     And I create the following inline discussions:
       | subject                     | message                     |
       | Teacher -> All participants | Teacher -> All participants |
@@ -116,8 +113,7 @@ Feature: Posting to forums in a course with no groups behaves correctly
     And I follow "Course 1"
     And I follow "Standard forum"
     When I click on "Add a new discussion" "button"
-    # not implemented yet
-    # Then I should not see "Post a copy to all groups"
+    Then I should not see "Post a copy to all groups"
     And I create the following inline discussions:
       | subject                     | message                     |
       | Student -> All participants | Student -> All participants |

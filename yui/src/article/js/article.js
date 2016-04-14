@@ -136,6 +136,10 @@ Y.extend(ARTICLE, Y.Base,
             /* Clean html on paste */
             Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
 
+            // Implement toggling for post to all groups checkbox and groups select
+            var posttoallgroups = '.hsuforum-discussion input[name="posttomygroups"]';
+            Y.delegate('click', form.handlePostToGroupsToggle, document, posttoallgroups, form);
+
             // Implement toggling for the start and time elements for discussions.
             var discussiontimesselector = '.hsuforum-discussion .fdate_selector input';
             Y.delegate('click', form.handleTimeToggle, document, discussiontimesselector, form);
@@ -449,9 +453,12 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         editor.show();
         contentEditable.insert(editor, 'before');
         contentEditable.insert(Y.one('#hiddenadvancededitor'), 'before');
-        var clonedraftid = Y.one('#hiddenadvancededitordraftid').cloneNode();
-        clonedraftid.id = 'hiddenadvancededitordraftidclone';
-        contentEditable.insert(clonedraftid, 'before');
+        var draftid = Y.one('#hiddenadvancededitordraftid');
+        if (draftid) {
+            var clonedraftid = draftid.cloneNode();
+            clonedraftid.id = 'hiddenadvancededitordraftidclone';
+            contentEditable.insert(clonedraftid, 'before');
+        }
         editArea.setContent(contentEditable.getContent());
 
         // Focus on editarea.

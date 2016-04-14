@@ -215,10 +215,16 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
     }
 
     protected function after_execute() {
-        global $DB;
-
         // Add forum related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_hsuforum', 'intro', null);
+
+        // Add post related files, matching by itemname = 'hsuforum_post'
+        $this->add_related_files('mod_hsuforum', 'post', 'hsuforum_post');
+        $this->add_related_files('mod_hsuforum', 'attachment', 'hsuforum_post');
+    }
+
+    protected function after_restore() {
+        global $DB;
 
         // If the forum is of type 'single' and no discussion has been ignited
         // (non-userinfo backup/restore) create the discussion here, using forum
@@ -227,7 +233,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $forumrec = $DB->get_record('hsuforum', array('id' => $forumid));
         if ($forumrec->type == 'single' && !$DB->record_exists('hsuforum_discussions', array('forum' => $forumid))) {
             // Create single discussion/lead post from forum data
-            $sd = new stdclass();
+            $sd = new stdClass();
             $sd->course   = $forumrec->course;
             $sd->forum    = $forumrec->id;
             $sd->name     = $forumrec->name;
@@ -244,15 +250,11 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $fs = get_file_storage();
             $files = $fs->get_area_files($this->task->get_contextid(), 'mod_hsuforum', 'intro');
             foreach ($files as $file) {
-                $newfilerecord = new stdclass();
+                $newfilerecord = new stdClass();
                 $newfilerecord->filearea = 'post';
                 $newfilerecord->itemid   = $DB->get_field('hsuforum_discussions', 'firstpost', array('id' => $sdid));
                 $fs->create_file_from_storedfile($newfilerecord, $file);
             }
         }
-
-        // Add post related files, matching by itemname = 'hsuforum_post'
-        $this->add_related_files('mod_hsuforum', 'post', 'hsuforum_post');
-        $this->add_related_files('mod_hsuforum', 'attachment', 'hsuforum_post');
     }
 }

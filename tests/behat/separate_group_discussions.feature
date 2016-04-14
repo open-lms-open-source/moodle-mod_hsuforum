@@ -73,8 +73,7 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
     And the "Group" select box should contain "Group C"
-    # following feature not quite done yet
-    #And I should see "Post a copy to all groups"
+    And I should see "Post a copy to all groups"
 
   Scenario: Teacher with accessallgroups can post in groups they are a member of
     Given I log in as "teacher1"
@@ -200,6 +199,30 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     And I select "Group B" from the "Separate groups" singleselect
     And I should not see "Teacher 1 -> Group C"
 
+  @javascript
+  Scenario: Teacher with accessallgroups can post to all groups via ajax
+    Given I log in as "teacher1"
+    And I follow "Course 1"
+    And I follow "Standard forum name"
+    And I create the following inline discussions:
+      | subject                  | message                  | posttomygroups   |
+      | Teacher 1 -> Post to all | Teacher 1 -> Post to all | 1                |
+    # Posting to all groups means that we should be redirected to the page we started from.
+    And the field "Separate groups" matches value "All participants"
+    And I select "Group A" from the "Separate groups" singleselect
+    Then I should see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I select "Group B" from the "Separate groups" singleselect
+    And I should see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I select "Group C" from the "Separate groups" singleselect
+    And I should see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    And I should not see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
+    # No point testing the "All participants".
+    #
   Scenario: Teacher with accessallgroups can post to all groups
     Given I log in as "teacher1"
     And I follow "Course 1"
@@ -309,10 +332,11 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
+    And the "Group" select box should contain "Group C"
     And I should see "Post a copy to all groups"
 
   @javascript
-  Scenario: Teacher in some groups and without accessallgroups can only post in their groups
+  Scenario: Teacher in all groups but without accessallgroups can only post in their groups via ajax
     And I log in as "admin"
     And I set the following system permissions of "Non-editing teacher" role:
       | moodle/site:accessallgroups | Prohibit |
@@ -321,10 +345,43 @@ Feature: Posting to all groups in a separate group discussion is restricted to u
     And I follow "Course 1"
     And I follow "Standard forum name"
     When I click on "Add a new discussion" "button"
+    Then the "Group" select box should not contain "All participants"
+    And the "Group" select box should contain "Group A"
+    And the "Group" select box should contain "Group B"
+    And the "Group" select box should contain "Group C"
+    And I should see "Post a copy to all groups"
+
+  @javascript
+  Scenario: Teacher in some groups and without accessallgroups can only post in their groups
+    And I log in as "admin"
+    And I set the following system permissions of "Non-editing teacher" role:
+      | moodle/site:accessallgroups | Prohibit |
+    And I log out
+    Given I log in as "noneditor2"
+    And I follow "Course 1"
+    And I follow "Standard forum name"
+    When I click on "Add a new discussion" "button"
     And I follow link "Use advanced editor" ignoring js onclick
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
+    And the "Group" select box should not contain "Group C"
+    And I should see "Post a copy to all groups"
+
+  @javascript
+  Scenario: Teacher in some groups and without accessallgroups can only post in their groups via ajax
+    And I log in as "admin"
+    And I set the following system permissions of "Non-editing teacher" role:
+      | moodle/site:accessallgroups | Prohibit |
+    And I log out
+    Given I log in as "noneditor2"
+    And I follow "Course 1"
+    And I follow "Standard forum name"
+    When I click on "Add a new discussion" "button"
+    Then the "Group" select box should not contain "All participants"
+    And the "Group" select box should contain "Group A"
+    And the "Group" select box should contain "Group B"
+    And the "Group" select box should not contain "Group C"
     And I should see "Post a copy to all groups"
 
   Scenario: Students can view all participants discussions in separate groups mode

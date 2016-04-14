@@ -382,7 +382,8 @@ ACTIONS
     display:inline-block;
 }
 
-.hsuforum-toggle:hover {
+.hsuforum-toggle:hover,
+.hsuforum-toggle:focus .svg-icon {
     -webkit-transform: scale(1.06);
     -ms-transform: scale(1.06);
     transform: scale(1.06);
@@ -392,16 +393,19 @@ ACTIONS
 }
 
 .hsuforum-toggle-subscribe.hsuforum-toggled .svg-icon,
-.hsuforum-toggle-subscribe:hover .svg-icon{
+.hsuforum-toggle-subscribe:hover .svg-icon,
+.hsuforum-toggle-subscribe:focus .svg-icon{
     fill:#ffac0d;
 }
 
 .hsuforum-toggle-substantive.hsuforum-toggled .svg-icon,
-.hsuforum-toggle-substantive:hover .svg-icon{
+.hsuforum-toggle-substantive:hover .svg-icon,
+.hsuforum-toggle-substantive:focus .svg-icon{
     fill:#5fa9dd;
 }
 .hsuforum-toggle-bookmark.hsuforum-toggled .svg-icon,
-.hsuforum-toggle-bookmark:hover .svg-icon{
+.hsuforum-toggle-bookmark:hover .svg-icon,
+.hsuforum-toggle-bookmark:focus .svg-icon{
     fill:#f05454;
 }
 

@@ -249,6 +249,7 @@ Y.extend(DOM, Y.Base,
                 if (node) {
                     // Updating existing discussion.
                     node.replace(e.html);
+                    this.initRatings();
                 } else {
                     // Adding new discussion.
                     Y.one(SELECTORS.DISCUSSION_TARGET).insert(e.html, 'after');
@@ -677,6 +678,16 @@ Y.extend(FORM, Y.Base,
             },100);
         },
 
+        handlePostToGroupsToggle: function(e) {
+            var formNode = e.currentTarget.ancestor('form');
+            var selectNode = formNode.one('#menugroupinfo');
+            if (e.currentTarget.get('checked')) {
+                selectNode.set('disabled', 'disabled');
+            } else {
+                selectNode.set('disabled', '');
+            }
+        },
+
         handleTimeToggle: function(e) {
             if (e.currentTarget.get('checked')) {
                 e.currentTarget.ancestor('.fdate_selector').all('select').set('disabled', '');
@@ -744,9 +755,17 @@ Y.extend(FORM, Y.Base,
             wrapperNode.all('button').setAttribute('disabled', 'disabled');
             this._copyMessage(wrapperNode);
 
+            // Make sure form has draftid for processing images.
             var fileinputs = wrapperNode.all('form input[type=file]');
+            var draftid = Y.one('#hiddenadvancededitordraftid');
+            if (draftid) {
+                var clonedraftid = draftid.cloneNode();
+                clonedraftid.id = 'hiddenadvancededitordraftidclone';
+                wrapperNode.one('form input').insert(clonedraftid, 'before');
+            }
 
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
+                // TODO - yuiformsubmit won't work here as the data will already have been sent at this point. The form is the data, the data variable is what comes back
                 data.yuiformsubmit = 1; // So we can detect and class this as an AJAX post later!
                 if (data.errors === true) {
                     wrapperNode.one(SELECTORS.VALIDATION_ERRORS).setHTML(data.html).addClass('notifyproblem');
@@ -1038,6 +1057,7 @@ Y.extend(FORM, Y.Base,
             this.get('io').send({
                 discussionid: postNode.getData('discussionid'),
                 postid: postNode.getData('postid'),
+                draftid: Y.one('#hiddenadvancededitordraftid').get('value'),
                 action: 'edit_post_form'
             }, function(data) {
                 postNode.prepend(data.html);
@@ -1197,6 +1217,10 @@ Y.extend(ARTICLE, Y.Base,
 
             /* Clean html on paste */
             Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
+
+            // Implement toggling for post to all groups checkbox and groups select
+            var posttoallgroups = '.hsuforum-discussion input[name="posttomygroups"]';
+            Y.delegate('click', form.handlePostToGroupsToggle, document, posttoallgroups, form);
 
             // Implement toggling for the start and time elements for discussions.
             var discussiontimesselector = '.hsuforum-discussion .fdate_selector input';
@@ -1509,9 +1533,12 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
         editor.show();
         contentEditable.insert(editor, 'before');
         contentEditable.insert(Y.one('#hiddenadvancededitor'), 'before');
-        var clonedraftid = Y.one('#hiddenadvancededitordraftid').cloneNode();
-        clonedraftid.id = 'hiddenadvancededitordraftidclone';
-        contentEditable.insert(clonedraftid, 'before');
+        var draftid = Y.one('#hiddenadvancededitordraftid');
+        if (draftid) {
+            var clonedraftid = draftid.cloneNode();
+            clonedraftid.id = 'hiddenadvancededitordraftidclone';
+            contentEditable.insert(clonedraftid, 'before');
+        }
         editArea.setContent(contentEditable.getContent());
 
         // Focus on editarea.
