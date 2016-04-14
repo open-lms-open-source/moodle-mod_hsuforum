@@ -254,9 +254,12 @@ Y.extend(FORM, Y.Base,
 
             // Make sure form has draftid for processing images.
             var fileinputs = wrapperNode.all('form input[type=file]');
-            var clonedraftid = Y.one('#hiddenadvancededitordraftid').cloneNode();
-            clonedraftid.id = 'hiddenadvancededitordraftidclone';
-            wrapperNode.one('form input').insert(clonedraftid, 'before');
+            var draftid = Y.one('#hiddenadvancededitordraftid');
+            if (draftid) {
+                var clonedraftid = draftid.cloneNode();
+                clonedraftid.id = 'hiddenadvancededitordraftidclone';
+                wrapperNode.one('form input').insert(clonedraftid, 'before');
+            }
 
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
                 // TODO - yuiformsubmit won't work here as the data will already have been sent at this point. The form is the data, the data variable is what comes back
