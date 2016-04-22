@@ -369,7 +369,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $canviewhiddentimedposts = has_capability('mod/hsuforum:viewhiddentimedposts', context_module::instance($cm->id));
         $canalwaysseetimedpost = ($USER->id == $postuser->id) || $canviewhiddentimedposts;
         if ($timeddiscussion && $canalwaysseetimedpost) {
-            $data->timed = $PAGE->get_renderer('mod_forum')->timed_discussion_tooltip($post, empty($timedoutsidewindow));
+            $data->timed = $PAGE->get_renderer('mod_hsuforum')->timed_discussion_tooltip($discussion, empty($timedoutsidewindow));
         } else {
             $data->timed = '';
         }
