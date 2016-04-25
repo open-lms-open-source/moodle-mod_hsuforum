@@ -174,6 +174,8 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $newitemid = $DB->insert_record('hsuforum_subscriptions', $data);
+        $this->set_mapping('hsuforum_subscription', $oldid, $newitemid, true);
+
     }
 
     protected function process_hsuforum_digest($data) {

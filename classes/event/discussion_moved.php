@@ -111,4 +111,17 @@ class discussion_moved extends \core\event\base {
             throw new \coding_exception('Context level must be CONTEXT_MODULE.');
         }
     }
+
+    public static function get_objectid_mapping() {
+        return array('db' => 'hsuforum_discussions', 'restore' => 'hsuforum_discussion');
+    }
+
+    public static function get_other_mapping() {
+        $othermapped = array();
+        $othermapped['fromforumid'] = array('db' => 'hsuforum', 'restore' => 'hsuforum');
+        $othermapped['toforumid'] = array('db' => 'hsuforum', 'restore' => 'hsuforum');
+
+        return $othermapped;
+    }
+
 }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -59,7 +58,7 @@ $functions = array(
          'classname' => 'mod_hsuforum_external',
          'methodname' => 'view_forum',
          'classpath' => 'mod/hsuforum/externallib.php',
-         'description' => 'Simulate the view.php web interface page: trigger events, completion, etc...',
+         'description' => 'Trigger the course module viewed event and update the module completion status.',
          'type' => 'write',
          'capabilities' => 'mod/hsuforum:viewdiscussion'
      ),
@@ -68,8 +67,27 @@ $functions = array(
          'classname' => 'mod_hsuforum_external',
          'methodname' => 'view_forum_discussion',
          'classpath' => 'mod/hsuforum/externallib.php',
-         'description' => 'Simulate the hsuforum/discuss.php web interface page: trigger events, completion, etc...',
+         'description' => 'Trigger the forum discussion viewed event.',
          'type' => 'write',
          'capabilities' => 'mod/hsuforum:viewdiscussion'
      ),
+
+     'mod_hsuforum_add_discussion_post' => array(
+        'classname' => 'mod_hsuforum_external',
+        'methodname' => 'add_discussion_post',
+        'classpath' => 'mod/hsuforum/externallib.php',
+        'description' => 'Create new posts into an existing discussion.',
+        'type' => 'write',
+        'capabilities' => 'mod/hsuforum:replypost'
+     ),
+
+     'mod_hsuforum_add_discussion' => array(
+        'classname' => 'mod_hsuforum_external',
+        'methodname' => 'add_discussion',
+        'classpath' => 'mod/hsuforum/externallib.php',
+        'description' => 'Add a new discussion into an existing forum.',
+        'type' => 'write',
+        'capabilities' => 'mod/hsuforum:startdiscussion'
+     ),
+
 );

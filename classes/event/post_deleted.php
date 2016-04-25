@@ -127,4 +127,16 @@ class post_deleted extends \core\event\base {
             throw new \coding_exception('Context level must be CONTEXT_MODULE.');
         }
     }
+
+    public static function get_objectid_mapping() {
+        return array('db' => 'hsuforum_posts', 'restore' => 'hsuforum_post');
+    }
+
+    public static function get_other_mapping() {
+        $othermapped = array();
+        $othermapped['forumid'] = array('db' => 'hsuforum', 'restore' => 'hsuforum');
+        $othermapped['discussionid'] = array('db' => 'hsuforum_discussions', 'restore' => 'hsuforum_discussion');
+
+        return $othermapped;
+    }
 }

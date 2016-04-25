@@ -226,7 +226,6 @@ class hsuforum_lib_discussion_subscribe {
      * @return hsuforum_lib_discussion_subscribe
      */
     public function unsubscribe($discussionid) {
-        $this->require_can_subscribe();
         $this->get_repo()->unsubscribe($discussionid, $this->get_userid());
         return $this;
     }

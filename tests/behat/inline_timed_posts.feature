@@ -33,9 +33,9 @@ Feature: Teacheres and students can create discussions
     And I wait until the page is ready
 
     And I create the following inline discussions:
-        | subject                          | message     | timestart      | timeend        |
-        | Currently accessible discussion  | testing 123 | today - 1 week | today + 1 week |
-        | Currently restricted discussion  | testing abc | today + 1 week | today + 2 week |
+        | subject                          | message     | timestart    | timeend      |
+        | Currently accessible discussion  | testing 123 | now - 1 week | now + 1 week |
+        | Currently restricted discussion  | testing abc | now + 1 week | now + 2 week |
 
     And I log out
     And I log in as "student1"

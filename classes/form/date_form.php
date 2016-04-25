@@ -32,12 +32,12 @@ class date_form extends \moodleform {
         $mform = $this->_form;
         $data = $this->get_data();
         // We have to add this first or we can't add the untoggleable legend into the form.
-        $mform->addElement('static','nothing', '');
+        $mform->addElement('static', 'nothing', '');
         // Untoggleable legend.
         $mform->addElement('html', '<legend>'.get_string('displayperiod', 'hsuforum').'</legend>');
-        $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
+        $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
         $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
-        $mform->addElement('date_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
+        $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
         $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
     }
 }
