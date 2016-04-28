@@ -1062,10 +1062,11 @@ Y.extend(FORM, Y.Base,
                 return;
             }
             var self = this;
+            var draftid = Y.one('#hiddenadvancededitordraftid');
             this.get('io').send({
                 discussionid: postNode.getData('discussionid'),
                 postid: postNode.getData('postid'),
-                draftid: Y.one('#hiddenadvancededitordraftid').get('value'),
+                draftid: draftid ? draftid.get('value') : 0,
                 action: 'edit_post_form'
             }, function(data) {
                 postNode.prepend(data.html);

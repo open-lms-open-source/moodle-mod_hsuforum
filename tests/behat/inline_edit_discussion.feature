@@ -26,7 +26,7 @@ Feature: Teacheres and students can create discussions
     And I log out
 
  @javascript
-  Scenario Outline: Teacher can add discussion to forum without timed posts enabled with any editor set.
+  Scenario Outline: Teacher can add and edit a discussion to forum without timed posts enabled with any editor set.
     When the following config values are set as admin:
       | enabletimedposts | 0 | hsuforum |
     And the following config values are set as admin:
@@ -39,6 +39,11 @@ Feature: Teacheres and students can create discussions
       | subject            | message                       |
       | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
+    And I follow "Test discussion 1"
+    And I follow "Edit"
+    And I set editable div " .hsuforum-discussion .hsuforum-textarea" "css_element" to "Test discussion 1 description edited"
+    And I press "Submit"
+    And I should see "Test discussion 1 description edited"
 
    Examples:
    | editororder |
