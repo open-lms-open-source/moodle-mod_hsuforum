@@ -811,6 +811,11 @@ function hsuforum_cron() {
                 } else {
                     $canreply = $userto->canpost[$discussion->id];
                 }
+                if (!empty($post->privatereply)) {
+                    $canreply = false;
+                }
+
+                $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
 
                 $data = new \mod_hsuforum\output\hsuforum_post_email(
                         $course,
@@ -818,7 +823,7 @@ function hsuforum_cron() {
                         $forum,
                         $discussion,
                         $post,
-                        $userfrom,
+                        $postuser,
                         $userto,
                         $canreply
                     );
@@ -838,8 +843,6 @@ function hsuforum_cron() {
                 // Send the post now!
 
                 mtrace('Sending ', '');
-
-                $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
 
                 $eventdata = new \core\message\message();
                 $eventdata->component        = 'mod_hsuforum';
@@ -1147,13 +1150,15 @@ function hsuforum_cron() {
                             $canreply = false;
                         }
 
+                        $postuser = hsuforum_anonymize_user($userfrom, $forum, $post);
+
                         $data = new \mod_hsuforum\output\hsuforum_post_email(
                                 $course,
                                 $cm,
                                 $forum,
                                 $discussion,
                                 $post,
-                                $userfrom,
+                                $postuser,
                                 $userto,
                                 $canreply
                             );
