@@ -8138,14 +8138,10 @@ function hsuforum_relative_time($timeinpast, $attributes = null) {
     $datetime = date(DateTime::W3C, $timeinpast);
     $secondsago = time() - $timeinpast;
 
-    if (abs($secondsago) > (365 * DAYSECS)) {
-        $displaytime = $precisedatetime;
-    } else {
-        $secondsago = hsuforum_simpler_time($secondsago);
-        $displaytime = format_time($secondsago);
-        if ($secondsago != 0) {
-            $displaytime = get_string('ago', 'message', $displaytime);
-        }
+    $secondsago = hsuforum_simpler_time($secondsago);
+    $displaytime = format_time($secondsago);
+    if ($secondsago != 0) {
+        $displaytime = get_string('ago', 'message', $displaytime);
     }
 
     // Default time tag attributes.
