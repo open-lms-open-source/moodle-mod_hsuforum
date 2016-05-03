@@ -93,8 +93,6 @@ class local {
             if (!empty($timestartarr['year'])
                 && !empty($timestartarr['month'])
                 && !empty($timestartarr['day'])
-                && !empty($timestartarr['hour'])
-                && !empty($timestartarr['minute'])
             ) {
                 $gregoriandate = $calendartype->convert_to_gregorian(
                     $timestartarr['year'],
@@ -123,8 +121,6 @@ class local {
             if (!empty($timeendarr['year'])
                 && !empty($timeendarr['month'])
                 && !empty($timeendarr['day'])
-                && !empty($timeendarr['hour'])
-                && !empty($timeendarr['minute'])
             ) {
                 $gregoriandate = $calendartype->convert_to_gregorian(
                     $timeendarr['year'],
