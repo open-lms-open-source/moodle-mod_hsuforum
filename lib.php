@@ -8140,7 +8140,6 @@ function hsuforum_relative_time($timeinpast, $attributes = null) {
 
     // Default time tag attributes.
     $defaultatts = array(
-        'is' => 'relative-time',
         'datetime' => $datetime,
         'title' => $precisedatetime,
     );
