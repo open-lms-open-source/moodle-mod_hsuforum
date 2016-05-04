@@ -8138,8 +8138,15 @@ function hsuforum_relative_time($timeinpast, $attributes = null) {
     $datetime = date(DateTime::W3C, $timeinpast);
     $secondsago = time() - $timeinpast;
 
+    // Default time tag attributes.
+    $defaultatts = array(
+        'datetime' => $datetime,
+        'title' => $precisedatetime,
+    );
+
     if (abs($secondsago) > (365 * DAYSECS)) {
         $displaytime = $precisedatetime;
+        $defaultatts['title'] = '';
     } else {
         $secondsago = hsuforum_simpler_time($secondsago);
         $displaytime = format_time($secondsago);
@@ -8147,13 +8154,6 @@ function hsuforum_relative_time($timeinpast, $attributes = null) {
             $displaytime = get_string('ago', 'message', $displaytime);
         }
     }
-
-    // Default time tag attributes.
-    $defaultatts = array(
-        'is' => 'relative-time',
-        'datetime' => $datetime,
-        'title' => $precisedatetime,
-    );
 
     // Override default attributes with those passed in (if any).
     if (!empty($attributes)) {
