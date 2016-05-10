@@ -360,11 +360,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $errors['completionusegrade'] = get_string('completionusegradeerror', 'hsuforum');
             }
         }
-        if ($data['gradetype'] == HSUFORUM_GRADETYPE_MANUAL
-                && $data['scale'] == 0) {
-            $errors['scale'] = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
-        }
-        if ($data['gradetype'] == HSUFORUM_GRADETYPE_RATING
+        if (($data['gradetype'] == HSUFORUM_GRADETYPE_MANUAL || $data['gradetype'] == HSUFORUM_GRADETYPE_RATING)
                 && $data['scale'] == 0) {
             $errors['scale'] = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         }
