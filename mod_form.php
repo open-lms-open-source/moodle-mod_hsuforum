@@ -364,6 +364,10 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 && $data['scale'] == 0) {
             $errors['scale'] = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         }
+        if ($data['gradetype'] == HSUFORUM_GRADETYPE_RATING
+                && $data['scale'] == 0) {
+            $errors['scale'] = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
+        }
         return $errors;
     }
 }
