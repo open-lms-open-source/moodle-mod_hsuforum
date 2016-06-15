@@ -1490,9 +1490,12 @@ function hsuforum_print_overview($courses,&$htmlarray) {
         }
         $sql = substr($sql,0,-3); // take off the last OR
         $sql .= ') AND p.modified >= ? AND r.id is NULL ';
+        $sql .= 'AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?) ';
         $sql .= 'AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)) ';
         $sql .= 'GROUP BY d.forum,d.course';
         $params[] = $cutoffdate;
+        $params[] = $USER->id;
+        $params[] = $USER->id;
         $params[] = time();
         $params[] = time();
 

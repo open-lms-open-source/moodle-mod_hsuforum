@@ -1838,6 +1838,10 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($author->id, $course1->id);
         $this->getDataGenerator()->enrol_user($author->id, $course2->id);
 
+        $author2 = self::getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($author->id, $course1->id);
+        $this->getDataGenerator()->enrol_user($author->id, $course2->id);
+
         // Create a viewer user.
         $viewer = self::getDataGenerator()->create_user((object) array('trackforums' => 1));
         $this->getDataGenerator()->enrol_user($viewer->id, $course1->id);
@@ -1854,7 +1858,15 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $record->course = $course1->id;
         $record->userid = $author->id;
         $record->forum = $forum1->id;
-        $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+
+        $hsugen = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum');
+        $discussion = $hsugen->create_discussion($record);
+
+        // Create a private reply to check unread counts.
+        $record->userid = $author2->id;
+        $record->discussion = $discussion->id;
+        $record->privatereply = $author->id;
+        $replypost = $hsugen->create_post($record);
 
         $this->setUser($viewer->id);
         $courses = array(
@@ -1874,6 +1886,17 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // There should be one entry for a forum in course1.
         $this->assertCount(1, $results[$course1->id]);
         $this->assertArrayHasKey('hsuforum', $results[$course1->id]);
+
+        // Make sure the viewer isn't seeing the private unread item.
+        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
+
+        // Check back as the author, they should see one unread for the private reply.
+        $this->setUser($author->id);
+
+        $results = array();
+        hsuforum_print_overview($courses, $results);
+
+        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
     }
 
     public function test_print_overview_groups() {
