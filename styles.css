@@ -836,3 +836,9 @@ FUN WITH FORMS
 .dateformtarget {
     margin-bottom:1em;
 }
+
+.timedpost.smallicon {
+    vertical-align: top;
+    height: 1em;
+    margin-top: 0.1em;
+}

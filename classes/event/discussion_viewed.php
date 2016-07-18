@@ -99,5 +99,8 @@ class discussion_viewed extends \core\event\base {
         }
     }
 
+    public static function get_objectid_mapping() {
+        return array('db' => 'hsuforum_discussions', 'restore' => 'hsuforum_discussion');
+    }
 }
 

@@ -90,20 +90,27 @@ class local {
 
         $timestart = 0;
         if ($startenabled) {
-            if (!empty($timestartarr['month']) && !empty($timestartarr['day']) && !empty($timestartarr['year'])) {
-                $gregoriandate = $calendartype->convert_to_gregorian($timestartarr['year'],
+            if (!empty($timestartarr['year'])
+                && !empty($timestartarr['month'])
+                && !empty($timestartarr['day'])
+            ) {
+                $gregoriandate = $calendartype->convert_to_gregorian(
+                    $timestartarr['year'],
                     $timestartarr['month'],
                     $timestartarr['day'],
-                    0,
-                    0);
-                $timestart = make_timestamp($gregoriandate['year'],
+                    $timestartarr['hour'],
+                    $timestartarr['minute']
+                );
+                $timestart = make_timestamp(
+                    $gregoriandate['year'],
                     $gregoriandate['month'],
                     $gregoriandate['day'],
                     $gregoriandate['hour'],
                     $gregoriandate['minute'],
                     0,
                     $timezone,
-                    true);
+                    true
+                );
             }
         }
 
@@ -111,20 +118,27 @@ class local {
         $endenabled  = !empty($timeendarr['enabled']);
         $timeend = 0;
         if ($endenabled) {
-            if (!empty($timeendarr['month']) && !empty($timeendarr['day']) && !empty($timeendarr['year'])) {
-                $gregoriandate = $calendartype->convert_to_gregorian($timeendarr['year'],
+            if (!empty($timeendarr['year'])
+                && !empty($timeendarr['month'])
+                && !empty($timeendarr['day'])
+            ) {
+                $gregoriandate = $calendartype->convert_to_gregorian(
+                    $timeendarr['year'],
                     $timeendarr['month'],
                     $timeendarr['day'],
-                    0,
-                    0);
-                $timeend = make_timestamp($gregoriandate['year'],
+                    $timeendarr['hour'],
+                    $timeendarr['minute']
+                );
+                $timeend = make_timestamp(
+                    $gregoriandate['year'],
                     $gregoriandate['month'],
                     $gregoriandate['day'],
                     $gregoriandate['hour'],
                     $gregoriandate['minute'],
                     0,
                     $timezone,
-                    true);
+                    true
+                );
             }
         }
 

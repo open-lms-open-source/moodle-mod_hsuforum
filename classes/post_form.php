@@ -151,10 +151,10 @@ class mod_hsuforum_post_form extends moodleform {
         if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $coursecontext)) { // hack alert
             $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'hsuforum'));
 
-            $mform->addElement('date_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional'=>true));
+            $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
             $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
 
-            $mform->addElement('date_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional'=>true));
+            $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
             $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
 
         } else {

@@ -152,7 +152,7 @@
             hsuforum_rss_delete_file($forum);
             hsuforum_rss_delete_file($forumto);
 
-            redirect($return.'&moved=-1&sesskey='.sesskey());
+            redirect($return.'&move=-1&sesskey='.sesskey());
         }
     }
 
@@ -246,7 +246,7 @@
     }
 
     if ($move == -1 and confirm_sesskey()) {
-        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)));
+        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)), 'notifysuccess');
     }
 
     $canrate = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:rate', $modcontext);
@@ -301,7 +301,7 @@
     if (!empty($forummenu)) {
         echo '<div class="movediscussionoption">';
         $select = new url_select($forummenu, '',
-            array(''=>get_string("movethisdiscussionto", "hsuforum")),
+            array('/mod/hsuforum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "hsuforum")),
             'forummenu');
         echo $OUTPUT->render($select);
         echo "</div>";
@@ -326,7 +326,7 @@
         }
     }
 
-    $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion);
+    $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion, $forum);
     echo $renderer->discussion_navigation($neighbours['prev'], $neighbours['next']);
     echo "</div>";
 

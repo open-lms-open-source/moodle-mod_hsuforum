@@ -145,10 +145,16 @@ class behat_mod_hsuforum extends behat_base {
 
         // We delegate to behat_form_field class, it will
         // guess the type properly as it is a select tag.
+        $minutefield = $this->find_field('id_'.$field.'_minute');
+        $hourfield = $this->find_field('id_'.$field.'_hour');
         $dayfield = $this->find_field('id_'.$field.'_day');
         $monthfield = $this->find_field('id_'.$field.'_month');
         $yearfield = $this->find_field('id_'.$field.'_year');
 
+        $minutes = date('i', $value);
+        $roundedminutes = ceil($minutes / 5) * 5;
+        $minutefield->setValue($roundedminutes);
+        $hourfield->setValue(date('H', $value));
         $dayfield->setValue(date('j', $value));
         $monthfield->setValue(date('n', $value));
         $yearfield->setValue(date('Y', $value));

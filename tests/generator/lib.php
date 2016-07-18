@@ -195,10 +195,36 @@ class mod_hsuforum_generator extends testing_module_generator {
             $record['reveal'] = 0;
         }
 
+        if (isset($record['timemodified'])) {
+            $timemodified = $record['timemodified'];
+        }
+
+        if (isset($record['mailed'])) {
+            $mailed = $record['mailed'];
+        }
+
         $record = (object) $record;
 
         // Add the discussion.
         $record->id = hsuforum_add_discussion($record, null, null, $record->userid);
+
+        if (isset($timemodified) || isset($mailed)) {
+            $post = $DB->get_record('hsuforum_posts', array('discussion' => $record->id));
+
+            if (isset($mailed)) {
+                $post->mailed = $mailed;
+            }
+
+            if (isset($timemodified)) {
+                // Enforce the time modified.
+                $record->timemodified = $timemodified;
+                $post->modified = $post->created = $timemodified;
+
+                $DB->update_record('hsuforum_discussions', $record);
+            }
+
+            $DB->update_record('hsuforum_posts', $post);
+        }
 
         return $record;
     }
