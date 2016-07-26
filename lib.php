@@ -2730,7 +2730,8 @@ function hsuforum_count_discussions($forum, $cm, $course) {
 
     $groupmode = groups_get_activity_groupmode($cm, $course);
 
-    if ($groupmode != SEPARATEGROUPS) {
+    // GETSMARTER EDIT. Added  && $groupmode != VISIBLEGROUPS to the if statement below
+    if ($groupmode != SEPARATEGROUPS && $groupmode != VISIBLEGROUPS) {
         return $cache[$course->id][$forum->id];
     }
 
