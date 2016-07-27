@@ -152,12 +152,12 @@ class behat_mod_hsuforum extends behat_base {
         $yearfield = $this->find_field('id_'.$field.'_year');
 
         $minutes = date('i', $value);
-        $roundedminutes = ceil($minutes / 5) * 5;
-        $minutefield->setValue($roundedminutes);
-        $hourfield->setValue(date('H', $value));
-        $dayfield->setValue(date('j', $value));
-        $monthfield->setValue(date('n', $value));
-        $yearfield->setValue(date('Y', $value));
+        $roundedminutes = floor($minutes / 5) * 5;
+        $minutefield->selectOption((string) $roundedminutes);
+        $hourfield->selectOption(date('H', $value));
+        $dayfield->selectOption(date('j', $value));
+        $monthfield->selectOption(date('n', $value));
+        $yearfield->selectOption(date('Y', $value));
     }
 
     /**
