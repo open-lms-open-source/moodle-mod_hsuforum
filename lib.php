@@ -7080,7 +7080,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
         $out .= '</a>';
     }
 
-    $cm->set_after_link($out);
+    $cm->set_content($out);
 }
 
 /**
