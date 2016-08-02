@@ -6239,7 +6239,8 @@ function hsuforum_count_forum_unread_posts($cm, $course) {
 
     $groupmode = groups_get_activity_groupmode($cm, $course);
 
-    if ($groupmode != SEPARATEGROUPS) {
+    // GETSMARTER EDIT. Added  && $groupmode != VISIBLEGROUPS to the if statement below
+    if ($groupmode != SEPARATEGROUPS && $groupmode != VISIBLEGROUPS) {
         return $readcache[$course->id][$forumid];
     }
 
@@ -7201,7 +7202,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
         $out .= '</a>';
     }
 
-    $cm->set_after_link($out);
+    $cm->set_content($out);
 }
 
 /**
