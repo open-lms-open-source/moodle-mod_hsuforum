@@ -140,7 +140,7 @@ class mod_hsuforum_post_form extends moodleform {
             }
 
         if (!empty($forum->maxattachments) && $forum->maxbytes != 1 && has_capability('mod/hsuforum:createattachment', $modcontext))  {  //  1 = No attachments at all
-            $mform->addElement('filemanager', 'attachments', get_string('attachment', 'hsuforum'), null, self::attachment_options($forum));
+            $mform->addElement('filemanager', 'attachments', get_string('areaattachment', 'hsuforum'), null, self::attachment_options($forum));
             $mform->addHelpButton('attachments', 'attachment', 'hsuforum');
         }
 

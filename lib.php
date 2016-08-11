@@ -3755,7 +3755,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
     if (!$context = context_module::instance($cm->id)) {
         return $type !== 'separateimages' ? '' : array('', '');
     }
-    $strattachment = get_string('attachment', 'hsuforum');
+    $strattachment = get_string('areaattachment', 'hsuforum');
 
     $fs = get_file_storage();
 

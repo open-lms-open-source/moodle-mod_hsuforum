@@ -46,7 +46,7 @@ class csv_format extends format_abstract {
             get_string('author', 'hsuforum'),
             get_string('date', 'hsuforum'),
             get_string('message', 'hsuforum'),
-            get_string('attachments', 'hsuforum'),
+            get_string('areaattachment', 'hsuforum'),
             get_string('privatereply', 'hsuforum'),
         ));
     }

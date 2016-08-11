@@ -92,7 +92,7 @@ class text_format extends format_abstract {
         fwrite($this->fp, $message."\n");
 
         if (!empty($attachments)) {
-            fwrite($this->fp, "\n".get_string('attachments:x', 'hsuforum', implode(' | ', $attachments))."\n");
+            fwrite($this->fp, "\n".get_string('areaattachment', 'hsuforum', implode(' | ', $attachments))."\n");
         }
     }
 }
