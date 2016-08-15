@@ -1611,7 +1611,7 @@ HTML;
             'message'            => '',
             'messagelabel'       => get_string('message', 'hsuforum')." ($required)",
             'messageplaceholder' => get_string('messageplaceholder', 'hsuforum'),
-            'attachmentlabel'    => get_string('areaattachment', 'hsuforum'),
+            'attachmentlabel'    => get_string('attachment', 'hsuforum'),
             'submitlabel'        => get_string('submit', 'hsuforum'),
             'cancellabel'        => get_string('cancel'),
             'userpicture'        => $this->output->user_picture($USER, array('link' => false, 'size' => 100)),
