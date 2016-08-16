@@ -110,7 +110,7 @@ class discussion_service {
             'eventaction'      => 'discussioncreated',
             'discussionid'     => (int) $discussion->id,
             'livelog'          => $message,
-            'notificationhtml' => $OUTPUT->notification($message, 'notifysuccess'),
+            'notificationhtml' => $OUTPUT->notification($message, 'success'),
             'html'             => $renderer->render_discussionsview($forum),
         ));
     }

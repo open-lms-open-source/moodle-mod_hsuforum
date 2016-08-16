@@ -5446,9 +5446,9 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     } else if (!$canstart && $groupmode and !has_capability('moodle/site:accessallgroups', $context)) {
         // inform users why they can not post new discussion
         if (!$currentgroup) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'), 'notifyproblem hsuforum-cannot-post');
+            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'), 'error hsuforum-cannot-post');
         } else if (!groups_is_member($currentgroup)) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'), 'notifyproblem hsuforum-cannot-post');
+            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'), 'error hsuforum-cannot-post');
         }
     }
 

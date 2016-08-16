@@ -246,7 +246,7 @@
     }
 
     if ($move == -1 and confirm_sesskey()) {
-        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)), 'notifysuccess');
+        echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)), 'success');
     }
 
     $canrate = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:rate', $modcontext);

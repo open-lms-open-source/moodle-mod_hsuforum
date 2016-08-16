@@ -312,7 +312,7 @@ class edit_controller extends controller_abstract {
             'html'             => $html,
             'postid'           => $post->id,
             'livelog'          => $message,
-            'notificationhtml' => $renderer->notification($message, 'notifysuccess'),
+            'notificationhtml' => $renderer->notification($message, 'success'),
             'discussionid'     => $discussion->id,
         ));
     }
