@@ -195,7 +195,7 @@ class upload_file {
             throw new \file_exception('maxbytes');
         }
 
-        \repository::antivir_scan_file($file['tmp_name'], $file['name'], true);
+        \core\antivirus\manager::scan_file($file['tmp_name'], $file['name'], true);
     }
 
     /**
