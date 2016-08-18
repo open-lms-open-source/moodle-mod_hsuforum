@@ -3577,8 +3577,8 @@ function hsuforum_search_form($course, $forumid=null, $search='') {
     $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
     $output .= '<fieldset class="invisiblefieldset">';
     $output .= '<label class="accesshide" for="search" >'.get_string('search', 'hsuforum').'</label>';
-    $output .= '<input id="search" name="search" type="search" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
-    $output .= '<input id="searchforums" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
+    $output .= '<input id="search" name="search" type="text" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
+    $output .= '<input id="searchforums" class="accesshide" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
     $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
     if ($forumid != null) {
         $output .= '<input name="forumid" type="hidden" value="'.s($forumid).'" />';
@@ -3851,7 +3851,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
  */
 function hsuforum_get_file_areas($course, $cm, $context) {
     return array(
-        'attachment' => get_string('areaattachment', 'mod_hsuforum'),
+        'attachment' => get_string('attachment', 'mod_hsuforum'),
         'post' => get_string('areapost', 'mod_hsuforum'),
     );
 }
@@ -5468,7 +5468,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         </div>
         </form>';
     }
-    echo hsuforum_search_form($course, $forum->id);
+
+    // Hide search when no discussions to search.
+    if ($discussions) {
+        echo hsuforum_search_form($course, $forum->id);
+    }
 
     // Sort/Filter options
     $urlmenu = new moodle_url('/mod/hsuforum/view.php', array('id'=>$cm->id));

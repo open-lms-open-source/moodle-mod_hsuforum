@@ -328,7 +328,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
 
         if (is_array($this->keyedfiles) && array_key_exists($post->id, $this->keyedfiles) && is_array($this->keyedfiles[$post->id]) && count($this->keyedfiles[$post->id]) > 0) {
             $output .= '<div class="attachments">';
-            $output .= '<br /><b>' .  get_string('attachments', 'hsuforum') . '</b>:<br /><br />';
+            $output .= '<br /><b>' .  get_string('attachment', 'hsuforum') . '</b>:<br /><br />';
             foreach ($this->keyedfiles[$post->id] as $file) {
                 $output .= $format->file_output($file)  . '<br/ >';
             }

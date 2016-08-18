@@ -92,7 +92,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->setDefault('displaywordcount', 0);
 
         // Attachments and word count.
-        $mform->addElement('header', 'attachmentshdr', get_string('attachments', 'hsuforum'));
+        $mform->addElement('header', 'attachmentshdr', get_string('attachment', 'hsuforum'));
 
         $choices = get_max_upload_sizes($CFG->maxbytes, $COURSE->maxbytes, 0, $config->maxbytes);
         $choices[1] = get_string('uploadnotallowed');

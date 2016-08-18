@@ -925,7 +925,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                     'contents' => array(
                         '~{$a',
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
-                        'Attachment example.txt:\n' .
+                        'Attachments example.txt:\n' .
                             'http://www.example.com/moodle/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
                         'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1'
                     ),
@@ -944,7 +944,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         $newcase['forums'][0]['forumposts'][0]['name'] = 'Hello Moodle\'"';
         $newcase['forums'][0]['forumposts'][0]['message'] = 'Welcome to Moodle\'"';
         $newcase['expectations'][0]['contents'] = array(
-            'Attachment example.txt:', '~{\$a', '~&amp;(quot|\#039);', 'Love Moodle\'', '101\'', 'Moodle Forum\'"',
+            'Attachments example.txt:', '~{\$a', '~&amp;(quot|\#039);', 'Love Moodle\'', '101\'', 'Moodle Forum\'"',
             'Hello Moodle\'"', 'Welcome to Moodle\'"');
         $textcases['Text mail with quotes everywhere'] = array('data' => $newcase);
 
@@ -958,7 +958,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         $newcase['forums'][0]['forumposts'][0]['name'] = 'Hello Moodle>';
         $newcase['forums'][0]['forumposts'][0]['message'] = 'Welcome to Moodle>';
         $newcase['expectations'][0]['contents'] = array(
-            'Attachment example.txt:', '~{\$a', '~&amp;gt;', 'Love Moodle>', '101>', 'Moodle Forum>',
+            'Attachments example.txt:', '~{\$a', '~&amp;gt;', 'Love Moodle>', '101>', 'Moodle Forum>',
             'Hello Moodle>', 'Welcome to Moodle>');
         $textcases['Text mail with gt and lt everywhere'] = array('data' => $newcase);
 
@@ -971,7 +971,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         $newcase['forums'][0]['forumposts'][0]['name'] = 'Hello Moodle&';
         $newcase['forums'][0]['forumposts'][0]['message'] = 'Welcome to Moodle&';
         $newcase['expectations'][0]['contents'] = array(
-            'Attachment example.txt:', '~{\$a', '~&amp;amp;', 'Love Moodle&', '101&', 'Moodle Forum&',
+            'Attachments example.txt:', '~{\$a', '~&amp;amp;', 'Love Moodle&', '101&', 'Moodle Forum&',
             'Hello Moodle&', 'Welcome to Moodle&');
         $textcases['Text mail with ampersands everywhere'] = array('data' => $newcase);
 
@@ -984,7 +984,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         $newcase['expectations'][0]['contents'] = array(
             '~{$a',
             '~&(amp|lt|gt|quot|\#039);(?!course)',
-            'Attachment example.txt:\n' .
+            'Attachments example.txt:\n' .
             'http://www.example.com/moodle/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
             'Text and image', 'Moodle Forum',
             'Welcome to Moodle, *\n.*'

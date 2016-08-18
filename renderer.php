@@ -200,7 +200,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (isloggedin() && !isguestuser()) {
             $url = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
             $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
-            $output .= \html_writer::link($url, $manageforumsubscriptions);
+            $output .= '<div class="text-right"><hr>';
+            $output .= \html_writer::link($url, $manageforumsubscriptions, array('class' => 'btn btn-link'));
+            $output .= '</div>';
         }
 
         $output = ob_get_contents().$output;
@@ -1676,9 +1678,11 @@ HTML;
 
                 $t->extrahtml
                 $hidden
-                <button type="submit">$t->submitlabel</button>
-                <a href="#" class="hsuforum-cancel disable-router">$t->cancellabel</a>
-                <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router">$t->advancedlabel</a>
+                
+                    <button type="submit">$t->submitlabel</button>
+                    <a href="#" class="hsuforum-cancel disable-router btn btn-link">$t->cancellabel</a>
+                    <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router btn btn-link">$t->advancedlabel</a>
+                
             </div>
         </fieldset>
     </form>
