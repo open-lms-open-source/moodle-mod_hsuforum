@@ -78,9 +78,9 @@
 
 // move require_course_login here to use forced language for course
 // fix for MDL-6926
+    require_course_login($course, true, $cm);
     $context = context_module::instance($cm->id);
     $PAGE->set_context($context);
-    require_course_login($course, true, $cm);
 
 /// Print header.
     $PAGE->set_title($forum->name);
