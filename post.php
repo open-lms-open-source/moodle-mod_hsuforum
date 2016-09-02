@@ -478,7 +478,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->heading(format_string($forum->name), 2);
-        echo $OUTPUT->heading(get_string('pruneheading', 'forum'), 3);
+        echo $OUTPUT->heading(get_string('pruneheading', 'hsuforum'), 3);
         echo $renderer->svg_sprite();
         if (!empty($post->privatereply)) {
             echo $OUTPUT->notification(get_string('splitprivatewarning', 'hsuforum'));

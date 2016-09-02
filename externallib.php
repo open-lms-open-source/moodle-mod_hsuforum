@@ -374,7 +374,7 @@ class mod_hsuforum_external extends external_api {
         require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
 
         // Check they have the view forum capability.
-        require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'forum');
+        require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'hsuforum');
 
         if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
             throw new moodle_exception('notexists', 'hsuforum');
@@ -745,7 +745,7 @@ class mod_hsuforum_external extends external_api {
         $context = context_module::instance($cm->id);
         self::validate_context($context);
 
-        require_capability('mod/hsuforum:viewdiscussion', $context, null, true, 'noviewdiscussionspermission', 'forum');
+        require_capability('mod/hsuforum:viewdiscussion', $context, null, true, 'noviewdiscussionspermission', 'hsuforum');
 
         // Call the hsuforum/lib API.
         hsuforum_view($forum, $course, $cm, $context);
@@ -811,7 +811,7 @@ class mod_hsuforum_external extends external_api {
         $modcontext = context_module::instance($cm->id);
         self::validate_context($modcontext);
 
-        require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'forum');
+        require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'hsuforum');
 
         // Call the hsuforum/lib API.
         hsuforum_discussion_view($modcontext, $forum, $discussion);
@@ -907,11 +907,11 @@ class mod_hsuforum_external extends external_api {
         $warnings = array();
 
         if (!$parent = hsuforum_get_post_full($params['postid'])) {
-            throw new moodle_exception('invalidparentpostid', 'forum');
+            throw new moodle_exception('invalidparentpostid', 'hsuforum');
         }
 
         if (!$discussion = $DB->get_record("hsuforum_discussions", array("id" => $parent->discussion))) {
-            throw new moodle_exception('notpartofdiscussion', 'forum');
+            throw new moodle_exception('notpartofdiscussion', 'hsuforum');
         }
 
         // Request and permission validation.
@@ -922,7 +922,7 @@ class mod_hsuforum_external extends external_api {
         self::validate_context($context);
 
         if (!hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context)) {
-            throw new moodle_exception('nopostforum', 'forum');
+            throw new moodle_exception('nopostforum', 'hsuforum');
         }
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
@@ -971,7 +971,7 @@ class mod_hsuforum_external extends external_api {
             $settings->discussionsubscribe = $options['discussionsubscribe'];
             hsuforum_post_subscription($settings, $forum, $discussion);
         } else {
-            throw new moodle_exception('couldnotadd', 'forum');
+            throw new moodle_exception('couldnotadd', 'hsuforum');
         }
 
         $result = array();
@@ -1089,7 +1089,7 @@ class mod_hsuforum_external extends external_api {
         }
 
         if (!hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
-            throw new moodle_exception('cannotcreatediscussion', 'forum');
+            throw new moodle_exception('cannotcreatediscussion', 'hsuforum');
         }
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
@@ -1138,7 +1138,7 @@ class mod_hsuforum_external extends external_api {
             $settings->discussionsubscribe = $options['discussionsubscribe'];
             hsuforum_post_subscription($settings, $forum, $discussion);
         } else {
-            throw new moodle_exception('couldnotadd', 'forum');
+            throw new moodle_exception('couldnotadd', 'hsuforum');
         }
 
         $result = array();
