@@ -719,6 +719,31 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2016012600, 'hsuforum');
     }
 
+    if ($oldversion < 2016012601) {
+        $disctable = new xmldb_table('hsuforum_discussions');
+        $substable = new xmldb_table('hsuforum_subscriptions');
+        $digeststable = new xmldb_table('hsuforum_digests');
+
+        $oldkey = new xmldb_key('forum', XMLDB_KEY_FOREIGN, ['forum'], 'forum', ['id']);
+        $newkey = new xmldb_key('forum', XMLDB_KEY_FOREIGN, ['forum'], 'hsuforum', ['id']);
+
+        $uniquekey = new xmldb_key('forumdigest', XMLDB_KEY_UNIQUE, ['forum', 'userid', 'maildigest']);
+
+        $dbman->drop_key($disctable, $oldkey);
+        $dbman->add_key($disctable, $newkey);
+
+        $dbman->drop_key($substable, $oldkey);
+        $dbman->add_key($substable, $newkey);
+
+        $dbman->drop_key($digeststable, $uniquekey);
+        $dbman->drop_key($digeststable, $oldkey);
+        $dbman->add_key($digeststable, $newkey);
+        $dbman->add_key($digeststable, $uniquekey);
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2016012601, 'hsuforum');
+    }
+
     // Moodle v3.0.0 release upgrade line.
     // Put any upgrade step following this.
 
