@@ -162,7 +162,7 @@ if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
     echo $OUTPUT->heading($strsearchresults, 3);
-    echo $OUTPUT->heading(get_string("noposts", "forum"), 4);
+    echo $OUTPUT->heading(get_string("noposts", "hsuforum"), 4);
 
     if (!$individualparams) {
         $words = $search;
