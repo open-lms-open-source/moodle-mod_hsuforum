@@ -5488,7 +5488,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $sortselect = $renderer->discussion_sorting($cm, $dsort);
     }
 
-    if ($groupselect || $sortselect) {
+    if ($groupselect || $sortselect && $forum->type != 'blog') {
         echo "<div id='hsuforum-filter-options'>";
         echo $groupselect;
         echo $sortselect;
