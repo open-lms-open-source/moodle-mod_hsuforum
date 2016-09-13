@@ -60,7 +60,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="forum" TYPE="foreign" FIELDS="forum" REFTABLE="forum" REFFIELDS="id"/>
+        <KEY NAME="forum" TYPE="foreign" FIELDS="forum" REFTABLE="hsuforum" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
@@ -123,7 +123,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="forum" TYPE="foreign" FIELDS="forum" REFTABLE="forum" REFFIELDS="id"/>
+        <KEY NAME="forum" TYPE="foreign" FIELDS="forum" REFTABLE="hsuforum" REFFIELDS="id"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
@@ -153,7 +153,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-        <KEY NAME="forum" TYPE="foreign" FIELDS="forum" REFTABLE="forum" REFFIELDS="id"/>
+        <KEY NAME="forum" TYPE="foreign" FIELDS="forum" REFTABLE="hsuforum" REFFIELDS="id"/>
         <KEY NAME="forumdigest" TYPE="unique" FIELDS="forum, userid, maildigest"/>
       </KEYS>
     </TABLE>
