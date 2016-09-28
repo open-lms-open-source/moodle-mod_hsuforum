@@ -616,6 +616,7 @@ $string['postbyx'] = 'Post by {$a}';
 $string['xreplies'] = '{$a} replies';
 $string['onereply'] = '1 reply';
 $string['xdiscussions'] = '{$a} discussions';
+$string['onediscussion'] = '1 discussion'; 
 $string['loadmorediscussions'] = 'Load more discussions';
 $string['validationerrorx'] = 'There was an error with your submission: {$a}';
 $string['validationerrorsx'] = 'There were {$a->count} errors with your submission: {$a->errors}';
