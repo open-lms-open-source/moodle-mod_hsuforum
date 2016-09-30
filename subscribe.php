@@ -91,8 +91,13 @@ if (is_null($mode) and !is_enrolled($context, $USER, '', true)) {   // Guests an
         echo $OUTPUT->footer();
         exit;
     } else {
-        // there should not be any links leading to this place, just redirect
-        redirect(new moodle_url('/mod/hsuforum/view.php', array('f'=>$id)), get_string('subscribeenrolledonly', 'hsuforum'));
+        // There should not be any links leading to this place, just redirect.
+        redirect(
+                new moodle_url('/mod/hsuforum/view.php', array('f'=>$id)),
+                get_string('subscribeenrolledonly', 'hsuforum'),
+                null,
+                \core\output\notification::NOTIFY_ERROR
+            );
     }
 }
 
@@ -105,11 +110,21 @@ if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $cont
     switch ($mode) {
         case HSUFORUM_CHOOSESUBSCRIBE : // 0
             hsuforum_forcesubscribe($forum->id, HSUFORUM_CHOOSESUBSCRIBE);
-            redirect($returnto, get_string("everyonecannowchoose", "hsuforum"), 1);
+            redirect(
+                  $returnto,
+                    get_string('everyonecannowchoose', 'hsuforum'),
+                    null,
+                    \core\output\notification::NOTIFY_SUCCESS
+                );
             break;
         case HSUFORUM_FORCESUBSCRIBE : // 1
             hsuforum_forcesubscribe($forum->id, HSUFORUM_FORCESUBSCRIBE);
-            redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
+            redirect(
+                    $returnto,
+                    get_string('everyoneisnowsubscribed', 'hsuforum'),
+                    null,
+                    \core\output\notification::NOTIFY_SUCCESS
+                );
             break;
         case HSUFORUM_INITIALSUBSCRIBE : // 2
             if ($forum->forcesubscribe <> HSUFORUM_INITIALSUBSCRIBE) {
@@ -119,11 +134,21 @@ if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $cont
                 }
             }
             hsuforum_forcesubscribe($forum->id, HSUFORUM_INITIALSUBSCRIBE);
-            redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
+            redirect(
+                    $returnto,
+                    get_string('everyoneisnowsubscribed', 'hsuforum'),
+                    null,
+                    \core\output\notification::NOTIFY_SUCCESS
+                );
             break;
         case HSUFORUM_DISALLOWSUBSCRIBE : // 3
             hsuforum_forcesubscribe($forum->id, HSUFORUM_DISALLOWSUBSCRIBE);
-            redirect($returnto, get_string("noonecansubscribenow", "hsuforum"), 1);
+            redirect(
+                    $returnto,
+                    get_string('noonecansubscribenow', 'hsuforum'),
+                    null,
+                    \core\output\notification::NOTIFY_SUCCESS
+                );
             break;
         default:
             print_error(get_string('invalidforcesubscribe', 'hsuforum'));
@@ -131,7 +156,12 @@ if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $cont
 }
 
 if (hsuforum_is_forcesubscribed($forum)) {
-    redirect($returnto, get_string("everyoneisnowsubscribed", "hsuforum"), 1);
+    redirect(
+            $returnto,
+            get_string('everyoneisnowsubscribed', 'hsuforum'),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
 }
 
 $info = new stdClass();
@@ -150,7 +180,12 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
     }
     require_sesskey();
     if (hsuforum_unsubscribe($user->id, $forum->id)) {
-        redirect($returnto, get_string("nownotsubscribed", "hsuforum", $info), 1);
+        redirect(
+            $returnto,
+            get_string('nownotsubscribed', 'hsuforum', $info),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
     } else {
         print_error('cannotunsubscribe', 'hsuforum', get_local_referer(false));
     }
@@ -174,5 +209,10 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
     }
     require_sesskey();
     hsuforum_subscribe($user->id, $forum->id);
-    redirect($returnto, get_string("nowsubscribed", "hsuforum", $info), 1);
+    redirect(
+            $returnto,
+            get_string('nowsubscribed', 'hsuforum', $info),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+    );
 }

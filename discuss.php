@@ -48,6 +48,7 @@
     $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum
     $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
     $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
+    $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin this discussion.
     $warned = optional_param('warned', 0, PARAM_INT);
 
     $config = get_config('hsuforum');
@@ -156,6 +157,29 @@
         }
     }
 
+    // Pin or unpin discussion if requested.
+    if ($pin !== -1 && confirm_sesskey()) {
+        require_capability('mod/hsuforum:pindiscussions', $modcontext);
+
+        $params = array('context' => $modcontext, 'objectid' => $discussion->id, 'other' => array('forumid' => $forum->id));
+
+        switch ($pin) {
+            case HSUFORUM_DISCUSSION_PINNED:
+                // Pin the discussion and trigger discussion pinned event.
+                hsuforum_discussion_pin($modcontext, $forum, $discussion);
+                break;
+            case HSUFORUM_DISCUSSION_UNPINNED:
+                // Unpin the discussion and trigger discussion unpinned event.
+                hsuforum_discussion_unpin($modcontext, $forum, $discussion);
+                break;
+            default:
+                echo $OUTPUT->notification("Invalid value when attempting to pin/unpin discussion");
+                break;
+        }
+
+        redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
+    }
+
     // Trigger discussion viewed event.
     hsuforum_discussion_view($modcontext, $forum, $discussion);
 
@@ -233,6 +257,18 @@
         );
     }
 
+    if (has_capability('mod/hsuforum:pindiscussions', $modcontext)) {
+        if ($discussion->pinned == HSUFORUM_DISCUSSION_PINNED) {
+            $pinlink = HSUFORUM_DISCUSSION_UNPINNED;
+            $pintext = get_string('discussionunpin', 'hsuforum');
+        } else {
+            $pinlink = HSUFORUM_DISCUSSION_PINNED;
+            $pintext = get_string('discussionpin', 'hsuforum');
+        }
+        $button = new single_button(new moodle_url('discuss.php', array('pin' => $pinlink, 'd' => $discussion->id)), $pintext, 'post');
+        echo html_writer::tag('div', $OUTPUT->render($button), array('class' => 'discussioncontrol pindiscussion'));
+    }
+
     if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
         $a = new stdClass();
         $a->blockafter  = $forum->blockafter;
@@ -242,7 +278,7 @@
 
     if ($forum->type == 'qanda' && !local::cached_has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext) &&
                 !hsuforum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
-        echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
+        echo $OUTPUT->notification(get_string('qandanotify', 'hsuforum'));
     }
 
     if ($move == -1 and confirm_sesskey()) {
@@ -252,7 +288,7 @@
     $canrate = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:rate', $modcontext);
     hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply, $canrate);
 
-    echo '<div class="discussioncontrols">';
+    echo '<div class="discussioncontrols clearfix"><div class="controlscontainer">';
 
     if (!empty($CFG->enableportfolios) && local::cached_has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
         require_once($CFG->libdir.'/portfoliolib.php');
@@ -328,7 +364,7 @@
 
     $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion, $forum);
     echo $renderer->discussion_navigation($neighbours['prev'], $neighbours['next']);
-    echo "</div>";
+    echo "</div></div>";
 
 echo $renderer->render(new advanced_editor($modcontext));
 

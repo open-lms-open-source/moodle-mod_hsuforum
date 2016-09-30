@@ -27,9 +27,9 @@
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
-use Behat\Behat\Context\Step\Given as Given,
-    Behat\Gherkin\Node\TableNode as TableNode,
-    WebDriver\Key;
+use Behat\Gherkin\Node\TableNode as TableNode;
+use WebDriver\Key;
+
 /**
  * Forum-related steps definitions.
  *
@@ -41,14 +41,14 @@ use Behat\Behat\Context\Step\Given as Given,
 class behat_mod_hsuforum extends behat_base {
 
     /**
-     * Adds a topic to the forum specified by it's name. Useful for the News forum and blog-style forums.
+     * Adds a topic to the forum specified by it's name. Useful for the Announcements and blog-style forums.
      *
      * @Given /^I add a new topic to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" advanced forum with:$/
      * @param string $forumname
      * @param TableNode $table
      */
     public function i_add_a_new_topic_to_forum_with($forumname, TableNode $table) {
-        return $this->add_new_discussion($forumname, $table, get_string('addanewtopic', 'hsuforum'));
+        $this->add_new_discussion($forumname, $table, get_string('addanewtopic', 'hsuforum'));
     }
 
     /**
@@ -59,7 +59,7 @@ class behat_mod_hsuforum extends behat_base {
      * @param TableNode $table
      */
     public function i_add_a_forum_discussion_to_forum_with($forumname, TableNode $table) {
-        return $this->add_new_discussion($forumname, $table, get_string('addanewtopic', 'hsuforum'));
+        $this->add_new_discussion($forumname, $table, get_string('addanewtopic', 'hsuforum'));
     }
 
     /**
@@ -71,15 +71,19 @@ class behat_mod_hsuforum extends behat_base {
      * @param TableNode $table
      */
     public function i_reply_post_from_forum_with($postsubject, $forumname, TableNode $table) {
-        $steps[] = new Given('I follow "' . $this->escape($forumname) . '"');
-        $steps[] = new Given('I follow "' . $this->escape($postsubject) . '"');
+        // Navigate to forum.
+        $this->execute('behat_general::click_link', $this->escape($forumname));
+        $this->execute('behat_general::click_link', $this->escape($postsubject));
+        $this->execute('behat_general::click_link', get_string('reply', 'hsuforum'));
         if ($this->running_javascript()) {
-            $steps[] = new Given('I follow link "Use advanced editor" ignoring js onclick');
+            $this->i_follow_href(get_string('useadvancededitor', 'hsuforum'));
         }
-        $steps[] = new Given('I set the following fields to these values:', $table);
-        $steps[] = new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"');
-        $steps[] = new Given('I wait to be redirected');
-        return $steps;
+
+        // Fill form and post.
+        $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $table);
+
+        $this->execute('behat_forms::press_button', get_string('posttoforum', 'hsuforum'));
+        $this->execute('behat_general::i_wait_to_be_redirected');
 
     }
 
@@ -92,19 +96,21 @@ class behat_mod_hsuforum extends behat_base {
      * @param string $forumname
      * @param TableNode $table
      * @param string $buttonstr
-     * @return Given[]
      */
     protected function add_new_discussion($forumname, TableNode $table, $buttonstr) {
 
-        $steps[] = new Given('I follow "' . $this->escape($forumname) . '"');
-        $steps[] = new Given('I press "' . $buttonstr . '"');
+        // Navigate to forum.
+        $this->execute('behat_general::click_link', $this->escape($forumname));
+        $this->execute('behat_forms::press_button', $buttonstr);
+
         if ($this->running_javascript()) {
-            $steps[] = new Given('I follow link "Use advanced editor" ignoring js onclick');
+            $this->i_follow_href(get_string('useadvancededitor', 'hsuforum'));
         }
-        $steps[] = new Given('I set the following fields to these values:', $table);
-        $steps[] = new Given('I press "' . get_string('posttoforum', 'hsuforum') . '"');
-        $steps[] = new Given('I wait to be redirected');
-        return $steps;
+
+        // Fill form and post.
+        $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $table);
+        $this->execute('behat_forms::press_button', get_string('posttoforum', 'hsuforum'));
+        $this->execute('behat_general::i_wait_to_be_redirected');
     }
 
     /**
@@ -169,37 +175,33 @@ class behat_mod_hsuforum extends behat_base {
      * @param TableNode $table
      */
     public function add_inline_discussions(TableNode $table) {
-        $steps = [];
 
         foreach ($table->getHash() as $row) {
-            $rowsteps[] = new Given ('I press "Add a new discussion"');
-            $rowsteps[] = new Given ('I set the field "subject" to "' . $row['subject'] . '"');
-            $rowsteps[] = new Given ('I set editable div ".hsuforum-textarea" "css_element" to "' . $row['message'] . '"');
+            $this->execute('behat_forms::press_button', 'Add a new discussion');
+            $this->execute('behat_forms::i_set_the_field_to', ['subject', $row['subject']]);
+            $this->i_set_editable_div_to ('.hsuforum-textarea', 'css_element', $row['message']);
 
             if (isset($row['group'])) {
-                $rowsteps[] = new Given('I set the field "groupinfo" to "' . $row['group'] . '"');
+                $this->execute('behat_forms::i_set_the_field_to', ['groupinfo', $row['group']]);
             }
 
             if (isset($row['posttomygroups'])) {
-                $rowsteps[] = new Given('I set the field "posttomygroups" to "' . $row['posttomygroups'] . '"');
+                $this->execute('behat_forms::i_set_the_field_to', ['posttomygroups', $row['posttomygroups']]);
             }
 
             if (isset($row['timestart'])) {
-                $rowsteps[] = new Given('I set the field "id_timestart_enabled" to "1"');
-                $rowsteps[] = new Given('I set the date field "timestart" to "' . $row['timestart'] . '"');
+                $this->execute('behat_forms::i_set_the_field_to', ['id_timestart_enabled', '1']);
+                $this->i_set_date_field_to('timestart', $row['timestart']);
             }
 
             if (isset($row['timeend'])) {
-                $rowsteps[] = new Given('I set the field "id_timeend_enabled" to "1"');
-                $rowsteps[] = new Given('I set the date field "timeend" to "' . $row['timeend'] . '"');
+                $this->execute('behat_forms::i_set_the_field_to', ['id_timeend_enabled', '1']);
+                $this->i_set_date_field_to('timeend', $row['timeend']);
             }
 
-            $rowsteps[] = new Given ('I press "Submit"');
-            $rowsteps[] = new Given ('I should see "Your post was successfully added."');
-            $steps += $rowsteps;
+            $this->execute('behat_forms::press_button', 'Submit');
+            $this->execute('behat_general::assert_page_contains_text', 'post was successfully added');
         }
-
-        return $steps;
     }
 
     /**
@@ -235,17 +237,14 @@ class behat_mod_hsuforum extends behat_base {
      * @Given /^Advanced Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor$/
      */
     public function i_upload_image_using_inline_advanced_editor($fixturefilename) {
-        $steps = [
-            new Given('I follow "Use advanced editor"'),
-            new Given('I click on ".atto_image_button" "css_element"'),
-            new Given('I press "Browse repositories..."'),
-            new Given('I click on "Upload a file" "link"'),
-            new Given('Advanced Forums I upload file "'.$fixturefilename.'" using input "input[name=\"repo_upload_file\"]"'),
-            new Given('I press "Upload this file"'),
-            new Given('I set the field "Describe this image" to "Test fixture"'),
-            new Given('I press "Save image"')
-        ];
-        return $steps;
+        $this->execute('behat_general::click_link', 'Use advanced editor');
+        $this->execute('behat_forms::press_button', 'Image');
+        $this->execute('behat_forms::press_button', 'Browse repositories...');
+        $this->execute('behat_general::click_link', 'Upload a file');
+        $this->i_upload_file_using_input($fixturefilename, 'input[name="repo_upload_file"]');
+        $this->execute('behat_forms::press_button', 'Upload this file');
+        $this->execute('behat_forms::i_set_the_field_to', ['Describe this image', 'Test fixture']);
+        $this->execute('behat_forms::press_button', 'Save image');
     }
 
     /**

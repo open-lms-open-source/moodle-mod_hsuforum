@@ -130,7 +130,7 @@ if ($ADMIN->fulltree) {
     }
 
     $settings->add(new admin_setting_configcheckbox('hsuforum/enabletimedposts', get_string('timedposts', 'hsuforum'),
-                       get_string('configenabletimedposts', 'hsuforum'), 0));
+                       get_string('configenabletimedposts', 'hsuforum'), 1));
 
     $settings->add(new admin_setting_configcheckbox('hsuforum/hiderecentposts', get_string('hiderecentposts', 'hsuforum'),
                        get_string('confighiderecentposts', 'hsuforum'), 0));

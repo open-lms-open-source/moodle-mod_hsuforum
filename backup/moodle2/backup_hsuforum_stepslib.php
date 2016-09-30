@@ -54,7 +54,7 @@ class backup_hsuforum_activity_structure_step extends backup_activity_structure_
         $discussion = new backup_nested_element('discussion', array('id'), array(
             'name', 'firstpost', 'userid', 'groupid',
             'assessed', 'timemodified', 'usermodified', 'timestart',
-            'timeend'));
+            'timeend', 'pinned'));
 
         $discussionsubs = new backup_nested_element('subscriptions_discs');
         $discussionsub  = new backup_nested_element('subscriptions_disc', array('id'), array('userid'));

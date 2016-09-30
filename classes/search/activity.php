@@ -15,20 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Forum activities search area
  *
- * @package    mod
- * @subpackage hsuforum
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @package    mod_hsuforum
+ * @copyright  2015 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2016 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @author Mark Nielsen
  */
+
+namespace mod_hsuforum\search;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016052300;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2016051900;       // Requires this Moodle version
-$plugin->component = 'mod_hsuforum';   // Full name of the plugin (used for diagnostics).
-$plugin->release   = '3.0.4 (Build: 20160509)';
-$plugin->maturity  = MATURITY_STABLE;
+/**
+ * Forum activities search area.
+ *
+ * @package    mod_hsuforum
+ * @copyright  2015 David Monllao {@link http://www.davidmonllao.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class activity extends \core_search\area\base_activity {
+}

@@ -199,6 +199,10 @@ class mod_hsuforum_generator extends testing_module_generator {
             $timemodified = $record['timemodified'];
         }
 
+        if (!isset($record['pinned'])) {
+            $record['pinned'] = HSUFORUM_DISCUSSION_UNPINNED;
+        }
+
         if (isset($record['mailed'])) {
             $mailed = $record['mailed'];
         }

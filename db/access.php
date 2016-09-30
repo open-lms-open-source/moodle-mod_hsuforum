@@ -226,6 +226,17 @@ $capabilities = array(
         )
     ),
 
+    'mod/hsuforum:pindiscussions' => array(
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
     'mod/hsuforum:editanypost' => array(
 
         'riskbitmask' => RISK_SPAM,

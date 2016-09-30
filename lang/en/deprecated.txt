@@ -1,1 +1,2 @@
 subscribersto,mod_hsuforum
+postmailinfo,mod_hsuforum

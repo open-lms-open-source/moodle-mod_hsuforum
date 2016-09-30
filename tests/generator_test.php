@@ -95,7 +95,9 @@ class mod_hsuforum_generator_testcase extends advanced_testcase {
         $record['course'] = $course->id;
         $record['forum'] = $forum->id;
         $record['userid'] = $user->id;
+        $record['pinned'] = HSUFORUM_DISCUSSION_PINNED; // Pin one discussion.
         self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+        $record['pinned'] = HSUFORUM_DISCUSSION_UNPINNED; // No pin for others.
         self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
         self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 

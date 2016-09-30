@@ -41,8 +41,11 @@ class mod_hsuforum_observer {
         // Get user enrolment info from event.
         $cp = (object)$event->other['userenrolment'];
         if ($cp->lastenrol) {
-            $params = array('userid' => $cp->userid, 'courseid' => $cp->courseid);
-            $forumselect = "IN (SELECT f.id FROM {hsuforum} f WHERE f.course = :courseid)";
+            if (!$forums = $DB->get_records('hsuforum', array('course' => $cp->courseid), '', 'id')) {
+                return;
+            }
+            list($forumselect, $params) = $DB->get_in_or_equal(array_keys($forums), SQL_PARAMS_NAMED);
+            $params['userid'] = $cp->userid;
 
             $DB->delete_records_select('hsuforum_digests', 'userid = :userid AND forum '.$forumselect, $params);
             $DB->delete_records_select('hsuforum_subscriptions', 'userid = :userid AND forum '.$forumselect, $params);

@@ -191,9 +191,19 @@ if (!is_null($subscribe) and !isguestuser()) {
     $returnto = hsuforum_go_back_to(new moodle_url('/mod/hsuforum/index.php', array('id' => $course->id)));
     $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
     if ($subscribe) {
-        redirect($returnto, get_string('nowallsubscribed', 'hsuforum', $shortname), 1);
+        redirect(
+                $returnto,
+                get_string('nowallsubscribed', 'hsuforum', $shortname),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
     } else {
-        redirect($returnto, get_string('nowallunsubscribed', 'hsuforum', $shortname), 1);
+        redirect(
+                $returnto,
+                get_string('nowallunsubscribed', 'hsuforum', $shortname),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
     }
 }
 

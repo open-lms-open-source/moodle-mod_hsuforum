@@ -77,13 +77,10 @@
         "unsubscribediscussionlink": "https://example.com/mod/discussion/subscribe.php?id=2&d=2"
     }
 }}
-<head>
-</head>
-<body id="email">
 <div class="navbar">
     <a target="_blank" href="{{{ courselink }}}">{{{ coursename }}}</a>
     &raquo;
-    <a target="_blank" href="{{{ forumindexlink }}}">{{# str }} forums, forum {{/ str }}</a>
+    <a target="_blank" href="{{{ forumindexlink }}}">{{# str }} forums, hsuforum {{/ str }}</a>
     &raquo;
     <a target="_blank" href="{{{ forumviewlink }}}">{{{ forumname }}}</a>
 {{# showdiscussionname }}
@@ -92,73 +89,15 @@
 {{/ showdiscussionname }}
 </div>
 
-<table border="0" cellpadding="3" cellspacing="0" class="forumpost">
-    <tr class="header">
-        <td width="35" valign="top" class="picture left">
-            {{{ authorpicture }}}
-        </td>
-        <td class="topic {{# firstpost }}starter{{/ firstpost }}">
-            <div class="subject">
-                {{{ subject }}}
-            </div>
-            <div class="author">
-                {{# str }} bynameondate, hsuforum, {
-                        "name": {{# quote }}<a target='_blank' href='{{{ authorlink }}}'>{{ authorfullname }}</a>{{/ quote }},
-                        "date": {{# quote }}{{ postdate }}{{/ quote }}
-                    } {{/ str }}
-           </div>
-        </td>
-    </tr>
-    <tr>
-        <td class="left side" valign="top">
-            {{# grouppicture }}
-                {{{ grouppicture }}}
-            {{/ grouppicture }}
-            {{^ grouppicture }}
-                &nbsp;
-            {{/ grouppicture }}
-        </td>
-        <td class="content">
-            {{# attachments }}
-                <div class="attachments">
-                    {{{ attachments }}}
-                </div>
-            {{/ attachments }}
-            {{{ message }}}
-
-            <div class="commands">
-                {{^ firstpost }}
-                    <a target="_blank" href="{{{ parentpostlink }}}">
-                        {{# str }} parent, forum {{/ str }}
-                    </a>
-                    {{# canreply }}
-                        |
-                    {{/ canreply }}
-                {{/ firstpost }}
-                {{# canreply }}
-                    <a target="_blank" href="{{{ replylink }}}">
-                        {{# str }} reply, forum {{/ str }}
-                    </a>
-                {{/ canreply }}
-            </div>
-
-            <div class="link">
-                <a target="_blank" href="{{{ permalink }}}">
-                    {{# str }} postincontext, forum {{/ str }}
-                </a>
-            </div>
-        </td>
-    </tr>
-</table>
+{{> mod_hsuforum/hsuforum_post_email_htmlemail_body }}
 
 <hr />
 <div class="mdl-align unsubscribelink">
 {{# unsubscribeforumlink }}
-    <a href="{{{ unsubscribeforumlink }}}">{{# str }} unsubscribe, forum {{/ str }}</a>&nbsp;
+    <a href="{{{ unsubscribeforumlink }}}">{{# str }} unsubscribe, hsuforum {{/ str }}</a>&nbsp;
 {{/ unsubscribeforumlink }}
 {{# unsubscribediscussionlink }}
-    <a href="{{{ unsubscribediscussionlink }}}">{{# str }} unsubscribediscussion, forum {{/ str }}</a>&nbsp;
+    <a href="{{{ unsubscribediscussionlink }}}">{{# str }} unsubscribediscussion, hsuforum {{/ str }}</a>&nbsp;
 {{/ unsubscribediscussionlink }}
-    <a href="{{{ forumindexlink }}}">{{# str }} digestmailpost, forum {{/ str }}</a>
+    <a href="{{{ forumindexlink }}}">{{# str }} digestmailpost, hsuforum {{/ str }}</a>
 </div>
-</body>

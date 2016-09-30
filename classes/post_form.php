@@ -144,6 +144,11 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addHelpButton('attachments', 'attachment', 'hsuforum');
         }
 
+        if (!$post->parent && has_capability('mod/hsuforum:pindiscussions', $modcontext)) {
+            $mform->addElement('checkbox', 'pinned', get_string('discussionpinned', 'hsuforum'));
+            $mform->addHelpButton('pinned', 'discussionpinned', 'hsuforum');
+        }
+
         if (empty($post->id) && has_capability('moodle/course:manageactivities', $coursecontext)) { // hack alert
             $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'hsuforum'));
         }

@@ -60,8 +60,10 @@ class mod_hsuforum_external extends external_api {
 
         $params = self::validate_parameters(self::get_forums_by_courses_parameters(), array('courseids' => $courseids));
 
+        $courses = array();
         if (empty($params['courseids'])) {
-            $params['courseids'] = array_keys(enrol_get_my_courses());
+            $courses = enrol_get_my_courses();
+            $params['courseids'] = array_keys($courses);
         }
 
         // Array to store the forums to return.
@@ -71,7 +73,7 @@ class mod_hsuforum_external extends external_api {
         // Ensure there are courseids to loop through.
         if (!empty($params['courseids'])) {
 
-            list($courses, $warnings) = external_util::validate_courses($params['courseids']);
+            list($courses, $warnings) = external_util::validate_courses($params['courseids'], $courses);
 
             // Get the forums in this course. This function checks users visibility permissions.
             $forums = get_all_instances_in_courses("hsuforum", $courses);
@@ -148,181 +150,7 @@ class mod_hsuforum_external extends external_api {
         );
     }
 
-    /**
-     * Describes the parameters for get_forum_discussions.
-     *
-     * @return external_external_function_parameters
-     * @since Moodle 2.5
-     */
-    public static function get_forum_discussions_parameters() {
-        return new external_function_parameters (
-            array(
-                'forumids' => new external_multiple_structure(new external_value(PARAM_INT, 'forum ID',
-                        VALUE_REQUIRED, '', NULL_NOT_ALLOWED), 'Array of Forum IDs', VALUE_REQUIRED),
-                'limitfrom' => new external_value(PARAM_INT, 'limit from', VALUE_DEFAULT, 0),
-                'limitnum' => new external_value(PARAM_INT, 'limit number', VALUE_DEFAULT, 0)
-            )
-        );
-    }
 
-    /**
-     * Returns a list of forum discussions as well as a summary of the discussion
-     * in a provided list of forums.
-     *
-     * @param array $forumids the forum ids
-     * @param int $limitfrom limit from SQL data
-     * @param int $limitnum limit number SQL data
-     *
-     * @return array the forum discussion details
-     * @since Moodle 2.5
-     */
-    public static function get_forum_discussions($forumids, $limitfrom = 0, $limitnum = 0) {
-        global $CFG, $DB;
-
-        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
-
-        // Validate the parameter.
-        $params = self::validate_parameters(self::get_forum_discussions_parameters(),
-            array(
-                'forumids'  => $forumids,
-                'limitfrom' => $limitfrom,
-                'limitnum'  => $limitnum,
-            ));
-        $forumids  = $params['forumids'];
-        $limitfrom = $params['limitfrom'];
-        $limitnum  = $params['limitnum'];
-
-        // Array to store the forum discussions to return.
-        $arrdiscussions = array();
-        // Keep track of the users we have looked up in the DB.
-        $arrusers = array();
-
-        // Loop through them.
-        foreach ($forumids as $id) {
-            // Get the forum object.
-            $forum = $DB->get_record('hsuforum', array('id' => $id), '*', MUST_EXIST);
-
-            $course = get_course($forum->course);
-
-            $modinfo = get_fast_modinfo($course);
-            $forums  = $modinfo->get_instances_of('hsuforum');
-            $cm = $forums[$forum->id];
-
-            // Get the module context.
-            $modcontext = context_module::instance($cm->id);
-
-            // Validate the context.
-            self::validate_context($modcontext);
-
-            require_capability('mod/hsuforum:viewdiscussion', $modcontext);
-
-            $order = 'timemodified DESC';
-            if ($discussions = hsuforum_get_discussions($cm, $order, true, [$limitfrom, $limitnum])) {
-
-                // Check if they can view full names.
-                $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
-                foreach ($discussions as $discussion) {
-                    // This function checks capabilities, timed discussions, groups and qanda forums posting.
-                    if (!hsuforum_user_can_see_discussion($forum, $discussion, $modcontext)) {
-                        continue;
-                    }
-                    $usernamefields = user_picture::fields();
-                    // If we don't have the users details then perform DB call.
-                    if (empty($arrusers[$discussion->userid])) {
-                        $arrusers[$discussion->userid] = $DB->get_record('user', array('id' => $discussion->userid),
-                                $usernamefields, MUST_EXIST);
-                    }
-                    // Create object to return.
-                    $return = new stdClass();
-                    $return->id = (int) $discussion->discussion;
-                    $return->course = $cm->course;
-                    $return->forum = $forum->id;
-                    $return->name = $discussion->name;
-                    $return->userid = $discussion->userid;
-                    $return->groupid = $discussion->groupid;
-                    $return->assessed = $discussion->assessed;
-                    $return->timemodified = (int) $discussion->timemodified;
-                    $return->usermodified = $discussion->usermodified;
-                    $return->timestart = $discussion->timestart;
-                    $return->timeend = $discussion->timeend;
-                    $return->firstpost = (int) $discussion->id;
-                    $return->firstuserfullname = fullname($arrusers[$discussion->userid], $canviewfullname);
-                    $return->firstuserimagealt = $arrusers[$discussion->userid]->imagealt;
-                    $return->firstuserpicture = $arrusers[$discussion->userid]->picture;
-                    $return->firstuseremail = $arrusers[$discussion->userid]->email;
-                    $return->subject = $discussion->subject;
-                    $return->numunread = '';
-                    $return->numunread = (int) $discussion->unread;
-
-                    // Check if there are any replies to this discussion.
-                    if (!is_null($discussion->replies)) {
-                        $return->numreplies = (int) $discussion->replies;
-                        $return->lastpost = (int) $discussion->lastpostid;
-                    } else { // No replies, so the last post will be the first post.
-                        $return->numreplies = 0;
-                        $return->lastpost = (int) $discussion->firstpost;
-                    }
-                    // Get the last post as well as the user who made it.
-                    $lastpost = $DB->get_record('hsuforum_posts', array('id' => $return->lastpost), '*', MUST_EXIST);
-                    if (empty($arrusers[$lastpost->userid])) {
-                        $arrusers[$lastpost->userid] = $DB->get_record('user', array('id' => $lastpost->userid),
-                                $usernamefields, MUST_EXIST);
-                    }
-                    $return->lastuserid = $lastpost->userid;
-                    $return->lastuserfullname = fullname($arrusers[$lastpost->userid], $canviewfullname);
-                    $return->lastuserimagealt = $arrusers[$lastpost->userid]->imagealt;
-                    $return->lastuserpicture = $arrusers[$lastpost->userid]->picture;
-                    $return->lastuseremail = $arrusers[$lastpost->userid]->email;
-                    // Add the discussion statistics to the array to return.
-                    $arrdiscussions[$return->id] = (array) $return;
-                }
-                $discussions->close();
-            }
-        }
-
-        return $arrdiscussions;
-    }
-
-    /**
-     * Describes the get_forum_discussions return value.
-     *
-     * @return external_single_structure
-     * @since Moodle 2.5
-     */
-    public static function get_forum_discussions_returns() {
-        return new external_multiple_structure(
-            new external_single_structure(
-                array(
-                    'id' => new external_value(PARAM_INT, 'Forum id'),
-                    'course' => new external_value(PARAM_INT, 'Course id'),
-                    'forum' => new external_value(PARAM_INT, 'The forum id'),
-                    'name' => new external_value(PARAM_TEXT, 'Discussion name'),
-                    'userid' => new external_value(PARAM_INT, 'User id'),
-                    'groupid' => new external_value(PARAM_INT, 'Group id'),
-                    'assessed' => new external_value(PARAM_INT, 'Is this assessed?'),
-                    'timemodified' => new external_value(PARAM_INT, 'Time modified'),
-                    'usermodified' => new external_value(PARAM_INT, 'The id of the user who last modified'),
-                    'timestart' => new external_value(PARAM_INT, 'Time discussion can start'),
-                    'timeend' => new external_value(PARAM_INT, 'Time discussion ends'),
-                    'firstpost' => new external_value(PARAM_INT, 'The first post in the discussion'),
-                    'firstuserfullname' => new external_value(PARAM_TEXT, 'The discussion creators fullname'),
-                    'firstuserimagealt' => new external_value(PARAM_TEXT, 'The discussion creators image alt'),
-                    'firstuserpicture' => new external_value(PARAM_INT, 'The discussion creators profile picture'),
-                    'firstuseremail' => new external_value(PARAM_TEXT, 'The discussion creators email'),
-                    'subject' => new external_value(PARAM_TEXT, 'The discussion subject'),
-                    'numreplies' => new external_value(PARAM_TEXT, 'The number of replies in the discussion'),
-                    'numunread' => new external_value(PARAM_TEXT, 'The number of unread posts, blank if this value is
-                        not available due to forum settings.'),
-                    'lastpost' => new external_value(PARAM_INT, 'The id of the last post in the discussion'),
-                    'lastuserid' => new external_value(PARAM_INT, 'The id of the user who made the last post'),
-                    'lastuserfullname' => new external_value(PARAM_TEXT, 'The last person to posts fullname'),
-                    'lastuserimagealt' => new external_value(PARAM_TEXT, 'The last person to posts image alt'),
-                    'lastuserpicture' => new external_value(PARAM_INT, 'The last person to posts profile picture'),
-                    'lastuseremail' => new external_value(PARAM_TEXT, 'The last person to posts email'),
-                ), 'discussion'
-            )
-        );
-    }
 
     /**
      * Describes the parameters for get_forum_discussion_posts.
@@ -420,8 +248,39 @@ class mod_hsuforum_external extends external_api {
             }
 
             $user = new stdclass();
-            $user = username_load_fields_from_object($user, $post);
-            $allposts[$pid]->userfullname = fullname($user, $canviewfullname);
+            $user->id = $post->userid;
+            $user = username_load_fields_from_object($user, $post, null, array('picture', 'imagealt', 'email'));
+            $post->userfullname = fullname($user, $canviewfullname);
+
+            $userpicture = new user_picture($user);
+            $userpicture->size = 1; // Size f1.
+            $post->userpictureurl = $userpicture->get_url($PAGE)->out(false);
+
+            // Rewrite embedded images URLs.
+                error_log("rewriting embedded url");
+                error_log("rewriting embedded url $post->message");
+            list($post->message, $post->messageformat) =
+                external_format_text($post->message, $post->messageformat, $modcontext->id, 'mod_hsuforum', 'post', $post->id);
+
+            // List attachments.
+            if (!empty($post->attachment)) {
+                $post->attachments = array();
+
+                $fs = get_file_storage();
+                if ($files = $fs->get_area_files($modcontext->id, 'mod_hsuforum', 'attachment', $post->id, "filename", false)) {
+                    foreach ($files as $file) {
+                        $filename = $file->get_filename();
+                        $fileurl = moodle_url::make_webservice_pluginfile_url(
+                                        $modcontext->id, 'mod_hsuforum', 'attachment', $post->id, '/', $filename);
+
+                        $post->attachments[] = array(
+                            'filename' => $filename,
+                            'mimetype' => $file->get_mimetype(),
+                            'fileurl'  => $fileurl->out(false)
+                        );
+                    }
+                }
+            }
 
             $posts[] = $post;
         }
@@ -456,6 +315,15 @@ class mod_hsuforum_external extends external_api {
                                 'messageformat' => new external_value(PARAM_INT, 'The post message format'),
                                 'messagetrust' => new external_value(PARAM_INT, 'Can we trust?'),
                                 'attachment' => new external_value(PARAM_RAW, 'Attachments'),
+                                'attachments' => new external_multiple_structure(
+                                    new external_single_structure(
+                                        array (
+                                            'filename' => new external_value(PARAM_FILE, 'file name'),
+                                            'mimetype' => new external_value(PARAM_RAW, 'mime type'),
+                                            'fileurl'  => new external_value(PARAM_URL, 'file download url')
+                                        )
+                                    ), 'attachments', VALUE_OPTIONAL
+                                ),
                                 'totalscore' => new external_value(PARAM_INT, 'The post message total score'),
                                 'mailnow' => new external_value(PARAM_INT, 'Mail now?'),
                                 'children' => new external_multiple_structure(new external_value(PARAM_INT, 'children post id')),
@@ -551,7 +419,7 @@ class mod_hsuforum_external extends external_api {
         // Check they have the view forum capability.
         require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'hsuforum');
 
-        $sort = 'd.' . $sortby . ' ' . $sortdirection;
+        $sort = 'd.pinned DESC, d.' . $sortby . ' ' . $sortdirection;
         $alldiscussions = hsuforum_get_discussions($cm, $sort, true, -1, -1, true, $page, $perpage, HSUFORUM_POSTS_ALL_USER_GROUPS);
 
         if ($alldiscussions) {
@@ -697,7 +565,8 @@ class mod_hsuforum_external extends external_api {
                                 'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.'),
                                 'usermodifiedpictureurl' => new external_value(PARAM_URL, 'Post modifier picture.'),
                                 'numreplies' => new external_value(PARAM_TEXT, 'The number of replies in the discussion'),
-                                'numunread' => new external_value(PARAM_INT, 'The number of unread discussions.')
+                                'numunread' => new external_value(PARAM_INT, 'The number of unread discussions.'),
+                                'pinned' => new external_value(PARAM_BOOL, 'Is the discussion pinned')
                             ), 'post'
                         )
                     ),
@@ -856,6 +725,8 @@ class mod_hsuforum_external extends external_api {
                             'name' => new external_value(PARAM_ALPHANUM,
                                         'The allowed keys (value format) are:
                                         discussionsubscribe (bool); subscribe to the discussion?, default to true
+                                        inlineattachmentsid              (int); the draft file area id for inline attachments
+                                        attachmentsid       (int); the draft file area id for attachments
                             '),
                             'value' => new external_value(PARAM_RAW, 'the value of the option,
                                                             this param is validated in the external function.'
@@ -890,13 +761,21 @@ class mod_hsuforum_external extends external_api {
                                             ));
         // Validate options.
         $options = array(
-            'discussionsubscribe' => true
+            'discussionsubscribe' => true,
+            'inlineattachmentsid' => 0,
+            'attachmentsid' => null
         );
         foreach ($params['options'] as $option) {
             $name = trim($option['name']);
             switch ($name) {
                 case 'discussionsubscribe':
                     $value = clean_param($option['value'], PARAM_BOOL);
+                    break;
+                case 'inlineattachmentsid':
+                    $value = clean_param($option['value'], PARAM_INT);
+                    break;
+                case 'attachmentsid':
+                    $value = clean_param($option['value'], PARAM_INT);
                     break;
                 default:
                     throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
@@ -936,12 +815,14 @@ class mod_hsuforum_external extends external_api {
         $post->message = $params['message'];
         $post->messageformat = FORMAT_HTML;   // Force formatting for now.
         $post->messagetrust = trusttext_trusted($context);
-        $post->itemid = 0;
         $post->reveal = 0;
         $post->flags = 0;
         $post->privatereply = 0;
 
-        if ($postid = hsuforum_add_new_post($post, null)) {
+        $post->itemid = $options['inlineattachmentsid'];
+        $post->attachments   = $options['attachmentsid'];
+        $fakemform = $post->attachments;
+        if ($postid = hsuforum_add_new_post($post, $fakemform)) {
 
             $post->id = $postid;
 
@@ -1014,6 +895,9 @@ class mod_hsuforum_external extends external_api {
                             'name' => new external_value(PARAM_ALPHANUM,
                                         'The allowed keys (value format) are:
                                         discussionsubscribe (bool); subscribe to the discussion?, default to true
+                                        discussionpinned    (bool); is the discussion pinned, default to false
+                                        inlineattachmentsid              (int); the draft file area id for inline attachments
+                                        attachmentsid       (int); the draft file area id for attachments
                             '),
                             'value' => new external_value(PARAM_RAW, 'The value of the option,
                                                             This param is validated in the external function.'
@@ -1050,13 +934,25 @@ class mod_hsuforum_external extends external_api {
                                             ));
         // Validate options.
         $options = array(
-            'discussionsubscribe' => true
+            'discussionsubscribe' => true,
+            'discussionpinned' => false,
+            'inlineattachmentsid' => 0,
+            'attachmentsid' => null
         );
         foreach ($params['options'] as $option) {
             $name = trim($option['name']);
             switch ($name) {
                 case 'discussionsubscribe':
                     $value = clean_param($option['value'], PARAM_BOOL);
+                    break;
+                case 'discussionpinned':
+                    $value = clean_param($option['value'], PARAM_BOOL);
+                    break;
+                case 'inlineattachmentsid':
+                    $value = clean_param($option['value'], PARAM_INT);
+                    break;
+                case 'attachmentsid':
+                    $value = clean_param($option['value'], PARAM_INT);
                     break;
                 default:
                     throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
@@ -1102,7 +998,7 @@ class mod_hsuforum_external extends external_api {
         $discussion->message = $params['message'];
         $discussion->messageformat = FORMAT_HTML;   // Force formatting for now.
         $discussion->messagetrust = trusttext_trusted($context);
-        $discussion->itemid = 0;
+        $discussion->itemid = $options['inlineattachmentsid'];
         $discussion->groupid = $groupid;
         $discussion->mailnow = 0;
         $discussion->subject = $params['subject'];
@@ -1110,8 +1006,15 @@ class mod_hsuforum_external extends external_api {
         $discussion->timestart = 0;
         $discussion->timeend = 0;
         $discussion->reveal = 0;
+        $discussion->attachments = $options['attachmentsid'];
 
-        if ($discussionid = hsuforum_add_discussion($discussion)) {
+        if (has_capability('mod/hsuforum:pindiscussions', $context) && $options['discussionpinned']) {
+            $discussion->pinned = HSUFORUM_DISCUSSION_PINNED;
+        } else {
+            $discussion->pinned = HSUFORUM_DISCUSSION_UNPINNED;
+        }
+        $fakemform = $options['attachmentsid'];
+        if ($discussionid = hsuforum_add_discussion($discussion, $fakemform)) {
 
             $discussion->id = $discussionid;
 
@@ -1157,6 +1060,72 @@ class mod_hsuforum_external extends external_api {
         return new external_single_structure(
             array(
                 'discussionid' => new external_value(PARAM_INT, 'New Discussion ID'),
+                'warnings' => new external_warnings()
+            )
+        );
+    }
+
+    /**
+     * Returns description of method parameters
+     *
+     * @return external_function_parameters
+     * @since Moodle 3.1
+     */
+    public static function can_add_discussion_parameters() {
+        return new external_function_parameters(
+            array(
+                'forumid' => new external_value(PARAM_INT, 'Forum instance ID'),
+                'groupid' => new external_value(PARAM_INT, 'The group to check, default to active group.
+                                                Use -1 to check if the user can post in all the groups.', VALUE_DEFAULT, null)
+            )
+        );
+    }
+
+    /**
+     * Check if the current user can add discussions in the given forum (and optionally for the given group).
+     *
+     * @param int $forumid the forum instance id
+     * @param int $groupid the group to check, default to active group. Use -1 to check if the user can post in all the groups.
+     * @return array of warnings and the status (true if the user can add discussions)
+     * @since Moodle 3.1
+     * @throws moodle_exception
+     */
+    public static function can_add_discussion($forumid, $groupid = null) {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . "/mod/hsuforum/lib.php");
+
+        $params = self::validate_parameters(self::can_add_discussion_parameters(),
+                                            array(
+                                                'forumid' => $forumid,
+                                                'groupid' => $groupid,
+                                            ));
+        $warnings = array();
+
+        // Request and permission validation.
+        $forum = $DB->get_record('hsuforum', array('id' => $params['forumid']), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'hsuforum');
+
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
+        $status = hsuforum_user_can_post_discussion($forum, $params['groupid'], -1, $cm, $context);
+
+        $result = array();
+        $result['status'] = $status;
+        $result['warnings'] = $warnings;
+        return $result;
+    }
+
+    /**
+     * Returns description of method result value
+     *
+     * @return external_description
+     * @since Moodle 3.1
+     */
+    public static function can_add_discussion_returns() {
+        return new external_single_structure(
+            array(
+                'status' => new external_value(PARAM_BOOL, 'True if the user can add discussions, false otherwise.'),
                 'warnings' => new external_warnings()
             )
         );

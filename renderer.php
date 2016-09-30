@@ -87,7 +87,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         switch ($forum->type) {
             case 'blog':
-                hsuforum_print_latest_discussions($course, $forum, -1, 'p.created DESC', -1, -1, $page, $config->manydiscussions, $cm);
+                hsuforum_print_latest_discussions($course, $forum, -1, 'd.pinned DESC, p.created DESC', -1, -1, $page, $config->manydiscussions, $cm);
                 break;
             case 'eachuser':
                 if (hsuforum_user_can_post_discussion($forum, null, -1, $cm)) {
@@ -314,6 +314,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->message  = $this->post_message($post, $cm);
         $data->created  = userdate($post->created, $format);
         $data->modified = userdate($discussion->timemodified, $format);
+        $data->pinned   = $discussion->pinned;
         $data->replies  = $discussion->replies;
         $data->replyavatars = array();
         if ($data->replies > 0) {
@@ -539,8 +540,12 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $datecreated = hsuforum_relative_time($d->rawcreated, array('class' => 'hsuforum-thread-pubdate'));
 
         $threadtitle = $d->subject;
+        if ($d->pinned) {
+            $pinnedstr = get_string('discussionpinned', 'hsuforum');
+            $threadtitle = $this->pix_icon('i/pinned', $pinnedstr, 'mod_hsuforum') . ' ' . $threadtitle;
+        }
         if (!$d->fullthread) {
-            $threadtitle = "<a class='disable-router' href='$d->viewurl'>$d->subject</a>";
+            $threadtitle = "<a class='disable-router' href='$d->viewurl'>$threadtitle</a>";
         }
         $options = get_string('options', 'hsuforum');
         $threadmeta  =
@@ -1678,11 +1683,11 @@ HTML;
 
                 $t->extrahtml
                 $hidden
-                
+
                     <button type="submit">$t->submitlabel</button>
                     <a href="#" class="hsuforum-cancel disable-router btn btn-link">$t->cancellabel</a>
                     <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router btn btn-link">$t->advancedlabel</a>
-                
+
             </div>
         </fieldset>
     </form>

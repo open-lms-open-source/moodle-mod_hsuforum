@@ -164,203 +164,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
     }
 
     /**
-     * Test get forum discussions
-     */
-    public function test_mod_hsuforum_get_forum_discussions() {
-        global $USER, $CFG, $DB;
-
-        $this->resetAfterTest(true);
-
-        // Create a user who can track forums.
-        $record = new stdClass();
-        $record->trackforums = true;
-        $user1 = self::getDataGenerator()->create_user($record);
-        // Create a bunch of other users to post.
-        $user2 = self::getDataGenerator()->create_user();
-        $user3 = self::getDataGenerator()->create_user();
-        $user4 = self::getDataGenerator()->create_user();
-
-        // Set the first created user to the test user.
-        self::setUser($user1);
-
-        // Create courses to add the modules.
-        $course1 = self::getDataGenerator()->create_course();
-        $course2 = self::getDataGenerator()->create_course();
-
-        // First forum (tracking now enabled by default).
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $forum1 = self::getDataGenerator()->create_module('hsuforum', $record);
-
-        // Second forum of type 'qanda' (tracking now enabled by default).
-        $record = new stdClass();
-        $record->course = $course2->id;
-        $record->type = 'qanda';
-        $forum2 = self::getDataGenerator()->create_module('hsuforum', $record);
-
-        // Add discussions to the forums.
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $record->userid = $user1->id;
-        $record->forum = $forum1->id;
-        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
-
-        $record = new stdClass();
-        $record->course = $course2->id;
-        $record->userid = $user2->id;
-        $record->forum = $forum2->id;
-        $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
-
-        // Add three replies to the discussion 1 from different users.
-        $record = new stdClass();
-        $record->discussion = $discussion1->id;
-        $record->parent = $discussion1->firstpost;
-        $record->userid = $user2->id;
-        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
-
-        $record->parent = $discussion1reply1->id;
-        $record->userid = $user3->id;
-        $discussion1reply2 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
-
-        $record->userid = $user4->id;
-        $discussion1reply3 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
-
-        // Add two replies to discussion 2 from different users.
-        $record = new stdClass();
-        $record->discussion = $discussion2->id;
-        $record->parent = $discussion2->firstpost;
-        $record->userid = $user1->id;
-        $discussion2reply1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
-
-        $record->parent = $discussion2reply1->id;
-        $record->userid = $user3->id;
-        $discussion2reply2 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
-
-        // Check the forums were correctly created.
-        $this->assertEquals(2, $DB->count_records_select('hsuforum', 'id = :forum1 OR id = :forum2',
-                array('forum1' => $forum1->id, 'forum2' => $forum2->id)));
-
-        // Check the discussions were correctly created.
-        $this->assertEquals(2, $DB->count_records_select('hsuforum_discussions', 'forum = :forum1 OR forum = :forum2',
-                                                            array('forum1' => $forum1->id, 'forum2' => $forum2->id)));
-
-        // Check the posts were correctly created, don't forget each discussion created also creates a post.
-        $this->assertEquals(7, $DB->count_records_select('hsuforum_posts', 'discussion = :discussion1 OR discussion = :discussion2',
-                array('discussion1' => $discussion1->id, 'discussion2' => $discussion2->id)));
-
-        // Enrol the user in the first course.
-        $enrol = enrol_get_plugin('manual');
-        // Following line enrol and assign default role id to the user.
-        // So the user automatically gets mod/hsuforum:viewdiscussion on all forums of the course.
-        $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
-
-        // Now enrol into the second course.
-        // We don't use the dataGenerator as we need to get the $instance2 to unenrol later.
-        $enrolinstances = enrol_get_instances($course2->id, true);
-        foreach ($enrolinstances as $courseenrolinstance) {
-            if ($courseenrolinstance->enrol == "manual") {
-                $instance2 = $courseenrolinstance;
-                break;
-            }
-        }
-        $enrol->enrol_user($instance2, $user1->id);
-
-        // Assign capabilities to view discussions for forum 2.
-        $cm = get_coursemodule_from_id('hsuforum', $forum2->cmid, 0, false, MUST_EXIST);
-        $context = context_module::instance($cm->id);
-        $newrole = create_role('Role 2', 'role2', 'Role 2 description');
-        $this->assignUserCapability('mod/hsuforum:viewdiscussion', $context->id, $newrole);
-
-        // Create what we expect to be returned when querying the forums.
-        $expecteddiscussions = array();
-        $expecteddiscussions[] = array(
-                'id' => $discussion1->id,
-                'course' => $discussion1->course,
-                'forum' => $discussion1->forum,
-                'name' => $discussion1->name,
-                'firstpost' => $discussion1->firstpost,
-                'userid' => $discussion1->userid,
-                'groupid' => $discussion1->groupid,
-                'assessed' => ''.$discussion1->assessed,
-                'timemodified' => $discussion1reply3->created,
-                'usermodified' => $discussion1reply3->userid,
-                'timestart' => $discussion1->timestart,
-                'timeend' => $discussion1->timeend,
-                'firstuserfullname' => fullname($user1),
-                'firstuserimagealt' => $user1->imagealt,
-                'firstuserpicture' => $user1->picture,
-                'firstuseremail' => $user1->email,
-                'subject' => $discussion1->name,
-                'numreplies' => 3,
-                'numunread' => 3, // Note - this was changed from empty to 3 because all forums get tracked by default now.
-                'lastpost' => $discussion1reply3->id,
-                'lastuserid' => $user4->id,
-                'lastuserfullname' => fullname($user4),
-                'lastuserimagealt' => $user4->imagealt,
-                'lastuserpicture' => $user4->picture,
-                'lastuseremail' => $user4->email
-            );
-        $expecteddiscussions[] = array(
-                'id' => $discussion2->id,
-                'course' => $discussion2->course,
-                'forum' => $discussion2->forum,
-                'name' => $discussion2->name,
-                'firstpost' => $discussion2->firstpost,
-                'userid' => $discussion2->userid,
-                'groupid' => $discussion2->groupid,
-                'assessed' => $discussion2->assessed,
-                'timemodified' => $discussion2reply2->created,
-                'usermodified' => $discussion2reply2->userid,
-                'timestart' => $discussion2->timestart,
-                'timeend' => $discussion2->timeend,
-                'firstuserfullname' => fullname($user2),
-                'firstuserimagealt' => $user2->imagealt,
-                'firstuserpicture' => $user2->picture,
-                'firstuseremail' => $user2->email,
-                'subject' => $discussion2->name,
-                'numreplies' => 2,
-                'numunread' => 3,
-                'lastpost' => $discussion2reply2->id,
-                'lastuserid' => $user3->id,
-                'lastuserfullname' => fullname($user3),
-                'lastuserimagealt' => $user3->imagealt,
-                'lastuserpicture' => $user3->picture,
-                'lastuseremail' => $user3->email
-            );
-
-        // Call the external function passing forum ids.
-        $discussions = mod_hsuforum_external::get_forum_discussions(array($forum1->id, $forum2->id));
-        $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_returns(), $discussions);
-        $this->assertEquals($expecteddiscussions, $discussions);
-
-        // Remove the users post from the qanda forum and ensure they can still see the discussion.
-        $DB->delete_records('hsuforum_posts', array('id' => $discussion2reply1->id));
-        $discussions = mod_hsuforum_external::get_forum_discussions(array($forum2->id));
-        $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_returns(), $discussions);
-        $this->assertEquals(1, count($discussions));
-
-        // Call without required view discussion capability.
-        $this->unassignUserCapability('mod/hsuforum:viewdiscussion', null, null, $course1->id);
-        try {
-            mod_hsuforum_external::get_forum_discussions(array($forum1->id));
-            $this->fail('Exception expected due to missing capability.');
-        } catch (moodle_exception $e) {
-            $this->assertEquals('nopermissions', $e->errorcode);
-        }
-
-        // Unenrol user from second course.
-        $enrol->unenrol_user($instance2, $user1->id);
-
-        // Call for the second course we unenrolled the user from, make sure exception thrown.
-        try {
-            mod_hsuforum_external::get_forum_discussions(array($forum2->id));
-            $this->fail('Exception expected due to being unenrolled from the course.');
-        } catch (moodle_exception $e) {
-            $this->assertEquals('requireloginerror', $e->errorcode);
-        }
-    }
-
-    /**
      * Test get forum posts
      */
     public function test_mod_hsuforum_get_forum_discussion_posts() {
@@ -437,7 +240,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'subject' => $discussion1reply1->subject,
             'message' => file_rewrite_pluginfile_urls($discussion1reply1->message, 'pluginfile.php',
                     $forum1context->id, 'mod_hsuforum', 'post', $discussion1reply1->id),
-            'messageformat' => $discussion1reply1->messageformat,
+            'messageformat' => 1,   // This value is usually changed by external_format_text() function.
             'messagetrust' => $discussion1reply1->messagetrust,
             'attachment' => $discussion1reply1->attachment,
             'totalscore' => $discussion1reply1->totalscore,
@@ -458,7 +261,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'subject' => $discussion1reply2->subject,
             'message' => file_rewrite_pluginfile_urls($discussion1reply2->message, 'pluginfile.php',
                     $forum1context->id, 'mod_hsuforum', 'post', $discussion1reply2->id),
-            'messageformat' => $discussion1reply2->messageformat,
+            'messageformat' => 1,   // This value is usually changed by external_format_text() function.
             'messagetrust' => $discussion1reply2->messagetrust,
             'attachment' => $discussion1reply2->attachment,
             'totalscore' => $discussion1reply2->totalscore,
@@ -637,8 +440,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
         $this->getDataGenerator()->enrol_user($otheruser->id, $course->id);
 
-        $post = mod_hsuforum_external::add_discussion_post($discussion->firstpost, 'some subject', 'some text here...');
-        $post = external_api::clean_returnvalue(mod_hsuforum_external::add_discussion_post_returns(), $post);
+        $createdpost = mod_hsuforum_external::add_discussion_post($discussion->firstpost, 'some subject', 'some text here...');
+        $createdpost = external_api::clean_returnvalue(mod_hsuforum_external::add_discussion_post_returns(), $createdpost);
 
         $posts = mod_hsuforum_external::get_forum_discussion_posts($discussion->id);
         $posts = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussion_posts_returns(), $posts);
@@ -646,14 +449,70 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals(2, count($posts['posts']));
 
         $tested = false;
-        foreach ($posts['posts'] as $postel) {
-            if ($post['postid'] == $postel['id']) {
-                $this->assertEquals('some subject', $postel['subject']);
-                $this->assertEquals('some text here...', $postel['message']);
+        foreach ($posts['posts'] as $thispost) {
+            if ($createdpost['postid'] == $thispost['id']) {
+                $this->assertEquals('some subject', $thispost['subject']);
+                $this->assertEquals('some text here...', $thispost['message']);
                 $tested = true;
             }
         }
         $this->assertTrue($tested);
+
+        // Test inline and regular attachment in post
+        // Create a file in a draft area for inline attachments.
+        $draftidinlineattach = file_get_unused_draft_itemid();
+        $draftidattach = file_get_unused_draft_itemid();
+        self::setUser($user);
+        $usercontext = context_user::instance($user->id);
+        $filepath = '/';
+        $filearea = 'draft';
+        $component = 'user';
+        $filenameimg = 'shouldbeanimage.txt';
+        $filerecordinline = array(
+            'contextid' => $usercontext->id,
+            'component' => $component,
+            'filearea'  => $filearea,
+            'itemid'    => $draftidinlineattach,
+            'filepath'  => $filepath,
+            'filename'  => $filenameimg,
+        );
+        $fs = get_file_storage();
+
+        // Create a file in a draft area for regular attachments.
+        $filerecordattach = $filerecordinline;
+        $attachfilename = 'attachment.txt';
+        $filerecordattach['filename'] = $attachfilename;
+        $filerecordattach['itemid'] = $draftidattach;
+        $fs->create_file_from_string($filerecordinline, 'image contents (not really)');
+        $fs->create_file_from_string($filerecordattach, 'simple text attachment');
+
+        $options = array(array('name' => 'inlineattachmentsid', 'value' => $draftidinlineattach),
+                         array('name' => 'attachmentsid', 'value' => $draftidattach));
+        $dummytext = 'Here is an inline image: <img src="' . $CFG->wwwroot
+                     . "/draftfile.php/{$usercontext->id}/user/draft/{$draftidinlineattach}/{$filenameimg}"
+                     . '" alt="inlineimage">.';
+        $createdpost = mod_hsuforum_external::add_discussion_post($discussion->firstpost, 'new post inline attachment',
+                                                               $dummytext, $options);
+        $createdpost = external_api::clean_returnvalue(mod_hsuforum_external::add_discussion_post_returns(), $createdpost);
+
+        $posts = mod_hsuforum_external::get_forum_discussion_posts($discussion->id);
+        $posts = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussion_posts_returns(), $posts);
+        // We receive the discussion and the post.
+        // Can't guarantee order of posts during tests.
+        $postfound = false;
+        foreach ($posts['posts'] as $thispost) {
+            if ($createdpost['postid'] == $thispost['id']) {
+                $this->assertEquals($createdpost['postid'], $thispost['id']);
+                $this->assertEquals($thispost['attachment'], 1, "There should be a non-inline attachment");
+                $this->assertCount(1, $thispost['attachments'], "There should be 1 attachment");
+                $this->assertEquals($thispost['attachments'][0]['filename'], $attachfilename, "There should be 1 attachment");
+                $this->assertContains('pluginfile.php', $thispost['message']);
+                $postfound = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($postfound);
 
         // Check not posting in groups the user is not member of.
         $group = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
@@ -678,7 +537,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
      * Test add_discussion. A basic test since all the API functions are already covered by unit tests.
      */
     public function test_add_discussion() {
-
+        global $CFG, $USER;
         $this->resetAfterTest(true);
 
         // Create courses to add the modules.
@@ -704,8 +563,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         }
 
         self::setAdminUser();
-        $discussion = mod_hsuforum_external::add_discussion($forum->id, 'the subject', 'some text here...');
-        $discussion = external_api::clean_returnvalue(mod_hsuforum_external::add_discussion_returns(), $discussion);
+        $createddiscussion = mod_hsuforum_external::add_discussion($forum->id, 'the subject', 'some text here...');
+        $createddiscussion = external_api::clean_returnvalue(mod_hsuforum_external::add_discussion_returns(), $createddiscussion);
 
         $discussions = mod_hsuforum_external::get_forum_discussions_paginated($forum->id);
         $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_paginated_returns(), $discussions);
@@ -713,11 +572,80 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $this->assertCount(1, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
 
-        $this->assertEquals($discussion['discussionid'], $discussions['discussions'][0]['discussion']);
+        $this->assertEquals($createddiscussion['discussionid'], $discussions['discussions'][0]['discussion']);
         $this->assertEquals(-1, $discussions['discussions'][0]['groupid']);
         $this->assertEquals('the subject', $discussions['discussions'][0]['subject']);
         $this->assertEquals('some text here...', $discussions['discussions'][0]['message']);
 
+        $discussion2pinned = mod_hsuforum_external::add_discussion($forum->id, 'the pinned subject', 'some 2 text here...', -1,
+                                                                array('options' => array('name' => 'discussionpinned',
+                                                                                         'value' => true)));
+        $discussion3 = mod_hsuforum_external::add_discussion($forum->id, 'the non pinnedsubject', 'some 3 text here...');
+        $discussions = mod_hsuforum_external::get_forum_discussions_paginated($forum->id);
+        $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_paginated_returns(), $discussions);
+        $this->assertCount(3, $discussions['discussions']);
+        $this->assertEquals($discussion2pinned['discussionid'], $discussions['discussions'][0]['discussion']);
+
+        // Test inline and regular attachment in new discussion
+        // Create a file in a draft area for inline attachments.
+
+        $fs = get_file_storage();
+
+        $draftidinlineattach = file_get_unused_draft_itemid();
+        $draftidattach = file_get_unused_draft_itemid();
+
+        $usercontext = context_user::instance($USER->id);
+        $filepath = '/';
+        $filearea = 'draft';
+        $component = 'user';
+        $filenameimg = 'shouldbeanimage.txt';
+        $filerecord = array(
+            'contextid' => $usercontext->id,
+            'component' => $component,
+            'filearea'  => $filearea,
+            'itemid'    => $draftidinlineattach,
+            'filepath'  => $filepath,
+            'filename'  => $filenameimg,
+        );
+
+        // Create a file in a draft area for regular attachments.
+        $filerecordattach = $filerecord;
+        $attachfilename = 'attachment.txt';
+        $filerecordattach['filename'] = $attachfilename;
+        $filerecordattach['itemid'] = $draftidattach;
+        $fs->create_file_from_string($filerecord, 'image contents (not really)');
+        $fs->create_file_from_string($filerecordattach, 'simple text attachment');
+
+        $dummytext = 'Here is an inline image: <img src="' . $CFG->wwwroot .
+                    "/draftfile.php/{$usercontext->id}/user/draft/{$draftidinlineattach}/{$filenameimg}" .
+                    '" alt="inlineimage">.';
+
+        $options = array(array('name' => 'inlineattachmentsid', 'value' => $draftidinlineattach),
+                         array('name' => 'attachmentsid', 'value' => $draftidattach));
+        $createddiscussion = mod_hsuforum_external::add_discussion($forum->id, 'the inline attachment subject',
+                                                                $dummytext, -1, $options);
+        $createddiscussion = external_api::clean_returnvalue(mod_hsuforum_external::add_discussion_returns(), $createddiscussion);
+
+        $discussions = mod_hsuforum_external::get_forum_discussions_paginated($forum->id);
+        $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_paginated_returns(), $discussions);
+
+        $this->assertCount(4, $discussions['discussions']);
+        $this->assertCount(0, $createddiscussion['warnings']);
+        // Can't guarantee order of posts during tests.
+        $postfound = false;
+        foreach ($discussions['discussions'] as $thisdiscussion) {
+            if ($createddiscussion['discussionid'] == $thisdiscussion['discussion']) {
+                $this->assertEquals($thisdiscussion['attachment'], 1, "There should be a non-inline attachment");
+                $this->assertCount(1, $thisdiscussion['attachments'], "There should be 1 attachment");
+                $this->assertEquals($thisdiscussion['attachments'][0]['filename'], $attachfilename, "There should be 1 attachment");
+                $this->assertNotContains('draftfile.php', $thisdiscussion['message']);
+                $this->assertContains('pluginfile.php', $thisdiscussion['message']);
+                $postfound = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($postfound);
     }
 
     /**
@@ -818,6 +746,39 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $this->assertEquals($group->id, $discussions['discussions'][0]['groupid']);
         $this->assertEquals($group->id, $discussions['discussions'][1]['groupid']);
         $this->assertEquals($group->id, $discussions['discussions'][2]['groupid']);
+
+    }
+
+    /*
+     * Test can_add_discussion. A basic test since all the API functions are already covered by unit tests.
+     */
+    public function test_can_add_discussion() {
+
+        $this->resetAfterTest(true);
+
+        // Create courses to add the modules.
+        $course = self::getDataGenerator()->create_course();
+
+        $user = self::getDataGenerator()->create_user();
+
+        // First forum with tracking off.
+        $record = new stdClass();
+        $record->course = $course->id;
+        $record->type = 'news';
+        $forum = self::getDataGenerator()->create_module('hsuforum', $record);
+
+        // User with no permissions to add in a news forum.
+        self::setUser($user);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id);
+
+        $result = mod_hsuforum_external::can_add_discussion($forum->id);
+        $result = external_api::clean_returnvalue(mod_hsuforum_external::can_add_discussion_returns(), $result);
+        $this->assertFalse($result['status']);
+
+        self::setAdminUser();
+        $result = mod_hsuforum_external::can_add_discussion($forum->id);
+        $result = external_api::clean_returnvalue(mod_hsuforum_external::can_add_discussion_returns(), $result);
+        $this->assertTrue($result['status']);
 
     }
 

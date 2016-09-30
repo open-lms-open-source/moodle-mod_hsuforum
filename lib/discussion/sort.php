@@ -38,13 +38,13 @@ class hsuforum_lib_discussion_sort implements Serializable {
      * @var array
      */
     protected $keyopts = array(
-        'lastreply' => 'd.timemodified %dir%',
-        'replies'   => 'extra.replies %dir%, d.timemodified %dir%',
+        'lastreply' => 'd.pinned DESC, d.timemodified %dir%',
+        'replies'   => 'd.pinned DESC, extra.replies %dir%, d.timemodified %dir%',
         // 'unread'    => 'unread.unread %dir%, d.timemodified %dir%',
-        'created'   => 'p.created %dir%',
+        'created'   => 'd.pinned DESC, p.created %dir%',
         // 'firstname' => 'u.firstname %dir%, d.timemodified %dir%',
         // 'lastname'  => 'u.lastname %dir%, d.timemodified %dir%',
-        'subscribe' => 'sd.id %dir%, d.timemodified %dir%',
+        'subscribe' => 'd.pinned DESC, sd.id %dir%, d.timemodified %dir%',
     );
 
     /**

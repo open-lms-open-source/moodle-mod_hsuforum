@@ -604,6 +604,10 @@ $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'timeend'=>$discussion->timeend):
                                 array())+
 
+                            (isset($discussion->pinned) ? array(
+                                     'pinned' => $discussion->pinned) :
+                                array()) +
+
                             (isset($post->groupid)?array(
                                     'groupid'=>$post->groupid):
                                 array())+
@@ -660,7 +664,16 @@ if ($fromform = $mform_post->get_data()) {
 
             $DB->set_field('hsuforum_discussions' ,'groupid' , $fromform->groupinfo, array('firstpost' => $fromform->id));
         }
-
+        // When editing first post/discussion.
+        if (!$fromform->parent) {
+            if (has_capability('mod/hsuforum:pindiscussions', $modcontext)) {
+                // Can change pinned if we have capability.
+                $fromform->pinned = !empty($fromform->pinned) ? HSUFORUM_DISCUSSION_PINNED : HSUFORUM_DISCUSSION_UNPINNED;
+            } else {
+                // We don't have the capability to change so keep to previous value.
+                unset($fromform->pinned);
+            }
+        }
         $updatepost = $fromform; //realpost
         $updatepost->forum = $forum->id;
         if (!hsuforum_update_post($updatepost, $mform_post, $message)) {
@@ -672,11 +685,6 @@ if ($fromform = $mform_post->get_data()) {
             $forum->intro = $updatepost->message;
             $forum->timemodified = time();
             $DB->update_record("hsuforum", $forum);
-        }
-
-        $timemessage = 2;
-        if (!empty($message)) { // if we're printing stuff about the file upload
-            $timemessage = 4;
         }
 
         if ($realpost->userid == $USER->id) {
@@ -693,9 +701,7 @@ if ($fromform = $mform_post->get_data()) {
             }
         }
 
-        if ($subscribemessage = hsuforum_post_subscription($fromform, $forum)) {
-            $timemessage = 4;
-        }
+        $subscribemessage = hsuforum_post_subscription($fromform, $forum);
         if ($forum->type == 'single') {
             // Single discussion forums are an exception. We show
             // the forum itself since it only has one discussion
@@ -723,10 +729,12 @@ if ($fromform = $mform_post->get_data()) {
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
 
-        redirect(hsuforum_go_back_to($discussionurl), $message.$subscribemessage, $timemessage);
-
-        exit;
-
+        redirect(
+                hsuforum_go_back_to($discussionurl),
+                $message . $subscribemessage,
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
 
     } else if ($fromform->discussion) { // Adding a new post to an existing discussion
         // Before we add this we must check that the user will not exceed the blocking threshold.
@@ -738,18 +746,10 @@ if ($fromform = $mform_post->get_data()) {
         $addpost->forum=$forum->id;
         if ($fromform->id = hsuforum_add_new_post($addpost, $mform_post, $message)) {
 
-            $timemessage = 2;
-            if (!empty($message)) { // if we're printing stuff about the file upload
-                $timemessage = 4;
-            }
-
-            if ($subscribemessage = hsuforum_post_subscription($fromform, $forum)) {
-                $timemessage = 4;
-            }
+           $subscribemessage = hsuforum_post_subscription($fromform, $forum);
 
             if (!empty($fromform->mailnow)) {
                 $message .= get_string("postmailnow", "hsuforum");
-                $timemessage = 4;
             } else {
                 $message .= '<p>'.get_string("postaddedsuccess", "hsuforum") . '</p>';
                 $message .= '<p>'.get_string("postaddedtimeleft", "hsuforum", format_time($CFG->maxeditingtime)) . '</p>';
@@ -785,7 +785,12 @@ if ($fromform = $mform_post->get_data()) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
-            redirect(hsuforum_go_back_to($discussionurl), $message.$subscribemessage, $timemessage);
+            redirect(
+                    hsuforum_go_back_to($discussionurl),
+                    $message . $subscribemessage,
+                    null,
+                    \core\output\notification::NOTIFY_SUCCESS
+                );
 
         } else {
             print_error("couldnotadd", "hsuforum", $errordestination);
@@ -808,6 +813,12 @@ if ($fromform = $mform_post->get_data()) {
         }
         $discussion->timestart = $fromform->timestart;
         $discussion->timeend = $fromform->timeend;
+
+        if (has_capability('mod/hsuforum:pindiscussions', $modcontext) && !empty($fromform->pinned)) {
+            $discussion->pinned = HSUFORUM_DISCUSSION_PINNED;
+        } else {
+            $discussion->pinned = HSUFORUM_DISCUSSION_UNPINNED;
+        }
 
         $allowedgroups = array();
         $groupstopostto = array();
@@ -861,22 +872,14 @@ if ($fromform = $mform_post->get_data()) {
                 $event->add_record_snapshot('hsuforum_discussions', $discussion);
                 $event->trigger();
 
-                $timemessage = 2;
-                if (!empty($message)) { // If we're printing stuff about the file upload.
-                    $timemessage = 4;
-                }
-
                 if ($fromform->mailnow) {
                     $message .= get_string("postmailnow", "hsuforum");
-                    $timemessage = 4;
                 } else {
                     $message .= '<p>'.get_string("postaddedsuccess", "hsuforum") . '</p>';
                     $message .= '<p>'.get_string("postaddedtimeleft", "hsuforum", format_time($CFG->maxeditingtime)) . '</p>';
                 }
 
-                if ($subscribemessage = hsuforum_post_subscription($fromform, $forum, $discussion)) {
-                    $timemessage = 6;
-                }
+                $subscribemessage = hsuforum_post_subscription($fromform, $forum, $discussion);
             } else {
                 print_error("couldnotadd", "hsuforum", $errordestination);
             }
@@ -890,7 +893,12 @@ if ($fromform = $mform_post->get_data()) {
         }
 
         // Redirect back to the discussion.
-        redirect(hsuforum_go_back_to($redirectto->out()), $message . $subscribemessage, $timemessage);
+        redirect(
+                hsuforum_go_back_to($redirectto->out()),
+                $message . $subscribemessage,
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
     }
 }
 

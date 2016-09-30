@@ -55,6 +55,9 @@ if (!defined('HSUFORUM_CRON_USER_CACHE')) {
  */
 define('HSUFORUM_POSTS_ALL_USER_GROUPS', -2);
 
+define('HSUFORUM_DISCUSSION_PINNED', 1);
+define('HSUFORUM_DISCUSSION_UNPINNED', 0);
+
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 
 /**
@@ -424,11 +427,10 @@ WHERE
  *
  * @param int $postid The ID of the forum post we are notifying the user about
  * @param int $usertoid The ID of the user being notified
- * @param string $hostname The server's hostname
  * @return string A unique message-id
  */
-function hsuforum_get_email_message_id($postid, $usertoid, $hostname) {
-    return '<'.hash('sha256',$postid.'to'.$usertoid).'@'.$hostname.'>';
+function hsuforum_get_email_message_id($postid, $usertoid) {
+    return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid));
 }
 
 /**
@@ -628,9 +630,6 @@ function hsuforum_cron() {
 
     if ($users && $posts) {
 
-        $urlinfo = parse_url($CFG->wwwroot);
-        $hostname = $urlinfo['host'];
-
         foreach ($users as $userto) {
             // Terminate if processing of any account takes longer than 2 minutes.
             core_php_time_limit::raise(120);
@@ -773,9 +772,9 @@ function hsuforum_cron() {
 
                 $userfrom->customheaders = array (
                     // Headers to make emails easier to track.
-                    'List-Id: "'        . $cleanforumname . '" <moodlehsuforum' . $forum->id . '@' . $hostname.'>',
+                    'List-Id: "'        . $cleanforumname . '" ' . generate_email_messageid('moodlehsuforum' . $forum->id),
                     'List-Help: '       . $CFG->wwwroot . '/mod/hsuforum/view.php?f=' . $forum->id,
-                    'Message-ID: '      . hsuforum_get_email_message_id($post->id, $userto->id, $hostname),
+                    'Message-ID: '      . hsuforum_get_email_message_id($post->id, $userto->id),
                     'X-Course-Id: '     . $course->id,
                     'X-Course-Name: '   . format_string($course->fullname, true),
 
@@ -786,15 +785,9 @@ function hsuforum_cron() {
                );
 
                 if ($post->parent) {
-                    // This post is a reply, so add headers for threading (see MDL-22551)
-                    $userfrom->customheaders[] = 'In-Reply-To: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                    $userfrom->customheaders[] = 'References: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                }
-
-                if ($post->parent) {
                     // This post is a reply, so add headers for threading (see MDL-22551).
-                    $userfrom->customheaders[] = 'In-Reply-To: ' . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                    $userfrom->customheaders[] = 'References: '  . hsuforum_get_email_message_id($post->parent, $userto->id, $hostname);
+                    $parentid = hsuforum_get_email_message_id($post->parent, $userto->id);
+                    $userfrom->customheaders[] = "In-Reply-To: $parentid";
                 }
 
                 $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
@@ -828,17 +821,28 @@ function hsuforum_cron() {
                         $canreply
                     );
 
+                $userfrom->customheaders[] = sprintf('List-Unsubscribe: <%s>',
+                    $data->get_unsubscribediscussionlink());
+
                 if (!isset($userto->viewfullnames[$forum->id])) {
                     $data->viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
                 } else {
                     $data->viewfullnames = $userto->viewfullnames[$forum->id];
                 }
 
+                // Not all of these variables are used in the default language
+                // string but are made available to support custom subjects.
                 $a = new stdClass();
-                $a->courseshortname = $data->get_coursename();
-                $a->forumname = $cleanforumname;
                 $a->subject = $data->get_subject();
+                $a->forumname = $cleanforumname;
+                $a->sitefullname = format_string($site->fullname);
+                $a->siteshortname = format_string($site->shortname);
+                $a->courseidnumber = $data->get_courseidnumber();
+                $a->coursefullname = $data->get_coursefullname();
+                $a->courseshortname = $data->get_coursename();
                 $postsubject = html_to_text(get_string('postmailsubject', 'hsuforum', $a), 0);
+
+                $rootid = hsuforum_get_email_message_id($discussion->firstpost, $userto->id);
 
                 // Send the post now!
 
@@ -1033,18 +1037,13 @@ function hsuforum_cron() {
 
                 $headerdata = new stdClass();
                 $headerdata->sitename = format_string($site->fullname, true);
-                $headerdata->userprefs = $CFG->wwwroot.'/user/edit.php?id='.$userid.'&amp;course='.$site->id;
+                $headerdata->userprefs = $CFG->wwwroot.'/user/forum.php?id='.$userid.'&amp;course='.$site->id;
 
                 $posttext = get_string('digestmailheader', 'hsuforum', $headerdata)."\n\n";
                 $headerdata->userprefs = '<a target="_blank" href="'.$headerdata->userprefs.'">'.get_string('digestmailprefs', 'hsuforum').'</a>';
 
-                $posthtml = "<head>";
-/*                foreach ($CFG->stylesheets as $stylesheet) {
-                    //TODO: MDL-21120
-                    $posthtml .= '<link rel="stylesheet" type="text/css" href="'.$stylesheet.'" />'."\n";
-                }*/
-                $posthtml .= "</head>\n<body id=\"email\">\n";
-                $posthtml .= '<p>'.get_string('digestmailheader', 'hsuforum', $headerdata).'</p><br /><hr size="1" noshade="noshade" />';
+                $posthtml = '<p>'.get_string('digestmailheader', 'hsuforum', $headerdata).'</p>'
+                    . '<br /><hr size="1" noshade="noshade" />';
 
                 foreach ($thesediscussions as $discussionid) {
 
@@ -1097,6 +1096,7 @@ function hsuforum_cron() {
 
                     $postsarray = $discussionposts[$discussionid];
                     sort($postsarray);
+                    $sentcount = 0;
 
                     foreach ($postsarray as $postid) {
                         $post = $posts[$postid];
@@ -1183,6 +1183,7 @@ function hsuforum_cron() {
                                 $userto->markposts[$post->id] = $post->id;
                             }
                         }
+                        $sentcount++;
                     }
                     $footerlinks = array();
                     if ($canunsubscribe) {
@@ -1194,17 +1195,24 @@ function hsuforum_cron() {
                     $posthtml .= "\n<div class='mdl-right'><font size=\"1\">" . implode('&nbsp;', $footerlinks) . '</font></div>';
                     $posthtml .= '<hr size="1" noshade="noshade" /></p>';
                 }
-                $posthtml .= '</body>';
 
                 if (empty($userto->mailformat) || $userto->mailformat != 1) {
                     // This user DOESN'T want to receive HTML
                     $posthtml = '';
                 }
 
-                $attachment = $attachname='';
-                // Directly email forum digests rather than sending them via messaging, use the
-                // site shortname as 'from name', the noreply address will be used by email_to_user.
-                $mailresult = email_to_user($userto, $site->shortname, $postsubject, $posttext, $posthtml, $attachment, $attachname);
+                $eventdata = new \core\message\message();
+                $eventdata->component           = 'mod_hsuforum';
+                $eventdata->name                = 'digests';
+                $eventdata->userfrom            = core_user::get_noreply_user();
+                $eventdata->userto              = $userto;
+                $eventdata->subject             = $postsubject;
+                $eventdata->fullmessage         = $posttext;
+                $eventdata->fullmessageformat   = FORMAT_PLAIN;
+                $eventdata->fullmessagehtml     = $posthtml;
+                $eventdata->notification        = 1;
+                $eventdata->smallmessage        = get_string('smallmessagedigest', 'hsuforum', $sentcount);
+                $mailresult = message_send($eventdata);
 
                 if (!$mailresult) {
                     mtrace("ERROR: mod/hsuforum/cron.php: Could not send out digest mail to user $userto->id ".
@@ -2905,7 +2913,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $selectsql = $forumselect;
     } else {
         $allnames  = get_all_user_name_fields(true, 'u');
-        $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.assessed,
+        $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.pinned, d.assessed,
                            d.firstpost, extra.replies, lastpost.postid lastpostid,$trackselect$subscribeselect
                            $allnames, u.email, u.picture, u.imagealt $umfields";
     }
@@ -2930,7 +2938,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
                    $umtable
              WHERE d.forum = ? AND p.parent = 0
                    $timelimit $groupselect
-          ORDER BY $forumsort";
+          ORDER BY $forumsort, d.id DESC";
     if ($returnrs) {
         return $DB->get_recordset_sql($sql, $params, $limitfrom, $limitnum);
     }
@@ -2940,10 +2948,8 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
 /**
  * Gets the neighbours (previous and next) of a discussion.
  *
- * The calculation is based on the timemodified of the discussion and does not handle
- * the neighbours having an identical timemodified. The reason is that we do not have any
- * other mean to sort the records, e.g. we cannot use IDs as a greater ID can have a lower
- * timemodified.
+ * The calculation is based on the timemodified when time modified or time created is identical
+ * It will revert to using the ID to sort consistently. This is better tha skipping a discussion.
  *
  * For blog-style forums, the calculation is based on the original creation time of the
  * blog post.
@@ -3010,78 +3016,82 @@ function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
         }
     }
 
-    if ($forum->type === 'blog') {
-        $params['forumid'] = $cm->instance;
-        $params['discid1'] = $discussion->id;
-        $params['discid2'] = $discussion->id;
+    $params['forumid'] = $cm->instance;
+    $params['discid1'] = $discussion->id;
+    $params['discid2'] = $discussion->id;
+    $params['discid3'] = $discussion->id;
+    $params['discid4'] = $discussion->id;
+    $params['disctimecompare1'] = $discussion->timemodified;
+    $params['disctimecompare2'] = $discussion->timemodified;
+    $params['pinnedstate1'] = (int) $discussion->pinned;
+    $params['pinnedstate2'] = (int) $discussion->pinned;
+    $params['pinnedstate3'] = (int) $discussion->pinned;
+    $params['pinnedstate4'] = (int) $discussion->pinned;
 
-        $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
-                  FROM {hsuforum_discussions} d
-                  JOIN {hsuforum_posts} p ON d.firstpost = p.id
-                 WHERE d.forum = :forumid
-                   AND d.id <> :discid1
-                       $timelimit
-                       $groupselect";
-
-        $sub = "SELECT pp.created
-                  FROM {hsuforum_discussions} dd
-                  JOIN {hsuforum_posts} pp ON dd.firstpost = pp.id
-                 WHERE dd.id = :discid2";
-
-        $prevsql = $sql . " AND p.created < ($sub)
-                       ORDER BY p.created DESC";
-
-        $nextsql = $sql . " AND p.created > ($sub)
-                       ORDER BY p.created ASC";
-
-        $neighbours['prev'] = $DB->get_record_sql($prevsql, $params, IGNORE_MULTIPLE);
-        $neighbours['next'] = $DB->get_record_sql($nextsql, $params, IGNORE_MULTIPLE);
-
-    } else {
-        $params['forumid'] = $cm->instance;
-        $params['discid'] = $discussion->id;
-        $params['disctimemodified'] = $discussion->timemodified;
-
-        $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
-                  FROM {hsuforum_discussions} d
-                 WHERE d.forum = :forumid
-                   AND d.id <> :discid
-                       $timelimit
-                       $groupselect";
-
-        if (empty($config->enabletimedposts)) {
-            $prevsql = $sql . " AND d.timemodified < :disctimemodified";
-            $nextsql = $sql . " AND d.timemodified > :disctimemodified";
-
-        } else {
+    $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
+              FROM {hsuforum_discussions} d
+              JOIN {hsuforum_posts} p ON d.firstpost = p.id
+             WHERE d.forum = :forumid
+               AND d.id <> :discid1
+                   $timelimit
+                   $groupselect";
+    $comparefield = "d.timemodified";
+    $comparevalue = ":disctimecompare1";
+    $comparevalue2  = ":disctimecompare2";
+    if (!empty($CFG->hsuforum_enabletimedposts)) {
+        // Here we need to take into account the release time (timestart)
+        // if one is set, of the neighbouring posts and compare it to the
+        // timestart or timemodified of *this* post depending on if the
+        // release date of this post is in the future or not.
+        // This stops discussions that appear later because of the
+        // timestart value from being buried under discussions that were
+        // made afterwards.
+        $comparefield = "CASE WHEN d.timemodified < d.timestart
+                                THEN d.timestart ELSE d.timemodified END";
+        if ($discussion->timemodified < $discussion->timestart) {
             // Normally we would just use the timemodified for sorting
             // discussion posts. However, when timed discussions are enabled,
             // then posts need to be sorted base on the later of timemodified
             // or the release date of the post (timestart).
-            $params['disctimecompare'] = $discussion->timemodified;
-            if ($discussion->timemodified < $discussion->timestart) {
-                $params['disctimecompare'] = $discussion->timestart;
-            }
-
-            // Here we need to take into account the release time (timestart)
-            // if one is set, of the neighbouring posts and compare it to the
-            // timestart or timemodified of *this* post depending on if the
-            // release date of this post is in the future or not.
-            // This stops discussions that appear later because of the
-            // timestart value from being buried under discussions that were
-            // made afterwards.
-            $prevsql = $sql . " AND CASE WHEN d.timemodified < d.timestart
-                                    THEN d.timestart ELSE d.timemodified END < :disctimecompare";
-            $nextsql = $sql . " AND CASE WHEN d.timemodified < d.timestart
-                                    THEN d.timestart ELSE d.timemodified END > :disctimecompare";
+            $params['disctimecompare1'] = $discussion->timestart;
+            $params['disctimecompare2'] = $discussion->timestart;
         }
-        $prevsql .= ' ORDER BY '.hsuforum_get_default_sort_order();
-        $nextsql .= ' ORDER BY '.hsuforum_get_default_sort_order(false);
+    }
+    $orderbydesc = hsuforum_get_default_sort_order(true, $comparefield, 'd', false);
+    $orderbyasc = hsuforum_get_default_sort_order(false, $comparefield, 'd', false);
 
-        $neighbours['prev'] = $DB->get_record_sql($prevsql, $params, IGNORE_MULTIPLE);
-        $neighbours['next'] = $DB->get_record_sql($nextsql, $params, IGNORE_MULTIPLE);
+    if ($forum->type === 'blog') {
+         $subselect = "SELECT pp.created
+                   FROM {hsuforum_discussions} dd
+                   JOIN {hsuforum_posts} pp ON dd.firstpost = pp.id ";
+
+         $subselectwhere1 = " WHERE dd.id = :discid3";
+         $subselectwhere2 = " WHERE dd.id = :discid4";
+
+         $comparefield = "p.created";
+
+         $sub1 = $subselect.$subselectwhere1;
+         $comparevalue = "($sub1)";
+
+         $sub2 = $subselect.$subselectwhere2;
+         $comparevalue2 = "($sub2)";
+
+         $orderbydesc = "d.pinned, p.created DESC";
+         $orderbyasc = "d.pinned, p.created ASC";
     }
 
+    $prevsql = $sql . " AND ( (($comparefield < $comparevalue) AND :pinnedstate1 = d.pinned)
+                         OR ($comparefield = $comparevalue2 AND (d.pinned = 0 OR d.pinned = :pinnedstate4) AND d.id < :discid2)
+                         OR (d.pinned = 0 AND d.pinned <> :pinnedstate2))
+                   ORDER BY CASE WHEN d.pinned = :pinnedstate3 THEN 1 ELSE 0 END DESC, $orderbydesc, d.id DESC";
+
+    $nextsql = $sql . " AND ( (($comparefield > $comparevalue) AND :pinnedstate1 = d.pinned)
+                         OR ($comparefield = $comparevalue2 AND (d.pinned = 1 OR d.pinned = :pinnedstate4) AND d.id > :discid2)
+                         OR (d.pinned = 1 AND d.pinned <> :pinnedstate2))
+                   ORDER BY CASE WHEN d.pinned = :pinnedstate3 THEN 1 ELSE 0 END DESC, $orderbyasc, d.id ASC";
+
+    $neighbours['prev'] = $DB->get_record_sql($prevsql, $params, IGNORE_MULTIPLE);
+    $neighbours['next'] = $DB->get_record_sql($nextsql, $params, IGNORE_MULTIPLE);
     return $neighbours;
 }
 
@@ -3093,9 +3103,10 @@ function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
  * @param bool $desc True for DESC, False for ASC.
  * @param string $compare The field in the SQL to compare to normally sort by.
  * @param string $prefix The prefix being used for the discussion table.
+ * @param bool $pinned sort pinned posts to the top
  * @return string
  */
-function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodified', $prefix = 'd') {
+function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodified', $prefix = 'd', $pinned = true) {
     global $CFG;
 
     $config = get_config('hsuforum');
@@ -3106,6 +3117,12 @@ function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodifie
 
     $dir = $desc ? 'DESC' : 'ASC';
 
+    if ($pinned == true) {
+        $pinned = "{$prefix}pinned DESC,";
+    } else {
+        $pinned = '';
+    }
+
     $sort = "{$prefix}timemodified";
     if (!empty($config->enabletimedposts)) {
         $sort = "CASE WHEN {$compare} < {$prefix}timestart
@@ -3113,7 +3130,7 @@ function hsuforum_get_default_sort_order($desc = true, $compare = 'd.timemodifie
                  ELSE {$compare}
                  END";
     }
-    return "$sort $dir";
+    return "$pinned $sort $dir";
 }
 
 /**
@@ -4103,7 +4120,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
 
     $draftid = file_get_submitted_draft_itemid('hiddenadvancededitor');
     if (!$draftid) {
-        $draftid = file_get_submitted_draft_itemid('message');
+        $draftid = $post->itemid;
     }
 
     $post->id = $DB->insert_record("hsuforum_posts", $post);
@@ -4159,6 +4176,10 @@ function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_fil
         $discussion->name      = $post->subject;
         $discussion->timestart = $post->timestart;
         $discussion->timeend   = $post->timeend;
+
+        if (isset($post->pinned)) {
+            $discussion->pinned = $post->pinned;
+        }
     }
 
     $draftid = file_get_submitted_draft_itemid('hiddenadvancededitor');
@@ -4195,7 +4216,7 @@ function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_fil
 function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid=null, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
-    $timenow = time();
+    $timenow = isset($discussion->timenow) ? $discussion->timenow : time();
 
     if (is_null($userid)) {
         $userid = $USER->id;
@@ -4224,7 +4245,7 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     $post->mailnow       = $discussion->mailnow;
     $post->reveal        = $discussion->reveal;
 
-    if (!is_null($mform)) {
+    if (!is_null($mform) && method_exists($mform, 'get_data')) {
         $data = $mform->get_data();
         if (!empty($data->reveal)) {
             $post->reveal = 1;
@@ -5568,7 +5589,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         } else {
             $ownpost=false;
         }
-        // Use discussion name instead of subject of first post
+        // Use discussion name instead of subject of first post.
         $discussion->subject = $discussion->name;
 
         $disc = hsuforum_extract_discussion($discussion, $forum);
@@ -5733,7 +5754,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
 
     $allnames = get_all_user_name_fields(true, 'u');
     if (!$posts = $DB->get_records_sql("SELECT p.*, f.anonymous AS forumanonymous, f.type AS forumtype, d.forum, d.groupid,
-                                              d.timestart, d.timeend, d.userid AS duserid,
+                                              d.timestart, d.timeend, d.pinned, d.userid AS duserid,
                                               $allnames, u.email, u.picture, u.imagealt, u.email
                                          FROM {hsuforum_posts} p
                                               JOIN {hsuforum_discussions} d ON d.id = p.discussion
@@ -7827,6 +7848,7 @@ function hsuforum_extract_discussion($post, $forum) {
         'usermodified' => $post->usermodified,
         'timestart'    => $post->timestart,
         'timeend'      => $post->timeend,
+        'pinned'       => $post->pinned,
     );
 
     // Rest of these are "meta" items that might not always be there.
@@ -8303,6 +8325,54 @@ function hsuforum_discussion_view($modcontext, $forum, $discussion) {
     $event = \mod_hsuforum\event\discussion_viewed::create($params);
     $event->add_record_snapshot('hsuforum_discussions', $discussion);
     $event->add_record_snapshot('hsuforum', $forum);
+    $event->trigger();
+}
+
+/**
+ * Set the discussion to pinned and trigger the discussion pinned event
+ *
+ * @param  stdClass $modcontext module context object
+ * @param  stdClass $forum      forum object
+ * @param  stdClass $discussion discussion object
+ * @since Moodle 3.1
+ */
+function hsuforum_discussion_pin($modcontext, $forum, $discussion) {
+    global $DB;
+
+    $DB->set_field('hsuforum_discussions', 'pinned', HSUFORUM_DISCUSSION_PINNED, array('id' => $discussion->id));
+
+    $params = array(
+        'context' => $modcontext,
+        'objectid' => $discussion->id,
+        'other' => array('forumid' => $forum->id)
+    );
+
+    $event = \mod_hsuforum\event\discussion_pinned::create($params);
+    $event->add_record_snapshot('hsuforum_discussions', $discussion);
+    $event->trigger();
+}
+
+/**
+ * Set discussion to unpinned and trigger the discussion unpin event
+ *
+ * @param  stdClass $modcontext module context object
+ * @param  stdClass $forum      forum object
+ * @param  stdClass $discussion discussion object
+ * @since Moodle 3.1
+ */
+function hsuforum_discussion_unpin($modcontext, $forum, $discussion) {
+    global $DB;
+
+    $DB->set_field('hsuforum_discussions', 'pinned', HSUFORUM_DISCUSSION_UNPINNED, array('id' => $discussion->id));
+
+    $params = array(
+        'context' => $modcontext,
+        'objectid' => $discussion->id,
+        'other' => array('forumid' => $forum->id)
+    );
+
+    $event = \mod_hsuforum\event\discussion_unpinned::create($params);
+    $event->add_record_snapshot('hsuforum_discussions', $discussion);
     $event->trigger();
 }
 

@@ -847,3 +847,15 @@ FUN WITH FORMS
     height: 1em;
     margin-top: 0.1em;
 }
+
+/* Forumpost hash anchor target */
+.path-mod-hsuforum :target ~ .forumpost:before {
+    display: block;
+    content: '';
+    width: 4px;
+    position: absolute;
+    background: #0070a8;
+    left: -1px;
+    top: -1px;
+    bottom: -1px;
+}

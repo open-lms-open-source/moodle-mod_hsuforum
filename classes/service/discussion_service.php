@@ -137,6 +137,7 @@ class discussion_service {
             'messagetrust'  => trusttext_trusted($context),
             'mailnow'       => 0,
             'reveal'        => 0,
+            'pinned'        => 0,
         );
         foreach ($options as $name => $value) {
             if (property_exists($discussion, $name)) {
