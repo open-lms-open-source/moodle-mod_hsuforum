@@ -5452,8 +5452,10 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         }
     }
 
-
-    if ($discussions) {
+    // Echo of the plural string discussion.
+    if (count($discussions) === 1) {
+        echo "<h3 class='hsuforum-discussion-count' data-count='$numdiscussions'>".get_string('onediscussion', 'hsuforum')."</h3>";
+    } else if ($discussions) {
         echo "<h3 class='hsuforum-discussion-count' data-count='$numdiscussions'>".get_string('xdiscussions', 'hsuforum', $numdiscussions)."</h3>";
     }
 
