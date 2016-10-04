@@ -7865,7 +7865,7 @@ function mod_hsuforum_comment_validate(stdClass $options) {
         throw new comment_exception('invalidcontext');
     }
 
-    if (!has_capability('mod/hsuforum:rate', $context)) {
+    if (!has_capability('local/joulegrader:grade', $context)) {
         if (!has_capability('mod/hsuforum:replypost', $context) or ($user->id != $USER->id)) {
             throw new comment_exception('nopermissiontocomment');
         }
@@ -7889,7 +7889,7 @@ function mod_hsuforum_comment_permissions(stdClass $options) {
         throw new comment_exception('invalidcontext');
     }
 
-    if (!has_capability('mod/hsuforum:rate', $context)) {
+    if (!has_capability('local/joulegrader:grade', $context)) {
         if (!has_capability('mod/hsuforum:replypost', $context) or ($user->id != $USER->id)) {
             return array('view' => false, 'post' => false);
         }
@@ -7945,7 +7945,7 @@ function hsuforum_forum_comments_pluginfile($course, $cm, $context, $filearea, $
     }
 
     // Check permissions.
-    if (!has_capability('mod/hsuforum:rate', $context)) {
+    if (!has_capability('local/joulegrader:grade', $context)) {
         if (!has_capability('mod/hsuforum:replypost', $context) or ($comment->itemid != $USER->id)) {
             return false;
         }
@@ -7977,7 +7977,7 @@ function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
     }
 
     // Get all the users with the ability to rate.
-    $recipients = get_users_by_capability($context, 'mod/hsuforum:rate');
+    $recipients = get_users_by_capability($context, 'local/joulegrader:grade');
 
     // Add the item user if they are different from commenter.
     if ($comment->userid != $user->id and has_capability('mod/hsuforum:replypost', $context, $user)) {
