@@ -688,7 +688,7 @@ if ($fromform = $mform_post->get_data()) {
         }
 
         if ($realpost->userid == $USER->id) {
-            $message .= '<br />'.get_string("postupdated", "hsuforum");
+            $message .= get_string("postupdated", "hsuforum");
         } else {
             $realuser = $DB->get_record('user', array('id' => $realpost->userid));
             $freshpost = $DB->get_record('hsuforum_posts', array('id' => $fromform->id));
@@ -697,7 +697,7 @@ if ($fromform = $mform_post->get_data()) {
                 $postuser = hsuforum_get_postuser($realuser, $freshpost, $forum, $modcontext);
                 $message .= '<br />'.get_string('editedpostupdated', 'hsuforum', $postuser->fullname);
             } else {
-                $message .= '<br />'.get_string('postupdated', 'hsuforum');
+                $message .= get_string('postupdated', 'hsuforum');
             }
         }
 

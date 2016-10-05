@@ -1740,7 +1740,7 @@ HTML;
      * @author Mark Nielsen
      */
     public function post_get_commands($post, $discussion, $cm, $canreply) {
-        global $CFG, $USER;
+        global $CFG, $USER, $OUTPUT;
 
         $discussionlink = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
         $ownpost        = (isloggedin() and $post->userid == $USER->id);
@@ -1815,6 +1815,22 @@ HTML;
         $rating = $this->post_rating($post);
         if (!empty($rating)) {
             $commands['rating'] = $rating;
+        }
+
+        if (!$post->parent && has_capability('mod/hsuforum:pindiscussions', context_module::instance($cm->id))) {
+            if ($discussion->pinned == HSUFORUM_DISCUSSION_PINNED) {
+                $pinlink = HSUFORUM_DISCUSSION_UNPINNED;
+                $pintext = get_string('discussionunpin', 'hsuforum');
+            } else {
+                $pinlink = HSUFORUM_DISCUSSION_PINNED;
+                $pintext = get_string('discussionpin', 'hsuforum');
+            }
+            $pinurl = new moodle_url('/mod/hsuforum/discuss.php', [
+                'pin' => $pinlink,
+                'd' => $discussion->id,
+                'sesskey' => sesskey(),
+            ]);
+            $commands['pin'] = html_writer::link($pinurl, $pintext, ['class' => 'disable-router']);
         }
 
         return $commands;

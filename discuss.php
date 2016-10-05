@@ -257,18 +257,6 @@
         );
     }
 
-    if (has_capability('mod/hsuforum:pindiscussions', $modcontext)) {
-        if ($discussion->pinned == HSUFORUM_DISCUSSION_PINNED) {
-            $pinlink = HSUFORUM_DISCUSSION_UNPINNED;
-            $pintext = get_string('discussionunpin', 'hsuforum');
-        } else {
-            $pinlink = HSUFORUM_DISCUSSION_PINNED;
-            $pintext = get_string('discussionpin', 'hsuforum');
-        }
-        $button = new single_button(new moodle_url('discuss.php', array('pin' => $pinlink, 'd' => $discussion->id)), $pintext, 'post');
-        echo html_writer::tag('div', $OUTPUT->render($button), array('class' => 'discussioncontrol pindiscussion'));
-    }
-
     if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
         $a = new stdClass();
         $a->blockafter  = $forum->blockafter;
