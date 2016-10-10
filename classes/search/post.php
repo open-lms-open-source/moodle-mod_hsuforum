@@ -65,7 +65,9 @@ class post extends \core_search\area\base_mod {
                   FROM {hsuforum_posts} fp
                   JOIN {hsuforum_discussions} fd ON fd.id = fp.discussion
                   JOIN {hsuforum} f ON f.id = fd.forum
-                 WHERE fp.modified >= ? ORDER BY fp.modified ASC';
+                 WHERE fp.modified >= ?
+                   AND (f.anonymous = 0 OR (f.anonymous = 1 AND fp.reveal = 1))
+              ORDER BY fp.modified ASC';
         return $DB->get_recordset_sql($sql, array($modifiedfrom));
     }
 
@@ -182,6 +184,12 @@ class post extends \core_search\area\base_mod {
         }
 
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, $USER, $cm)) {
+            return \core_search\manager::ACCESS_DENIED;
+        }
+
+        if ($forum->anonymous == 1 && $post->reveal != 1) {
+            // Shouldn't have been added to the index anyway, but just in case
+            // the status has changed since.
             return \core_search\manager::ACCESS_DENIED;
         }
 

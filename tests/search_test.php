@@ -370,4 +370,135 @@ class mod_hsuforum_search_testcase extends advanced_testcase {
         $recordset->close();
         $this->assertEquals(3, $nrecords);
     }
+
+    /**
+     * Indexing mod hsuforum from anonymous forums.
+     *
+     * @return void
+     */
+    public function test_anonymous_posts_indexing() {
+        global $DB;
+
+        // Returns the instance as long as the area is supported.
+        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
+        $this->assertInstanceOf('\mod_hsuforum\search\post', $searcharea);
+
+        $user1 = self::getDataGenerator()->create_user();
+        $user2 = self::getDataGenerator()->create_user();
+
+        $course1 = self::getDataGenerator()->create_course();
+
+        $this->getDataGenerator()->enrol_user($user1->id, $course1->id, 'student');
+        $this->getDataGenerator()->enrol_user($user2->id, $course1->id, 'student');
+
+        $record = new stdClass();
+        $record->course = $course1->id;
+        $record->anonymous = 1;
+
+        $forum1 = self::getDataGenerator()->create_module('hsuforum', $record);
+
+        // Create discussion1.
+        $record = new stdClass();
+        $record->course = $course1->id;
+        $record->userid = $user1->id;
+        $record->forum = $forum1->id;
+        $record->message = 'discussion';
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+
+        // Create post1 in discussion1.
+        $record = new stdClass();
+        $record->discussion = $discussion1->id;
+        $record->parent = $discussion1->firstpost;
+        $record->userid = $user2->id;
+        $record->message = 'post2';
+        self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+
+        // Create a post that is not anonymous, only one expected to be searchable.
+        $record->message = 'post3';
+        $record->reveal = 1;
+        self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+
+        // All records.
+        $recordset = $searcharea->get_recordset_by_timestamp(0);
+        $this->assertTrue($recordset->valid());
+        $nrecords = 0;
+        foreach ($recordset as $record) {
+            $this->assertInstanceOf('stdClass', $record);
+            $doc = $searcharea->get_document($record);
+            $this->assertInstanceOf('\core_search\document', $doc);
+
+            // Static caches are working.
+            $dbreads = $DB->perf_get_reads();
+            $doc = $searcharea->get_document($record);
+            $this->assertEquals($dbreads, $DB->perf_get_reads());
+            $this->assertInstanceOf('\core_search\document', $doc);
+            $nrecords++;
+        }
+        // If there would be an error/failure in the foreach above the recordset would be closed on shutdown.
+        $recordset->close();
+        $this->assertEquals(1, $nrecords);
+    }
+
+    /**
+     * Document access to private replies.
+     *
+     * @return void
+     */
+    public function test_private_reply_access() {
+        // Returns the instance as long as the area is supported.
+        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
+
+        $teacher = self::getDataGenerator()->create_user();
+        $student = self::getDataGenerator()->create_user();
+        $otherstudent = self::getDataGenerator()->create_user();
+
+        $course1 = self::getDataGenerator()->create_course();
+
+        $this->getDataGenerator()->enrol_user($teacher->id, $course1->id, 'teacher');
+        $this->getDataGenerator()->enrol_user($student->id, $course1->id, 'student');
+        $this->getDataGenerator()->enrol_user($otherstudent->id, $course1->id, 'student');
+
+        $record = new stdClass();
+        $record->course = $course1->id;
+
+        // Available for both student and teacher.
+        $forum1 = self::getDataGenerator()->create_module('hsuforum', $record);
+
+        // Create discussion.
+        $record = new stdClass();
+        $record->course = $course1->id;
+        $record->userid = $student->id;
+        $record->forum = $forum1->id;
+        $record->message = 'discussion';
+        $discussion = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+
+        // Create privatereply to discussion.
+        $record = new stdClass();
+        $record->discussion = $discussion->id;
+        $record->parent = $discussion->firstpost;
+        $record->userid = $teacher->id;
+        $record->message = 'privatereply';
+        $record->privatereply = $student->id;
+        $privatereply = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+
+        // Create public reply in discussion.
+        $record = new stdClass();
+        $record->discussion = $discussion->id;
+        $record->parent = $discussion->firstpost;
+        $record->userid = $teacher->id;
+        $record->message = 'publicreply';
+        $publicreply = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+
+        $this->setUser($teacher);
+        $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $searcharea->check_access($privatereply->id));
+        $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $searcharea->check_access($publicreply->id));
+
+        $this->setUser($student);
+        $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $searcharea->check_access($privatereply->id));
+        $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $searcharea->check_access($publicreply->id));
+
+        $this->setUser($otherstudent);
+        $this->assertEquals(\core_search\manager::ACCESS_DENIED, $searcharea->check_access($privatereply->id));
+        $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $searcharea->check_access($publicreply->id));
+    }
 }
