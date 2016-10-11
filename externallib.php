@@ -257,8 +257,6 @@ class mod_hsuforum_external extends external_api {
             $post->userpictureurl = $userpicture->get_url($PAGE)->out(false);
 
             // Rewrite embedded images URLs.
-                error_log("rewriting embedded url");
-                error_log("rewriting embedded url $post->message");
             list($post->message, $post->messageformat) =
                 external_format_text($post->message, $post->messageformat, $modcontext->id, 'mod_hsuforum', 'post', $post->id);
 
