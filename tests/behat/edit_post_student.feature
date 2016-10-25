@@ -39,9 +39,10 @@ Feature: Students can edit or delete their forum posts within a set time limit
   @javascript
   Scenario: Delete forum post
     Given I follow "Forum post subject"
-    When I follow "Delete"
-    And I should see "Test forum description"
-    Then I should not see "Forum post subject"
+    And I follow link "Delete" ignoring js onclick
+    And I press "Continue"
+    Then I should see "Test forum description"
+    And I should not see "Forum post subject"
 
   @javascript
   Scenario: Time limit expires
