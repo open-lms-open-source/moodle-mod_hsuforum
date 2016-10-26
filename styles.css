@@ -434,8 +434,8 @@ FUN WITH FORMS
     margin-bottom: 0.5em;
 }
 
-.hsuforum-form .fitem_fdate_selector label {
-    display: inline;
+.hsuforum-form .fitem_fdate_time_selector label + span.helptooltip {
+    display: none;
 }
 
 .hsuforum-form .hsuforum-textarea {

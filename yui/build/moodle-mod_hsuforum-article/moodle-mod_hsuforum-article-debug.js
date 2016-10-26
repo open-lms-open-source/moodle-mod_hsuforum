@@ -997,7 +997,7 @@ Y.extend(FORM, Y.Base,
 
             Y.one('.dateformtarget').append(datefs);
             // Stop calendar button from routing.
-            Y.all('.dateformtarget .fitem_fdate_selector a').addClass('disable-router');
+            Y.all('.dateformtarget .fitem_fdate_time_selector a').addClass('disable-router');
 
             this.setDateFieldsClassState();
         },
