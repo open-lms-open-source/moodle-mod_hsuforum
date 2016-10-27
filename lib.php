@@ -3038,7 +3038,7 @@ function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
     $comparefield = "d.timemodified";
     $comparevalue = ":disctimecompare1";
     $comparevalue2  = ":disctimecompare2";
-    if (!empty($CFG->hsuforum_enabletimedposts)) {
+    if (!empty($config->enabletimedposts)) {
         // Here we need to take into account the release time (timestart)
         // if one is set, of the neighbouring posts and compare it to the
         // timestart or timemodified of *this* post depending on if the
