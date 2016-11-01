@@ -141,8 +141,8 @@ Y.extend(ARTICLE, Y.Base,
             Y.delegate('click', form.handlePostToGroupsToggle, document, posttoallgroups, form);
 
             // Implement toggling for the start and time elements for discussions.
-            var discussiontimesselector = '.hsuforum-discussion .fdate_selector input';
-            Y.delegate('click', form.handleTimeToggle, document, discussiontimesselector, form);
+            Y.delegate('click', form.handleTimeToggle, document, '#id_timestart_enabled', form);
+            Y.delegate('click', form.handleTimeToggle, document, '#id_timeend_enabled', form);
 
             // We bind to document otherwise screen readers read everything as clickable.
             Y.delegate('click', form.handleCancelForm, document, SELECTORS.LINK_CANCEL, form);
