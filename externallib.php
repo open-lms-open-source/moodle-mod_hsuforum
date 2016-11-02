@@ -327,7 +327,8 @@ class mod_hsuforum_external extends external_api {
                                 'children' => new external_multiple_structure(new external_value(PARAM_INT, 'children post id')),
                                 'canreply' => new external_value(PARAM_BOOL, 'The user can reply to posts?'),
                                 'postread' => new external_value(PARAM_BOOL, 'The post was read'),
-                                'userfullname' => new external_value(PARAM_TEXT, 'Post author full name')
+                                'userfullname' => new external_value(PARAM_TEXT, 'Post author full name'),
+                                'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.', VALUE_OPTIONAL)
                             ), 'post'
                         )
                     ),
@@ -414,6 +415,18 @@ class mod_hsuforum_external extends external_api {
         $modcontext = context_module::instance($cm->id);
         self::validate_context($modcontext);
 
+        if ($forum->anonymous) {
+            $result = array();
+            $result['discussions'] = array();
+            $warning = array();
+            $warning['item'] = 'forum';
+            $warning['itemid'] = $forum->id;
+            $warning['warningcode'] = '1';
+            $warning['message'] = 'Anonymous forums not supported yet';
+            $warnings[] = $warning;
+            $result['warnings'] = $warnings;
+            return $result;
+        }
         // Check they have the view forum capability.
         require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'hsuforum');
 

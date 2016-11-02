@@ -248,7 +248,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'children' => array($discussion1reply2->id),
             'canreply' => true,
             'postread' => false,
-            'userfullname' => fullname($user2)
+            'userfullname' => fullname($user2),
+            'userpictureurl' => ''
         );
         $expectedposts['posts'][] = array(
             'id' => $discussion1reply2->id,
@@ -269,13 +270,23 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'children' => array(),
             'canreply' => true,
             'postread' => false,
-            'userfullname' => fullname($user3)
+            'userfullname' => fullname($user3),
+            'userpictureurl' => ''
         );
 
         // Test a discussion with two additional posts (total 3 posts).
         $posts = mod_hsuforum_external::get_forum_discussion_posts($discussion1->id);
         $posts = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussion_posts_returns(), $posts);
         $this->assertEquals(3, count($posts['posts']));
+
+        // Generate here the pictures because we need to wait to the external function to init the theme.
+        $userpicture = new user_picture($user3);
+        $userpicture->size = 1; // Size f1.
+        $expectedposts['posts'][0]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
+
+        $userpicture = new user_picture($user2);
+        $userpicture->size = 1; // Size f1.
+        $expectedposts['posts'][1]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
 
         // Unset the initial discussion post.
         array_shift($posts['posts']);
