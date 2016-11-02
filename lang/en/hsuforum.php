@@ -329,6 +329,7 @@ $string['nodiscussionsstartedbyyou'] = 'You haven\'t started any discussions yet
 $string['noguestpost'] = 'Sorry, guests are not allowed to post.';
 $string['noguesttracking'] = 'Sorry, guests are not allowed to set tracking options.';
 $string['nomorepostscontaining'] = 'No more posts containing \'{$a}\' were found';
+$string['nonews'] = 'No news has been posted yet';
 $string['noonecansubscribenow'] = 'Subscriptions are now disallowed';
 $string['nopermissiontosubscribe'] = 'You do not have the permission to view forum subscribers';
 $string['nopermissiontoview'] = 'You do not have permissions to view this post';
