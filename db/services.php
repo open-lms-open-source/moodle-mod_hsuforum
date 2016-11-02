@@ -46,6 +46,16 @@ $functions = array(
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
      ),
 
+    'mod_hsuforum_get_forum_discussions_paginated' => array(
+        'classname' => 'mod_hsuforum_external',
+        'methodname' => 'get_forum_discussions_paginated',
+        'classpath' => 'mod/hsuforum/externallib.php',
+        'description' => 'Returns a list of forum discussions optionally sorted and paginated.',
+        'type' => 'read',
+        'capabilities' => 'mod/hsuforum:viewdiscussion, mod/hsuforum:viewqandawithoutposting',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
+
      'mod_hsuforum_view_forum' => array(
          'classname' => 'mod_hsuforum_external',
          'methodname' => 'view_forum',

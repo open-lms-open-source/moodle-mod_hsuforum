@@ -1331,6 +1331,44 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         }
     }
 
+    public function test_count_discussion_replies_private() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Setup the content.
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $otheruser = $generator->create_user();
+        $course = $generator->create_course();
+        $record = new stdClass();
+        $record->course = $course->id;
+        $forum = $generator->create_module('hsuforum', $record);
+
+        $forumgenerator = $generator->get_plugin_generator('mod_hsuforum');
+        $record = new stdClass();
+        $record->course = $forum->course;
+        $record->forum = $forum->id;
+        $record->userid = $user->id;
+
+        $discussion = $forumgenerator->create_discussion($record);
+
+        // Retrieve the first post.
+        $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
+
+        $post = new stdClass();
+        $post->userid = $user->id;
+        $post->discussion = $discussion->id;
+        $post->parent = $replyto->id;
+        $forumgenerator->create_post($post);
+
+        $post->privatereply = $otheruser->id;
+        $forumgenerator->create_post($post);
+
+        $result = hsuforum_count_discussion_replies($forum->id);
+        $this->assertCount(1, $result);
+    }
+
     public function test_hsuforum_view() {
         global $CFG;
 

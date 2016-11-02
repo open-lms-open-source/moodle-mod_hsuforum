@@ -2605,7 +2605,7 @@ function hsuforum_get_firstpost_from_discussion($discussionid) {
  * @return array
  */
 function hsuforum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $page=-1, $perpage=0) {
-    global $CFG, $DB;
+    global $CFG, $DB, $USER;
 
     if ($limit > 0) {
         $limitfrom = 0;
@@ -2634,16 +2634,18 @@ function hsuforum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $
                   FROM {hsuforum_posts} p
                        JOIN {hsuforum_discussions} d ON p.discussion = d.id
                  WHERE p.parent > 0 AND d.forum = ?
+                   AND (privatereply = 0 OR privatereply = ? OR p.userid = ?)
               GROUP BY p.discussion";
-        return $DB->get_records_sql($sql, array($forumid));
+        return $DB->get_records_sql($sql, array($forumid, $USER->id, $USER->id));
 
     } else {
         $sql = "SELECT p.discussion, (COUNT(p.id) - 1) AS replies, MAX(p.id) AS lastpostid
                   FROM {hsuforum_posts} p
                        JOIN {hsuforum_discussions} d ON p.discussion = d.id
                  WHERE d.forum = ?
+                   AND (privatereply = 0 OR privatereply = ? OR p.userid = ?)
               GROUP BY p.discussion $groupby $orderby";
-        return $DB->get_records_sql($sql, array($forumid), $limitfrom, $limitnum);
+        return $DB->get_records_sql($sql, array($forumid, $USER->id, $USER->id), $limitfrom, $limitnum);
     }
 }
 
