@@ -54,19 +54,23 @@ Feature: Teacheres and students can create discussions
     And I follow "Course 1"
     And I follow "Test forum name"
     And I wait until the page is ready
-
-    And I create the following inline discussions:
-      | subject                          | message     | timestart         | timeend           |
-      | Currently accessible discussion  | testing 123 | 10 September 2000 | 11 September 2001 |
-
-    And I should see "Your post was successfully added."
     And I press "Add a new discussion"
-   #The checkboxes status should be unchecked, so the value should not be 1
     And the following fields do not match these values:
       |timestart[enabled]| 1 |
       |timeend[enabled]  | 1 |
-
-    Then the following fields do not match these values:
+    And I set the field "subject" to "Test discussion"
+    And I set editable div ".hsuforum-textarea" "css_element" to "Text..."
+    And I set the field "timestart[enabled]" to "1"
+    And I set the field "timeend[enabled]" to "1"
+    And I set the date field "timestart" to "10 September 2000"
+    And I set the date field "timeend" to "11 September 2000"
+    And I press "Submit"
+    And I should see "Your post was successfully added."
+    And I press "Add a new discussion"
+    And the following fields do not match these values:
+      |timestart[enabled]| 1 |
+      |timeend[enabled]  | 1 |
+    And the following fields do not match these values:
       |timestart[year]  | 2000 |
       |timestart[month] | 09   |
       |timestart[day]   | 10   |
