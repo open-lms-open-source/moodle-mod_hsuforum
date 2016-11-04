@@ -68,12 +68,11 @@ Feature: Teacheres and students can create discussions
     And I should see "Your post was successfully added."
     And I press "Add a new discussion"
     And the following fields do not match these values:
-      |timestart[enabled]| 1 |
-      |timeend[enabled]  | 1 |
-    And the following fields do not match these values:
-      |timestart[year]  | 2000 |
-      |timestart[month] | 09   |
-      |timestart[day]   | 10   |
-      |timeend[year]    | 2001 |
-      |timeend[month]   | 09   |
-      |timeend[day]     | 11   |
+      |timestart[enabled]|   1  |
+      |timeend[enabled]  |   1  |
+      |timestart[year]   | 2000 |
+      |timestart[month]  | 09   |
+      |timestart[day]    | 10   |
+      |timeend[year]     | 2001 |
+      |timeend[month]    | 09   |
+      |timeend[day]      | 11   |
