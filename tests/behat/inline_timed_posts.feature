@@ -44,3 +44,35 @@ Feature: Teacheres and students can create discussions
     And I should see "Currently accessible discussion"
     And I should not see "Currently restricted discussion"
 
+  @javascript
+  Scenario: Dates are not carried over when creating several discussions.
+    When the following config values are set as admin:
+      | enabletimedposts | 1 | hsuforum |
+    And the following config values are set as admin:
+      | texteditors | atto, textarea |
+    And I log in as "teacher1"
+    And I follow "Course 1"
+    And I follow "Test forum name"
+    And I wait until the page is ready
+    And I press "Add a new discussion"
+    And the following fields do not match these values:
+      |timestart[enabled]| 1 |
+      |timeend[enabled]  | 1 |
+    And I set the field "subject" to "Test discussion"
+    And I set editable div ".hsuforum-textarea" "css_element" to "Text..."
+    And I set the field "timestart[enabled]" to "1"
+    And I set the field "timeend[enabled]" to "1"
+    And I set the date field "timestart" to "10 September 2000"
+    And I set the date field "timeend" to "11 September 2000"
+    And I press "Submit"
+    And I should see "Your post was successfully added."
+    And I press "Add a new discussion"
+    And the following fields do not match these values:
+      |timestart[enabled]|   1  |
+      |timeend[enabled]  |   1  |
+      |timestart[year]   | 2000 |
+      |timestart[month]  | 09   |
+      |timestart[day]    | 10   |
+      |timeend[year]     | 2001 |
+      |timeend[month]    | 09   |
+      |timeend[day]      | 11   |
