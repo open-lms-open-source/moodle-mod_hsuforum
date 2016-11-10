@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Teacheres and students can create discussions
+Feature: Teachers and students can edit discussions
   Background:
     Given the following "users" exist:
       | username | firstname | lastname | email |

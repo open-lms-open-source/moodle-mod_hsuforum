@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Teacheres and students can create discussions
+Feature: Teachers and students can create time released discussions
   Background:
     Given the following "users" exist:
       | username | firstname | lastname | email |
@@ -67,12 +67,8 @@ Feature: Teacheres and students can create discussions
     And I press "Submit"
     And I should see "Your post was successfully added."
     And I press "Add a new discussion"
+    And I check the date field "timestart" is set to "today"
+    And I check the date field "timeend" is set to "today"
     And the following fields do not match these values:
       |timestart[enabled]|   1  |
       |timeend[enabled]  |   1  |
-      |timestart[year]   | 2000 |
-      |timestart[month]  | 09   |
-      |timestart[day]    | 10   |
-      |timeend[year]     | 2001 |
-      |timeend[month]    | 09   |
-      |timeend[day]      | 11   |

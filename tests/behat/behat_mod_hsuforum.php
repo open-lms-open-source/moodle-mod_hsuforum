@@ -167,6 +167,29 @@ class behat_mod_hsuforum extends behat_base {
     }
 
     /**
+     * Checks the date (but not the time) of the timedate field matches the
+     * value given;
+     *
+     * @Given /^I check the date field "(?P<field_string>(?:[^"]|\\")*)" is set to "(?P<field_value_string>(?:[^"]|\\")*)"$/
+     * @throws ElementNotFoundException Thrown by behat_base::find
+     * @param string $field
+     * @param string $datestr
+     * @return void
+     */
+    public function i_check_date_field_is($field, $datestr) {
+        $value = strtotime($datestr);
+
+        $dayfield = $this->find_field('id_'.$field.'_day');
+        $monthfield = $this->find_field('id_'.$field.'_month');
+        $yearfield = $this->find_field('id_'.$field.'_year');
+
+        return $dayfield->getValue() == date('j', $value)
+            && $monthfield->getValue() == date('n', $value)
+            && $yearfield->getValue() == date('Y', $value);
+    }
+
+
+    /**
      * Adds an inline discussion to a forum.
      *
      * @Given /^I create the following inline discussions:$/
