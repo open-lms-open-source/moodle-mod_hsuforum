@@ -168,7 +168,7 @@ class behat_mod_hsuforum extends behat_base {
 
     /**
      * Checks the date (but not the time) of the timedate field matches the
-     * value given;
+     * value given.
      *
      * @Given /^I check the date field "(?P<field_string>(?:[^"]|\\")*)" is set to "(?P<field_value_string>(?:[^"]|\\")*)"$/
      * @throws ElementNotFoundException Thrown by behat_base::find
@@ -187,7 +187,6 @@ class behat_mod_hsuforum extends behat_base {
             && $monthfield->getValue() == date('n', $value)
             && $yearfield->getValue() == date('Y', $value);
     }
-
 
     /**
      * Adds an inline discussion to a forum.
