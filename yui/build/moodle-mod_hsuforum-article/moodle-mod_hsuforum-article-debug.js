@@ -920,6 +920,8 @@ Y.extend(FORM, Y.Base,
          */
         setDateField: function(field, enabled, timeuts) {
             var dt = new Date(timeuts * 1000),
+                min = dt.getMinutes(),
+                hh = dt.getHours(),
                 dd = dt.getDate(),
                 mm = dt.getMonth()+1,
                 yyyy = dt.getFullYear();
@@ -929,6 +931,14 @@ Y.extend(FORM, Y.Base,
             } else {
                 Y.one('#id_time' + field + '_enabled').set('checked', false);
             }
+            if (min > 0) {
+                min = Math.round(min / 5.0) * 5;
+                if (min == 60) {
+                    min = 55;
+                }
+            }
+            Y.one('#id_time'+field+'_minute').set('value', min);
+            Y.one('#id_time'+field+'_hour').set('value', hh);
             Y.one('#id_time'+field+'_day').set('value', dd);
             Y.one('#id_time'+field+'_month').set('value', mm);
             Y.one('#id_time'+field+'_year').set('value', yyyy);
@@ -1041,8 +1051,6 @@ Y.extend(FORM, Y.Base,
             var checkend = Y.one('#id_timeend_enabled').ancestor('.felement.fdate_time_selector');
             checkstart.all('select').setAttribute('disabled', 'disabled');
             checkend.all('select').setAttribute('disabled', 'disabled');
-            var minute = Y.one('#id_timestart_minute');
-            Y.one('#id_timeend_minute').set('value', minute.get('options').item(minute.get('selectedIndex')).get('text'));
         },
 
         /**
