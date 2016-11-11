@@ -192,7 +192,10 @@ class upload_file {
         }
         $maxbytes = $this->options['maxbytes'];
         if (($maxbytes !== -1) && (filesize($file['tmp_name']) > $maxbytes)) {
-            throw new \file_exception('maxbytes');
+            $message = new \stdClass();
+            $message->file = '\'' . $file['name'] . '\'';
+            $message->size = $this->format_bytes($maxbytes);
+            throw new \file_exception('maxbytesfile', $message);
         }
 
         \core\antivirus\manager::scan_file($file['tmp_name'], $file['name'], true);
@@ -236,4 +239,17 @@ class upload_file {
             $this->attachments->add_attachment($file['name'], $file['tmp_name'], $postid, $license);
         }
     }
+
+    /**
+     * Function to convert an integer that represents the max size of a file in bytes
+     * to a more human readable format.
+     * @param int $maxsize max size in bytes that a file can take.
+     * @return string size of the file on B, KB, MB, GB or TB.
+     */
+    protected function format_bytes($maxsize){
+        $units = array('KB', 'MB', 'GB', 'TB');
+        $exp = floor(log($maxsize, 1024));
+        return round($maxsize / pow(1024, $exp), 2) . $units[$exp - 1];
+    }
+
 }
