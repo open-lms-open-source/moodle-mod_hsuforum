@@ -359,7 +359,10 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
         var ta = el.get('href').split('#');
         // Without this timeout it doesn't always focus on the desired element.
         setTimeout(function(){
-            Y.one('#'+ta[1]).ancestor('li').focus();
+            try {
+                Y.one('#' + ta[1]).ancestor('li').focus();
+            } catch (err) {
+            }
         },300);
     },
 
