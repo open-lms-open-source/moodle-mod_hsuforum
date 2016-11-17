@@ -74,11 +74,13 @@ class upload_file {
      * @param attachments $attachments
      * @param array $options File upload options
      * @param string $element File upload element name
+     * @param boolean $stub Indicates if we need a stub or not
      */
-    public function __construct(attachments $attachments, array $options, $element = 'attachment') {
+    public function __construct(attachments $attachments, array $options, $element = 'attachment', $stub = false) {
         $this->options     = $options;
         $this->element     = $element;
         $this->attachments = $attachments;
+        $this->checker = new checker($stub);
     }
 
     /**
@@ -184,7 +186,7 @@ class upload_file {
             }
             throw new moodle_exception('nofile');
         }
-        if (!is_uploaded_file($file['tmp_name'])) {
+        if (!$this->checker->is_uploaded_function($file['tmp_name'])) {
             throw new moodle_exception('notuploadedfile', 'hsuforum');
         }
         if (!$this->validate_file_contents($file['tmp_name'])) {
@@ -247,9 +249,9 @@ class upload_file {
      * @return string size of the file on B, KB, MB, GB or TB.
      */
     protected function format_bytes($maxsize){
-        $units = array('KB', 'MB', 'GB', 'TB');
+        $units = array('B', 'KB', 'MB', 'GB', 'TB');
         $exp = floor(log($maxsize, 1024));
-        return round($maxsize / pow(1024, $exp), 2) . $units[$exp - 1];
+        return round($maxsize / pow(1024, $exp), 2) . $units[$exp];
     }
 
 }

@@ -2651,6 +2651,77 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertCount($expectedreplycount, $unmailed);
     }
 
+    public function test_function_validate_files(){
+        global $DB, $_FILES, $CFG;
+
+        $this->resetAfterTest(true);
+
+        $fs = get_file_storage();
+
+        $generator = $this->getDataGenerator();
+
+        $course = $generator->create_course();
+        $forum = $generator->create_module('hsuforum', array('course' => $course->id, 'maxbytes' => 10));
+        $user = $generator->create_user();
+
+        // Create discussion.
+        $record = new stdClass();
+        $record->course = $course->id;
+        $record->userid = $user->id;
+        $record->forum = $forum->id;
+        $record->message = 'discussion';
+        $record->attachments = 1;
+        $discussion = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+
+        // Attach 1 file to the discussion post.
+        $path = $CFG->dirroot . '/mod/hsuforum/tests/fixtures/testgif_small.gif';
+        $post = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
+        $filerecord = array(
+            'contextid' => context_module::instance($forum->cmid)->id,
+            'component' => 'mod_hsuforum',
+            'filearea'  => 'attachment',
+            'itemid'    => $post->id,
+            'filepath'  => '/',
+            'filename'  => 'testgif_small.gif'
+        );
+
+        $file = (array) $fs->create_file_from_pathname($filerecord, $path);
+
+        // Simulate upload the file from a form
+
+        $_FILES = array(
+            'attachment' => array(
+                'name' => $filerecord['filename'],
+                'tmp_name' => $path,
+                'error' => 0
+        ));
+
+        // Get Context
+        $modcontext = context_module::instance($forum->cmid);
+
+        // Reflexion to convert a protected method into a public
+        $class = new \ReflectionClass('mod_hsuforum\upload_file');
+        $method = $class->getMethod('validate_file');
+        $method->setAccessible(TRUE);
+
+        // Create Uploader File with an Stub checker
+        $uploader = new \mod_hsuforum\upload_file(
+            new \mod_hsuforum\attachments($forum, $modcontext), \mod_hsuforum_post_form::attachment_options($forum),
+            NULL, TRUE
+        );
+        
+        // Define the expected exception with its error message
+        $params = array(
+            'file' => '\'' . $filerecord['filename'] . '\'',
+            'size' => '10B'
+        );
+        $errormessage = get_string('maxbytesfile', 'error', $params);
+        $this->setExpectedException('file_exception', $errormessage);
+
+        // Call the public validate_file method
+        $method->invokeArgs($uploader, array('file' => $_FILES['attachment']));
+    }
+
     public function hsuforum_get_unmailed_posts_provider() {
         return [
             'Untimed discussion; Single post; maxeditingtime not expired' => [
