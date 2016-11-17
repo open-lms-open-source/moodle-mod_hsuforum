@@ -2702,12 +2702,12 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Reflexion to convert a protected method into a public
         $class = new \ReflectionClass('mod_hsuforum\upload_file');
         $method = $class->getMethod('validate_file');
-        $method->setAccessible(TRUE);
+        $method->setAccessible(true);
 
         // Create Uploader File with an Stub checker
         $uploader = new \mod_hsuforum\upload_file(
             new \mod_hsuforum\attachments($forum, $modcontext), \mod_hsuforum_post_form::attachment_options($forum),
-            NULL, TRUE
+            null, true
         );
         
         // Define the expected exception with its error message
