@@ -56,6 +56,13 @@ class upload_file {
     protected $element;
 
     /**
+     * Use is_uploaded_file or file_exist
+     *
+     * @var boolean
+     */
+    protected $usestub;
+
+    /**
      * PHP upload errors to Moodle strings
      *
      * @var array
@@ -76,11 +83,11 @@ class upload_file {
      * @param string $element File upload element name
      * @param boolean $stub Indicates if we need a stub or not
      */
-    public function __construct(attachments $attachments, array $options, $element = 'attachment', $stub = false) {
+    public function __construct(attachments $attachments, array $options, $stub = false, $element = 'attachment') {
         $this->options     = $options;
         $this->element     = $element;
         $this->attachments = $attachments;
-        $this->checker = new checker($stub);
+        $this->usestub     = $stub;
     }
 
     /**
@@ -186,7 +193,7 @@ class upload_file {
             }
             throw new moodle_exception('nofile');
         }
-        if (!$this->checker->is_uploaded_function($file['tmp_name'])) {
+        if (!$this->is_uploaded_function($file['tmp_name'])) {
             throw new moodle_exception('notuploadedfile', 'hsuforum');
         }
         if (!$this->validate_file_contents($file['tmp_name'])) {
@@ -252,6 +259,19 @@ class upload_file {
         $units = array('B', 'KB', 'MB', 'GB', 'TB');
         $exp = floor(log($maxsize, 1024));
         return round($maxsize / pow(1024, $exp), 2) . $units[$exp];
+    }
+
+    /**
+     * Tells whether the file was uploaded via HTTP POST or use
+     * a different approach if it nos possible to do the POST validation
+     * @param string $filename the filename being checked
+     * @return bool true on success or false on failure.
+     */
+    protected function is_uploaded_function($filename){
+        if (!$this->usestub){
+            return is_uploaded_file($filename);
+        }
+        return file_exists($filename);
     }
 
 }

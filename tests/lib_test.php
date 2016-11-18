@@ -2707,7 +2707,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Create Uploader File with an Stub checker
         $uploader = new \mod_hsuforum\upload_file(
             new \mod_hsuforum\attachments($forum, $modcontext), \mod_hsuforum_post_form::attachment_options($forum),
-            null, true
+            true
         );
         
         // Define the expected exception with its error message
