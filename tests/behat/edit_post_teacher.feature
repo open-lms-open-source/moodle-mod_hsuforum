@@ -39,7 +39,8 @@ Feature: Teachers can edit or delete any forum post
     When I follow "Course 1"
     And I follow "Test forum name"
     And I follow "Teacher post subject"
-    And I follow "Delete"
+    And I follow link "Delete" ignoring js onclick
+    And I press "Continue"
     And I should see "Test forum description"
     Then I should not see "Student post subject"
     And I should not see "Student post message"
