@@ -65,5 +65,9 @@ class course_module_viewed extends \core\event\course_module_viewed {
         return array($this->courseid, 'hsuforum', 'view forum', 'view.php?f=' . $this->objectid,
             $this->objectid, $this->contextinstanceid);
     }
+
+    public static function get_objectid_mapping() {
+        return array('db' => 'hsuforum', 'restore' => 'hsuforum');
+    }
 }
 
