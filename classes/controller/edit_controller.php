@@ -100,6 +100,7 @@ class edit_controller extends controller_abstract {
             $reveal        = optional_param('reveal', 0, PARAM_BOOL);
             $message       = required_param('message', PARAM_RAW_TRIMMED);
             $messageformat = required_param('messageformat', PARAM_INT);
+            $mailnow       = optional_param('mailnow', 0, PARAM_BOOL);
 
             $forum   = $PAGE->activityrecord;
             $cm      = $PAGE->cm;
@@ -118,6 +119,7 @@ class edit_controller extends controller_abstract {
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
+                'mailnow'       => $mailnow
             );
             if (!empty($subject)) {
                 $data['subject'] = $subject;
@@ -146,12 +148,13 @@ class edit_controller extends controller_abstract {
         try {
             require_sesskey();
 
-            $subject       = required_param('subject', PARAM_TEXT);
-            $groupid       = optional_param('groupinfo', 0, PARAM_INT);
-            $message       = required_param('message', PARAM_RAW_TRIMMED);
-            $reveal        = optional_param('reveal', 0, PARAM_BOOL);
-            $messageformat = required_param('messageformat', PARAM_INT);
+            $subject        = required_param('subject', PARAM_TEXT);
+            $groupid        = optional_param('groupinfo', 0, PARAM_INT);
+            $message        = required_param('message', PARAM_RAW_TRIMMED);
+            $reveal         = optional_param('reveal', 0, PARAM_BOOL);
+            $messageformat  = required_param('messageformat', PARAM_INT);
             $posttomygroups = optional_param('posttomygroups', 0, PARAM_BOOL);
+            $mailnow        = optional_param('mailnow', 0, PARAM_BOOL);
 
             list($timestart, $timeend) = local::get_form_discussion_times();
 
@@ -172,6 +175,7 @@ class edit_controller extends controller_abstract {
                 'reveal'        => $reveal,
                 'timestart'     => $timestart,
                 'timeend'       => $timeend,
+                'mailnow'       => $mailnow
             );
             return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, $options, $posttomygroups);
         } catch (\Exception $e) {

@@ -11,7 +11,7 @@ Feature: Teachers and students can edit discussions
     And the following "course enrolments" exist:
       | user | course | role |
       | student1 | C1 | student |
-      | teacher1 | C1 | teacher |
+      | teacher1 | C1 | editingteacher |
     And the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "admin"
@@ -24,6 +24,41 @@ Feature: Teachers and students can edit discussions
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
     And I log out
+
+  @javascript
+  Scenario: Teacher can add posts with mail now option, student does not have this option.
+    When the following config values are set as admin:
+      | enabletimedposts | 0 | hsuforum |
+    And I log in as "teacher1"
+    And I follow "Course 1"
+    And I follow "Test forum name"
+    And I press "Add a new discussion"
+    And I should see "Add your discussion"
+    And I set the field "subject" to "Test discussion mail now"
+    And ".hsuforum-textarea" "css_element" should exist
+    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion mail now description"
+    And "#id_mailnow" "css_element" should exist
+    And I set the field "Email notifications without editing time delay" to "1"
+    And I press "Submit"
+    And I should see "Your post was successfully added."
+    And I follow "Test discussion mail now"
+    And I follow "Reply"
+    And I set the field "subject" to "Test reply mail now"
+    And I set editable div ".hsuforum-textarea" "css_element" to "Test reply mail now description"
+    And I set the field "Email notifications without editing time delay" to "1"
+    And I press "Submit"
+    And I should see "Test reply mail now description" in the ".hsuforum-post-content" "css_element"
+    And I log out
+    And I log in as "student1"
+    And I follow "Course 1"
+    And I follow "Test forum name"
+    And I press "Add a new discussion"
+    And I should see "Add your discussion"
+    And "#id_mailnow" "css_element" should not exist
+    And I follow "Cancel"
+    And I follow "Test discussion mail now"
+    And I follow "Reply"
+    And "#id_mailnow" "css_element" should not exist
 
  @javascript
   Scenario Outline: Teacher can add and edit a discussion to forum without timed posts enabled with any editor set.

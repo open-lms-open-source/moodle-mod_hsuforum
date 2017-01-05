@@ -1453,8 +1453,8 @@ HTML;
                                     && has_capability('mod/hsuforum:canposttomygroups', $context);
 
             if ($canposttoowngroups) {
-                $extrahtml .= html_writer::tag('label', html_writer::checkbox('posttomygroups', 1, false).
-                    get_string('posttomygroups', 'hsuforum'));
+                $extrahtml .= html_writer::tag('label', get_string('posttomygroups', 'hsuforum') . ' ' .
+                    html_writer::checkbox('posttomygroups', 1, false));
             }
 
             if (hsuforum_user_can_post_discussion($forum, -1, null, $cm, $context)) {
@@ -1482,8 +1482,8 @@ HTML;
             }
         }
         if ($forum->anonymous) {
-            $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
-                get_string('reveal', 'hsuforum'));
+            $extrahtml .= html_writer::tag('label', get_string('reveal', 'hsuforum') . ' ' .
+                    html_writer::checkbox('reveal', 1, !empty($data['reveal'])));
         }
 
         $config = get_config('hsuforum');
@@ -1568,13 +1568,13 @@ HTML;
         if (has_capability('mod/hsuforum:allowprivate', $context, $postuser)
             && $forum->allowprivatereplies !== '0'
         ) {
-            $extrahtml .= html_writer::tag('label', html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])).
-                get_string('privatereply', 'hsuforum'));
+            $extrahtml .= html_writer::tag('label', get_string('privatereply', 'hsuforum') . ' ' .
+                    html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])));
         }
         if ($forum->anonymous && !$isedit
             || $forum->anonymous && $isedit && $ownpost) {
-            $extrahtml .= html_writer::tag('label', html_writer::checkbox('reveal', 1, !empty($data['reveal'])).
-                get_string('reveal', 'hsuforum'));
+            $extrahtml .= html_writer::tag('label', get_string('reveal', 'hsuforum') . ' ' .
+                    html_writer::checkbox('reveal', 1, !empty($data['reveal'])));
         }
         $data += array(
             'postid'          => ($isedit) ? $postid : 0,
@@ -1661,6 +1661,13 @@ HTML;
 HTML;
         }
 
+        $mailnowcb = '';
+        $coursecontext = $t->context->get_course_context(false);
+        if (empty($t->postid) && has_capability('moodle/course:manageactivities', $coursecontext)) {
+            $mailnowcb = '<label>' . get_string('mailnow', 'hsuforum') . ' ' .
+                    '<input name="mailnow" type="checkbox" value="1" id="id_mailnow"></label>';
+        }
+
         return <<<HTML
 <div class="hsuforum-reply-wrapper$t->thresholdblocked">
     <form method="post" role="region" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
@@ -1681,7 +1688,10 @@ HTML;
 
                 $files
 
-                $t->extrahtml
+                <div class="advancedoptions">
+                    $mailnowcb
+                    $t->extrahtml
+                </div>
                 $hidden
 
                     <button type="submit">$t->submitlabel</button>
