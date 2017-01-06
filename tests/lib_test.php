@@ -2784,21 +2784,20 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
         $discussion = $forumgen->create_discussion($record);
 
-        // Get Context
+        // Get Context.
         $modcontext = context_module::instance($forum->cmid);
 
-        // Create Uploader
-
+        // Create Uploader.
         $uploader = new \mod_hsuforum\upload_file(
             new \mod_hsuforum\attachments($forum, $modcontext), \mod_hsuforum_post_form::attachment_options($forum),
             true
         );
 
-        // Use service to save a new discussion on the database
+        // Use service to save a new discussion on the database.
         $service = new service\discussion_service();
         $service->save_discussion($discussion, $uploader);
 
-        // Attachment field on the database must be empty
+        // Attachment field on the database must be empty.
         $result = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
         $this->assertEmpty($result->attachment);
     }
