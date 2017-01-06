@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+use mod_hsuforum\service;
+
 global $CFG;
 require_once($CFG->dirroot . '/rating/lib.php');
 
@@ -2758,6 +2760,47 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
         // Call the public validate_file method
         $method->invokeArgs($uploader, array('file' => $_FILES['attachment']));
+    }
+
+    /**
+     * Test the state of the attachment field at mdl_hsuforum_post when the user creates a
+     * new discussion without an attachment.
+     */
+    public function test_attachment_field_on_create_discussion() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
+
+        $forumgen = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum');
+
+        $record = new stdClass();
+        $record->course = $course->id;
+        $record->userid = $user->id;
+        $record->forum = $forum->id;
+
+        $discussion = $forumgen->create_discussion($record);
+
+        // Get Context
+        $modcontext = context_module::instance($forum->cmid);
+
+        // Create Uploader
+
+        $uploader = new \mod_hsuforum\upload_file(
+            new \mod_hsuforum\attachments($forum, $modcontext), \mod_hsuforum_post_form::attachment_options($forum),
+            true
+        );
+
+        // Use service to save a new discussion on the database
+        $service = new service\discussion_service();
+        $service->save_discussion($discussion, $uploader);
+
+        // Attachment field on the database must be empty
+        $result = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
+        $this->assertEmpty($result->attachment);
     }
 
     public function hsuforum_get_unmailed_posts_provider() {
