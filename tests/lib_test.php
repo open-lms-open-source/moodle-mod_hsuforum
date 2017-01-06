@@ -2799,7 +2799,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
         // Attachment field on the database must be empty.
         $result = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
-        $this->assertEmpty($result->attachment);
+        $this->assertEquals(0, $result->attachment);
     }
 
     public function hsuforum_get_unmailed_posts_provider() {
