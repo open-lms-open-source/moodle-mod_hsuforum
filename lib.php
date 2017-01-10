@@ -4080,7 +4080,7 @@ function hsuforum_add_attachment($post, $forum, $cm, $mform=null, $unused=null, 
     $context = context_module::instance($cm->id);
 
     $info = file_get_draft_area_info($post->attachments);
-    $present = ($info['filecount']>0) ? '1' : '';
+    $present = ($info['filecount']>0) ? '1' : '0';
     file_save_draft_area_files($post->attachments, $context->id, 'mod_hsuforum', 'attachment', $post->id,
             mod_hsuforum_post_form::attachment_options($forum));
 
@@ -4112,7 +4112,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     $post->created    = $post->modified = time();
     $post->mailed     = HSUFORUM_MAILED_PENDING;
     $post->userid     = $USER->id;
-    $post->attachment = "";
+    $post->attachment = 0;
     if (!isset($post->totalscore)) {
         $post->totalscore = 0;
     }
@@ -4241,6 +4241,7 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     $post->message       = $discussion->message;
     $post->messageformat = $discussion->messageformat;
     $post->messagetrust  = $discussion->messagetrust;
+    $post->attachment    = isset($discussion->attachments) ? 1: 0;
     $post->attachments   = isset($discussion->attachments) ? $discussion->attachments : null;
     $post->forum         = $forum->id;     // speedup
     $post->course        = $forum->course; // speedup
