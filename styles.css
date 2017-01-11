@@ -478,6 +478,10 @@ FUN WITH FORMS
     float: right;
 }
 
+.hsuforum-use-advanced.btn {
+    padding-right: 0;
+}
+
 .hsuforum-validation-errors.notifyproblem {
     text-align: left;
 }
@@ -870,4 +874,12 @@ FUN WITH FORMS
     100% {
         background-color: rgba(0,0,0,0);
     }
+}
+
+.path-mod-hsuforum .advancedoptions label {
+    text-align: right;
+}
+
+.path-mod-hsuforum .advancedoptions label input {
+    margin-right: 0;
 }
