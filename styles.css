@@ -883,3 +883,19 @@ FUN WITH FORMS
 .path-mod-hsuforum .advancedoptions label input {
     margin-right: 0;
 }
+
+.path-mod-hsuforum .advancedoptions .dateform_fieldset {
+    text-align: right;
+}
+
+.path-mod-hsuforum .advancedoptions .dateform_fieldset input[type="checkbox"] {
+    float: right;
+    margin-top: 0.5em;
+    margin-left: 0.25em;
+    margin-right: 0;
+}
+
+.path-mod-hsuforum .advancedoptions #fitem_id_timestart,
+.path-mod-hsuforum .advancedoptions #fitem_id_timeend {
+    margin: 0.5em 0;
+}
