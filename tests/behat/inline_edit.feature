@@ -15,8 +15,7 @@ Feature: Teachers and students can edit discussions
     And the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "admin"
-    And I am on homepage
-    And I follow "Courses"
+    And I am on site homepage
     And I follow "Course 1"
     And I turn editing mode on
     And I add a "Advanced Forum" to section "1" and I fill the form with:
