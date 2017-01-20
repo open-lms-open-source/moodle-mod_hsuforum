@@ -29,7 +29,7 @@ Feature: A teacher can control the subscription to a forum
 
   Scenario: A teacher can change toggle subscription editing on and off
     Given I follow "Test forum name"
-    And I follow "Show/edit forum subscribers"
+    And I navigate to "Show/edit forum subscribers" in current page administration
     Then ".userselector" "css_element" should not exist
     And "Turn editing on" "button" should exist
     And I press "Turn editing on"
