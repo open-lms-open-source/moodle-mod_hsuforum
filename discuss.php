@@ -86,6 +86,8 @@
         $event->add_record_snapshot('course', $course);
         $event->add_record_snapshot('hsuforum', $forum);
         $event->trigger();
+
+        $PAGE->force_settings_menu(true);
     }
 
     if (!empty($CFG->enablerssfeeds) && !empty($config->enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
