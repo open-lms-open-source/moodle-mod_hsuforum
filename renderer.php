@@ -1853,7 +1853,8 @@ HTML;
      */
     public function render_advanced_editor(advanced_editor $advancededitor) {
         $data = $advancededitor->get_data();
-        if (get_class($data->editor) == 'atto_texteditor'){
+        $editor = get_class($data->editor);
+        if ($editor == 'atto_texteditor' || $editor == 'tinymce_texteditor'){
             $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
             $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
             return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';

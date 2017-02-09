@@ -1272,15 +1272,17 @@ Y.extend(ARTICLE, Y.Base,
                 if (!editCont){
                     return;
                 }
-
-                // Note, preventDefault is intentionally here as if an editor container is not present we want the
-                // link to work.
-                e.preventDefault();
-
-                editArea = Y.one('#hiddenadvancededitoreditable');
-                editor = editArea.ancestor('.editor_atto');
+                
+                try {
+                    editArea = Y.one('#hiddenadvancededitoreditable');
+                    editor = editArea.ancestor('.editor_atto');
+                } catch (error) {
+                }
 
                 if (editor){
+                    // Note, preventDefault is intentionally here as if an editor container is not present we want the
+                    // link to work.
+                    e.preventDefault();
                     M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
                 } else {
                     // The advanced editor isn't available yet, lets try again periodically.
@@ -1293,6 +1295,7 @@ Y.extend(ARTICLE, Y.Base,
                         }
                     }, 500);
                 }
+
 
             }, document, '.hsuforum-use-advanced');
 
