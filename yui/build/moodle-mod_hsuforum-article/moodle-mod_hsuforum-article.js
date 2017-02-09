@@ -1272,7 +1272,7 @@ Y.extend(ARTICLE, Y.Base,
                 if (!editCont){
                     return;
                 }
-                
+
                 try {
                     editArea = Y.one('#hiddenadvancededitoreditable');
                     editor = editArea.ancestor('.editor_atto');
@@ -1295,8 +1295,7 @@ Y.extend(ARTICLE, Y.Base,
                         }
                     }, 500);
                 }
-
-
+                
             }, document, '.hsuforum-use-advanced');
 
             // We bind to document for these buttons as they get re-added on each discussion addition.
