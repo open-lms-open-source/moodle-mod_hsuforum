@@ -32,7 +32,7 @@ Feature: As a teacher I need to see an accurate list of subscribed users
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
     And I follow "Forced Forum 1"
-    And I follow "Show/edit forum subscribers"
+    And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Student 1"
     And I should see "Teacher Teacher"
     And I should see "Student 2"
@@ -46,7 +46,7 @@ Feature: As a teacher I need to see an accurate list of subscribed users
       | Subscription mode | Forced subscription |
       | Visible           | Show |
     And I follow "Forced Forum 2"
-    And I follow "Show/edit forum subscribers"
+    And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Teacher Teacher"
     And I should see "Student 1"
     And I should see "Student 2"
@@ -61,7 +61,7 @@ Feature: As a teacher I need to see an accurate list of subscribed users
       | Subscription mode | Forced subscription |
       | Visible           | Hide |
     And I follow "Forced Forum 2"
-    And I follow "Show/edit forum subscribers"
+    And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Teacher Teacher"
     And I should not see "Student 1"
     And I should not see "Student 2"
@@ -75,7 +75,7 @@ Feature: As a teacher I need to see an accurate list of subscribed users
       | Description       | Test forum description |
       | Subscription mode | Auto subscription |
     And I follow "Forced Forum 1"
-    And I follow "Show/edit forum subscribers"
+    And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Student 1"
     And I should see "Teacher Teacher"
     And I should see "Student 2"

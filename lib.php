@@ -849,6 +849,7 @@ function hsuforum_cron() {
                 mtrace('Sending ', '');
 
                 $eventdata = new \core\message\message();
+                $eventdata->courseid         = $course->id;
                 $eventdata->component        = 'mod_hsuforum';
                 $eventdata->name             = 'posts';
                 $eventdata->userfrom         = $postuser;
@@ -1202,6 +1203,7 @@ function hsuforum_cron() {
                 }
 
                 $eventdata = new \core\message\message();
+                $eventdata->courseid            = SITEID;
                 $eventdata->component           = 'mod_hsuforum';
                 $eventdata->name                = 'digests';
                 $eventdata->userfrom            = core_user::get_noreply_user();
@@ -5974,7 +5976,7 @@ function hsuforum_user_enrolled($cp) {
  * @return boolean success
  */
 function hsuforum_mark_posts_read($user, $postids) {
-    global $DB;
+    global $CFG, $DB;
 
     $config = get_config('hsuforum');
     $status = true;
