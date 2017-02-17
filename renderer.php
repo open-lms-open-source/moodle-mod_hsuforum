@@ -1696,7 +1696,7 @@ HTML;
                 </div>
                 $hidden
 
-                    <button type="submit">$t->submitlabel</button>
+                    <button type="submit" class="btn btn-primary">$t->submitlabel</button>
                     <a href="#" class="hsuforum-cancel disable-router btn btn-link">$t->cancellabel</a>
                     <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router btn btn-link">$t->advancedlabel</a>
 

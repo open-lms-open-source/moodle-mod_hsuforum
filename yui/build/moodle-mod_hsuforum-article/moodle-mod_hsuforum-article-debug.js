@@ -997,20 +997,36 @@ Y.extend(FORM, Y.Base,
          */
         applyDateFields: function() {
 
-            var datefs = Y.one('#discussion_dateform fieldset');
-            if (!datefs) {
-                return;
-            }
-            datefs.addClass('dateform_fieldset');
-            datefs.removeClass('hidden');
-            // Remove legend if present
-            if (datefs.one('legend')) {
-                datefs.one('legend').remove();
-            }
+            if (Y.one('.dateformtarget')) {
+                var datefs = Y.one('#discussion_dateform fieldset');
+                if (!datefs) {
+                    datefs = Y.Node.create('<fieldset/>');
+                    datefs.addClass('form-inline');
+                    var fitems = Y.all('#discussion_dateform div.row.fitem');
+                    var first = true;
+                    fitems.each(function () {
+                        if (first) {
+                            first = false;
+                        } else {
+                            datefs.appendChild(this);
+                        }
+                    });
+                }
+                if (!datefs) {
+                    return;
+                }
+                datefs.addClass('dateform_fieldset');
+                datefs.removeClass('hidden');
+                // Remove legend if present
+                if (datefs.one('legend')) {
+                    datefs.one('legend').remove();
+                }
 
-            Y.one('.dateformtarget').append(datefs);
-            // Stop calendar button from routing.
-            Y.all('.dateformtarget .fitem_fdate_time_selector a').addClass('disable-router');
+                // Stop calendar button from routing.
+                datefs.all('a.visibleifjs').addClass('disable-router');
+
+                Y.one('.dateformtarget').append(datefs);
+            }
 
             this.setDateFieldsClassState();
         },
