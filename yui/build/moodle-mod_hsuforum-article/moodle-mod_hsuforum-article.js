@@ -693,9 +693,9 @@ Y.extend(FORM, Y.Base,
 
         handleTimeToggle: function(e) {
             if (e.currentTarget.get('checked')) {
-                e.currentTarget.ancestor('.felement').all('select').removeAttribute('disabled');
+                e.currentTarget.ancestor('.fdate_time_selector').all('select').removeAttribute('disabled');
             } else {
-                e.currentTarget.ancestor('.felement').all('select').setAttribute('disabled', 'disabled');
+                e.currentTarget.ancestor('.fdate_time_selector').all('select').setAttribute('disabled', 'disabled');
             }
         },
 
