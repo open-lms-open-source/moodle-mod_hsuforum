@@ -694,9 +694,9 @@ Y.extend(FORM, Y.Base,
 
         handleTimeToggle: function(e) {
             if (e.currentTarget.get('checked')) {
-                e.currentTarget.ancestor('.felement.fdate_time_selector').all('select').removeAttribute('disabled');
+                e.currentTarget.ancestor('.felement').all('select').removeAttribute('disabled');
             } else {
-                e.currentTarget.ancestor('.felement.fdate_time_selector').all('select').setAttribute('disabled', 'disabled');
+                e.currentTarget.ancestor('.felement').all('select').setAttribute('disabled', 'disabled');
             }
         },
 
@@ -1003,12 +1003,9 @@ Y.extend(FORM, Y.Base,
                     datefs = Y.Node.create('<fieldset/>');
                     datefs.addClass('form-inline');
                     var fitems = Y.all('#discussion_dateform div.row.fitem');
-                    var first = true;
-                    fitems.each(function () {
-                        if (first) {
-                            first = false;
-                        } else {
-                            datefs.appendChild(this);
+                    fitems.each(function (fitem, index) {
+                        if (index > 0) {
+                            datefs.appendChild(fitem);
                         }
                     });
                 }
@@ -1066,8 +1063,8 @@ Y.extend(FORM, Y.Base,
          *
          */
         setDefaultDateSettings: function () {
-            var checkstart = Y.one('#id_timestart_enabled').ancestor('.felement.fdate_time_selector');
-            var checkend = Y.one('#id_timeend_enabled').ancestor('.felement.fdate_time_selector');
+            var checkstart = Y.one('#id_timestart_enabled').ancestor('.felement');
+            var checkend = Y.one('#id_timeend_enabled').ancestor('.felement');
             checkstart.all('select').setAttribute('disabled', 'disabled');
             checkend.all('select').setAttribute('disabled', 'disabled');
         },
