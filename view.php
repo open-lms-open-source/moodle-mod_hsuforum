@@ -92,7 +92,8 @@
     $discussionview = $renderer->render_discussionsview($forum);
 
     echo $OUTPUT->header();
-
+    $test = array();
+    $PAGE->requires->js_call_amd('mod_hsuforum/advanced_editor', 'init');
     echo $renderer->render(new discussion_dateform($context));
 
     echo ('<div id="discussionsview">');
@@ -109,5 +110,10 @@
     echo $discussionview;
 
     echo '</div>';
-    echo $renderer->render(new advanced_editor($context));
+    //echo '<textarea id="advanced-editor-container" style="display:none"></textarea>';
+    $editor = new advanced_editor($context);
+    $data = $editor->get_data();
+    //var_dump($editor);
+    var_dump($data->editor);
+    //echo $renderer->render(new advanced_editor($context));
     echo $OUTPUT->footer($course);

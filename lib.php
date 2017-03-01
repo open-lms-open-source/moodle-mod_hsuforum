@@ -28,7 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir.'/filelib.php');
 require_once($CFG->libdir.'/eventslib.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
-
+use mod_hsuforum\renderables\discussion_dateform;
+use mod_hsuforum\renderables\advanced_editor;
 /// CONSTANTS ///////////////////////////////////////////////////////////
 
 
@@ -8413,4 +8414,19 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
     $tree->add_node($node);
 
     return true;
+}
+
+function mod_hsuforum_output_fragment_editor($args) {
+    global $PAGE, $COURSE;
+    $html = '';
+    if (!empty($args['cmid'])) {
+        $cmid = $args['cmid'];
+        $context = context_module::instance($cmid);
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+        if ($args['action'] === 'advanced') {
+            $editor = new advanced_editor($context);
+            $html = $renderer->render_advanced_editor($editor);
+        }
+    }
+    return $html;
 }

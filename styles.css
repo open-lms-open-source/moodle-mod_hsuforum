@@ -453,7 +453,7 @@ FUN WITH FORMS
     background-color:white;
 }
 
-.hsuforum-post-body input[type=file] {
+.hsuforum-post-body input[type=file], .editor_atto_wrap input[type=file] {
     line-height: 1;
     font-weight: normal;
 }
@@ -489,6 +489,10 @@ FUN WITH FORMS
     text-align: center;
 }
 
+.editor_atto_content_wrap, #editor-target-container_tbl {
+    margin-bottom: 0.5em;
+}
+
 /* -------------------------  MEDIA Qs  -------------------------*/
 
 @media all and (min-width: 35em) {
@@ -522,6 +526,11 @@ FUN WITH FORMS
 
     }
     .hsuforum-post-body{
+        float: left;
+        width: 84.27%;
+    }
+
+    .editor_atto_wrap {
         float: left;
         width: 84.27%;
     }

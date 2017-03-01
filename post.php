@@ -957,7 +957,6 @@ $PAGE->set_title("$course->shortname: $strdiscussionname $toppost->subject");
 $PAGE->set_heading($course->fullname);
 $renderer = $PAGE->get_renderer('mod_hsuforum');
 $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($forum->name), 2);
 
@@ -1014,5 +1013,4 @@ if (!empty($formheading)) {
     echo $OUTPUT->heading($formheading, 4);
 }
 $mform_post->display();
-
 echo $OUTPUT->footer();

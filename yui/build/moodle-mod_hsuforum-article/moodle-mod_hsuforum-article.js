@@ -1278,22 +1278,23 @@ Y.extend(ARTICLE, Y.Base,
                     editor = editArea.ancestor('.editor_atto');
                 } catch (error) {
                 }
+                e.preventDefault();
 
                 if (editor){
                     // Note, preventDefault is intentionally here as if an editor container is not present we want the
                     // link to work.
                     e.preventDefault();
-                    M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
+                    //M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
                 } else {
                     // The advanced editor isn't available yet, lets try again periodically.
                     advancedEditLink.setContent(M.util.get_string('loadingeditor', 'hsuforum'));
-                    checkEditArea = setInterval(function(){
-                        editor = editArea.ancestor('.editor_atto');
-                        if (editor) {
-                            clearInterval(checkEditArea);
-                            M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
-                        }
-                    }, 500);
+                    // checkEditArea = setInterval(function(){
+                    //     editor = editArea.ancestor('.editor_atto');
+                    //     if (editor) {
+                    //         clearInterval(checkEditArea);
+                    //         M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
+                    //     }
+                    // }, 500);
                 }
                 
             }, document, '.hsuforum-use-advanced');
@@ -1480,7 +1481,7 @@ M.mod_hsuforum.restoreEditor = function() {
 
 
         // Switch all editor links to hide mode.
-        M.mod_hsuforum.toggleAdvancedEditor(false, true);
+       // M.mod_hsuforum.toggleAdvancedEditor(false, true);
 
         // Put editor back in its correct place.
         Y.one('#hiddenadvancededitorcont').show();
@@ -1523,14 +1524,14 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
                     continue; // Do not process this link.
                 }
                 // To hide this link and restore the editor, call myself.
-                M.mod_hsuforum.toggleAdvancedEditor(link, true);
+                //M.mod_hsuforum.toggleAdvancedEditor(link, true);
             }
 
             return;
         }
     } else {
         // OK we need to make sure the editor isn't available anywhere else, so call myself.
-        M.mod_hsuforum.toggleAdvancedEditor(false, true, advancedEditLink);
+        //M.mod_hsuforum.toggleAdvancedEditor(false, true, advancedEditLink);
     }
 
     var editCont = Y.one('#hiddenadvancededitorcont'),
