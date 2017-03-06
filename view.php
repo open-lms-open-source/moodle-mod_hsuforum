@@ -93,7 +93,7 @@
 
     echo $OUTPUT->header();
     $test = array();
-    $PAGE->requires->js_call_amd('mod_hsuforum/advanced_editor', 'init');
+    $PAGE->requires->js_call_amd('mod_hsuforum/advanced_editor', 'initialize', ['#discussionsview',$cm->id]);
     echo $renderer->render(new discussion_dateform($context));
 
     echo ('<div id="discussionsview">');
@@ -108,12 +108,8 @@
     }
 
     echo $discussionview;
-
     echo '</div>';
-    //echo '<textarea id="advanced-editor-container" style="display:none"></textarea>';
+    echo '<div id="preload-container" style="display: none;"><div id="preload-container-editor">';
     $editor = new advanced_editor($context);
-    $data = $editor->get_data();
-    //var_dump($editor);
-    var_dump($data->editor);
-    //echo $renderer->render(new advanced_editor($context));
+    echo $renderer->render_advanced_editor($editor, 'preload-container-editor').'</div></div>';
     echo $OUTPUT->footer($course);

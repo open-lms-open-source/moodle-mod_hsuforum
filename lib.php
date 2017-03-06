@@ -8417,16 +8417,15 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
 }
 
 function mod_hsuforum_output_fragment_editor($args) {
-    global $PAGE, $COURSE;
-    $html = '';
+    global $PAGE;
     if (!empty($args['cmid'])) {
         $cmid = $args['cmid'];
         $context = context_module::instance($cmid);
         $renderer = $PAGE->get_renderer('mod_hsuforum');
-        if ($args['action'] === 'advanced') {
-            $editor = new advanced_editor($context);
-            $html = $renderer->render_advanced_editor($editor);
+        $editor = new advanced_editor($context);
+        if (stristr($args['id'], 'editor-target-container-')) {
+            return $renderer->render_advanced_editor($editor, $args['id']);
         }
     }
-    return $html;
+    return '';
 }

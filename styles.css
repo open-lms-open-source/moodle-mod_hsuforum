@@ -525,16 +525,10 @@ FUN WITH FORMS
         width: 15.73%;
 
     }
-    .hsuforum-post-body{
+    .hsuforum-post-body, .editor_atto_wrap{
         float: left;
         width: 84.27%;
     }
-
-    .editor_atto_wrap {
-        float: left;
-        width: 84.27%;
-    }
-
 
     .depth0 .hsuforum-reply-wrapper{
         margin-left: 15.73%;

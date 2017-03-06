@@ -149,45 +149,6 @@ Y.extend(ARTICLE, Y.Base,
             Y.delegate('click', router.handleRoute, document, SELECTORS.CONTAINER_LINKS, router);
             Y.delegate('click', dom.handleViewRating, document, SELECTORS.RATE_POPUP, dom);
 
-            // Advanced editor.
-            Y.delegate('click', function(e){
-                var editCont = Y.one('#hiddenadvancededitorcont'),
-                    editor,
-                    editArea,
-                    advancedEditLink = this,
-                    checkEditArea;
-
-                if (!editCont){
-                    return;
-                }
-
-                try {
-                    editArea = Y.one('#hiddenadvancededitoreditable');
-                    editor = editArea.ancestor('.editor_atto');
-                } catch (error) {
-                    Y.log('Atto editor not found');
-                }
-                e.preventDefault();
-
-                if (editor){
-                    // Note, preventDefault is intentionally here as if an editor container is not present we want the
-                    // link to work.
-                    e.preventDefault();
-                    //M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
-                } else {
-                    // The advanced editor isn't available yet, lets try again periodically.
-                    advancedEditLink.setContent(M.util.get_string('loadingeditor', 'hsuforum'));
-                    // checkEditArea = setInterval(function(){
-                    //     editor = editArea.ancestor('.editor_atto');
-                    //     if (editor) {
-                    //         clearInterval(checkEditArea);
-                    //         M.mod_hsuforum.toggleAdvancedEditor(advancedEditLink);
-                    //     }
-                    // }, 500);
-                }
-                
-            }, document, '.hsuforum-use-advanced');
-
             // We bind to document for these buttons as they get re-added on each discussion addition.
             Y.delegate('submit', form.handleFormSubmit, document, SELECTORS.FORM, form);
             Y.delegate('click', router.handleAddDiscussionRoute, document, SELECTORS.ADD_DISCUSSION, router);
