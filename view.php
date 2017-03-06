@@ -92,7 +92,6 @@
     $discussionview = $renderer->render_discussionsview($forum);
 
     echo $OUTPUT->header();
-    $test = array();
     $PAGE->requires->js_call_amd('mod_hsuforum/advanced_editor', 'initialize', ['#discussionsview',$cm->id]);
     echo $renderer->render(new discussion_dateform($context));
 
