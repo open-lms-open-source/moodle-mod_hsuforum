@@ -333,7 +333,6 @@ M.mod_hsuforum.restoreEditor = function() {
 
 
         // Switch all editor links to hide mode.
-       // M.mod_hsuforum.toggleAdvancedEditor(false, true);
 
         // Put editor back in its correct place.
         Y.one('#hiddenadvancededitorcont').show();
@@ -376,16 +375,11 @@ M.mod_hsuforum.toggleAdvancedEditor = function(advancedEditLink, forcehide, keep
                     continue; // Do not process this link.
                 }
                 // To hide this link and restore the editor, call myself.
-                //M.mod_hsuforum.toggleAdvancedEditor(link, true);
             }
 
             return;
         }
-    } else {
-        // OK we need to make sure the editor isn't available anywhere else, so call myself.
-        //M.mod_hsuforum.toggleAdvancedEditor(false, true, advancedEditLink);
     }
-
     var editCont = Y.one('#hiddenadvancededitorcont'),
         editArea,
         contentEditable = advancedEditLink.previous('.hsuforum-textarea'),
