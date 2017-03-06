@@ -1247,7 +1247,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEmpty($neighbours['next']);
 
         // Querying the neighbours of a discussion passing the wrong CM.
-        $this->setExpectedException('coding_exception');
+        $this->expectException('coding_exception');
         hsuforum_get_discussion_neighbours($cm2, $disc11, $forum2);
     }
 
@@ -2802,6 +2802,41 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals(0, $result->attachment);
     }
 
+    /**
+     * Test for hsuforum_is_author_hidden.
+     */
+    public function test_forum_is_author_hidden() {
+        // First post, different forum type.
+        $post = (object) ['parent' => 0];
+        $forum = (object) ['type' => 'standard'];
+        $this->assertFalse(hsuforum_is_author_hidden($post, $forum));
+
+        // Child post, different forum type.
+        $post->parent = 1;
+        $this->assertFalse(hsuforum_is_author_hidden($post, $forum));
+
+        // First post, single simple discussion forum type.
+        $post->parent = 0;
+        $forum->type = 'single';
+        $this->assertTrue(hsuforum_is_author_hidden($post, $forum));
+
+        // Child post, single simple discussion forum type.
+        $post->parent = 1;
+        $this->assertFalse(hsuforum_is_author_hidden($post, $forum));
+
+        // Incorrect parameters: $post.
+        $this->expectException('coding_exception');
+        $this->expectExceptionMessage('$post->parent must be set.');
+        unset($post->parent);
+        hsuforum_is_author_hidden($post, $forum);
+
+        // Incorrect parameters: $forum.
+        $this->expectException('coding_exception');
+        $this->expectExceptionMessage('$forum->type must be set.');
+        unset($forum->type);
+        hsuforum_is_author_hidden($post, $forum);
+    }
+
     public function hsuforum_get_unmailed_posts_provider() {
         return [
             'Untimed discussion; Single post; maxeditingtime not expired' => [
@@ -2955,6 +2990,63 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
                 'timedposts'        => true,
                 'postcount'         => 0,
                 'replycount'        => 0,
+            ],
+        ];
+    }
+
+    /**
+     * Test the hsuforum_discussion_is_locked function.
+     *
+     * @dataProvider hsuforum_discussion_is_locked_provider
+     * @param   stdClass    $forum
+     * @param   stdClass    $discussion
+     * @param   bool        $expect
+     */
+    public function test_forum_discussion_is_locked($forum, $discussion, $expect) {
+        $this->assertEquals($expect, hsuforum_discussion_is_locked($forum, $discussion));
+    }
+
+    /**
+     * Dataprovider for hsuforum_discussion_is_locked tests.
+     *
+     * @return  array
+     */
+    public function hsuforum_discussion_is_locked_provider() {
+        return [
+            'Unlocked: lockdiscussionafter is unset' => [
+                (object) [],
+                (object) [],
+                false
+            ],
+            'Unlocked: lockdiscussionafter is false' => [
+                (object) ['lockdiscussionafter' => false],
+                (object) [],
+                false
+            ],
+            'Unlocked: lockdiscussionafter is null' => [
+                (object) ['lockdiscussionafter' => null],
+                (object) [],
+                false
+            ],
+            'Unlocked: lockdiscussionafter is set; forum is of type single; post is recent' => [
+                (object) ['lockdiscussionafter' => DAYSECS, 'type' => 'single'],
+                (object) ['timemodified' => time()],
+                false
+            ],
+            'Unlocked: lockdiscussionafter is set; forum is of type single; post is old' => [
+                (object) ['lockdiscussionafter' => MINSECS, 'type' => 'single'],
+                (object) ['timemodified' => time() - DAYSECS],
+                false
+            ],
+            'Unlocked: lockdiscussionafter is set; forum is of type eachuser; post is recent' => [
+                (object) ['lockdiscussionafter' => DAYSECS, 'type' => 'eachuser'],
+                (object) ['timemodified' => time()],
+                false
+            ],
+            'Locked: lockdiscussionafter is set; forum is of type eachuser; post is old' => [
+                (object) ['lockdiscussionafter' => MINSECS, 'type' => 'eachuser'],
+                (object) ['timemodified' => time() - DAYSECS],
+                true
             ],
         ];
     }

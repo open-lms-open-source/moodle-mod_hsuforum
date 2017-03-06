@@ -1940,4 +1940,47 @@ HTML;
         </g>
         </svg>';
     }
+
+    /**
+     * Create the inplace_editable used to select forum digest options.
+     *
+     * @param   stdClass    $forum  The forum to create the editable for.
+     * @param   int         $value  The current value for this user
+     * @return  inplace_editable
+     */
+    public function render_digest_options($forum, $value) {
+        $options = hsuforum_get_user_digest_options();
+        $editable = new \core\output\inplace_editable(
+            'mod_hsuforum',
+            'digestoptions',
+            $forum->id,
+            true,
+            $options[$value],
+            $value
+        );
+
+        $editable->set_type_select($options);
+
+        return $editable;
+    }
+
+    /**
+     * Render quick search form.
+     *
+     * @param \mod_hsuforum\output\quick_search_form $form The renderable.
+     * @return string
+     */
+    public function render_quick_search_form(\mod_hsuforum\output\quick_search_form $form) {
+        return $this->render_from_template('mod_hsuforum/quick_search_form', $form->export_for_template($this));
+    }
+
+    /**
+     * Render big search form.
+     *
+     * @param \mod_hsuforum\output\big_search_form $form The renderable.
+     * @return string
+     */
+    public function render_big_search_form(\mod_hsuforum\output\big_search_form $form) {
+        return $this->render_from_template('mod_hsuforum/big_search_form', $form->export_for_template($this));
+    }
 }

@@ -23,7 +23,7 @@
  * @author Mark Nielsen
  */
 
-require_once(dirname(__FILE__) . '/../../config.php');
+require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 require_once($CFG->libdir . '/rsslib.php');
@@ -33,7 +33,7 @@ $subscribe = optional_param('subscribe', null, PARAM_INT);  // Subscribe/Unsubsc
 
 $config = get_config('hsuforum');
 
-$url = new moodle_url('/mod/hsuforum/index.php', array('id'=>$id));
+$url = new moodle_url('/mod/hsuforum/index.php', array('id' => $id));
 if ($subscribe !== null) {
     require_sesskey();
     $url->param('subscribe', $subscribe);
@@ -41,7 +41,7 @@ if ($subscribe !== null) {
 $PAGE->set_url($url);
 
 if ($id) {
-    if (! $course = $DB->get_record('course', array('id' => $id))) {
+    if (!$course = $DB->get_record('course', array('id' => $id))) {
         print_error('invalidcourseid');
     }
 } else {
@@ -51,7 +51,6 @@ if ($id) {
 require_course_login($course);
 $PAGE->set_pagelayout('incourse');
 $coursecontext = context_course::instance($course->id);
-
 
 unset($SESSION->fromdiscussion);
 
@@ -90,8 +89,7 @@ $digestoptions_selector = new single_select(new moodle_url('/mod/hsuforum/maildi
     '');
 $digestoptions_selector->method = 'post';
 
-// Start of the table for General Forums
-
+// Start of the table for General Forums.
 $generaltable = new html_table();
 $generaltable->head  = array ($strforum, $strdescription, $strdiscussions);
 $generaltable->align = array ('left', 'left', 'center');
@@ -136,8 +134,9 @@ $forums = $DB->get_records_sql("
 $generalforums  = array();
 $learningforums = array();
 $modinfo = get_fast_modinfo($course);
+$showsubscriptioncolumns = false;
 
-foreach ($modinfo->get_instances_of('hsuforum') as $forumid=>$cm) {
+foreach ($modinfo->get_instances_of('hsuforum') as $forumid => $cm) {
     if (!$cm->uservisible or !isset($forums[$forumid])) {
         continue;
     }
@@ -145,14 +144,23 @@ foreach ($modinfo->get_instances_of('hsuforum') as $forumid=>$cm) {
     $forum = $forums[$forumid];
 
     if (!$context = context_module::instance($cm->id, IGNORE_MISSING)) {
-        continue;   // Shouldn't happen
-    }
-
-    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+        // Shouldn't happen.
         continue;
     }
 
-    // fill two type array - order in modinfo is the same as in course
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+        // User can't view this one - skip it.
+        continue;
+    }
+
+    // Determine whether subscription options should be displayed.
+    $forum->cansubscribe = mod_hsuforum\subscriptions::is_subscribable($forum);
+    $forum->cansubscribe = $forum->cansubscribe || has_capability('mod/hsuforum:managesubscriptions', $context);
+    $forum->issubscribed = mod_hsuforum\subscriptions::is_subscribed($USER->id, $forum, null, $cm);
+
+    $showsubscriptioncolumns = $showsubscriptioncolumns || $forum->issubscribed || $forum->cansubscribe;
+
+    // Fill two type array - order in modinfo is the same as in course.
     if ($forum->type == 'news' or $forum->type == 'social') {
         $generalforums[$forum->id] = $forum;
 
@@ -207,9 +215,8 @@ if (!is_null($subscribe) and !isguestuser()) {
     }
 }
 
-/// First, let's process the general forums and build up a display
-
 if ($generalforums) {
+    // Process general forums.
     foreach ($generalforums as $forum) {
         $cm      = $modinfo->instances['hsuforum'][$forum->id];
         $context = context_module::instance($cm->id);
@@ -233,21 +240,14 @@ if ($generalforums) {
 
         $row = array ($forumlink, $forum->intro, $discussionlink, $unreadlink);
 
-        if ($can_subscribe) {
+        if ($showsubscriptioncolumns) {
             $row[] = hsuforum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
-                    'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
-                    'cantsubscribe' => '-'), false, false, true);
-
-            $digestoptions_selector->url->param('id', $forum->id);
-            if ($forum->maildigest === null) {
-                $digestoptions_selector->selected = -1;
-            } else {
-                $digestoptions_selector->selected = $forum->maildigest;
-            }
-            $row[] = $OUTPUT->render($digestoptions_selector);
+                'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
+                'cantsubscribe' => '-'), false, false, true);
+            $row[] = hsuforum_index_get_forum_subscription_selector($forum);
         }
 
-        //If this forum has RSS activated, calculate it
+        // If this forum has RSS activated, calculate it.
         if ($show_rss) {
             if ($forum->rsstype and $forum->rssarticles) {
                 //Calculate the tooltip text
@@ -282,7 +282,7 @@ $learningtable->align = array ('left', 'left', 'center');
 $learningtable->head[] = $strunreadposts;
 $learningtable->align[] = 'center';
 
-if ($can_subscribe) {
+if ($showsubscriptioncolumns) {
     $learningtable->head[] = $strsubscribed;
     $learningtable->align[] = 'center';
 
@@ -413,3 +413,24 @@ if ($learningforums) {
 
 echo $OUTPUT->footer();
 
+/**
+ * Get the content of the forum subscription options for this forum.
+ *
+ * @param   stdClass    $forum      The forum to return options for
+ * @return  string
+ */
+function hsuforum_index_get_forum_subscription_selector($forum) {
+    global $OUTPUT, $PAGE;
+
+    if ($forum->cansubscribe || $forum->issubscribed) {
+        if ($forum->maildigest === null) {
+            $forum->maildigest = -1;
+        }
+
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+        return $OUTPUT->render($renderer->render_digest_options($forum, $forum->maildigest));
+    } else {
+        // This user can subscribe to some forums. Add the empty fields.
+        return '';
+    }
+};

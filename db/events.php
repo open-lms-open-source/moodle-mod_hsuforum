@@ -42,4 +42,14 @@ $observers = array(
         'eventname' => '\core\event\course_module_created',
         'callback'  => 'mod_hsuforum_observer::course_module_created',
     ),
+
+    array(
+        'eventname' => '\core\event\course_created',
+        'callback'  => 'mod_hsuforum_observer::course_created',
+    ),
+
+    array(
+        'eventname' => '\core\event\course_updated',
+        'callback'  => 'mod_hsuforum_observer::course_updated',
+    ),
 );

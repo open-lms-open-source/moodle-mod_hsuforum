@@ -25,7 +25,7 @@
  * @author Mark Nielsen
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require(__DIR__.'/../../config.php');
 require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 require_once($CFG->dirroot.'/rating/lib.php');
 

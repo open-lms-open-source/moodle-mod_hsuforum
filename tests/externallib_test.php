@@ -70,6 +70,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $record->introformat = FORMAT_HTML;
         $record->course = $course2->id;
         $forum2 = self::getDataGenerator()->create_module('hsuforum', $record);
+        $forum2->introfiles = [];
 
         // Add discussions to the forums.
         $record = new stdClass();
@@ -80,6 +81,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         // Expect one discussion.
         $forum1->numdiscussions = 1;
         $forum1->cancreatediscussions = true;
+        $forum1->introfiles = [];
 
         $record = new stdClass();
         $record->course = $course2->id;
@@ -209,6 +211,19 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $record->parent = $discussion1->firstpost;
         $record->userid = $user2->id;
         $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+        $filename = 'shouldbeanimage.jpg';
+        // Add a fake inline image to the post.
+        $filerecordinline = array(
+            'contextid' => $forum1context->id,
+            'component' => 'mod_hsuforum',
+            'filearea'  => 'post',
+            'itemid'    => $discussion1reply1->id,
+            'filepath'  => '/',
+            'filename'  => $filename,
+        );
+        $fs = get_file_storage();
+        $timepost = time();
+        $fs->create_file_from_string($filerecordinline, 'image contents (not really)');
 
         $record->parent = $discussion1reply1->id;
         $record->userid = $user3->id;
@@ -243,6 +258,17 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'messageformat' => 1,   // This value is usually changed by external_format_text() function.
             'messagetrust' => $discussion1reply1->messagetrust,
             'attachment' => $discussion1reply1->attachment,
+            'messageinlinefiles' => array(
+                array(
+                    'filename' => $filename,
+                    'filepath' => '/',
+                    'filesize' => '27',
+                    'fileurl' => moodle_url::make_webservice_pluginfile_url($forum1context->id, 'mod_hsuforum', 'post',
+                                    $discussion1reply1->id, '/', $filename),
+                    'timemodified' => $timepost,
+                    'mimetype' => 'image/jpeg',
+                )
+            ),
             'totalscore' => $discussion1reply1->totalscore,
             'mailnow' => $discussion1reply1->mailnow,
             'children' => array($discussion1reply2->id),
