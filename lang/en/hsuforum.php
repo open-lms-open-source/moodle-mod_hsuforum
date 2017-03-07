@@ -178,11 +178,6 @@ $string['emaildigesttype_help'] = 'The type of notification that you will receiv
 * Digest - complete posts - you will receive one digest e-mail per day containing the complete contents of each forum post;
 * Digest - subjects only - you will receive one digest e-mail per day containing just the subject of each forum post.
 ';
-$string['emaildigestupdated'] = 'The e-mail digest option was changed to \'{$a->maildigesttitle}\' for the forum \'{$a->forum}\'. {$a->maildigestdescription}';
-$string['emaildigestupdated_default'] = 'Your default profile setting of \'{$a->maildigesttitle}\' was used for the forum \'{$a->forum}\'. {$a->maildigestdescription}.';
-$string['emaildigest_0'] = 'You will receive one e-mail per forum post.';
-$string['emaildigest_1'] = 'You will receive one digest e-mail per day containing the complete contents of each forum post.';
-$string['emaildigest_2'] = 'You will receive one digest e-mail per day containing the subject of each forum post.';
 $string['emptymessage'] = 'Something was wrong with your post. Perhaps you left it blank or the attachment was too big. Your changes have NOT been saved.';
 $string['erroremptymessage'] = 'Post message cannot be empty';
 $string['erroremptysubject'] = 'Post subject cannot be empty.';
@@ -218,8 +213,9 @@ $string['hsuforum:pindiscussions'] = 'Pin discussions';
 $string['hsuforum:postwithoutthrottling'] = 'Exempt from post threshold';
 $string['forumname'] = 'Forum name';
 $string['forumposts'] = 'Forum posts';
-$string['hsuforum:addnews'] = 'Add news';
+$string['hsuforum:addnews'] = 'Add announcements';
 $string['hsuforum:addquestion'] = 'Add question';
+$string['hsuforum:canoverridediscussionlock'] = 'Reply to locked discussions';
 $string['hsuforum:rate'] = 'Rate posts';
 $string['hsuforum:replynews'] = 'Reply to announcements';
 $string['hsuforum:replypost'] = 'Reply to posts';
@@ -263,11 +259,19 @@ $string['invalidparentpostid'] = 'Parent post ID was incorrect';
 $string['invalidpostid'] = 'Invalid post ID - {$a}';
 $string['lastposttimeago'] = 'Last {$a}';
 $string['learningforums'] = 'Learning forums';
+$string['lockdiscussionafter'] = 'Lock discussions after period of inactivity';
+$string['lockdiscussionafter_help'] = 'Discussions may be automatically locked after a specified time has elapsed since the last reply.
+
+Users with the capability to reply to locked discussions can unlock a discussion by replying to it.';
 $string['longpost'] = 'Long post';
 $string['mailnow'] = 'Email notifications without editing time delay';
 $string['manydiscussions'] = 'Discussions per page';
 $string['markalldread'] = 'Mark all posts in this discussion read.';
 $string['markallread'] = 'Mark all posts in this forum read.';
+$string['markasreadonnotification'] = 'When sending forum post notifications';
+$string['markasreadonnotificationno'] = 'Do not mark the post as read';
+$string['markasreadonnotificationyes'] = 'Mark the post as read';
+$string['markasreadonnotification_help'] = 'When you are notified of a forum post, you can choose whether this should mark the post as read for the purpose of forum tracking.';
 $string['markread'] = 'Mark read';
 $string['markreadbutton'] = 'Mark<br />read';
 $string['markunread'] = 'Mark unread';

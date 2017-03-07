@@ -1047,7 +1047,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEmpty($neighbours['next']);
 
         // Querying the neighbours of a discussion passing the wrong CM.
-        $this->setExpectedException('coding_exception');
+        $this->expectException('coding_exception');
         hsuforum_get_discussion_neighbours($cm2, $disc11, $forum2);
     }
 
@@ -1730,7 +1730,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         }
 
         // Get all my g2 discussions.
-        $discussions = hsuforum_get_discussions($cm, '', true, -1, -1, false, -1, 0, $group2->id, false);
+        $discussions = hsuforum_get_discussions($cm, '', true, -1, -1, false, -1, 0, $group2->id, 0, false);
         self::assertCount(1, $discussions);
         $discussion = array_shift($discussions);
         self::assertEquals($group2->id, $discussion->groupid);
@@ -2749,7 +2749,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             new \mod_hsuforum\attachments($forum, $modcontext), \mod_hsuforum_post_form::attachment_options($forum),
             true
         );
-        
+
         // Define the expected exception with its error message
         $params = array(
             'file' => '\'' . $filerecord['filename'] . '\'',

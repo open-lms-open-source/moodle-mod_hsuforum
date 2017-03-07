@@ -92,6 +92,7 @@ class mod_hsuforum_external extends external_api {
                 // Format the intro before being returning using the format setting.
                 list($forum->intro, $forum->introformat) = external_format_text($forum->intro, $forum->introformat,
                                                                                 $context->id, 'mod_hsuforum', 'intro', 0);
+                $forum->introfiles = external_util::get_area_files($context->id, 'mod_hsuforum', 'intro', false, false);
                 // Discussions count. This function does static request cache.
                 $forum->numdiscussions = hsuforum_count_discussions($forum, $cm, $course);
                 $forum->cmid = $forum->coursemodule;
@@ -146,6 +147,7 @@ class mod_hsuforum_external extends external_api {
                     'gradetype' => new external_value(PARAM_INT, 'Gradetype'),
                     'numdiscussions' => new external_value(PARAM_INT, 'Number of discussions'),
                     'cancreatediscussions' => new external_value(PARAM_BOOL, 'If the user can create discussions', VALUE_OPTIONAL),
+                    'lockdiscussionafter' => new external_value(PARAM_INT, 'After what period a discussion is locked', VALUE_OPTIONAL),
                 ), 'hsuforum'
             )
         );
@@ -308,16 +310,9 @@ class mod_hsuforum_external extends external_api {
                                 'message' => new external_value(PARAM_RAW, 'The post message'),
                                 'messageformat' => new external_value(PARAM_INT, 'The post message format'),
                                 'messagetrust' => new external_value(PARAM_INT, 'Can we trust?'),
+                                'messageinlinefiles' => new external_files('post message inline files', VALUE_OPTIONAL),
                                 'attachment' => new external_value(PARAM_RAW, 'Attachments'),
-                                'attachments' => new external_multiple_structure(
-                                    new external_single_structure(
-                                        array (
-                                            'filename' => new external_value(PARAM_FILE, 'file name'),
-                                            'mimetype' => new external_value(PARAM_RAW, 'mime type'),
-                                            'fileurl'  => new external_value(PARAM_URL, 'file download url')
-                                        )
-                                    ), 'attachments', VALUE_OPTIONAL
-                                ),
+                                'attachments' => new external_files('attachments', VALUE_OPTIONAL),
                                 'totalscore' => new external_value(PARAM_INT, 'The post message total score'),
                                 'mailnow' => new external_value(PARAM_INT, 'Mail now?'),
                                 'children' => new external_multiple_structure(new external_value(PARAM_INT, 'children post id')),
@@ -465,31 +460,6 @@ class mod_hsuforum_external extends external_api {
                     $discussion->numreplies = (int) $replies[$discussion->discussion]->replies;
                 }
 
-                $picturefields = explode(',', user_picture::fields());
-
-                // Load user objects from the results of the query.
-                $user = new stdclass();
-                $user->id = $discussion->userid;
-                $user = username_load_fields_from_object($user, $discussion, null, $picturefields);
-                // Preserve the id, it can be modified by username_load_fields_from_object.
-                $user->id = $discussion->userid;
-                $discussion->userfullname = fullname($user, $canviewfullname);
-
-                $userpicture = new user_picture($user);
-                $userpicture->size = 1; // Size f1.
-                $discussion->userpictureurl = $userpicture->get_url($PAGE)->out(false);
-
-                $usermodified = new stdclass();
-                $usermodified->id = $discussion->usermodified;
-                $usermodified = username_load_fields_from_object($usermodified, $discussion, 'um', $picturefields);
-                // Preserve the id (it can be overwritten due to the prefixed $picturefields).
-                $usermodified->id = $discussion->usermodified;
-                $discussion->usermodifiedfullname = fullname($usermodified, $canviewfullname);
-
-                $userpicture = new user_picture($usermodified);
-                $userpicture->size = 1; // Size f1.
-                $discussion->usermodifiedpictureurl = $userpicture->get_url($PAGE)->out(false);
-
                 // Rewrite embedded images URLs.
                 list($discussion->message, $discussion->messageformat) =
                     external_format_text($discussion->message, $discussion->messageformat,
@@ -497,22 +467,50 @@ class mod_hsuforum_external extends external_api {
 
                 // List attachments.
                 if (!empty($discussion->attachment)) {
-                    $discussion->attachments = array();
+                    $discussion->attachments = external_util::get_area_files($modcontext->id, 'mod_hsuforum', 'attachment',
+                                                                                $discussion->id);
+                }
+                $messageinlinefiles = external_util::get_area_files($modcontext->id, 'mod_hsuforum', 'post', $discussion->id);
+                if (!empty($messageinlinefiles)) {
+                    $discussion->messageinlinefiles = $messageinlinefiles;
+                }
 
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modcontext->id, 'mod_hsuforum', 'attachment',
-                                                        $discussion->id, "filename", false)) {
-                        foreach ($files as $file) {
-                            $filename = $file->get_filename();
+                $discussion->locked = hsuforum_discussion_is_locked($forum, $discussion);
+                $discussion->canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
-                            $discussion->attachments[] = array(
-                                'filename' => $filename,
-                                'mimetype' => $file->get_mimetype(),
-                                'fileurl'  => file_encode_url($CFG->wwwroot.'/webservice/pluginfile.php',
-                                                '/'.$modcontext->id.'/mod_hsuforum/attachment/'.$discussion->id.'/'.$filename)
-                            );
-                        }
-                    }
+                if (hsuforum_is_author_hidden($discussion, $forum)) {
+                    $discussion->userid = null;
+                    $discussion->userfullname = null;
+                    $discussion->userpictureurl = null;
+
+                    $discussion->usermodified = null;
+                    $discussion->usermodifiedfullname = null;
+                    $discussion->usermodifiedpictureurl = null;
+                } else {
+                    $picturefields = explode(',', user_picture::fields());
+
+                    // Load user objects from the results of the query.
+                    $user = new stdclass();
+                    $user->id = $discussion->userid;
+                    $user = username_load_fields_from_object($user, $discussion, null, $picturefields);
+                    // Preserve the id, it can be modified by username_load_fields_from_object.
+                    $user->id = $discussion->userid;
+                    $discussion->userfullname = fullname($user, $canviewfullname);
+
+                    $userpicture = new user_picture($user);
+                    $userpicture->size = 1; // Size f1.
+                    $discussion->userpictureurl = $userpicture->get_url($PAGE)->out(false);
+
+                    $usermodified = new stdclass();
+                    $usermodified->id = $discussion->usermodified;
+                    $usermodified = username_load_fields_from_object($usermodified, $discussion, 'um', $picturefields);
+                    // Preserve the id (it can be overwritten due to the prefixed $picturefields).
+                    $usermodified->id = $discussion->usermodified;
+                    $discussion->usermodifiedfullname = fullname($usermodified, $canviewfullname);
+
+                    $userpicture = new user_picture($usermodified);
+                    $userpicture->size = 1; // Size f1.
+                    $discussion->usermodifiedpictureurl = $userpicture->get_url($PAGE)->out(false);
                 }
 
                 $discussions[] = $discussion;

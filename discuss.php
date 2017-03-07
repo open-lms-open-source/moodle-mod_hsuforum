@@ -260,6 +260,10 @@
         );
     }
 
+    if (hsuforum_discussion_is_locked($forum, $discussion)) {
+        echo html_writer::div(get_string('discussionlocked', 'hsuforum'), 'discussionlocked');
+    }
+
     if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
         $a = new stdClass();
         $a->blockafter  = $forum->blockafter;
@@ -279,7 +283,7 @@
     $canrate = \mod_hsuforum\local::cached_has_capability('mod/hsuforum:rate', $modcontext);
     hsuforum_print_discussion($course, $cm, $forum, $discussion, $post, $canreply, $canrate);
 
-    echo '<div class="discussioncontrols clearfix"><div class="controlscontainer">';
+    echo '<div class="discussioncontrols clearfix"><div class="controlscontainer m-b-1">';
 
     if (!empty($CFG->enableportfolios) && local::cached_has_capability('mod/hsuforum:exportdiscussion', $modcontext) && empty($forum->anonymous)) {
         require_once($CFG->libdir.'/portfoliolib.php');

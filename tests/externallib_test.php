@@ -392,6 +392,158 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Test get forum discussions paginated
+     */
+    public function test_mod_hsuforum_get_forum_discussions_paginated() {
+        global $USER, $CFG, $DB, $PAGE;
+
+        $this->resetAfterTest(true);
+
+        // Set the CFG variable to allow track forums.
+        $CFG->forum_trackreadposts = true;
+
+        // Create a user who can track forums.
+        $record = new stdClass();
+        $record->trackforums = true;
+        $user1 = self::getDataGenerator()->create_user($record);
+        // Create a bunch of other users to post.
+        $user2 = self::getDataGenerator()->create_user();
+        $user3 = self::getDataGenerator()->create_user();
+        $user4 = self::getDataGenerator()->create_user();
+
+        // Set the first created user to the test user.
+        self::setUser($user1);
+
+        // Create courses to add the modules.
+        $course1 = self::getDataGenerator()->create_course();
+
+        // First forum with tracking off.
+        $record = new stdClass();
+        $record->course = $course1->id;
+        $record->trackingtype = HSUFORUM_TRACKING_OFF;
+        $forum1 = self::getDataGenerator()->create_module('hsuforum', $record);
+
+        // Add discussions to the forums.
+        $record = new stdClass();
+        $record->course = $course1->id;
+        $record->userid = $user1->id;
+        $record->forum = $forum1->id;
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
+
+        // Add three replies to the discussion 1 from different users.
+        $record = new stdClass();
+        $record->discussion = $discussion1->id;
+        $record->parent = $discussion1->firstpost;
+        $record->userid = $user2->id;
+        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+
+        $record->parent = $discussion1reply1->id;
+        $record->userid = $user3->id;
+        $discussion1reply2 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+
+        $record->userid = $user4->id;
+        $discussion1reply3 = self::getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($record);
+
+        // Enrol the user in the first course.
+        $enrol = enrol_get_plugin('manual');
+
+        // We don't use the dataGenerator as we need to get the $instance2 to unenrol later.
+        $enrolinstances = enrol_get_instances($course1->id, true);
+        foreach ($enrolinstances as $courseenrolinstance) {
+            if ($courseenrolinstance->enrol == "manual") {
+                $instance1 = $courseenrolinstance;
+                break;
+            }
+        }
+        $enrol->enrol_user($instance1, $user1->id);
+
+        // Delete one user.
+        delete_user($user4);
+
+        // Assign capabilities to view discussions for forum 1.
+        $cm = get_coursemodule_from_id('hsuforum', $forum1->cmid, 0, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+        $newrole = create_role('Role 2', 'role2', 'Role 2 description');
+        $this->assignUserCapability('mod/hsuforum:viewdiscussion', $context->id, $newrole);
+
+        // Create what we expect to be returned when querying the forums.
+
+        $post1 = $DB->get_record('hsuforum_posts', array('id' => $discussion1->firstpost), '*', MUST_EXIST);
+
+        // User pictures are initially empty, we should get the links once the external function is called.
+        $expecteddiscussions = array(
+                'id' => $discussion1->firstpost,
+                'name' => $discussion1->name,
+                'groupid' => $discussion1->groupid,
+                'timemodified' => $discussion1reply3->created,
+                'usermodified' => $discussion1reply3->userid,
+                'timestart' => $discussion1->timestart,
+                'timeend' => $discussion1->timeend,
+                'discussion' => $discussion1->id,
+                'parent' => 0,
+                'userid' => $discussion1->userid,
+                'created' => $post1->created,
+                'modified' => $post1->modified,
+                'mailed' => $post1->mailed,
+                'subject' => $post1->subject,
+                'message' => $post1->message,
+                'messageformat' => $post1->messageformat,
+                'messagetrust' => $post1->messagetrust,
+                'attachment' => $post1->attachment,
+                'totalscore' => $post1->totalscore,
+                'mailnow' => $post1->mailnow,
+                'userfullname' => fullname($user1),
+                'usermodifiedfullname' => fullname($user4),
+                'userpictureurl' => '',
+                'usermodifiedpictureurl' => '',
+                'numreplies' => 3,
+                'numunread' => 3,
+                'pinned' => HSUFORUM_DISCUSSION_UNPINNED,
+                'locked' => false,
+                'canreply' => false,
+            );
+
+        // Call the external function passing forum id.
+        $discussions = mod_hsuforum_external::get_forum_discussions_paginated($forum1->id);
+        $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_paginated_returns(), $discussions);
+        $expectedreturn = array(
+            'discussions' => array($expecteddiscussions),
+            'warnings' => array()
+        );
+
+        // Wait the theme to be loaded (the external_api call does that) to generate the user profiles.
+        $userpicture = new user_picture($user1);
+        $userpicture->size = 1; // Size f1.
+        $expectedreturn['discussions'][0]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
+
+        $userpicture = new user_picture($user4);
+        $userpicture->size = 1; // Size f1.
+        $expectedreturn['discussions'][0]['usermodifiedpictureurl'] = $userpicture->get_url($PAGE)->out(false);
+
+        $this->assertEquals($expectedreturn, $discussions);
+
+        // Call without required view discussion capability.
+        $this->unassignUserCapability('mod/hsuforum:viewdiscussion', $context->id, $newrole);
+        try {
+            mod_hsuforum_external::get_forum_discussions_paginated($forum1->id);
+            $this->fail('Exception expected due to missing capability.');
+        } catch (moodle_exception $e) {
+            $this->assertEquals('noviewdiscussionspermission', $e->errorcode);
+        }
+
+        // Unenrol user from second course.
+        $enrol->unenrol_user($instance1, $user1->id);
+
+        // Call for the second course we unenrolled the user from, make sure exception thrown.
+        try {
+            mod_hsuforum_external::get_forum_discussions_paginated($forum1->id);
+            $this->fail('Exception expected due to being unenrolled from the course.');
+        } catch (moodle_exception $e) {
+            $this->assertEquals('requireloginerror', $e->errorcode);
+        }
+    }
+
+    /**
      * Test get forum discussions paginated (qanda forums)
      */
     public function test_mod_hsuforum_get_forum_discussions_paginated_qanda() {
