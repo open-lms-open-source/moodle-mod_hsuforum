@@ -356,6 +356,6 @@
     echo "</div></div>";
     $editor = new advanced_editor($modcontext);
     echo '<div id="preload-container" style="display: none;"><div id="preload-container-editor">';
-    echo $renderer->render_advanced_editor($editor, 'preload-container-editor').'</div></div>';
+    echo $renderer->render_advanced_editor($editor, 'preload-container-editor', 0).'</div></div>';
     echo "</div></div>";
     echo $OUTPUT->footer();

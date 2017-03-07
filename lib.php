@@ -8424,7 +8424,7 @@ function mod_hsuforum_output_fragment_editor($args) {
         $renderer = $PAGE->get_renderer('mod_hsuforum');
         $editor = new advanced_editor($context);
         if (stristr($args['id'], 'editor-target-container-')) {
-            return $renderer->render_advanced_editor($editor, $args['id']);
+            return $renderer->render_advanced_editor($editor, $args['id'], $args['draftitemid']);
         }
     }
     return '';

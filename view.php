@@ -110,5 +110,5 @@
     echo '</div>';
     echo '<div id="preload-container" style="display: none;"><div id="preload-container-editor">';
     $editor = new advanced_editor($context);
-    echo $renderer->render_advanced_editor($editor, 'preload-container-editor').'</div></div>';
+    echo $renderer->render_advanced_editor($editor, 'preload-container-editor', 0).'</div></div>';
     echo $OUTPUT->footer($course);

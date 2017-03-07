@@ -1852,12 +1852,17 @@ HTML;
      * @param discussion_dateform $dateform
      * @return string
      */
-    public function render_advanced_editor(advanced_editor $advancededitor, $target) {
+    public function render_advanced_editor(advanced_editor $advancededitor, $target, $targetid) {
         $data = $advancededitor->get_data();
         $editor = get_class($data->editor);
         if ($editor == 'atto_texteditor' || $editor == 'tinymce_texteditor'){
             $data->editor->use_editor($target, $data->options, $data->fpoptions);
-            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
+            if ($targetid != 0) {
+                $draftitemid = $targetid;
+            } else{
+                $draftitemid = $data->draftitemid;
+            }
+            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$draftitemid.'" />';
             return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
         }
         return '';
