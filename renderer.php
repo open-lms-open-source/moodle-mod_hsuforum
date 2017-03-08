@@ -961,7 +961,8 @@ HTML;
                 array('toggle:substantive', 'hsuforum'),
                 array('toggled:bookmark', 'hsuforum'),
                 array('toggled:subscribe', 'hsuforum'),
-                array('toggled:substantive', 'hsuforum')
+                array('toggled:substantive', 'hsuforum'),
+                array('addareply', 'hsuforum')
 
             )
         );
