@@ -1853,9 +1853,20 @@ HTML;
      * @return string
      */
     public function render_advanced_editor(advanced_editor $advancededitor, $target, $targetid) {
-        $data = $advancededitor->get_data();
+        $data = $advancededitor->get_data($targetid);
         $editor = get_class($data->editor);
         if ($editor == 'atto_texteditor' || $editor == 'tinymce_texteditor'){
+            if ($editor == 'tinymce_texteditor') {
+                $data->options['enable_filemanagement'] = 1;
+                $data->options['subdirs'] = 0;
+                $data->options['maxfiles'] = -1;
+                $data->options['changeformat'] = 0;
+                $data->options['areamaxbytes'] = -1;
+                $data->options['noclean'] = 0;
+                $data->options['trusttext'] = 1;
+                $data->options['return_types'] = 3;
+                $data->options['enable_filemanagement'] = 1;
+            }
             $data->editor->use_editor($target, $data->options, $data->fpoptions);
             if ($targetid != 0) {
                 $draftitemid = $targetid;

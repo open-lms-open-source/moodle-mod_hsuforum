@@ -53,7 +53,7 @@ class advanced_editor implements \renderable {
      *
      * @return object
      */
-    public function get_data(){
+    public function get_data($draftid = 0){
         global $CFG;
 
         require_once($CFG->dirroot.'/repository/lib.php');
@@ -63,8 +63,12 @@ class advanced_editor implements \renderable {
         $options = ['context' => $this->forumcontext, 'maxbytes' => $this->maxbytes];
 
         $editor = editors_get_preferred_editor(FORMAT_HTML);
+        if ($draftid === 0) {
+            $draftitemid = file_get_unused_draft_itemid();
 
-        $draftitemid = file_get_unused_draft_itemid();
+        } else {
+            $draftitemid = $draftid;
+        }
 
         $args = new \stdClass();
         // need these three to filter repositories list
