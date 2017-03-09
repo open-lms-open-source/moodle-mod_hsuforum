@@ -39,7 +39,6 @@ use WebDriver\Key;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_mod_hsuforum extends behat_base {
-    public $nodeid = "";
 
     /**
      * Adds a topic to the forum specified by it's name. Useful for the Announcements and blog-style forums.
