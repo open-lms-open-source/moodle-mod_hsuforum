@@ -39,6 +39,7 @@ use WebDriver\Key;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_mod_hsuforum extends behat_base {
+    public $nodeid = "";
 
     /**
      * Adds a topic to the forum specified by it's name. Useful for the Announcements and blog-style forums.
@@ -270,6 +271,26 @@ class behat_mod_hsuforum extends behat_base {
     }
 
     /**
+     * Upload image via inline advanced editor.
+     * @param string $fixturefilename
+     *
+     * @Given /^Advanced Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor tinymce$/
+     */
+    public function i_upload_image_using_inline_advanced_editor_tinymce($fixturefilename) {
+        $this->execute('behat_forms::press_button', 'Insert/edit image');
+        $this->execute('behat_mod_hsuforum::i_find_and_switch_to_iframe', array('iframe[id^="mce_inlinepop"]', 'css'));
+        $this->execute('behat_general::i_click_on', array('#srcbrowser_link', "css_element"));
+        $this->execute('behat_general::switch_to_the_main_frame');
+        $this->execute('behat_general::click_link', 'Upload a file');
+        $this->i_upload_file_using_input($fixturefilename, 'input[name="repo_upload_file"]');
+        $this->execute('behat_forms::press_button', 'Upload this file');
+        $this->execute('behat_mod_hsuforum::i_find_and_switch_to_iframe', array('iframe[id^="mce_inlinepop"]', 'css'));
+        $this->execute('behat_forms::i_set_the_field_to', ['Image description', 'Test fixture']);
+        $this->execute('behat_forms::press_button', 'insert');
+        $this->execute('behat_general::switch_to_the_main_frame');
+    }
+
+    /**
      * Image exists on page.
      * @param string $fixturefilename
      *
@@ -278,5 +299,30 @@ class behat_mod_hsuforum extends behat_base {
     public function image_exists($filename) {
         $images = $this->find_all('css', 'img[src*="'.$filename.'"]');
         return !empty($images);
+    }
+
+    /**
+     * Switches to the specified iframe.
+     *
+     * @Given /^I change focus to "(?P<iframe_name_string>(?:[^"]|\\")*)" iframe "(?P<selector_string>[^"]*)"$/
+     * @param string $iframename
+     */
+    public function i_find_and_switch_to_iframe($iframename, $selectortype) {
+
+        // We spin to give time to the iframe to be loaded.
+        // Using extended timeout as we don't know about which
+        // kind of iframe will be loaded.
+        $node = $this->find($selectortype, $iframename);
+        $iframename = $node->getAttribute('id');
+        $this->spin(
+            function($context, $iframename) {
+                $context->getSession()->switchToIFrame($iframename);
+
+                // If no exception we are done.
+                return true;
+            },
+            $iframename,
+            self::EXTENDED_TIMEOUT
+        );
     }
 }
