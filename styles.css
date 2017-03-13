@@ -451,7 +451,8 @@ FUN WITH FORMS
     background-color:white;
 }
 
-.hsuforum-post-body input[type=file], .editor_atto_wrap input[type=file] {
+.hsuforum-post-body input[type=file],
+.hsuforum-reply-wrapper .editor_atto_wrap input[type=file] {
     line-height: 1;
     font-weight: normal;
 }
@@ -523,7 +524,8 @@ FUN WITH FORMS
         width: 15.73%;
 
     }
-    .hsuforum-post-body, .editor_atto_wrap{
+    .hsuforum-post-body,
+    .hsuforum-reply-wrapper .editor_atto_wrap {
         float: left;
         width: 84.27%;
     }
