@@ -270,7 +270,7 @@ class behat_mod_hsuforum extends behat_base {
     }
 
     /**
-     * Upload image via inline advanced editor.
+     * Upload image via inline advanced editor (TinyMCE).
      * @param string $fixturefilename
      *
      * @Given /^Advanced Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor tinymce$/
@@ -301,7 +301,7 @@ class behat_mod_hsuforum extends behat_base {
     }
 
     /**
-     * Switches to the specified iframe.
+     * Find and switches to the specified iframe, so this function acepts selectors like div[id^="value"].
      *
      * @Given /^I change focus to "(?P<iframe_name_string>(?:[^"]|\\")*)" iframe "(?P<selector_string>[^"]*)"$/
      * @param string $iframename
