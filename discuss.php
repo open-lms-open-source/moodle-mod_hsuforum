@@ -220,6 +220,7 @@
 
     $renderer = $PAGE->get_renderer('mod_hsuforum');
     $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
+    $PAGE->requires->js_call_amd('mod_hsuforum/advanced_editor', 'initialize', ['.box.mod-hsuforum-posts-container.article', $cm->id]);
 
     $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);
@@ -355,7 +356,8 @@
     $neighbours = hsuforum_get_discussion_neighbours($cm, $discussion, $forum);
     echo $renderer->discussion_navigation($neighbours['prev'], $neighbours['next']);
     echo "</div></div>";
-
-echo $renderer->render(new advanced_editor($modcontext));
-
-echo $OUTPUT->footer();
+    $editor = new advanced_editor($modcontext);
+    echo '<div id="preload-container" style="display: none;"><div id="preload-container-editor">';
+    echo $renderer->render_advanced_editor($editor, 'preload-container-editor', 0).'</div></div>';
+    echo "</div></div>";
+    echo $OUTPUT->footer();

@@ -961,7 +961,8 @@ HTML;
                 array('toggle:substantive', 'hsuforum'),
                 array('toggled:bookmark', 'hsuforum'),
                 array('toggled:subscribe', 'hsuforum'),
-                array('toggled:substantive', 'hsuforum')
+                array('toggled:substantive', 'hsuforum'),
+                array('addareply', 'hsuforum')
 
             )
         );
@@ -1667,7 +1668,7 @@ HTML;
             $mailnowcb = '<label>' . get_string('mailnow', 'hsuforum') . ' ' .
                     '<input name="mailnow" type="checkbox" value="1" id="id_mailnow"></label>';
         }
-
+        $timestamp = time();
         return <<<HTML
 <div class="hsuforum-reply-wrapper$t->thresholdblocked">
     <form method="post" role="region" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
@@ -1683,8 +1684,9 @@ HTML;
                     <span class="accesshide">$t->subjectlabel</span>
                     <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
                 </label>
+                <div id="editor-info"></div>
                 <textarea name="message" class="hidden"></textarea>
-                <div data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
+                <div id="editor-target-container-$timestamp" data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
 
                 $files
 
@@ -1851,12 +1853,28 @@ HTML;
      * @param discussion_dateform $dateform
      * @return string
      */
-    public function render_advanced_editor(advanced_editor $advancededitor) {
-        $data = $advancededitor->get_data();
+    public function render_advanced_editor(advanced_editor $advancededitor, $target, $targetid) {
+        $data = $advancededitor->get_data($targetid);
         $editor = get_class($data->editor);
         if ($editor == 'atto_texteditor' || $editor == 'tinymce_texteditor'){
-            $data->editor->use_editor('hiddenadvancededitor', $data->options, $data->fpoptions);
-            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$data->draftitemid.'" />';
+            if ($editor == 'tinymce_texteditor') {
+                $data->options['enable_filemanagement'] = 1;
+                $data->options['subdirs'] = 0;
+                $data->options['maxfiles'] = -1;
+                $data->options['changeformat'] = 0;
+                $data->options['areamaxbytes'] = -1;
+                $data->options['noclean'] = 0;
+                $data->options['trusttext'] = 1;
+                $data->options['return_types'] = 3;
+                $data->options['enable_filemanagement'] = 1;
+            }
+            $data->editor->use_editor($target, $data->options, $data->fpoptions);
+            if ($targetid != 0) {
+                $draftitemid = $targetid;
+            } else{
+                $draftitemid = $data->draftitemid;
+            }
+            $draftitemidfld = '<input type="hidden" id="hiddenadvancededitordraftid" name="hiddenadvancededitor[itemid]" value="'.$draftitemid.'" />';
             return '<div id="hiddenadvancededitorcont">'.$draftitemidfld.'<textarea style="display:none" id="hiddenadvancededitor"></textarea></div>';
         }
         return '';
