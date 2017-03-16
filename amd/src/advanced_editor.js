@@ -47,10 +47,9 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/templates', 'core/frag
                     var advanced = parent.find('div[id^="editor-target-container-"].editor_atto_content');
                     var itemid = parent.find('input[name="itemid"]');
                     var draftitemid = 0;
+                    var posttype = parent.find('#hsuforum-post-type');
                     // If we are adding a discussion or a reply, we need a new fresh draft area, so send 0 to create a new one.
-                    var replylegend = M.util.get_string('addareply', 'hsuforum');
-                    var legend = parent.parent().find('legend');
-                    if (itemid.length === 1 && $('#page-mod-hsuforum-view').length === 0 && legend.text() != replylegend) {
+                    if (posttype.attr('value') === 'edit') {
                         draftitemid = itemid.val();
                     }
                     if (action === 'advanced') {

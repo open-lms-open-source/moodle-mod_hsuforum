@@ -1669,6 +1669,11 @@ HTML;
                     '<input name="mailnow" type="checkbox" value="1" id="id_mailnow"></label>';
         }
         $timestamp = time();
+        if ($t->postid === 0) {
+            $postype = 'new';
+        } else {
+            $postype = 'edit';
+        }
         return <<<HTML
 <div class="hsuforum-reply-wrapper$t->thresholdblocked">
     <form method="post" role="region" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
@@ -1680,6 +1685,7 @@ HTML;
                 $t->userpicture
             </div>
             <div class="hsuforum-post-body">
+            <input type="hidden" id="hsuforum-post-type" value="$postype">
                 <label>
                     <span class="accesshide">$t->subjectlabel</span>
                     <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
