@@ -902,3 +902,10 @@ FUN WITH FORMS
 .path-mod-hsuforum .advancedoptions #fitem_id_timeend {
     margin: 0.5em 0;
 }
+
+#page-mod-hsuforum-view img.mceIcon, #page-mod-hsuforum-discuss img.mceIcon {
+    padding: 0px;
+}
+#page-mod-hsuforum-view span.mceIcon, #page-mod-hsuforum-discuss span.mceIcon {
+    padding: 7px;
+}
