@@ -2460,12 +2460,6 @@ function hsuforum_get_user_posts($forumid, $userid, context_module $context = nu
         }
     }
 
-    $updatedsincesql = '';
-    if (!empty($updatedsince)) {
-        $updatedsincesql = 'AND d.timemodified > ?';
-        $params[] = $updatedsince;
-    }
-
     $allnames = get_all_user_name_fields(true, 'u');
     return $DB->get_records_sql("SELECT p.*, d.forum, $allnames, u.email, u.picture, u.imagealt, r.lastread AS postread
                               FROM {hsuforum} f
