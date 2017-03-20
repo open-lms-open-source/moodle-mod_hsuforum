@@ -395,12 +395,10 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
      * Test get forum discussions paginated
      */
     public function test_mod_hsuforum_get_forum_discussions_paginated() {
-        global $USER, $CFG, $DB, $PAGE;
+        global $USER, $DB, $PAGE;
 
         $this->resetAfterTest(true);
 
-        // Set the CFG variable to allow track forums.
-        $CFG->forum_trackreadposts = true;
 
         // Create a user who can track forums.
         $record = new stdClass();

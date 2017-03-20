@@ -1,4 +1,4 @@
-@mod @mod_forum
+@mod @mod_hsuforum
 Feature: The forum search allows users to perform advanced searches for forum posts
   In order to perform an advanced search for a forum post
   As a teacher
@@ -38,10 +38,10 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I follow "Course 1"
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search"
     And I should see "Advanced search"
     And I set the field "words" to "subject"
-    When I press "Search forums"
+    When I press "Search"
     Then I should see "My subject"
     And I should see "My subjective"
 
@@ -49,11 +49,11 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I follow "Course 1"
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search"
     And I should see "Advanced search"
     And I set the field "words" to "My"
     And I set the field "notwords" to "subjective"
-    When I press "Search forums"
+    When I press "Search"
     Then I should see "My subject"
     And I should not see "My subjective"
 
@@ -64,10 +64,10 @@ Feature: The forum search allows users to perform advanced searches for forum po
     And I log in as "student1"
     And I follow "Course 1"
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search"
     And I should see "Advanced search"
     And I set the field "fullwords" to "subject"
-    When I press "Search forums"
+    When I press "Search"
     Then I should see "My subject"
     And I should not see "My subjective"
 
@@ -75,27 +75,27 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I follow "Course 1"
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search"
     And I should see "Advanced search"
     And I set the field "subject" to "subjective"
-    When I press "Search forums"
+    When I press "Search"
     Then I should not see "My message"
     And I should see "My subjective"
 
   Scenario: Perform an advanced search matching the author
     Given I log in as "teacher2"
     And I follow "Course 1"
-    And I add a new topic to "Announcements" forum with:
+    And I add a new topic to "Announcements" advanced forum with:
       | Subject | My Subjects |
       | Message | My message |
     And I log out
     When I log in as "student1"
     And I follow "Course 1"
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search"
     And I should see "Advanced search"
     And I set the field "user" to "TWO"
-    And I press "Search forums"
+    And I press "Search"
     Then I should see "Teacher TWO"
     And I should not see "Teacher ONE"
 
@@ -103,9 +103,9 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I follow "Course 1"
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search"
     And I should see "Advanced search"
     And I set the field "subject" to "my subjective"
-    When I press "Search forums"
+    When I press "Search"
     Then I should not see "My message"
     And I should see "My subjective"
