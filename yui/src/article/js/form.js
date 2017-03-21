@@ -187,9 +187,9 @@ Y.extend(FORM, Y.Base,
 
         handleTimeToggle: function(e) {
             if (e.currentTarget.get('checked')) {
-                e.currentTarget.ancestor('.felement.fdate_time_selector').all('select').removeAttribute('disabled');
+                e.currentTarget.ancestor('.fdate_time_selector').all('select').removeAttribute('disabled');
             } else {
-                e.currentTarget.ancestor('.felement.fdate_time_selector').all('select').setAttribute('disabled', 'disabled');
+                e.currentTarget.ancestor('.fdate_time_selector').all('select').setAttribute('disabled', 'disabled');
             }
         },
 
@@ -490,20 +490,33 @@ Y.extend(FORM, Y.Base,
          */
         applyDateFields: function() {
 
-            var datefs = Y.one('#discussion_dateform fieldset');
-            if (!datefs) {
-                return;
-            }
-            datefs.addClass('dateform_fieldset');
-            datefs.removeClass('hidden');
-            // Remove legend if present
-            if (datefs.one('legend')) {
-                datefs.one('legend').remove();
-            }
+            if (Y.one('.dateformtarget')) {
+                var datefs = Y.one('#discussion_dateform fieldset');
+                if (!datefs) {
+                    datefs = Y.Node.create('<fieldset/>');
+                    datefs.addClass('form-inline');
+                    var fitems = Y.all('#discussion_dateform div.row.fitem');
+                    fitems.each(function (fitem, index) {
+                        if (index > 0) {
+                            datefs.appendChild(fitem);
+                        }
+                    });
+                }
+                if (!datefs) {
+                    return;
+                }
+                datefs.addClass('dateform_fieldset');
+                datefs.removeClass('hidden');
+                // Remove legend if present
+                if (datefs.one('legend')) {
+                    datefs.one('legend').remove();
+                }
 
-            Y.one('.dateformtarget').append(datefs);
-            // Stop calendar button from routing.
-            Y.all('.dateformtarget .fitem_fdate_time_selector a').addClass('disable-router');
+                // Stop calendar button from routing.
+                datefs.all('a.visibleifjs').addClass('disable-router');
+
+                Y.one('.dateformtarget').append(datefs);
+            }
 
             this.setDateFieldsClassState();
         },
@@ -543,8 +556,8 @@ Y.extend(FORM, Y.Base,
          *
          */
         setDefaultDateSettings: function () {
-            var checkstart = Y.one('#id_timestart_enabled').ancestor('.felement.fdate_time_selector');
-            var checkend = Y.one('#id_timeend_enabled').ancestor('.felement.fdate_time_selector');
+            var checkstart = Y.one('#id_timestart_enabled').ancestor('.felement');
+            var checkend = Y.one('#id_timeend_enabled').ancestor('.felement');
             checkstart.all('select').setAttribute('disabled', 'disabled');
             checkend.all('select').setAttribute('disabled', 'disabled');
         },

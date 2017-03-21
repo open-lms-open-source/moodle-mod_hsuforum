@@ -5493,7 +5493,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         '<form class="hsuforum-add-discussion" id="newdiscussionform" method="get" action="'.$CFG->wwwroot.'/mod/hsuforum/post.php">
         <div>
         <input type="hidden" name="forum" value="'.$forum->id.'" />
-        <input type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" />
+        <input type="submit" value="'.get_string('addanewtopic', 'hsuforum').'" class="btn btn-primary" />
         </div>
         </form>';
     }
