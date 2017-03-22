@@ -33,7 +33,7 @@
  * @author Mark Nielsen
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require(__DIR__.'/../../config.php');
 require_once($CFG->dirroot.'/mod/hsuforum/lib.php');
 
 $id      = required_param('id', PARAM_INT);             // the forum to subscribe or unsubscribe to

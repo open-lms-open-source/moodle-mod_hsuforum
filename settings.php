@@ -30,9 +30,6 @@ if ($ADMIN->fulltree) {
 
     $config = get_config('hsuforum');
 
-    $settings->add(new admin_setting_configcheckbox('hsuforum/replytouser', get_string('replytouser', 'hsuforum'),
-                       get_string('configreplytouser', 'hsuforum'), 1));
-
     // Less non-HTML characters than this is short
     $settings->add(new admin_setting_configtext('hsuforum/shortpost', get_string('shortpost', 'hsuforum'),
                        get_string('configshortpost', 'hsuforum'), 300, PARAM_INT));

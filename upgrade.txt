@@ -1,6 +1,41 @@
 This files describes API changes in /mod/hsuforum/*,
 information provided here is intended especially for developers.
 
+=== 3.2 ===
+ * The setting $CFG->hsuforum_replytouser has been removed in favour of a centralized noreplyaddress setting.
+   Please use $CFG->noreplyaddress setting instead.
+ * The following functions have been finally deprecated and should no longer be used.
+  - hsuforum_count_unrated_posts
+  - hsuforum_tp_count_discussion_read_records
+  - hsuforum_get_user_discussions
+  - hsuforum_tp_count_forum_posts
+  - hsuforum_tp_count_forum_read_records
+  - hsuforum_get_open_modes
+  - hsuforum_get_child_posts
+  - hsuforum_get_discussion_posts
+  - hsuforum_get_ratings
+  - hsuforum_get_tracking_link
+  - hsuforum_tp_count_discussion_unread_posts
+  - hsuforum_convert_to_roles
+  - hsuforum_tp_get_read_records
+  - hsuforum_tp_get_discussion_read_records
+  - hsuforum_user_enrolled
+  - hsuforum_user_can_view_post
+  - hsuforum_shorten_post
+  - hsuforum_is_subscribed
+  - hsuforum_subscribe
+  - hsuforum_unsubscribe
+  - hsuforum_subscribed_users
+  - hsuforum_is_forcesubscribed
+  - hsuforum_forcesubscribe
+  - hsuforum_get_forcesubscribed
+  - hsuforum_get_subscribed_forums
+  - hsuforum_get_optional_subscribed_forums
+  - hsuforum_get_potential_subscribers
+ * External functions that were returning file information now return the following file fields:
+   filename, filepath, mimetype, filesize, timemodified and fileurl.
+   Those fields are now marked as VALUE_OPTIONAL for backwards compatibility.
+
 === 3.1 ===
  * The inteface to hsuforum_get_email_message_id() has changed and no longer needs the $host argument.
 

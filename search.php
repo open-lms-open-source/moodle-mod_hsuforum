@@ -349,109 +349,20 @@ echo $OUTPUT->footer();
   * @return void The function prints the form.
   */
 function hsuforum_print_big_search_form($course) {
-    global $CFG, $DB, $words, $subject, $phrase, $user, $userid, $fullwords, $notwords, $datefrom, $dateto, $PAGE, $OUTPUT;
+    global $PAGE, $words, $subject, $phrase, $user, $userid, $fullwords, $notwords, $datefrom, $dateto, $OUTPUT;
 
-    echo $OUTPUT->box(get_string('searchforumintro', 'hsuforum'), 'searchbox boxaligncenter', 'intro');
+    $renderable = new \mod_hsuforum\output\big_search_form($course, $user);
+    $renderable->set_words($words);
+    $renderable->set_phrase($phrase);
+    $renderable->set_notwords($notwords);
+    $renderable->set_fullwords($fullwords);
+    $renderable->set_datefrom($datefrom);
+    $renderable->set_dateto($dateto);
+    $renderable->set_subject($subject);
+    $renderable->set_user($user);
 
-    echo $OUTPUT->box_start('generalbox boxaligncenter');
-
-    echo html_writer::script('', $CFG->wwwroot.'/mod/hsuforum/forum.js');
-
-    echo '<form class="form-horizonal" id="searchform" action="search.php" method="get" role="form">';
-
-    echo '<div class="form-group">';
-    echo '<label for="words">'.get_string('searchwords', 'hsuforum').'</label>';
-    echo '<input type="hidden" value="'.$course->id.'" name="id" alt="" />';
-    echo '<input class="form-control" type="text" size="35" name="words" id="words"value="'.s($words, true).'" alt="" />';
-    echo '</div>';
-
-    echo '<div class="form-group">';
-    echo '<label for="phrase">'.get_string('searchphrase', 'hsuforum').'</label>';
-    echo '<input  class="form-control" type="text" size="35" name="phrase" id="phrase" value="'.s($phrase, true).'" alt="" />';
-    echo '</div>';
-
-    echo '<div class="form-group">';
-    echo '<label for="notwords">'.get_string('searchnotwords', 'hsuforum').'</label>';
-    echo '<input  class="form-control" type="text" size="35" name="notwords" id="notwords" value="'.s($notwords, true).'" alt="" />';
-    echo '</div>';
-
-    if ($DB->get_dbfamily() == 'mysql' || $DB->get_dbfamily() == 'postgres') {
-        echo '<div class="form-group">';
-        echo '<label for="fullwords">'.get_string('searchfullwords', 'hsuforum').'</label>';
-        echo '<input  class="form-control" type="text" size="35" name="fullwords" id="fullwords" value="'.s($fullwords, true).'" alt="" />';
-        echo '</div>';
-    }
-
-    echo '<div class="form-group">';
-    echo '<label>'.get_string('searchdatefrom', 'hsuforum').'</label>';
-    if (empty($datefrom)) {
-        $datefromchecked = '';
-        $datefrom = make_timestamp(2000, 1, 1, 0, 0, 0);
-    }else{
-        $datefromchecked = 'checked="checked"';
-    }
-
-    echo '<input name="timefromrestrict" type="checkbox" value="1" alt="'.get_string('searchdatefrom', 'hsuforum').'" onclick="return lockoptions(\'searchform\', \'timefromrestrict\', timefromitems)" '.  $datefromchecked . ' /> ';
-    $selectors = html_writer::select_time('days', 'fromday', $datefrom)
-               . html_writer::select_time('months', 'frommonth', $datefrom)
-               . html_writer::select_time('years', 'fromyear', $datefrom)
-               . html_writer::select_time('hours', 'fromhour', $datefrom)
-               . html_writer::select_time('minutes', 'fromminute', $datefrom);
-    echo $selectors;
-    echo '<input type="hidden" name="hfromday" value="0" />';
-    echo '<input type="hidden" name="hfrommonth" value="0" />';
-    echo '<input type="hidden" name="hfromyear" value="0" />';
-    echo '<input type="hidden" name="hfromhour" value="0" />';
-    echo '<input type="hidden" name="hfromminute" value="0" />';
-    echo '</div>';
-
-    echo '<div class="form-group">';
-    echo '<label>'.get_string('searchdateto', 'hsuforum').'</label>';
-    if (empty($dateto)) {
-        $datetochecked = '';
-        $dateto = time() + 3600;
-    } else {
-        $datetochecked = 'checked="checked"';
-    }
-
-    echo '<input name="timetorestrict" type="checkbox" value="1" alt="'.get_string('searchdateto', 'hsuforum').'" onclick="return lockoptions(\'searchform\', \'timetorestrict\', timetoitems)" ' .$datetochecked. ' /> ';
-    $selectors = html_writer::select_time('days', 'today', $dateto)
-               . html_writer::select_time('months', 'tomonth', $dateto)
-               . html_writer::select_time('years', 'toyear', $dateto)
-               . html_writer::select_time('hours', 'tohour', $dateto)
-               . html_writer::select_time('minutes', 'tominute', $dateto);
-    echo $selectors;
-
-    echo '<input type="hidden" name="htoday" value="0" />';
-    echo '<input type="hidden" name="htomonth" value="0" />';
-    echo '<input type="hidden" name="htoyear" value="0" />';
-    echo '<input type="hidden" name="htohour" value="0" />';
-    echo '<input type="hidden" name="htominute" value="0" />';
-    echo '</div>';
-
-    echo '<div class="form-group">';
-    echo '<label for="menuforumid">'.get_string('searchwhichforums', 'hsuforum').'</label>';
-    echo html_writer::select(hsuforum_menu_list($course), 'forumid', '', array(''=>get_string('allforums', 'hsuforum')));
-    echo '</div>';
-
-    echo '<div class="form-group">';
-    echo '<label for="subject">'.get_string('searchsubject', 'hsuforum').'</label>';
-    echo '<input class="form-control" type="text" size="35" name="subject" id="subject" value="'.s($subject, true).'" alt="" />';
-    echo '</div>';
-
-    echo '<div class="form-group">';
-    echo '<label for="user">'.get_string('searchuser', 'hsuforum').'</label>';
-    echo '<input class="form-control" type="text" size="35" name="user" id="user" value="'.s($user, true).'" />';
-    echo '</div>';
-
-    echo '<input type="submit" value="'.get_string('searchforums', 'hsuforum').'"/>';
-
-    echo '</form>';
-
-    echo html_writer::script(js_writer::function_call('lockoptions_timetoitems'));
-    echo html_writer::script(js_writer::function_call('lockoptions_timefromitems'));
-
-    echo $OUTPUT->box_end();
+    $output = $PAGE->get_renderer('mod_hsuforum');
+    echo $output->render($renderable);
 }
 
 /**

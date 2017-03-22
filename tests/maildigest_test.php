@@ -242,7 +242,7 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
         $this->assertFalse($currentsetting);
 
         // Try with an invalid value.
-        $this->setExpectedException('moodle_exception');
+        $this->expectException('moodle_exception');
         hsuforum_set_user_maildigest($forum1, 42, $user);
     }
 

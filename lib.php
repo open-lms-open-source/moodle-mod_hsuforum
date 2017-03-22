@@ -38,6 +38,22 @@ define('HSUFORUM_FORCESUBSCRIBE', 1);
 define('HSUFORUM_INITIALSUBSCRIBE', 2);
 define('HSUFORUM_DISALLOWSUBSCRIBE',3);
 
+/**
+ * HSUFORUM_TRACKING_OFF - Tracking is not available for this forum.
+ */
+define('HSUFORUM_TRACKING_OFF', 0);
+
+/**
+ * HSUFORUM_TRACKING_OPTIONAL - Tracking is based on user preference.
+ */
+define('HSUFORUM_TRACKING_OPTIONAL', 1);
+
+/**
+ * HSUFORUM_TRACKING_FORCED - Tracking is on, regardless of user setting.
+ * Treated as HSUFORUM_TRACKING_OPTIONAL if $CFG->hsuforum_allowforcedreadtracking is off.
+ */
+define('HSUFORUM_TRACKING_FORCED', 2);
+
 define ('HSUFORUM_GRADETYPE_NONE', 0);
 define ('HSUFORUM_GRADETYPE_MANUAL', 1);
 define ('HSUFORUM_GRADETYPE_RATING', 2);
@@ -870,11 +886,6 @@ function hsuforum_cron() {
                     $eventdata->set_additional_content('email', $additionalcontent);
                 }
 
-                // If hsuforum_replytouser is not set then send mail using the noreplyaddress.
-                if (empty($config->replytouser)) {
-                    $eventdata->userfrom = core_user::get_noreply_user();
-                }
-
                 $smallmessagestrings = new stdClass();
                 $smallmessagestrings->user = fullname($postuser);
                 $smallmessagestrings->forumname = "$shortname: " . format_string($forum->name,true) . ": ".$discussion->name;
@@ -904,7 +915,9 @@ function hsuforum_cron() {
             }
 
             // Mark processed posts as read.
-            hsuforum_mark_posts_read($userto, $userto->markposts);
+            if (get_user_preferences('hsuforum_markasreadonnotification', 1, $userto->id) == 1) {
+                hsuforum_mark_posts_read($userto, $userto->markposts);
+            }
             unset($userto);
         }
     }
@@ -1225,7 +1238,9 @@ function hsuforum_cron() {
                     $usermailcount++;
 
                     // Mark post as read
-                    hsuforum_mark_posts_read($userto, $userto->markposts);
+                    if (get_user_preferences('hsuforum_markasreadonnotification', 1, $userto->id) == 1) {
+                        hsuforum_mark_posts_read($userto, $userto->markposts);
+                    }
                 }
             }
         }
@@ -2757,10 +2772,11 @@ function hsuforum_count_discussions($forum, $cm, $course) {
  * @param int $perpage
  * @param int $groupid if groups enabled, get discussions for this group overriding the current group.
  *                     Use HSUFORUM_POSTS_ALL_USER_GROUPS for all the user groups
+ * @param int $updatedsince retrieve only discussions updated since the given time
  * @return moodle_recordset|array
  */
 function hsuforum_get_discussions($cm, $forumsort="", $forumselect=true, $unused=-1, $limit=-1,
-                                $userlastmodified=false, $page=-1, $perpage=0, $groupid = -1, $returnrs=true) {
+                                $userlastmodified=false, $page=-1, $perpage=0, $groupid = -1, $updatedsince=0, $returnrs=true) {
     global $CFG, $DB, $USER;
 
     require_once(__DIR__.'/lib/discussion/subscribe.php');
@@ -2913,6 +2929,12 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
                       LEFT OUTER JOIN {hsuforum_posts} up ON lastpost.postid = up.id";
     }
 
+    $updatedsincesql = '';
+    if (!empty($updatedsince)) {
+        $updatedsincesql = 'AND d.timemodified > ?';
+        $params[] = $updatedsince;
+    }
+
     // Sort of hacky, but allows for custom select
     if (is_string($forumselect) and !empty($forumselect)) {
         $selectsql = $forumselect;
@@ -2942,7 +2964,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
                    $subscribesql
                    $umtable
              WHERE d.forum = ? AND p.parent = 0
-                   $timelimit $groupselect
+                   $timelimit $groupselect $updatedsincesql
           ORDER BY $forumsort, d.id DESC";
     if ($returnrs) {
         return $DB->get_recordset_sql($sql, $params, $limitfrom, $limitnum);
@@ -3593,23 +3615,10 @@ function hsuforum_rating_validate($params) {
  * @return string
  */
 function hsuforum_search_form($course, $forumid=null, $search='') {
-    global $CFG;
-
-    $output  = '<div class="hsuforum-search">';
-    $output .= '<form action="'.$CFG->wwwroot.'/mod/hsuforum/search.php">';
-    $output .= '<fieldset class="invisiblefieldset">';
-    $output .= '<label class="accesshide" for="search" >'.get_string('search', 'hsuforum').'</label>';
-    $output .= '<input id="search" name="search" type="text" placeholder="'.get_string('search', 'hsuforum').'" value="'.s($search, true).'"/>';
-    $output .= '<input id="searchforums" class="accesshide" value="'.get_string('searchforums', 'hsuforum').'" type="submit" />';
-    $output .= '<input name="id" type="hidden" value="'.$course->id.'" />';
-    if ($forumid != null) {
-        $output .= '<input name="forumid" type="hidden" value="'.s($forumid).'" />';
-    }
-    $output .= '</fieldset>';
-    $output .= '</form>';
-    $output .= '</div>';
-
-    return $output;
+    global $CFG, $PAGE;
+    $forumsearch = new \mod_hsuforum\output\quick_search_form($course->id, $search);
+    $output = $PAGE->get_renderer('mod_hsuforum');
+    return $output->render($forumsearch);
 }
 
 
@@ -4131,7 +4140,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     $post->id = $DB->insert_record("hsuforum_posts", $post);
     $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
-    $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
+    $DB->update_record('hsuforum_posts', $post);
     hsuforum_add_attachment($post, $forum, $cm, $mform, null, $uploader);
 
     // Update discussion modified date
@@ -4154,22 +4163,42 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
  * @global object
  * @global object
  * @global object
- * @param object $post
+ * @param   stdClass    $newpost    The post to update
  * @param mixed $mform
  * @param string $message
  * @param \mod_hsuforum\upload_file $uploader
  * @return bool
  */
-function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
+function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
+    $post       = $DB->get_record('hsuforum_posts', array('id' => $newpost->id));
     $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion));
     $forum      = $DB->get_record('hsuforum', array('id' => $discussion->forum));
     $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
     $context    = context_module::instance($cm->id);
 
+    // Allowed modifiable fields.
+    $modifiablefields = [
+        'subject',
+        'message',
+        'messageformat',
+        'messagetrust',
+        'timestart',
+        'timeend',
+        'pinned',
+        'attachments',
+    ];
+    foreach ($modifiablefields as $field) {
+        if (isset($newpost->{$field})) {
+            $post->{$field} = $newpost->{$field};
+        }
+    }
     $post->modified = time();
 
+    // Last post modified tracking.
+    $discussion->timemodified = $post->modified;
+    $discussion->usermodified = $USER->id;
     $DB->update_record('hsuforum_posts', $post);
 
     if (empty($post->privatereply)) {
@@ -4199,7 +4228,7 @@ function hsuforum_update_post($post, $mform, &$message, \mod_hsuforum\upload_fil
 
     hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
 
-    hsuforum_mark_post_read($post->userid, $post, $post->forum);
+    hsuforum_mark_post_read($post->userid, $post, $forum->id);
 
     // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
     hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_update_post');
@@ -5135,6 +5164,13 @@ function hsuforum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $cour
         $context = context_module::instance($cm->id);
     }
 
+    // Check whether the discussion is locked.
+    if (hsuforum_discussion_is_locked($forum, $discussion)) {
+        if (!has_capability('mod/hsuforum:canoverridediscussionlock', $context)) {
+            return false;
+        }
+    }
+
     // normal users with temporary guest access can not post, suspended users can not post either
     if (!is_viewing($context, $user->id) and !is_enrolled($context, $user->id, '', true)) {
         return false;
@@ -5449,7 +5485,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     // Get all the recent discussions we're allowed to see
     $getuserlastmodified = true;
-    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, -1, false);
+    $discussions = hsuforum_get_discussions($cm, $sort, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage, -1, 0, false);
 
     // If we want paging
     $numdiscussions = null;
@@ -5826,6 +5862,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
         $tmpactivity->content->discussion = $post->discussion;
         $tmpactivity->content->subject    = format_string($post->subject);
         $tmpactivity->content->parent     = $post->parent;
+        $tmpactivity->content->forumtype  = $post->forumtype;
 
         $tmpactivity->user = new stdClass();
         $additionalfields = array('id' => 'userid', 'picture', 'imagealt', 'email');
@@ -5846,8 +5883,13 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
 }
 
 /**
- * @todo Document this function
- * @global object
+ * Outputs the forum post indicated by $activity.
+ *
+ * @param object $activity      the activity object the forum resides in
+ * @param int    $courseid      the id of the course the forum resides in
+ * @param bool   $detail        not used, but required for compatibilty with other modules
+ * @param int    $modnames      not used, but required for compatibilty with other modules
+ * @param bool   $viewfullnames not used, but required for compatibilty with other modules
  */
 function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
     global $CFG, $OUTPUT;
@@ -5857,40 +5899,69 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
         echo $OUTPUT->box($activity->content, 'forum-recent anonymous');
         return;
     }
-    if ($activity->content->parent) {
+    $content = $activity->content;
+    if ($content->parent) {
         $class = 'reply';
     } else {
         $class = 'discussion';
     }
 
-    echo '<table border="0" cellpadding="3" cellspacing="0" class="forum-recent">';
+    $tableoptions = [
+        'border' => '0',
+        'cellpadding' => '3',
+        'cellspacing' => '0',
+        'class' => 'forum-recent'
+    ];
+    $output = html_writer::start_tag('table', $tableoptions);
+    $output .= html_writer::start_tag('tr');
 
-    echo "<tr><td class=\"userpicture\" valign=\"top\">";
-    echo $OUTPUT->user_picture($activity->user, array('courseid'=>$courseid, 'link' => (!hsuforum_is_anonymous_user($activity->user))));
-    echo "</td><td class=\"$class\">";
+    $post = (object) ['parent' => $content->parent];
+    $forum = (object) ['type' => $content->forumtype];
+    $authorhidden = hsuforum_is_author_hidden($post, $forum);
 
+    // Show user picture if author should not be hidden.
+    if (!$authorhidden) {
+        $pictureoptions = [
+            'courseid' => $courseid,
+            'link' => $authorhidden,
+            'alttext' => $authorhidden,
+        ];
+        $picture = $OUTPUT->user_picture($activity->user, $pictureoptions);
+        $output .= html_writer::tag('td', $picture, ['class' => 'userpicture', 'valign' => 'top']);
+    }
+
+    // Discussion title and author.
+    $output .= html_writer::start_tag('td', ['class' => $class]);
+
+    $output .= html_writer::start_div($class);
     echo '<div class="title">';
     if ($detail) {
         $aname = s($activity->name);
-        echo "<img src=\"" . $OUTPUT->pix_url('icon', $activity->type) . "\" ".
-             "class=\"icon\" alt=\"{$aname}\" />";
+        $output .= html_writer::img($OUTPUT->pix_url('icon', $activity->type), $aname, ['class' => 'icon']);
     }
-    echo "<a href=\"$CFG->wwwroot/mod/hsuforum/discuss.php?d={$activity->content->discussion}"
-         ."#p{$activity->content->id}\">{$activity->content->subject}</a>";
-    echo '</div>';
+    $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', ['d' => $content->discussion]);
+    $discussionurl->set_anchor('p' . $activity->content->id);
+    $output .= html_writer::link($discussionurl, $content->subject);
+    $output .= html_writer::end_div();
 
-    echo '<div class="user">';
-    $fullname = fullname($activity->user, $viewfullnames);
-    if (hsuforum_is_anonymous_user($activity->user)) {
-        echo "{$fullname} - ".userdate($activity->timestamp);
+    $timestamp = userdate($activity->timestamp);
+    if ($authorhidden) {
+        $authornamedate = $timestamp;
     } else {
-        echo "<a href=\"$CFG->wwwroot/user/view.php?id={$activity->user->id}&amp;course=$courseid\">"
-                 ."{$fullname}</a> - ".userdate($activity->timestamp);
+        $fullname = fullname($activity->user, $viewfullnames);
+        $userurl = new moodle_url('/user/view.php');
+        $userurl->params(['id' => $activity->user->id, 'course' => $courseid]);
+        $by = new stdClass();
+        $by->name = html_writer::link($userurl, $fullname);
+        $by->date = $timestamp;
+        $authornamedate = get_string('bynameondate', 'hsuforum', $by);
     }
-    echo '</div>';
-      echo "</td></tr></table>";
+    $output .= html_writer::div($authornamedate, 'user');
+    $output .= html_writer::end_tag('td');
+    $output .= html_writer::end_tag('tr');
+    $output .= html_writer::end_tag('table');
 
-    return;
+    echo $output;
 }
 
 /**
@@ -6860,6 +6931,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
 
     if ($canmanage) {
         $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
+        $mode->add_class('subscriptionmode');
 
         $allowchoice = $mode->add(get_string('subscriptionoptional', 'hsuforum'), new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
         $forceforever = $mode->add(get_string("subscriptionforced", "hsuforum"), new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
@@ -6870,18 +6942,22 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
             case HSUFORUM_CHOOSESUBSCRIBE : // 0
                 $allowchoice->action = null;
                 $allowchoice->add_class('activesetting');
+                $allowchoice->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
             case HSUFORUM_FORCESUBSCRIBE : // 1
                 $forceforever->action = null;
                 $forceforever->add_class('activesetting');
+                $forceforever->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
             case HSUFORUM_INITIALSUBSCRIBE : // 2
                 $forceinitially->action = null;
                 $forceinitially->add_class('activesetting');
+                $forceinitially->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
             case HSUFORUM_DISALLOWSUBSCRIBE : // 3
                 $disallowchoice->action = null;
                 $disallowchoice->add_class('activesetting');
+                $disallowchoice->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
         }
 
@@ -7438,15 +7514,6 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             if (!can_access_course($course)) {
                 if ($musthaveaccess) {
                     print_error('errorenrolmentrequired', 'hsuforum');
-                }
-                continue;
-            }
-
-            // Check whether the requested user is enrolled or has access to view the course
-            // if they don't we immediately have a problem.
-            if (!can_access_course($course, $user) && !is_enrolled($coursecontext, $user)) {
-                if ($musthaveaccess) {
-                    print_error('notenrolled', 'hsuforum');
                 }
                 continue;
             }
@@ -8430,4 +8497,106 @@ function mod_hsuforum_output_fragment_editor($args) {
         }
     }
     return '';
+}
+
+/**
+ * Checks whether the author's name and picture for a given post should be hidden or not.
+ *
+ * @param object $post The forum post.
+ * @param object $forum The forum object.
+ * @return bool
+ * @throws coding_exception
+ */
+function hsuforum_is_author_hidden($post, $forum) {
+    if (!isset($post->parent)) {
+        throw new coding_exception('$post->parent must be set.');
+    }
+    if (!isset($forum->type)) {
+        throw new coding_exception('$forum->type must be set.');
+    }
+    if ($forum->type === 'single' && empty($post->parent)) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Manage inplace editable saves.
+ *
+ * @param   string      $itemtype       The type of item.
+ * @param   int         $itemid         The ID of the item.
+ * @param   mixed       $newvalue       The new value
+ * @return  string
+ */
+function mod_hsuforum_inplace_editable($itemtype, $itemid, $newvalue) {
+    global $DB, $PAGE;
+
+    if ($itemtype === 'digestoptions') {
+        // The itemid is the forumid.
+        $forum   = $DB->get_record('hsuforum', array('id' => $itemid), '*', MUST_EXIST);
+        $course  = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
+        $cm      = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
+        $context = context_module::instance($cm->id);
+
+        $PAGE->set_context($context);
+        require_login($course, false, $cm);
+        hsuforum_set_user_maildigest($forum, $newvalue);
+
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+        return $renderer->render_digest_options($forum, $newvalue);
+    }
+}
+
+/**
+ * Determine whether the specified discussion is time-locked.
+ *
+ * @param   stdClass    $forum          The forum that the discussion belongs to
+ * @param   stdClass    $discussion     The discussion to test
+ * @return  bool
+ */
+function hsuforum_discussion_is_locked($forum, $discussion) {
+    if (empty($forum->lockdiscussionafter)) {
+        return false;
+    }
+
+    if ($forum->type === 'single') {
+        // It does not make sense to lock a single discussion forum.
+        return false;
+    }
+
+    if (($discussion->timemodified + $forum->lockdiscussionafter) < time()) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Check if the module has any update that affects the current user since a given time.
+ *
+ * @param  cm_info $cm course module data
+ * @param  int $from the time to check updates from
+ * @param  array $filter  if we need to check only specific updates
+ * @return stdClass an object with the different type of areas indicating if they were updated or not
+ * @since Moodle 3.2
+ */
+function hsuforum_check_updates_since(cm_info $cm, $from, $filter = array()) {
+
+    $context = $cm->context;
+    $updates = new stdClass();
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+        return $updates;
+    }
+
+    $updates = course_check_module_updates_since($cm, $from, array(), $filter);
+
+    // Check if there are new discussions in the forum.
+    $updates->discussions = (object) array('updated' => false);
+    $discussions = hsuforum_get_discussions($cm, '', false, -1, -1, true, -1, 0, HSUFORUM_POSTS_ALL_USER_GROUPS, $from);
+    if (!empty($discussions)) {
+        $updates->discussions->updated = true;
+        $updates->discussions->itemids = array_keys($discussions);
+    }
+
+    return $updates;
 }
