@@ -915,7 +915,8 @@ FUN WITH FORMS
     min-height: 8em !important;
 }
 
-#page-mod-hsuforum-view .editor-attachments, #page-mod-hsuforum-discuss .editor-attachments {
+#page-mod-hsuforum-view .editor-attachments,
+#page-mod-hsuforum-discuss .editor-attachments {
     padding-top: 0.5em;
-    margin-top: 10px;
+    margin-top: 0.5em;
 }
