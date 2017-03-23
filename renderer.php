@@ -1655,7 +1655,7 @@ HTML;
         }
         if ($canattach) {
             $files .= <<<HTML
-                <label>
+                <label class="editor-attachments">
                     <span class="accesshide">$t->attachmentlabel</span>
                     <input type="file" name="attachment[]" multiple="multiple" />
                 </label>
