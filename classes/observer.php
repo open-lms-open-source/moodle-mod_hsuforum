@@ -125,7 +125,8 @@ class mod_hsuforum_observer {
 
         $course = $event->get_record_snapshot('course', $event->objectid);
         $format = course_get_format($course);
-        if ($format->supports_news() && !empty($course->newsitems)) {
+        $useadv = get_config('block_news_items', 'useadvancedforums');
+        if ($format->supports_news() && !empty($course->newsitems) && !empty($useadv)) {
             require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
             // Auto create the announcements forum.
             hsuforum_get_course_forum($event->objectid, 'news');
@@ -143,7 +144,8 @@ class mod_hsuforum_observer {
 
         $course = $event->get_record_snapshot('course', $event->objectid);
         $format = course_get_format($course);
-        if ($format->supports_news() && !empty($course->newsitems)) {
+        $useadv = get_config('block_news_items', 'useadvancedforums');
+        if ($format->supports_news() && !empty($course->newsitems) && !empty($useadv)) {
             require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
             // Auto create the announcements forum.
             hsuforum_get_course_forum($event->objectid, 'news');
