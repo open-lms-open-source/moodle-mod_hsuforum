@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Users can choose to set start and end time for display of their discussions
+Feature: In advanced forums users can choose to set start and end time for display of their discussions
   In order to temporarly hide discussions to students
   As a teacher
   I need to set a discussion time start and time end

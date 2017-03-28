@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Forum discussions can be split
+Feature: Advanced forum discussions can be split
   In order to manage forum discussions in my course
   As a Teacher
   I need to be able to split threads to keep them on topic.

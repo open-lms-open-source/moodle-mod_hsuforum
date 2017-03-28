@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Posting to groups in a separate group discussion when restricted to groupings
+Feature: In advanced forums, posting to groups in a separate group discussion when restricted to groupings
   In order to post to groups in a forum with separate groups and groupings
   As a teacher
   I need to have groups configured to post to a group

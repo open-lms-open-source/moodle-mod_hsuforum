@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A teacher can move discussions between forums
+Feature: A teacher can move discussions between Advanced forums
   In order to move a discussion
   As a teacher
   I need to use the move discussion selector

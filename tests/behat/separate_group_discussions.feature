@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Posting to all groups in a separate group discussion is restricted to users with access to all groups
+Feature: In advanced forums, posting to all groups in a separate group discussion is restricted to users with access to all groups
   In order to post to all groups in a forum with separate groups
   As a teacher
   I need to have the accessallgroups capability

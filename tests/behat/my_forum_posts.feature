@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A user can view their posts and discussions
+Feature: In advanced forums a user can view their posts and discussions
   In order to ensure a user can view their posts and discussions
   As a student
   I need to view my post and discussions

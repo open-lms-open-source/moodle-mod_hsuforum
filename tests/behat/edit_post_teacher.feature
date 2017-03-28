@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Teachers can edit or delete any forum post
+Feature: Teachers can edit or delete any advanced forum post
   In order to refine the forum contents
   As a teacher
   I need to edit or delete any user's forum posts

@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A user with access to multiple groups should be able to post a copy of a message to all the groups they have access to
+Feature: In advanced forums a user with access to multiple groups should be able to post a copy of a message to all the groups they have access to
   In order to post to all groups a user has access to
   As a user
   I need to have the option to post a copy of a message to all groups

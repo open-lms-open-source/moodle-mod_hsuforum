@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A teacher can control the subscription to a forum
+Feature: A teacher can control the subscription to an advanced forum
   In order to change individual user's subscriptions
   As a course administrator
   I can change subscription setting for my users

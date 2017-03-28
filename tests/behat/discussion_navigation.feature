@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A user can navigate to previous and next discussions
+Feature: A user can navigate to previous and next discussions in advanced forums
   In order to get go the previous discussion
   As a user
   I need to click on the previous discussion link

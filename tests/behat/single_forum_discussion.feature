@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Single simple forum discussion type
+Feature: Advanced forum with single simple forum discussion type
   In order to restrict the discussion topic to one
   As a teacher
   I need to create a forum with a single simple discussion

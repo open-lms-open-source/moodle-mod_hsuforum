@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Set a certain number of discussions as a completion condition for a forum
+Feature: Set a certain number of discussions as a completion condition for a advanced forum
   In order to ensure students are participating on forums
   As a teacher
   I need to set a minimum number of discussions to mark the forum activity as completed

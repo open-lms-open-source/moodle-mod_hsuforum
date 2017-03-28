@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A user can control their own subscription preferences for a forum
+Feature: A user can control their own subscription preferences for an advanced forum
   In order to receive notifications for things I am interested in
   As a user
   I need to choose my forum subscriptions

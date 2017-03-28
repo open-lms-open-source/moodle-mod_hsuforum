@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Blog posts are always displayed in reverse chronological order
+Feature: In advanced forums, blog posts are always displayed in reverse chronological order
   In order to use forum as a blog
   As a user
   I need to see most recent blog posts first

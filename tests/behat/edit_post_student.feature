@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Students can edit or delete their forum posts within a set time limit
+Feature: Students can edit or delete their advanced forum posts within a set time limit
   In order to refine forum posts
   As a user
   I need to edit or delete my forum posts within a certain period of time after posting
