@@ -77,7 +77,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And ".posting:nth-of-type(2) img" "css_element" should exist
 
   @javascript
-  Scenario: Teacher can add / edit discussions and posts with message containing image set by enhanced editor.
+  Scenario: Teacher can add / edit discussions and posts with message containing image set by enhanced editor (TinyMCE).
     When the following config values are set as admin:
       | texteditors | tinymce|
     And I log in as "teacher1"
@@ -102,7 +102,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And ".posting img:nth-of-type(1)" "css_element" should exist
 
   @javascript
-  Scenario: Teacher can add / edit discussions and posts with message containing image set by enhanced editor.
+  Scenario: Student can add / edit discussions and posts with message containing image set by enhanced editor (TinyMCE).
     When the following config values are set as admin:
       | texteditors | tinymce|
     And I log in as "student1"
