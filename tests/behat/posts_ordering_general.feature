@@ -1,6 +1,6 @@
 @mod @mod_hsuforum
 Feature: New discussions and discussions with recently added replies are displayed first
-  In order to use hsuforum as a discussion tool
+  In order to use advanced forum as a discussion tool
   As a user
   I need to see currently active discussions first
 
