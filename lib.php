@@ -7793,7 +7793,7 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
  * @author Mark Nielsen
  */
 function hsuforum_anonymize_user($user, $forum, $post) {
-    global $USER;
+    global $USER, $CFG;
     static $anonymous = null;
 
     if (!isset($forum->anonymous) or !isset($forum->course)) {
@@ -7821,7 +7821,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
             'middlename' => get_string('anonymousmiddlename', 'hsuforum'),
             'alternatename' => get_string('anonymousalternatename', 'hsuforum'),
             'picture' => 0,
-            'email' => $guest->email,
+            'email' => $CFG->noreplyaddress,
             'imagealt' => '',
             'profilelink' => new moodle_url('/user/view.php', array('id'=>$guest->id, 'course'=>$forum->course)),
             'anonymous' => true
