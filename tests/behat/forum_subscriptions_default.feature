@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: In advanced forums a user can control their default discussion subscription settings
+Feature: In Moodlerooms forums a user can control their default discussion subscription settings
   In order to automatically subscribe to discussions
   As a user
   I can choose my default subscription preference
@@ -22,7 +22,7 @@ Feature: In advanced forums a user can control their default discussion subscrip
     And I turn editing mode on
 
   Scenario: Creating a new discussion in an optional forum follows user preferences
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -40,13 +40,13 @@ Feature: In advanced forums a user can control their default discussion subscrip
     And I press "Add a new discussion"
     Then the "subscribe" select box should contain "I don't want to be notified of new posts in this forum"
 
-  Scenario: Replying to an existing discussion in an optional advanced forum follows user preferences
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+  Scenario: Replying to an existing discussion in an optional Moodlerooms forum follows user preferences
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Optional subscription |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -65,7 +65,7 @@ Feature: In advanced forums a user can control their default discussion subscrip
     Then the "subscribe" select box should contain "I don't want to be notified of new posts in this forum"
 
   Scenario: Creating a new discussion in an automatic forum follows forum subscription
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -84,12 +84,12 @@ Feature: In advanced forums a user can control their default discussion subscrip
     Then the "subscribe" select box should contain "Send me notifications of new posts in this forum"
 
   Scenario: Replying to an existing discussion in an automatic forum follows forum subscription
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Optional subscription |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -108,12 +108,12 @@ Feature: In advanced forums a user can control their default discussion subscrip
     Then the "subscribe" select box should contain "I don't want to be notified of new posts in this forum"
 
   Scenario: Replying to an existing discussion in an automatic forum which has been unsubscribed from follows user preferences
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Auto subscription |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out

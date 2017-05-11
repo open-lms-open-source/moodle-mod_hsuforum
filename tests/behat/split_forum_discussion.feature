@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Advanced forum discussions can be split
+Feature: Moodlerooms forum discussions can be split
   In order to manage forum discussions in my course
   As a Teacher
   I need to be able to split threads to keep them on topic.
@@ -19,17 +19,17 @@ Feature: Advanced forum discussions can be split
     And I log in as "teacher1"
     And I follow "Science 101"
     And I turn editing mode on
-    And I add a "Advanced Forum" to section "1" and I fill the form with:
+    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name | Study discussions |
       | Forum type | Standard forum for general use |
       | Description | Forum to discuss your coursework. |
-    And I add a new discussion to "Study discussions" advanced forum with:
+    And I add a new discussion to "Study discussions" Moodlerooms forum with:
       | Subject | Photosynethis discussion |
       | Message | Lets discuss our learning about Photosynethis this week in this thread. |
     And I log out
     And I log in as "student1"
     And I follow "Science 101"
-    And I reply "Photosynethis discussion" post from "Study discussions" advanced forum with:
+    And I reply "Photosynethis discussion" post from "Study discussions" Moodlerooms forum with:
       | Message | Can anyone tell me which number is the mass number in the periodic table? |
     And I log out
 

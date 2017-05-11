@@ -16,7 +16,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And I am on site homepage
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Advanced Forum" to section "1" and I fill the form with:
+    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
@@ -33,19 +33,19 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And I press "Add a new discussion"
     And I set the field "subject" to "test discussion subject"
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion body"
-    And Advanced Forums I upload image "testgif_small.gif" using inline advanced editor
+    And Moodlerooms Forums I upload image "testgif_small.gif" using inline advanced editor
     And I press "Submit"
    Then I should see "Your post was successfully added."
     And Image "testgif_small.gif" should exist
     And I follow "test discussion subject"
     And I follow "Edit"
-    And Advanced Forums I upload image "testgif2_small.gif" using inline advanced editor
+    And Moodlerooms Forums I upload image "testgif2_small.gif" using inline advanced editor
     And I press "Submit"
    Then Image "testgif2_small.gif" should exist
     And I follow "test discussion subject"
     And I set the field "subject" to "test post subject"
     And I set editable div ".hsuforum-textarea" "css_element" to "Test post body"
-    And Advanced Forums I upload image "testgif3_small.gif" using inline advanced editor
+    And Moodlerooms Forums I upload image "testgif3_small.gif" using inline advanced editor
     And I press "Submit"
     And Image "testgif3_small.gif" should exist
 
@@ -60,19 +60,19 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And I press "Add a new discussion"
     And I set the field "subject" to "test discussion subject"
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion body"
-    And Advanced Forums I upload image "testgif_small.gif" using inline advanced editor
+    And Moodlerooms Forums I upload image "testgif_small.gif" using inline advanced editor
     And I press "Submit"
     Then I should see "Your post was successfully added."
     And ".posting img" "css_element" should exist
     And I follow "test discussion subject"
     And I follow "Edit"
-    And Advanced Forums I upload image "testgif2_small.gif" using inline advanced editor
+    And Moodlerooms Forums I upload image "testgif2_small.gif" using inline advanced editor
     And I press "Submit"
     And Image "testgif2_small.gif" should exist
     And I follow "test discussion subject"
     And I set the field "subject" to "test post subject"
     And I set editable div ".hsuforum-textarea" "css_element" to "Test post body"
-    And Advanced Forums I upload image "testgif3_small.gif" using inline advanced editor
+    And Moodlerooms Forums I upload image "testgif3_small.gif" using inline advanced editor
     And I press "Submit"
     And ".posting:nth-of-type(2) img" "css_element" should exist
 
@@ -88,7 +88,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And I set the field "subject" to "test discussion subject tinymce"
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion body tinymce"
     And I follow "Use advanced editor"
-    And Advanced Forums I upload image "testgif_small.gif" using inline advanced editor tinymce
+    And Moodlerooms Forums I upload image "testgif_small.gif" using inline advanced editor tinymce
     And I change focus to "iframe[id^='editor-target-container']" iframe "css"
     And "#tinymce p img" "css_element" should exist
     And I switch to the main frame
@@ -96,7 +96,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And I follow "test discussion subject tinymce"
     And I follow "Edit"
     And I follow "Use advanced editor"
-    And Advanced Forums I upload image "testgif3_small.gif" using inline advanced editor tinymce
+    And Moodlerooms Forums I upload image "testgif3_small.gif" using inline advanced editor tinymce
     And I press "Submit"
     And ".posting img:nth-of-type(2)" "css_element" should exist
     And ".posting img:nth-of-type(1)" "css_element" should exist
@@ -113,7 +113,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And I set the field "subject" to "test discussion subject tinymce"
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion body tinymce"
     And I follow "Use advanced editor"
-    And Advanced Forums I upload image "testgif_small.gif" using inline advanced editor tinymce
+    And Moodlerooms Forums I upload image "testgif_small.gif" using inline advanced editor tinymce
     And I change focus to "iframe[id^='editor-target-container']" iframe "css"
     And "#tinymce p img" "css_element" should exist
     And I switch to the main frame
@@ -121,7 +121,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     And I follow "test discussion subject tinymce"
     And I follow "Edit"
     And I follow "Use advanced editor"
-    And Advanced Forums I upload image "testgif3_small.gif" using inline advanced editor tinymce
+    And Moodlerooms Forums I upload image "testgif3_small.gif" using inline advanced editor tinymce
     And I press "Submit"
     And Image "testgif3_small.gif" should exist
     And ".posting img:nth-of-type(1)" "css_element" should exist

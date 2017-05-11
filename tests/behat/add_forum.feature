@@ -1,11 +1,11 @@
 @mod @mod_hsuforum @_file_upload
-Feature: Add advanced forum activities and discussions
+Feature: Add Moodlerooms forum activities and discussions
   In order to discuss topics with other users
   As a teacher
-  I need to add advanced forum activities to moodle courses
+  I need to add Moodlerooms forum activities to moodle courses
 
   @javascript
-  Scenario: Add an advanced forum and a discussion attaching files
+  Scenario: Add a Moodlerooms forum and a discussion attaching files
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
@@ -20,21 +20,21 @@ Feature: Add advanced forum activities and discussions
     And I log in as "teacher1"
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Advanced Forum" to section "1" and I fill the form with:
+    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Forum post 1 |
       | Message | This is the body |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    When I add a new discussion to "Test forum name" advanced forum with:
+    When I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Post with attachment |
       | Message | This is the body |
       | Attachment | lib/tests/fixtures/empty.txt |
-    And I reply "Forum post 1" post from "Test forum name" advanced forum with:
+    And I reply "Forum post 1" post from "Test forum name" Moodlerooms forum with:
       | Subject | Reply with attachment |
       | Message | This is the body |
       | Attachment | lib/tests/fixtures/upload_users.csv |

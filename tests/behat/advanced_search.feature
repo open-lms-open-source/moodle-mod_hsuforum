@@ -21,15 +21,15 @@ Feature: The forum search allows users to perform advanced searches for forum po
     And I log in as "teacher1"
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Advanced Forum" to section "1" and I fill the form with:
+    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name | Announcements |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
-    And I add a new topic to "Announcements" advanced forum with:
+    And I add a new topic to "Announcements" Moodlerooms forum with:
       | Subject | My subject |
       | Message | My message |
     And I follow "Course 1"
-    And I add a new topic to "Announcements" advanced forum with:
+    And I add a new topic to "Announcements" Moodlerooms forum with:
       | Subject | My subjective|
       | Message | My long message |
     And I log out
@@ -85,7 +85,7 @@ Feature: The forum search allows users to perform advanced searches for forum po
   Scenario: Perform an advanced search matching the author
     Given I log in as "teacher2"
     And I follow "Course 1"
-    And I add a new topic to "Announcements" advanced forum with:
+    And I add a new topic to "Announcements" Moodlerooms forum with:
       | Subject | My Subjects |
       | Message | My message |
     And I log out

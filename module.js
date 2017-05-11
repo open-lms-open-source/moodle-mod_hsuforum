@@ -36,7 +36,7 @@ M.mod_hsuforum.onToggleResponse = function(link) {
 M.mod_hsuforum.toggleStatesApplied = false;
 
 /**
- * Initialise advanced forum javascript.
+ * Initialise Moodlerooms forum javascript.
  * @param Y
  */
 M.mod_hsuforum.init = function(Y) {

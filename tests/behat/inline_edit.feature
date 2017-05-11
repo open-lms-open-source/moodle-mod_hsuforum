@@ -18,7 +18,7 @@ Feature: Teachers and students can edit discussions
     And I am on site homepage
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Advanced Forum" to section "1" and I fill the form with:
+    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |

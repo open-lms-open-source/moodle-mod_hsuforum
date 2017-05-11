@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: In advanced forums a user with access to multiple groups should be able to post a copy of a message to all the groups they have access to
+Feature: In Moodlerooms forums a user with access to multiple groups should be able to post a copy of a message to all the groups they have access to
   In order to post to all groups a user has access to
   As a user
   I need to have the option to post a copy of a message to all groups
@@ -90,7 +90,7 @@ Background:
   Scenario: Teacher is able to post a copy of a message to all groups in a separate group forum
     Given I log in as "teacher1"
     And I follow "Course 1"
-    And I add a new discussion to "Separate group forum" advanced forum with:
+    And I add a new discussion to "Separate group forum" Moodlerooms forum with:
       | Subject | Discussion 1 |
       | Message | test |
       | Post a copy to all groups | 1 |
@@ -137,7 +137,7 @@ Background:
   Scenario: Teacher is able to post a copy of a message to all groups in a visible group forum
     Given I log in as "teacher1"
     And I follow "Course 1"
-    And I add a new discussion to "Visible group forum" advanced forum with:
+    And I add a new discussion to "Visible group forum" Moodlerooms forum with:
       | Subject | Discussion 1 |
       | Message | test |
       | Post a copy to all groups | 1 |
@@ -175,7 +175,7 @@ Background:
   Scenario: Posts to all groups that have groupings should only display within the grouping and not to other groups
     Given I log in as "teacher1"
     And I follow "Course 2"
-    And I add a new discussion to "Groupings forum" advanced forum with:
+    And I add a new discussion to "Groupings forum" Moodlerooms forum with:
       | Subject | Discussion 1 |
       | Message | test |
       | Post a copy to all groups | 1 |
