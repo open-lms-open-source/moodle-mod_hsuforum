@@ -3828,7 +3828,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
             } else { //'returnimages'
                 if (in_array($mimetype, array('image/gif', 'image/jpeg', 'image/png'))) {
                     // Image attachments don't get printed as links
-                    $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
+                    $imagereturn .= "<br />".format_text("<img src=\"$path\" alt=\"\" />");
                     if ($canexport) {
                         $button->set_callback_options('hsuforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_hsuforum');
                         $button->set_format_by_file($file);
