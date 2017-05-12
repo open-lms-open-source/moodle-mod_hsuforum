@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A user can control their own subscription preferences for an advanced forum
+Feature: A user can control their own subscription preferences for a Moodlerooms forum
   In order to receive notifications for things I am interested in
   As a user
   I need to choose my forum subscriptions
@@ -20,12 +20,12 @@ Feature: A user can control their own subscription preferences for an advanced f
     And I turn editing mode on
 
   Scenario: A disallowed subscription forum cannot be subscribed to
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Subscription disabled |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -38,12 +38,12 @@ Feature: A user can control their own subscription preferences for an advanced f
     And "You are not subscribed to this discussion. Click to subscribe." "link" should not exist
 
   Scenario: A forced subscription forum cannot be subscribed to
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -56,12 +56,12 @@ Feature: A user can control their own subscription preferences for an advanced f
     And "You are not subscribed to this discussion. Click to subscribe." "link" should not exist
 
   Scenario: An optional forum can be subscribed to
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Optional subscription |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
@@ -75,12 +75,12 @@ Feature: A user can control their own subscription preferences for an advanced f
     And I should not see "Subscribe to this forum"
 
   Scenario: An Automatic forum can be unsubscribed from
-    Given I add a "Advanced Forum" to section "1" and I fill the form with:
+    Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Auto subscription |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out

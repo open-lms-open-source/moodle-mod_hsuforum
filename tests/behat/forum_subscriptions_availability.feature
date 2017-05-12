@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: In advanced forums as a teacher I need to see an accurate list of subscribed users
+Feature: In Moodlerooms forums as a teacher I need to see an accurate list of subscribed users
   In order to see who is subscribed to a forum
   As a teacher
   I need to view the list of subscribed users
@@ -26,7 +26,7 @@ Feature: In advanced forums as a teacher I need to see an accurate list of subsc
 
   @javascript
   Scenario: A forced forum lists all subscribers
-    When I add a "Advanced Forum" to section "1" and I fill the form with:
+    When I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -39,7 +39,7 @@ Feature: In advanced forums as a teacher I need to see an accurate list of subsc
     And I should see "Student 3"
 
   Scenario: A forced forum does not allow to edit the subscribers
-    When I add a "Advanced Forum" to section "1" and I fill the form with:
+    When I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 2 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -54,7 +54,7 @@ Feature: In advanced forums as a teacher I need to see an accurate list of subsc
     And I should not see "Turn editing on"
 
   Scenario: A forced and hidden forum lists only teachers
-    When I add a "Advanced Forum" to section "1" and I fill the form with:
+    When I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 2 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -69,7 +69,7 @@ Feature: In advanced forums as a teacher I need to see an accurate list of subsc
 
   @javascript
   Scenario: An automatic forum lists all subscribers
-    When I add a "Advanced Forum" to section "1" and I fill the form with:
+    When I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |

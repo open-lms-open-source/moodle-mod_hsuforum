@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A user can navigate to previous and next discussions in advanced forums
+Feature: A user can navigate to previous and next discussions in Moodlerooms forums
   In order to get go the previous discussion
   As a user
   I need to click on the previous discussion link
@@ -37,15 +37,15 @@ Background:
     And I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Test forum name"
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 1 |
       | Message | Test post message |
     And I wait "1" seconds
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 2 |
       | Message | Test post message |
     And I wait "1" seconds
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 3 |
       | Message | Test post message |
     When I follow "Discussion 3"
@@ -80,25 +80,25 @@ Background:
     And I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Test forum name"
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 1 Group 0 |
       | Message | Test post message |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 2 Group 0 |
       | Message | Test post message |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 1 Group 1 |
       | Message | Test post message |
       | Group   | Group 1 |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 2 Group 1 |
       | Message | Test post message |
       | Group   | Group 1 |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 1 Group 2 |
       | Message | Test post message |
       | Group   | Group 2 |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 2 Group 2 |
       | Message | Test post message |
       | Group   | Group 2 |
@@ -138,25 +138,25 @@ Background:
     Given I log in as "teacher1"
     And I follow "Course 1"
     And I follow "Test forum name"
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 1 Group 0 |
       | Message | Test post message |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 2 Group 0 |
       | Message | Test post message |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 1 Group 1 |
       | Message | Test post message |
       | Group   | Group 1 |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 2 Group 1 |
       | Message | Test post message |
       | Group   | Group 1 |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 1 Group 2 |
       | Message | Test post message |
       | Group   | Group 2 |
-    And I add a new discussion to "Test forum name" advanced forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Discussion 2 Group 2 |
       | Message | Test post message |
       | Group   | Group 2 |

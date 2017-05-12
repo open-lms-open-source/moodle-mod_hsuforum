@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Posting to advanced forums in a course with no groups behaves correctly
+Feature: Posting to Moodlerooms forums in a course with no groups behaves correctly
 
   Background:
     Given the following "users" exist:

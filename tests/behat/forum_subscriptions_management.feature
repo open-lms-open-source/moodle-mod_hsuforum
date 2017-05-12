@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A teacher can control the subscription to an advanced forum
+Feature: A teacher can control the subscription to a Moodlerooms forum
   In order to change individual user's subscriptions
   As a course administrator
   I can change subscription setting for my users
@@ -21,7 +21,7 @@ Feature: A teacher can control the subscription to an advanced forum
     And I log in as "teacher"
     And I follow "Course 1"
     And I turn editing mode on
-    And I add a "Advanced Forum" to section "1" and I fill the form with:
+    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name                |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description         |

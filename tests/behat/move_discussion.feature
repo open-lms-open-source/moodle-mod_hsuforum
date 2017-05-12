@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A teacher can move discussions between advanced forums
+Feature: A teacher can move discussions between Moodlerooms forums
   In order to move a discussion
   As a teacher
   I need to use the move discussion selector
@@ -26,7 +26,7 @@ Feature: A teacher can move discussions between advanced forums
     And I log in as "student1"
     And I follow "Course 1"
     And I follow "Test forum 1"
-    And I add a new discussion to "Test forum 1" advanced forum with:
+    And I add a new discussion to "Test forum 1" Moodlerooms forum with:
       | Subject | Discussion 1 |
       | Message | Test post message |
     And I log out
