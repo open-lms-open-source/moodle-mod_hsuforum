@@ -804,6 +804,13 @@ class mod_hsuforum_external extends external_api {
             throw new moodle_exception('nopostforum', 'hsuforum');
         }
 
+        if (!empty($options['attachmentsid'])) {
+            // Ensure that the user has permissions to create attachments.
+            if (!has_capability('mod/hsuforum:createattachment', $context)) {
+                $options['attachmentsid'] = 0;
+            }
+        }
+
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
         hsuforum_check_blocking_threshold($thresholdwarning);
 
@@ -986,6 +993,13 @@ class mod_hsuforum_external extends external_api {
 
         if (!hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
             throw new moodle_exception('cannotcreatediscussion', 'hsuforum');
+        }
+
+        if (!empty($options['attachmentsid'])) {
+            // Ensure that the user has permissions to create attachments.
+            if (!has_capability('mod/hsuforum:createattachment', $context)) {
+                $options['attachmentsid'] = 0;
+            }
         }
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);

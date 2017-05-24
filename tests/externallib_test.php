@@ -835,6 +835,59 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $this->assertTrue($postfound);
     }
 
+    /*
+     * Test add_discussion without capability to upload attachments.
+     */
+    public function test_add_discussion_without_attachment_capability() {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        $course = self::getDataGenerator()->create_course();
+        $user = self::getDataGenerator()->create_user();
+
+        $record = new stdClass();
+        $record->course = $course->id;
+        $forum = self::getDataGenerator()->create_module('hsuforum', $record);
+
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, $teacherrole->id);
+
+        self::setUser($user);
+
+        $syscontext = context_system::instance();
+        assign_capability('mod/hsuforum:createattachment', CAP_PROHIBIT, $teacherrole->id, $syscontext->id, true);
+        accesslib_clear_all_caches_for_unit_testing();
+
+        $fs = get_file_storage();
+
+        $draftidattach = file_get_unused_draft_itemid();
+        $usercontext = context_user::instance($user->id);
+        $filerecordattach = array(
+            'contextid' => $usercontext->id,
+            'component' => 'user',
+            'filearea'  => 'draft',
+            'itemid'    => $draftidattach,
+            'filepath'  => '/',
+            'filename'  => 'attachment.text',
+        );
+
+        $fs->create_file_from_string($filerecordattach, 'simple text attachment');
+
+        $options = [['name' => 'attachmentsid', 'value' => $draftidattach]];
+        $createddiscussion = mod_hsuforum_external::add_discussion($forum->id, 'the attachment subject', 'test content', -1, $options);
+        $createddiscussion = external_api::clean_returnvalue(mod_hsuforum_external::add_discussion_returns(), $createddiscussion);
+
+        $discussions = mod_hsuforum_external::get_forum_discussions_paginated($forum->id);
+        $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_paginated_returns(), $discussions);
+
+        $this->assertCount(1, $discussions['discussions']);
+        $this->assertCount(0, $createddiscussion['warnings']);
+
+        $thisdiscussion = reset($discussions['discussions']);
+
+        $this->assertEmpty($thisdiscussion['attachments']);
+    }
+
     /**
      * Test adding discussions in a course with gorups
      */

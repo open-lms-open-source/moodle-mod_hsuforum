@@ -53,11 +53,13 @@ class renderer extends \mod_hsuforum_renderer {
      * @return string
      */
     public function format_message_text($cm, $post) {
+        $context = \context_module::instance($cm->id);
         $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
-            \context_module::instance($cm->id)->id,
+            $context->id,
             'mod_hsuforum', 'post', $post->id);
         $options = new \stdClass();
         $options->para = true;
+        $options->context = $context;
         return format_text($message, $post->messageformat, $options);
     }
 
