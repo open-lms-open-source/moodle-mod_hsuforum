@@ -934,6 +934,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
      * dataProvider for test_forum_post_email_templates().
      */
     public function forum_post_email_templates_provider() {
+        global $CFG;
         // Base information, we'll build variations based on it.
         $base = array(
             'user' => array('firstname' => 'Love', 'lastname' => 'Moodle', 'mailformat' => 0, 'maildigest' => 0),
@@ -963,7 +964,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                         '~{$a',
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
                         'Attachments example.txt:\n' .
-                            'http://www.example.com/moodle/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
+                            $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
                         'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1'
                     ),
                 ),
@@ -1022,10 +1023,10 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
             '~{$a',
             '~&(amp|lt|gt|quot|\#039);(?!course)',
             'Attachments example.txt:\n' .
-            'http://www.example.com/moodle/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
+            $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
             'Text and image', 'Moodle Forum',
             'Welcome to Moodle, *\n.*'
-                .'http://www.example.com/moodle/pluginfile.php/\d+/mod_hsuforum/post/\d+/'
+                .$CFG->wwwroot.'/pluginfile.php/\d+/mod_hsuforum/post/\d+/'
                 .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png *\n.*!',
             'Love Moodle', '1\d1');
         $textcases['Text mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = array('data' => $newcase);
@@ -1071,7 +1072,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
             '<div class="attachments">( *\n *)?<a href',
             '<div class="subject">\n.*HTML text and image', '>Moodle Forum',
             '<p>Welcome to Moodle, '
-                .'<img src="http://www.example.com/moodle/pluginfile.php/\d+/mod_hsuforum/post/\d+/'
+                .'<img src="'.$CFG->wwwroot.'/pluginfile.php/\d+/mod_hsuforum/post/\d+/'
                 .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png"'
                 .' alt="" width="200" height="393" class="img-responsive" />!</p>',
             '>Love Moodle', '>1\d1');
