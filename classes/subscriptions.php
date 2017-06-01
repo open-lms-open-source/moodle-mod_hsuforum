@@ -30,8 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class subscriptions
-{
+class subscriptions {
 
     /**
      * The status value for an unsubscribed discussion.
@@ -99,8 +98,7 @@ class subscriptions
      * @param $cm The coursemodule record. If not supplied, this will be calculated using get_fast_modinfo instead.
      * @return boolean
      */
-    public static function is_subscribed($userid, $forum, $discussionid = null, $cm = null)
-    {
+    public static function is_subscribed($userid, $forum, $discussionid = null, $cm = null) {
         // If forum is force subscribed and has allowforcesubscribe, then user is subscribed.
         if (self::is_forcesubscribed($forum)) {
             if (!$cm) {
@@ -132,8 +130,7 @@ class subscriptions
      * @param \stdClass $forum The record of the forum to test
      * @return boolean
      */
-    protected static function is_subscribed_to_forum($userid, $forum)
-    {
+    protected static function is_subscribed_to_forum($userid, $forum) {
         return self::fetch_subscription_cache($forum->id, $userid);
     }
 
@@ -144,8 +141,7 @@ class subscriptions
      * @param \stdClass $forum The record of the forum to test
      * @return bool
      */
-    public static function is_forcesubscribed($forum)
-    {
+    public static function is_forcesubscribed($forum) {
         return ($forum->forcesubscribe == FORUM_FORCESUBSCRIBE);
     }
 
