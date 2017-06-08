@@ -126,7 +126,7 @@ class mod_hsuforum_form_service_testcase extends advanced_testcase {
         $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
             $modcontext->id, 'mod_hsuforum', 'post', $post->id);
         foreach ($imagefiles as $filename) {
-            $urlbase = 'http://www.example.com/moodle/pluginfile.php';
+            $urlbase = $CFG->wwwroot.'/pluginfile.php';
             $url = $urlbase.'/'.$modcontext->id.'/mod_hsuforum/post/'.$post->id.'/'.$filename;
             $this->assertContains($url, $message);
         }
