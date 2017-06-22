@@ -3050,4 +3050,59 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             ],
         ];
     }
+
+    /**
+     * Test that {@link hsuforum_update_post()} keeps correct hsuforum_discussions usermodified.
+     */
+    public function test_forum_update_post_keeps_discussions_usermodified() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Let there be light.
+        $teacher = self::getDataGenerator()->create_user();
+        $student = self::getDataGenerator()->create_user();
+        $course = self::getDataGenerator()->create_course();
+
+        $forum = self::getDataGenerator()->create_module('hsuforum', (object)[
+            'course' => $course->id,
+        ]);
+
+        $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
+
+        // Let the teacher start a discussion.
+        $discussion = $generator->create_discussion((object)[
+            'course' => $course->id,
+            'userid' => $teacher->id,
+            'forum' => $forum->id,
+        ]);
+
+        // On this freshly created discussion, the teacher is the author of the last post.
+        $this->assertEquals($teacher->id, $DB->get_field('hsuforum_discussions', 'usermodified', ['id' => $discussion->id]));
+
+        // Let the student reply to the teacher's post.
+        $reply = $generator->create_post((object)[
+            'course' => $course->id,
+            'userid' => $student->id,
+            'forum' => $forum->id,
+            'discussion' => $discussion->id,
+            'parent' => $discussion->firstpost,
+        ]);
+
+        // The student should now be the last post's author.
+        $this->assertEquals($student->id, $DB->get_field('hsuforum_discussions', 'usermodified', ['id' => $discussion->id]));
+
+        // Let the teacher edit the student's reply.
+        $this->setUser($teacher->id);
+        $newpost = (object)[
+            'id' => $reply->id,
+            'itemid' => 0,
+            'subject' => 'Amended subject',
+        ];
+        $message = '';
+        hsuforum_update_post($newpost, null, $message);
+
+        // The student should be still the last post's author.
+        $this->assertEquals($student->id, $DB->get_field('hsuforum_discussions', 'usermodified', ['id' => $discussion->id]));
+    }
 }

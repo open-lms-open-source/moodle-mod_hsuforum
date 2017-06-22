@@ -77,6 +77,11 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
 
         $newitemid = $DB->insert_record('hsuforum', $data);
         $this->apply_activity_instance($newitemid);
+
+        // Add current enrolled user subscriptions if necessary.
+        $data->id = $newitemid;
+        $ctx = context_module::instance($this->task->get_moduleid());
+        hsuforum_instance_created($ctx, $data);
     }
 
     protected function process_hsuforum_discussion($data) {

@@ -6078,14 +6078,6 @@ function hsuforum_mark_posts_read($user, $postids) {
          );
      $params = array_merge($postidparams, $insertparams);
 
-     if ($CFG->hsuforum_allowforcedreadtracking) {
-             $trackingsql = "AND (f.trackingtype = ".HSUFORUM_TRACKING_FORCED."
-                     OR (f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))";
-         } else {
-             $trackingsql = "AND ((f.trackingtype = ".HSUFORUM_TRACKING_OPTIONAL."  OR f.trackingtype = ".HSUFORUM_TRACKING_FORCED.")
-                         AND tf.id IS NULL)";
-         }
-
  // First insert any new entries.
  $sql = "INSERT INTO {hsuforum_read} (userid, postid, discussionid, forumid, firstread, lastread)
 
@@ -6102,7 +6094,6 @@ function hsuforum_mark_posts_read($user, $postids) {
                  )
              WHERE p.id $usql
                  AND p.modified >= :cutoffdate
-                 $trackingsql
                  AND fr.id IS NULL";
 
  $status = $DB->execute($sql, $params) && $status;
