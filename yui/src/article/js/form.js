@@ -633,7 +633,11 @@ Y.extend(FORM, Y.Base,
 
                 if (data.isdiscussion) {
                     self.applyDateFields();
-                    self.setDateFields(data.timestart, data.timeend);
+                    var offset = new Date().getTimezoneOffset()*60;
+                    var dstart = new Date(data.timestart).getTime()+offset;
+                    var dend = new Date(data.timeend).getTime()+offset;
+                    self.setDateFields(dstart, dend);
+                    //self.setDateFields(data.timestart, data.timeend);
                 }
 
                 this.attachFormWarnings();

@@ -266,11 +266,14 @@ class edit_controller extends controller_abstract {
             return new json_response(['html' => $html]);
         } else {
             $html = $this->formservice->edit_discussion_form($PAGE->cm, $discussion, $post, $draftid);
+            $timezone=new \DateTimeZone(date_default_timezone_get());
+            $datetime= new \DateTime("now", $timezone);
+            $offset = $timezone->getOffset($datetime);
             return new json_response([
                 'html'          => $html,
                 'isdiscussion'  => true,
-                'timestart'     => $discussion->timestart,
-                'timeend'       => $discussion->timeend
+                'timestart'     => $discussion->timestart+$offset,
+                'timeend'       => $discussion->timeend+$offset
             ]);
         }
     }
