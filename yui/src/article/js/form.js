@@ -643,7 +643,6 @@ Y.extend(FORM, Y.Base,
                         self.setDateFields(data.timestart, data.timeend);
                     }
                 }
-
                 this.attachFormWarnings();
             }, this);
         }
