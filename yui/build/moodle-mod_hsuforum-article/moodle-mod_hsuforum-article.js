@@ -1131,10 +1131,15 @@ Y.extend(FORM, Y.Base,
 
                 if (data.isdiscussion) {
                     self.applyDateFields();
-                    var offset = new Date().getTimezoneOffset()*60;
-                    var dstart = new Date(data.timestart).getTime()+offset;
-                    var dend = new Date(data.timeend).getTime()+offset;
-                    self.setDateFields(dstart, dend);
+                    var server_offset = data.offset;
+                    if (data.timestart != 0 || data.timeend != 0) {
+                        var offset = new Date().getTimezoneOffset() * 60;
+                        var dstart = parseInt(data.timestart) + parseInt(offset) + parseInt(server_offset);
+                        var dend = parseInt(data.timeend) + parseInt(offset) + parseInt(server_offset);
+                        self.setDateFields(dstart, dend);
+                    } else {
+                        self.setDateFields(data.timestart, data.timeend);
+                    }
                 }
 
                 this.attachFormWarnings();
