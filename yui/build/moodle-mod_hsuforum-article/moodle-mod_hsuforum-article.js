@@ -996,6 +996,23 @@ Y.extend(FORM, Y.Base,
                     datefs = Y.Node.create('<fieldset/>');
                     datefs.addClass('form-inline');
                     var fitems = Y.all('#discussion_dateform div.row.fitem');
+                    if( !(fitems._nodes.length > 0)) {
+                        var items = Y.all('#discussion_dateform .form-inline.felement');
+                        var titles = Y.all('.col-form-label.d-inline');
+                        var title_nodes = [];
+                        titles.each(function (title) {
+                            title_nodes.push(title.ancestor());
+                        });
+                        items.each(function (item, iter) {
+                            if (iter > 0) {
+                                var cont = Y.Node.create('<div/>');
+                                cont.addClass('form-group');
+                                datefs.appendChild(cont);
+                                cont.appendChild(title_nodes[iter - 1]).addClass('row');
+                                cont.appendChild(item).addClass('row');
+                            }
+                        });
+                    }
                     fitems.each(function (fitem, index) {
                         if (index > 0) {
                             datefs.appendChild(fitem);
