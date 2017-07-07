@@ -924,3 +924,13 @@ the use of id^="" */
     padding-top: 0.5em;
     margin-top: 0.5em;
 }
+
+/* Additional styles for right alignment. */
+.forumsearch {
+    float: right;
+}
+
+#searchforums {
+    margin: auto;
+}
+
