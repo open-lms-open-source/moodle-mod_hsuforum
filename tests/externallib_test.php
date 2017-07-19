@@ -274,11 +274,12 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
                 array(
                     'filename' => $filename,
                     'filepath' => '/',
-                    'filesize' => '27',
+                    'filesize' => 27,
                     'fileurl' => moodle_url::make_webservice_pluginfile_url($forum1context->id, 'mod_hsuforum', 'post',
-                                    $discussion1reply1->id, '/', $filename),
+                                    $discussion1reply1->id, '/', $filename)->out(false),
                     'timemodified' => $timepost,
                     'mimetype' => 'image/jpeg',
+                    'isexternalfile' => false,
                 )
             ),
             'totalscore' => $discussion1reply1->totalscore,
