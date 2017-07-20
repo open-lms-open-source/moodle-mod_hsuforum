@@ -28,7 +28,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 0 | hsuforum |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I press "Add a new discussion"
     And I should see "Add your discussion"
@@ -48,7 +48,7 @@ Feature: Teachers and students can edit discussions
     And I should see "Test reply mail now description" in the ".hsuforum-post-content" "css_element"
     And I log out
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I press "Add a new discussion"
     And I should see "Add your discussion"
@@ -65,7 +65,7 @@ Feature: Teachers and students can edit discussions
     And the following config values are set as admin:
       | texteditors | <editororder> |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I create the following inline discussions:
@@ -89,7 +89,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 0 | hsuforum |
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I create the following inline discussions:
@@ -102,7 +102,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I create the following inline discussions:
@@ -115,7 +115,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I create the following inline discussions:
@@ -128,7 +128,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 0 | hsuforum |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"
@@ -148,7 +148,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 0 | hsuforum |
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"
@@ -168,7 +168,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"
@@ -188,7 +188,7 @@ Feature: Teachers and students can edit discussions
     When the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"

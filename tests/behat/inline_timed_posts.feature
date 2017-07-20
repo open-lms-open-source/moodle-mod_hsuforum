@@ -26,7 +26,7 @@ Feature: Teachers and students can create time released discussions
     When the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
 
@@ -37,7 +37,7 @@ Feature: Teachers and students can create time released discussions
 
     And I log out
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I should see "Currently accessible discussion"
     And I should not see "Currently restricted discussion"
@@ -49,7 +49,7 @@ Feature: Teachers and students can create time released discussions
     And the following config values are set as admin:
       | texteditors | atto, textarea |
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"

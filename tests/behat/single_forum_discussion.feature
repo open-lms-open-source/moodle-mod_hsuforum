@@ -23,7 +23,7 @@ Feature: Moodlerooms forum with single simple forum discussion type
   @javascript
   Scenario: Teacher can start the single simple discussion
     Given I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I follow "Single discussion forum name"
     Then I should see "Single discussion forum description" in the ".hsuforum-thread-content > .posting" "css_element"
     And I should not see "Add a new discussion"
@@ -31,7 +31,7 @@ Feature: Moodlerooms forum with single simple forum discussion type
   @javascript
   Scenario: Student can not add more discussions
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I reply "Single discussion forum name" post from "Single discussion forum name" Moodlerooms forum with:
       | Subject | Reply to single discussion subject |
       | Message | Reply to single discussion message |

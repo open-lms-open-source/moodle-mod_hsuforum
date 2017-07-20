@@ -29,7 +29,7 @@ Feature: A user can control their own subscription preferences for a Moodlerooms
       | Message | Test post message |
     And I log out
     When I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     Then I should not see "Subscribe to this forum"
     And I should not see "Unsubscribe from this forum"
@@ -47,7 +47,7 @@ Feature: A user can control their own subscription preferences for a Moodlerooms
       | Message | Test post message |
     And I log out
     When I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     Then I should not see "Subscribe to this forum"
     And I should not see "Unsubscribe from this forum"
@@ -65,7 +65,7 @@ Feature: A user can control their own subscription preferences for a Moodlerooms
       | Message | Test post message |
     And I log out
     When I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     Then I should see "Subscribe to this forum"
     And I should not see "Unsubscribe from this forum"
@@ -84,7 +84,7 @@ Feature: A user can control their own subscription preferences for a Moodlerooms
       | Message | Test post message |
     And I log out
     When I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     Then I should see "Unsubscribe from this forum"
     And I should not see "Subscribe to this forum"

@@ -32,7 +32,7 @@ Feature: In Moodlerooms forums, blog posts are always displayed in reverse chron
   @javascript
   Scenario: Replying to a blog post or editing it does not affect its display order
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Course blog forum"
     #
     # Add three posts into the blog.
@@ -60,7 +60,7 @@ Feature: In Moodlerooms forums, blog posts are always displayed in reverse chron
     # Reply to another blog post.
     #
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Course blog forum"
     And I follow "Blog post 1"
     And I follow "Reply"
@@ -70,7 +70,7 @@ Feature: In Moodlerooms forums, blog posts are always displayed in reverse chron
     And I press "Post to forum"
     And I wait to be redirected
     And I am on site homepage
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Course blog forum"
     #
     # Make sure the order of the blog posts is still reverse chronological.

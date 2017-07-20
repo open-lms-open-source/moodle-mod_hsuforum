@@ -31,7 +31,7 @@ Feature: Moodlerooms forums in 'No groups' mode allow posting to All participant
 
   Scenario: Teacher can post
     Given I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Standard forum name"
     And I should not see "Group A"
     And I should not see "Group B"
@@ -48,7 +48,7 @@ Feature: Moodlerooms forums in 'No groups' mode allow posting to All participant
   @javascript
   Scenario: Teacher can post via ajax
     Given I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Standard forum name"
     And I should not see "Group A"
     And I should not see "Group B"
@@ -62,7 +62,7 @@ Feature: Moodlerooms forums in 'No groups' mode allow posting to All participant
 
   Scenario: Student can post
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Standard forum name"
     And I should not see "Group A"
     And I should not see "Group B"
@@ -79,7 +79,7 @@ Feature: Moodlerooms forums in 'No groups' mode allow posting to All participant
   @javascript
   Scenario: Student can post via ajax
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Standard forum name"
     And I should not see "Group A"
     And I should not see "Group B"

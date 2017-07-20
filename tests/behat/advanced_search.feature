@@ -27,7 +27,7 @@ Feature: The forum search allows users to perform advanced searches for forum po
     And I add a new topic to "Announcements" Moodlerooms forum with:
       | Subject | My subject |
       | Message | My message |
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I add a new topic to "Announcements" Moodlerooms forum with:
       | Subject | My subjective|
       | Message | My long message |
@@ -35,7 +35,7 @@ Feature: The forum search allows users to perform advanced searches for forum po
 
   Scenario: Perform an advanced search using any term
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Announcements"
     And I press "Search"
     And I should see "Advanced search"
@@ -46,7 +46,7 @@ Feature: The forum search allows users to perform advanced searches for forum po
 
   Scenario: Perform an advanced search avoiding words
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Announcements"
     And I press "Search"
     And I should see "Advanced search"
@@ -61,7 +61,7 @@ Feature: The forum search allows users to perform advanced searches for forum po
       | mysql |
       | postgres |
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Announcements"
     And I press "Search"
     And I should see "Advanced search"
@@ -72,7 +72,7 @@ Feature: The forum search allows users to perform advanced searches for forum po
 
   Scenario: Perform an advanced search matching the subject
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Announcements"
     And I press "Search"
     And I should see "Advanced search"
@@ -83,13 +83,13 @@ Feature: The forum search allows users to perform advanced searches for forum po
 
   Scenario: Perform an advanced search matching the author
     Given I log in as "teacher2"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I add a new topic to "Announcements" Moodlerooms forum with:
       | Subject | My Subjects |
       | Message | My message |
     And I log out
     When I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Announcements"
     And I press "Search"
     And I should see "Advanced search"
@@ -100,7 +100,7 @@ Feature: The forum search allows users to perform advanced searches for forum po
 
   Scenario: Perform an advanced search with multiple words
     Given I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Announcements"
     And I press "Search"
     And I should see "Advanced search"

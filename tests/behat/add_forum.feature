@@ -28,7 +28,7 @@ Feature: Add Moodlerooms forum activities and discussions
       | Message | This is the body |
     And I log out
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     When I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Post with attachment |
       | Message | This is the body |

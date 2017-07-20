@@ -26,7 +26,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     When the following config values are set as admin:
       | texteditors | atto|
     When I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"
@@ -53,7 +53,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     When the following config values are set as admin:
       | texteditors | atto|
     When I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"
@@ -80,7 +80,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     When the following config values are set as admin:
       | texteditors | tinymce|
     And I log in as "teacher1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"
@@ -105,7 +105,7 @@ Feature: Teachers and students can use the advanced editor for inline discussion
     When the following config values are set as admin:
       | texteditors | tinymce|
     And I log in as "student1"
-    And I follow "Course 1"
+    And I am on "Course 1" course homepage
     And I follow "Test forum name"
     And I wait until the page is ready
     And I press "Add a new discussion"
