@@ -21,8 +21,7 @@ Feature: In Moodlerooms forums as a teacher I need to see an accurate list of su
       | student2 | C1 | student |
       | student3 | C1 | student |
     And I log in as "teacher"
-    And I follow "Course 1"
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
 
   @javascript
   Scenario: A forced forum lists all subscribers

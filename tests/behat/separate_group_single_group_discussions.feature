@@ -40,8 +40,7 @@ Feature: In Moodlerooms forums, posting to groups in a separate group discussion
       | G2       | G2G1    |
     And I log in as "admin"
     And I am on site homepage
-    And I follow "Course 1"
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
     And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name  | Multiple groups forum             |
       | Forum type  | Standard forum for general use    |

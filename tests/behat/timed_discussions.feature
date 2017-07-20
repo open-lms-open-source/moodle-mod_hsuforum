@@ -18,8 +18,7 @@ Feature: In Moodlerooms forums users can choose to set start and end time for di
     And the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I am on site homepage
-    And I follow "Course 1"
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
     And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |

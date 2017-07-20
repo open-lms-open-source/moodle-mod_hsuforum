@@ -18,8 +18,7 @@ Feature: In Moodlerooms forums a user can control their default discussion subsc
       | student2 | C1 | student |
     And I log in as "admin"
     And I am on site homepage
-    And I follow "Course 1"
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
 
   Scenario: Creating a new discussion in an optional forum follows user preferences
     Given I add a "Moodlerooms Forum" to section "1" and I fill the form with:
