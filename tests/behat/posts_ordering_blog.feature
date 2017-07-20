@@ -69,7 +69,6 @@ Feature: In Moodlerooms forums, blog posts are always displayed in reverse chron
       | Message | Reply to the first post |
     And I press "Post to forum"
     And I wait to be redirected
-    And I am on site homepage
     And I am on "Course 1" course homepage
     And I follow "Course blog forum"
     #

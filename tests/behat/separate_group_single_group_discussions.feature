@@ -39,7 +39,6 @@ Feature: In Moodlerooms forums, posting to groups in a separate group discussion
       | G1       | G1G2    |
       | G2       | G2G1    |
     And I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage with editing mode on
     And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name  | Multiple groups forum             |

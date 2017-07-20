@@ -15,7 +15,6 @@ Feature: A user can control their own subscription preferences for a Moodlerooms
       | user | course | role |
       | student1 | C1 | student |
     And I log in as "admin"
-    And I am on site homepage
     And I am on "Course 1" course homepage with editing mode on
 
   Scenario: A disallowed subscription forum cannot be subscribed to
