@@ -5937,7 +5937,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
     echo '<div class="title">';
     if ($detail) {
         $aname = s($activity->name);
-        $output .= html_writer::img($OUTPUT->pix_url('icon', $activity->type), $aname, ['class' => 'icon']);
+        $output .= html_writer::img($OUTPUT->image_url('icon', $activity->type), $aname, ['class' => 'icon']);
     }
     $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', ['d' => $content->discussion]);
     $discussionurl->set_anchor('p' . $activity->content->id);
