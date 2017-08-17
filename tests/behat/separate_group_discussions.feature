@@ -121,6 +121,7 @@ Feature: In Moodlerooms forums, posting to all groups in a separate group discus
     # TODO: the following line fails due to a redirect bug
     #And the field "Separate groups" matches value "Group B"
     # instead just manually switch to that group
+    And I follow "Standard forum name"
     And I select "Group B" from the "Separate groups" singleselect
     And I should see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
     And I should not see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
@@ -183,6 +184,7 @@ Feature: In Moodlerooms forums, posting to all groups in a separate group discus
     # TODO: the following line fails due to a redirect bug
     #And the field "Separate groups" matches value "Group C"
     # instead just manually switch to that group
+    And I follow "Standard forum name"
     And I select "Group C" from the "Separate groups" singleselect
     # We redirect to the group posted in automatically.
     And I should see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
@@ -209,6 +211,7 @@ Feature: In Moodlerooms forums, posting to all groups in a separate group discus
       | Teacher 1 -> Post to all | Teacher 1 -> Post to all | 1                |
     # Posting to all groups means that we should be redirected to the page we started from.
     And the field "Separate groups" matches value "All participants"
+    And I follow "Standard forum name"
     And I select "Group A" from the "Separate groups" singleselect
     Then I should see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
     And I should not see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"

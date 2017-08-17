@@ -15,20 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information
+ * Tag areas in component mod_hsuforum
  *
- * @package    mod
- * @subpackage hsuforum
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2016 Moodlerooms Inc. (http://www.moodlerooms.com)
- * @author Mark Nielsen
+ * @package   mod_hsuforum
+ * @copyright 2017 Andrew Hancox <andrewdchancox@googlemail.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017051500;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2017050500;       // Requires this Moodle version
-$plugin->component = 'mod_hsuforum';   // Full name of the plugin (used for diagnostics).
-$plugin->release   = '3.2.3';
-$plugin->maturity  = MATURITY_STABLE;
+
+$tagareas = array(
+    array(
+        'itemtype' => 'hsuforum_posts',
+        'component' => 'mod_hsuforum',
+        'callback' => 'mod_hsuforum_get_tagged_posts',
+        'callbackfile' => '/mod/hsuforum/locallib.php',
+    ),
+);

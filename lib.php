@@ -142,6 +142,9 @@ function hsuforum_add_instance($forum, $mform = null) {
 
     hsuforum_grade_item_update($forum);
 
+    $completiontimeexpected = !empty($forum->completionexpected) ? $forum->completionexpected : null;
+    \core_completion\api::update_completion_date_event($forum->coursemodule, 'hsuforum', $forum->id, $completiontimeexpected);
+
     return $forum->id;
 }
 
@@ -269,6 +272,9 @@ function hsuforum_update_instance($forum, $mform) {
 
     hsuforum_grade_item_update($forum);
 
+    $completiontimeexpected = !empty($forum->completionexpected) ? $forum->completionexpected : null;
+    \core_completion\api::update_completion_date_event($forum->coursemodule, 'hsuforum', $forum->id, $completiontimeexpected);
+
     return true;
 }
 
@@ -302,6 +308,8 @@ function hsuforum_delete_instance($id) {
     $fs->delete_area_files($context->id);
 
     $result = true;
+
+     \core_completion\api::update_completion_date_event($cm->id, 'hsuforum', $forum->id, null);
 
     if ($discussions = $DB->get_records('hsuforum_discussions', array('forum'=>$forum->id))) {
         foreach ($discussions as $discussion) {
@@ -596,13 +604,14 @@ function hsuforum_cron() {
                 }
             }
 
+            $modcontext = context_module::instance($coursemodules[$forumid]->id);
+
             // Save the Inbound Message datakey here to reduce DB queries later.
             $messageinboundgenerator->set_data($pid);
             $messageinboundhandlers[$pid] = $messageinboundgenerator->fetch_data_key();
 
             // Caching subscribed users of each forum.
             if (!isset($subscribedusers[$forumid])) {
-                $modcontext = context_module::instance($coursemodules[$forumid]->id);
                 if ($subusers = hsuforum_subscribed_users($courses[$courseid], $forums[$forumid], 0, $modcontext, "u.*")) {
                     foreach ($subusers as $postuser) {
                         // this user is subscribed to this forum
@@ -1363,11 +1372,15 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
 /**
  * Filters the forum discussions according to groups membership and config.
  *
+ * @deprecated since 3.3
+ * @todo The final deprecation of this function will take place in Moodle 3.7 - see MDL-57487.
  * @since  Moodle 2.8, 2.7.1, 2.6.4
  * @param  array $discussions Discussions with new posts array
  * @return array Forums with the number of new posts
  */
 function hsuforum_filter_user_groups_discussions($discussions) {
+
+    debugging('The function hsuforum_filter_user_groups_discussions() is now deprecated.', DEBUG_DEVELOPER);
 
     // Group the remaining discussions posts by their forumid.
     $filteredforums = array();
@@ -1424,6 +1437,8 @@ function hsuforum_is_user_group_discussion(cm_info $cm, $discussiongroupid) {
 }
 
 /**
+ * @deprecated since 3.3
+ * @todo The final deprecation of this function will take place in Moodle 3.7 - see MDL-57487.
  * @global object
  * @global object
  * @global object
@@ -1432,6 +1447,8 @@ function hsuforum_is_user_group_discussion(cm_info $cm, $discussiongroupid) {
  */
 function hsuforum_print_overview($courses,&$htmlarray) {
     global $USER, $CFG, $DB, $SESSION;
+
+    debugging('The function hsuforum_print_overview() is now deprecated.', DEBUG_DEVELOPER);
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
@@ -2236,15 +2253,38 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
 
     if ($lexer->parse($searchstring)) {
         $parsearray = $parser->get_parsed_array();
+
+        $tagjoins = '';
+        $tagfields = [];
+        $tagfieldcount = 0;
+        foreach ($parsearray as $token) {
+            if ($token->getType() == TOKEN_TAGS) {
+                for ($i = 0; $i <= substr_count($token->getValue(), ','); $i++) {
+                    // Queries can only have a limited number of joins so set a limit sensible users won't exceed.
+                    if ($tagfieldcount > 10) {
+                        continue;
+                    }
+                    $tagjoins .= " LEFT JOIN {tag_instance} ti_$tagfieldcount
+                                        ON p.id = ti_$tagfieldcount.itemid
+                                            AND ti_$tagfieldcount.component = 'mod_hsuforum'
+                                            AND ti_$tagfieldcount.itemtype = 'hsuforum_posts'";
+                    $tagjoins .= " LEFT JOIN {tag} t_$tagfieldcount ON t_$tagfieldcount.id = ti_$tagfieldcount.tagid";
+                    $tagfields[] = "t_$tagfieldcount.rawname";
+                    $tagfieldcount++;
+                }
+            }
+        }
         list($messagesearch, $msparams) = search_generate_SQL($parsearray, 'p.message', 'p.subject',
                                                               'p.userid', 'u.id', 'u.firstname',
-                                                              'u.lastname', 'p.modified', 'd.forum');
+                                                              'u.lastname', 'p.modified', 'd.forum',
+                                                              $tagfields);
         $params = array_merge($params, $msparams);
     }
 
-    $fromsql = "{hsuforum_posts} p,
-                  {hsuforum_discussions} d JOIN {hsuforum} f ON f.id = d.forum,
-                  {user} u";
+    $fromsql = "{hsuforum_posts} p
+                  INNER JOIN {hsuforum_discussions} d ON d.id = p.discussion
+                  INNER JOIN {hsuforum} f ON d.forum = f.id
+                  INNER JOIN {user} u ON u.id = p.userid $tagjoins";
 
     foreach ($parsearray as $item){
         if ($item->getType() == TOKEN_USER || $item->getType() == TOKEN_USERID) {
@@ -4151,6 +4191,10 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
 
     hsuforum_mark_post_read($post->userid, $post, $forum->id);
 
+    if (isset($post->tags)) {
+        core_tag_tag::set_item_tags('mod_hsuforum', 'hsuforum_posts', $post->id, $context, $post->tags);
+    }
+
     // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
     hsuforum_trigger_content_uploaded_event($post, $cm, 'hsuforum_add_new_post');
 
@@ -4227,6 +4271,10 @@ function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_
     $DB->update_record('hsuforum_discussions', $discussion);
 
     hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
+
+    if (isset($newpost->tags)) {
+        \core_tag_tag::set_item_tags('mod_hsuforum', 'hsuforum_posts', $post->id, $context, $newpost->tags);
+    }
 
     hsuforum_mark_post_read($post->userid, $post, $forum->id);
 
@@ -4892,12 +4940,11 @@ function hsuforum_post_subscription($post, $forum) {
  *      Any strings not passed in are taken from the $defaultmessages array
  *      at the top of the function.
  * @param bool $cantaccessagroup
- * @param bool $fakelink
  * @param bool $backtoindex
- * @param array $subscribed_forums
  * @return string
  */
-function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $cantaccessagroup = false, $fakelink=true, $backtoindex=false, $subscribed_forums=null) {
+function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $cantaccessagroup = false, $unused1 = true,
+    $backtoindex=false, $unused2 = null) {
     global $USER, $PAGE, $OUTPUT;
     $defaultmessages = array(
         'subscribed' => get_string('unsubscribe', 'hsuforum'),
@@ -4940,19 +4987,10 @@ function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $can
         }
         $link = '';
 
-        if ($fakelink) {
-            $PAGE->requires->js('/mod/hsuforum/forum.js');
-            $PAGE->requires->js_function_call('hsuforum_produce_subscribe_link', array($forum->id, $backtoindexlink, $linktext, $linktitle));
-            $link = "<noscript>";
-        }
         $options['id'] = $forum->id;
         $options['sesskey'] = sesskey();
         $url = new moodle_url('/mod/hsuforum/subscribe.php', $options);
-        $link .= $OUTPUT->single_button($url, $linktext, 'get', array('title'=>$linktitle));
-        if ($fakelink) {
-            $link .= '</noscript>';
-        }
-        return $link;
+        return $OUTPUT->single_button($url, $linktext, 'get', array('title' => $linktitle));
     }
 }
 
@@ -5391,12 +5429,16 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
     }
 
     if ($forum->type == 'qanda') {
+        if (has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id) || $post->userid == $user->id
+                || (isset($discussion->firstpost) && $discussion->firstpost == $post->id)) {
+            return true;
+        }
         $firstpost = hsuforum_get_firstpost_from_discussion($discussion->id);
+        if ($firstpost->userid == $user->id) {
+            return true;
+        }
         $userfirstpost = hsuforum_get_user_posted_time($discussion->id, $user->id);
-
-        return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)) ||
-                $firstpost->id == $post->id || $post->userid == $user->id || $firstpost->userid == $user->id ||
-                \mod_hsuforum\local::cached_has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext, $user->id));
+        return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)));
     }
     return true;
 }
@@ -5937,7 +5979,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
     echo '<div class="title">';
     if ($detail) {
         $aname = s($activity->name);
-        $output .= html_writer::img($OUTPUT->image_url('icon', $activity->type), $aname, ['class' => 'icon']);
+        $output .= $OUTPUT->image_icon('icon', $aname, $activity->type);
     }
     $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', ['d' => $content->discussion]);
     $discussionurl->set_anchor('p' . $activity->content->id);
@@ -5997,17 +6039,22 @@ function hsuforum_update_subscriptions_button($courseid, $forumid) {
     global $CFG, $USER;
 
     if (!empty($USER->subscriptionsediting)) {
-        $string = get_string('turneditingoff');
+        $string = get_string('managesubscriptionsoff', 'hsuforum');
         $edit = "off";
     } else {
-        $string = get_string('turneditingon');
+        $string = get_string('managesubscriptionson', 'hsuforum');
         $edit = "on";
     }
 
-    return "<form method=\"get\" action=\"$CFG->wwwroot/mod/hsuforum/subscribers.php\">".
-           "<input type=\"hidden\" name=\"id\" value=\"$forumid\" />".
-           "<input type=\"hidden\" name=\"edit\" value=\"$edit\" />".
-           "<input type=\"submit\" value=\"$string\" /></form>";
+    $subscribers = html_writer::start_tag('form', array('action' => $CFG->wwwroot . '/mod/hsuforum/subscribers.php',
+        'method' => 'get', 'class' => 'form-inline'));
+    $subscribers .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => $string,
+        'class' => 'btn btn-secondary'));
+    $subscribers .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $forumid));
+    $subscribers .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'edit', 'value' => $edit));
+    $subscribers .= html_writer::end_tag('form');
+
+    return $subscribers;
 }
 
 /**
@@ -6148,9 +6195,12 @@ function hsuforum_tp_add_read_record($userid, $postid) {
 /**
  * If its an old post, do nothing. If the record exists, the maintenance will clear it up later.
  *
+ * @param   int     $userid The ID of the user to mark posts read for.
+ * @param   object  $post   The post record for the post to mark as read.
+ * @param   mixed   $unused
  * @return bool
  */
-function hsuforum_mark_post_read($userid, $post, $forumid) {
+function hsuforum_mark_post_read($userid, $post, $unused = null) {
     if (!hsuforum_tp_is_post_old($post)) {
         return hsuforum_tp_add_read_record($userid, $post->id);
     } else {
@@ -6308,12 +6358,17 @@ function hsuforum_tp_get_course_unread_posts($userid, $courseid) {
  * @global object
  * @param object $cm
  * @param object $course
+ * @param bool   $resetreadcache optional, true to reset the function static $readcache var
  * @return int
  */
-function hsuforum_count_forum_unread_posts($cm, $course) {
+function hsuforum_count_forum_unread_posts($cm, $course, $resetreadcache = false) {
     global $CFG, $USER, $DB;
 
     static $readcache = array();
+
+    if ($resetreadcache) {
+        $readcache = array();
+    }
 
     $forumid = $cm->instance;
     $config = get_config('hsuforum');
@@ -8590,4 +8645,195 @@ function hsuforum_check_updates_since(cm_info $cm, $from, $filter = array()) {
     }
 
     return $updates;
+}
+
+/**
+ * Check if the user can create attachments in a forum.
+ * @param  stdClass $forum   forum object
+ * @param  stdClass $context context object
+ * @return bool true if the user can create attachments, false otherwise
+ * @since  Moodle 3.3
+ */
+function hsuforum_can_create_attachment($forum, $context) {
+    // If maxbytes == 1 it means no attachments at all.
+    if (empty($forum->maxattachments) || $forum->maxbytes == 1 ||
+            !has_capability('mod/hsuforum:createattachment', $context)) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Get icon mapping for font-awesome.
+ *
+ * @return  array
+ */
+function mod_hsuforum_get_fontawesome_icon_map() {
+    return [
+        'mod_hsuforum:i/pinned' => 'fa-map-pin',
+        'mod_hsuforum:t/selected' => 'fa-check',
+        'mod_hsuforum:t/subscribed' => 'fa-envelope-o',
+        'mod_hsuforum:t/unsubscribed' => 'fa-envelope-open-o',
+    ];
+}
+
+/**
+ * Callback function that determines whether an action event should be showing its item count
+ * based on the event type and the item count.
+ *
+ * @param calendar_event $event The calendar event.
+ * @param int $itemcount The item count associated with the action event.
+ * @return bool
+ */
+function mod_hsuforum_core_calendar_event_action_shows_item_count(calendar_event $event, $itemcount = 0) {
+    // Always show item count for forums if item count is greater than 1.
+    // If only one action is required than it is obvious and we don't show it for other modules.
+    return $itemcount > 1;
+}
+
+/**
+ * This function receives a calendar event and returns the action associated with it, or null if there is none.
+ *
+ * This is used by block_myoverview in order to display the event appropriately. If null is returned then the event
+ * is not displayed on the block.
+ *
+ * @param calendar_event $event
+ * @param \core_calendar\action_factory $factory
+ * @return \core_calendar\local\event\entities\action_interface|null
+ */
+function mod_hsuforum_core_calendar_provide_event_action(calendar_event $event,
+                                                       \core_calendar\action_factory $factory) {
+    global $DB, $USER;
+
+    $cm = get_fast_modinfo($event->courseid)->instances['hsuforum'][$event->instance];
+    $context = context_module::instance($cm->id);
+
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+        return null;
+    }
+
+    $completion = new \completion_info($cm->get_course());
+
+    $completiondata = $completion->get_data($cm, false);
+
+    if ($completiondata->completionstate != COMPLETION_INCOMPLETE) {
+        return null;
+    }
+
+    // Get action itemcount.
+    $itemcount = 0;
+    $forum = $DB->get_record('hsuforum', array('id' => $cm->instance));
+    $postcountsql = "
+                SELECT
+                    COUNT(1)
+                  FROM
+                    {hsuforum_posts} fp
+                    INNER JOIN {hsuforum_discussions} fd ON fp.discussion=fd.id
+                 WHERE
+                    fp.userid=:userid AND fd.forum=:forumid";
+    $postcountparams = array('userid' => $USER->id, 'forumid' => $forum->id);
+
+    if ($forum->completiondiscussions) {
+        $count = $DB->count_records('hsuforum_discussions', array('forum' => $forum->id, 'userid' => $USER->id));
+        $itemcount += ($forum->completiondiscussions >= $count) ? ($forum->completiondiscussions - $count) : 0;
+    }
+
+    if ($forum->completionreplies) {
+        $count = $DB->get_field_sql( $postcountsql.' AND fp.parent<>0', $postcountparams);
+        $itemcount += ($forum->completionreplies >= $count) ? ($forum->completionreplies - $count) : 0;
+    }
+
+    if ($forum->completionposts) {
+        $count = $DB->get_field_sql($postcountsql, $postcountparams);
+        $itemcount += ($forum->completionposts >= $count) ? ($forum->completionposts - $count) : 0;
+    }
+
+    // Well there is always atleast one actionable item (view forum, etc).
+    $itemcount = $itemcount > 0 ? $itemcount : 1;
+
+    return $factory->create_instance(
+        get_string('view'),
+        new \moodle_url('/mod/hsuforum/view.php', ['id' => $cm->id]),
+        $itemcount,
+        true
+    );
+}
+
+/**
+ * Add a get_coursemodule_info function in case any forum type wants to add 'extra' information
+ * for the course (see resource).
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
+ */
+function hsuforum_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    $dbparams = ['id' => $coursemodule->instance];
+    $fields = 'id, name, intro, introformat, completionposts, completiondiscussions, completionreplies';
+    if (!$forum = $DB->get_record('hsuforum', $dbparams, $fields)) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $forum->name;
+
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $result->content = format_module_intro('hsuforum', $forum, $coursemodule->id, false);
+    }
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completiondiscussions'] = $forum->completiondiscussions;
+        $result->customdata['customcompletionrules']['completionreplies'] = $forum->completionreplies;
+        $result->customdata['customcompletionrules']['completionposts'] = $forum->completionposts;
+    }
+
+    return $result;
+}
+
+/**
+ * Callback which returns human-readable strings describing the active completion custom rules for the module instance.
+ *
+ * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
+ * @return array $descriptions the array of descriptions for the custom rules.
+ */
+function mod_hsuforum_get_completion_active_rule_descriptions($cm) {
+    // Values will be present in cm_info, and we assume these are up to date.
+    if (empty($cm->customdata['customcompletionrules'])
+        || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
+        return [];
+    }
+
+    $descriptions = [];
+    foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
+        switch ($key) {
+            case 'completiondiscussions':
+                if (empty($val)) {
+                    continue;
+                }
+                $descriptions[] = get_string('completiondiscussionsdesc', 'hsuforum', $val);
+                break;
+            case 'completionreplies':
+                if (empty($val)) {
+                    continue;
+                }
+                $descriptions[] = get_string('completionrepliesdesc', 'hsuforum', $val);
+                break;
+            case 'completionposts':
+                if (empty($val)) {
+                    continue;
+                }
+                $descriptions[] = get_string('completionpostsdesc', 'hsuforum', $val);
+                break;
+            default:
+                break;
+        }
+    }
+    return $descriptions;
 }

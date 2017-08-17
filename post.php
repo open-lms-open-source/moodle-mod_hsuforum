@@ -1012,5 +1012,12 @@ if (!empty($parent)) {
 if (!empty($formheading)) {
     echo $OUTPUT->heading($formheading, 4);
 }
+
+$data = new StdClass();
+if (isset($postid)) {
+    $data->tags = core_tag_tag::get_item_tags_array('mod_hsuforum', 'hsuforum_posts', $postid);
+    $mform_post->set_data($data);
+}
+
 $mform_post->display();
 echo $OUTPUT->footer();

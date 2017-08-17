@@ -42,6 +42,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $paths[] = new restore_path_element('hsuforum_discussion', '/activity/hsuforum/discussions/discussion');
             $paths[] = new restore_path_element('hsuforum_discussion_subscription', '/activity/hsuforum/discussions/discussion/subscriptions_discs/subscriptions_disc');
             $paths[] = new restore_path_element('hsuforum_post', '/activity/hsuforum/discussions/discussion/posts/post');
+            $paths[] = new restore_path_element('hsuforum_tag', '/activity/hsuforum/poststags/tag');
             $paths[] = new restore_path_element('hsuforum_rating', '/activity/hsuforum/discussions/discussion/posts/post/ratings/rating');
             $paths[] = new restore_path_element('hsuforum_subscription', '/activity/hsuforum/subscriptions/subscription');
             $paths[] = new restore_path_element('hsuforum_digest', '/activity/hsuforum/digests/digest');

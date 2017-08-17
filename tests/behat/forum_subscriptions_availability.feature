@@ -43,14 +43,14 @@ Feature: In Moodlerooms forums as a teacher I need to see an accurate list of su
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
-      | Visible           | Show |
+      | Availability      | Show on course page |
     And I follow "Forced Forum 2"
     And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Teacher Teacher"
     And I should see "Student 1"
     And I should see "Student 2"
     And I should see "Student 3"
-    And I should not see "Turn editing on"
+    And I should not see "Manage subscriptions"
 
   Scenario: A forced and hidden forum lists only teachers
     When I add a "Moodlerooms Forum" to section "1" and I fill the form with:
@@ -58,7 +58,7 @@ Feature: In Moodlerooms forums as a teacher I need to see an accurate list of su
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
-      | Visible           | Hide |
+      | Availability      | Hide from students |
     And I follow "Forced Forum 2"
     And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Teacher Teacher"

@@ -106,12 +106,16 @@ if (has_capability('mod/hsuforum:managesubscriptions', $context) && hsuforum_is_
     if ($edit != -1) {
         $USER->subscriptionsediting = $edit;
     }
-    $PAGE->set_button(hsuforum_update_subscriptions_button($course->id, $id));
+    $updatesubscriptionsbutton = hsuforum_update_subscriptions_button($course->id, $id);
 } else {
+    $updatesubscriptionsbutton = '';
     unset($USER->subscriptionsediting);
 }
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('forum', 'hsuforum').' '.$strsubscribers);
+if (!empty($updatesubscriptionsbutton)) {
+    echo \html_writer::div($updatesubscriptionsbutton, 'pull-right');
+}
 if (empty($USER->subscriptionsediting)) {
     $subscribers = hsuforum_subscribed_users($course, $forum, $currentgroup, $context);
     if (hsuforum_is_forcesubscribed($forum)) {
@@ -123,6 +127,9 @@ if (empty($USER->subscriptionsediting)) {
     echo $forumoutput->subscribed_users($subscriberselector);
 } else {
     echo $forumoutput->subscriber_selection_form($existingselector, $subscriberselector);
+}
+if (!empty($updatesubscriptionsbutton)) {
+    echo $updatesubscriptionsbutton;
 }
 echo $OUTPUT->footer();
 
