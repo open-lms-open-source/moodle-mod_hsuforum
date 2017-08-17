@@ -36,6 +36,7 @@ Feature: Edited forum posts handle tags correctly
       | Tags    | Tag1                 |
     Then I should see "Tag1" in the ".forum-tags" "css_element"
     And I click on "Edit" "link" in the "//div[@data-author='Student 1']" "xpath_element"
+    And I follow link "Use advanced editor" ignoring js onclick
     Then I should see "Tag1" in the ".form-autocomplete-selection" "css_element"
 
   @javascript
@@ -51,6 +52,7 @@ Feature: Edited forum posts handle tags correctly
     And I am on "Course 1" course homepage
     And I follow "Test forum"
     And I click on "Add a new discussion" "button"
+    And I follow link "Use advanced editor" ignoring js onclick
     And I expand all fieldsets
     And I click on ".form-autocomplete-downarrow" "css_element"
     And I should see "OT1" in the ".form-autocomplete-suggestions" "css_element"
@@ -63,7 +65,8 @@ Feature: Edited forum posts handle tags correctly
     Then I should see "OT1" in the ".forum-tags" "css_element"
     And I should see "OT3" in the ".forum-tags" "css_element"
     And I should not see "OT2" in the ".forum-tags" "css_element"
-    And I click on "Edit" "link" in the "//div[@aria-label='Student post subject by Teacher 1']" "xpath_element"
+    And I click on "Edit" "link" in the "//div[@data-author='Teacher 1'][data-ispost='true'" "xpath_element"
+    And I follow link "Use advanced editor" ignoring js onclick
     And I should see "OT1" in the ".form-autocomplete-selection" "css_element"
     And I should see "OT3" in the ".form-autocomplete-selection" "css_element"
     And I should not see "OT2" in the ".form-autocomplete-selection" "css_element"
