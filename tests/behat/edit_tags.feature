@@ -65,7 +65,7 @@ Feature: Edited forum posts handle tags correctly
     Then I should see "OT1" in the ".forum-tags" "css_element"
     And I should see "OT3" in the ".forum-tags" "css_element"
     And I should not see "OT2" in the ".forum-tags" "css_element"
-    And I click on "Edit" "link" in the "//div[@data-author='Teacher 1'][data-ispost='true'" "xpath_element"
+    And I click on "Edit" "link" in the "//div[@data-author='Teacher 1'][@data-ispost='true']" "xpath_element"
     And I follow link "Use advanced editor" ignoring js onclick
     And I should see "OT1" in the ".form-autocomplete-selection" "css_element"
     And I should see "OT3" in the ".form-autocomplete-selection" "css_element"
