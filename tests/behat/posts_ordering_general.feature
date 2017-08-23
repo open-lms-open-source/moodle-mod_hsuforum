@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: New discussions and discussions with recently added replies are displayed first
+Feature: New Moodlerooms discussions and discussions with recently added replies are displayed first
   In order to use Moodlerooms forum as a discussion tool
   As a user
   I need to see currently active discussions first

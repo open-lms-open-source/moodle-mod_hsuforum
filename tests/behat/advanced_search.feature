@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: The forum search allows users to perform advanced searches for forum posts
+Feature: The Moodlerooms forum search allows users to perform advanced searches for forum posts
   In order to perform an advanced search for a forum post
   As a teacher
   I can use the search feature
