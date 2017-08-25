@@ -178,8 +178,7 @@ class reply_handler extends \core\message\inbound\handler {
         // Add attachments to the post.
         if (!empty($messagedata->attachments['attachment']) && count($messagedata->attachments['attachment'])) {
             $attachmentcount = count($messagedata->attachments['attachment']);
-            if (empty($forum->maxattachments) || $forum->maxbytes == 1 ||
-                    !has_capability('mod/hsuforum:createattachment', $modcontext)) {
+            if (!hsuforum_can_create_attachment($forum, $modcontext)) {
                 // Attachments are not allowed.
                 mtrace("--> User does not have permission to attach files in this hsuforum. Rejecting e-mail.");
 

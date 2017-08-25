@@ -109,9 +109,7 @@ Feature: Posting to all groups in Moodlerooms forums in a visible group discussi
       | subject              | message              | group   |
       | Teacher 1 -> Group B | Teacher 1 -> Group B | Group B |
     # We should be redirected to the group that we selected when posting.
-    # TODO: the following line fails due to a redirect bug
-    #And the field "Visible groups" matches value "Group B"
-    # instead just manually switch to that group
+    And I follow "Standard forum name"
     And I select "Group B" from the "Visible groups" singleselect
     And I should see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
     And I should not see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
@@ -173,6 +171,7 @@ Feature: Posting to all groups in Moodlerooms forums in a visible group discussi
     # TODO: the following line fails due to a redirect bug
     # And the field "Visible groups" matches value "Group C"
     # instead just manually switch to that group
+    And I follow "Standard forum name"
     And I select "Group C" from the "Visible groups" singleselect
     # We redirect to the group posted in automatically.
     And I should see "Group C" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
@@ -225,7 +224,7 @@ Feature: Posting to all groups in Moodlerooms forums in a visible group discussi
       | subject                  | message                  | posttomygroups |
       | Teacher 1 -> Post to all | Teacher 1 -> Post to all | 1              |
     # Posting to all groups means that we should be redirected to the page we started from.
-    And the field "Visible groups" matches value "All participants"
+    And I follow "Standard forum name"
     And I select "Group A" from the "Visible groups" singleselect
     Then I should see "Group A" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"
     And I should not see "Group B" in the "article[data-author='Teacher 1'] .hsuforum-thread-byline" "css_element"

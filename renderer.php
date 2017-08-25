@@ -1187,6 +1187,7 @@ HTML;
      * @author Mark Nielsen
      */
     public function post_message($post, $cm, $search = '') {
+        global $OUTPUT;
 
         $options = new stdClass;
         $options->para    = false;
@@ -1210,7 +1211,9 @@ HTML;
             $postcontent .= "<div class='attachedimages'>".$attachedimages."</div>";
         }
 
-
+        if (\core_tag_tag::is_enabled('mod_hsuforum', 'hsuforum_posts')) {
+             $postcontent .= $OUTPUT->tag_list(\core_tag_tag::get_item_tags('mod_hsuforum', 'hsuforum_posts', $post->id), null, 'forum-tags');
+        }
 
         $forum = hsuforum_get_cm_forum($cm);
         if (!empty($forum->displaywordcount)) {
