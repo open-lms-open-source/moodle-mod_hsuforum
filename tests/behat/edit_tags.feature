@@ -1,5 +1,5 @@
 @mod @mod_hsuforum @core_tag
-Feature: Edited forum posts handle tags correctly
+Feature: Edited Moodlerooms forum posts handle tags correctly
   In order to get forum posts properly labelled
   As a user
   I need to introduce the tags while editing
