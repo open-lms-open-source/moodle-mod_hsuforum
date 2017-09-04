@@ -237,6 +237,15 @@ Y.extend(FORM, Y.Base,
          */
         _copyMessage: function(node) {
             var message = node.one(SELECTORS.EDITABLE_MESSAGE).get('innerHTML');
+            if (message.length == 0) {
+                message = node.one(SELECTORS.EDITABLE_MESSAGE_ATTO).get('innerHTML');
+            }
+
+            message = message.replace(/&amp;/g, '&');
+            message = message.replace(/&gt;/g, '>');
+            message = message.replace(/&lt;/g, '<');
+            message = message.replace(/&quot;/g, '"');
+            message = message.replace(/&#39;/g, "'");
             node.one(SELECTORS.INPUT_MESSAGE).set('value', message);
         },
 

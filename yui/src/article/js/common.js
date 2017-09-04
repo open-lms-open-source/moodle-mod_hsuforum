@@ -18,6 +18,7 @@ var CSS = {
         DISCUSSION_TEMPLATE: '#hsuforum-discussion-template',
         DISCUSSION_VIEW: '.hsuforum-thread-view',
         EDITABLE_MESSAGE: '[contenteditable]',
+        EDITABLE_MESSAGE_ATTO: '[id^="editor-target-container"][contenteditable]:not([style*="display: none"])',
         FORM: '.hsuforum-form',
         FORM_ADVANCED: '.hsuforum-use-advanced',
         FORM_REPLY_WRAPPER: '.hsuforum-reply-wrapper',
