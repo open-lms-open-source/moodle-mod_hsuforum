@@ -42,8 +42,8 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/templates', 'core/frag
                  * @param {jQuery} parent  Parent node for the action trigger element.
                  * @param {int} cmid Course module ID
                  */
-                var setEditor = function (action, editor, parent, cmid) {
-                    var simple = parent.find('div[id^="editor-target-container-"].hsuforum-textarea');
+                var setEditor = function (action, editor, parent, cmid, link) {
+                    var simple = parent.find('div[id^="editor-target-container-"]:not([id$="editable"]).hsuforum-textarea');
                     var advanced = parent.find('div[id^="editor-target-container-"].editor_atto_content');
                     var itemid = parent.find('input[name="itemid"]');
                     var draftitemid = 0;
@@ -59,6 +59,7 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/templates', 'core/frag
                         params = {contextid: contextid, cmid: cmid, id: id, draftitemid: draftitemid};
                         fragment.loadFragment('mod_hsuforum', 'editor', contextid, params).done(
                             function(html, js) {
+                                link.attr('aria-pressed', 'false');
                                 templates.replaceNodeContents($('#editor-info'), html, js);
                                 parent.find('.hsuforum-use-advanced').text(M.util.get_string('hideadvancededitor', 'hsuforum'));
                                 if (simple.html().length > 0) {
@@ -73,11 +74,14 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/templates', 'core/frag
                             }
                         );
                     } else if (action === 'simple') {
+                        link.attr('aria-pressed', 'false');
                         simple.html(advanced.html());
                         simple.show();
+                        simple.removeAttr('hidden');
                         editor.hide();
                         parent.find('.hsuforum-use-advanced').text(M.util.get_string('useadvancededitor', 'hsuforum'));
                     } else if (action === 'show') {
+                        link.attr('aria-pressed', 'false');
                         parent.find('.hsuforum-use-advanced').text(M.util.get_string('hideadvancededitor', 'hsuforum'));
                         advanced.html(simple.html());
                         simple.hide();
@@ -106,19 +110,24 @@ define(['jquery', 'core/notification', 'core/ajax', 'core/templates', 'core/frag
                     }
 
                     editor = atto.length ? atto : tinymce;
-                    setEditor(action, editor, parent, cmid);
+                    var link = parent.find('.hsuforum-use-advanced');
+                    link.attr('aria-pressed', 'true');
+                    setEditor(action, editor, parent, cmid, link);
                 };
 
                 $(selector).on({
                     click: function(e) {
                         e.preventDefault();
-                        // Find the node parent of the "Use advanced aditor" button for TinyMCE or Atto.
-                        var parent = $(e.target).parent('.hsuforum-post-body');
-                        if (parent.length === 0) {
-                            // Atto specific.
-                            parent = $(e.target).parent('.editor_atto_wrap');
+                        if ($(e.target).attr('aria-pressed') == 'false') {
+                            // Find the node parent of the "Use advanced aditor" button for TinyMCE or Atto.
+                            var parent = $(e.target).parent('.hsuforum-post-body');
+                            if (parent.length === 0) {
+                                // Atto specific.
+                                parent = $(e.target).parent('.editor_atto_wrap');
+                            }
+                            updateEditor(parent, cmid);
                         }
-                        updateEditor(parent, cmid);
+
                     }
                 }, '.hsuforum-use-advanced');
             },
