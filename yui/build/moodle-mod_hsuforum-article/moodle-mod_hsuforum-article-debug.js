@@ -745,7 +745,7 @@ Y.extend(FORM, Y.Base,
          */
         _copyMessage: function(node) {
             var message = node.one(SELECTORS.EDITABLE_MESSAGE).get('innerHTML');
-            if (message.length == 0) {
+            if (node.one('.editor_atto') != null) {
                 message = node.one(SELECTORS.EDITABLE_MESSAGE_ATTO).get('innerHTML');
             }
 
