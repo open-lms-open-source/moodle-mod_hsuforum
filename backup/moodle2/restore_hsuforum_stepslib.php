@@ -143,6 +143,23 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         }
     }
 
+    protected function process_hsuforum_tag($data) {
+        $data = (object)$data;
+
+        if (!core_tag_tag::is_enabled('mod_hsuforum', 'forum_posts')) { // Tags disabled in server, nothing to process.
+            return;
+        }
+
+        $tag = $data->rawname;
+        if (!$itemid = $this->get_mappingid('hsuforum_post', $data->itemid)) {
+            // Some orphaned tag, we could not find the restored post for it - ignore.
+            return;
+        }
+
+        $context = context_module::instance($this->task->get_moduleid());
+        core_tag_tag::add_item_tag('mod_hsuforum', 'forum_posts', $itemid, $context, $tag);
+    }
+
     protected function process_hsuforum_rating($data) {
         global $DB;
 
