@@ -133,9 +133,6 @@ Y.extend(ARTICLE, Y.Base,
                 form    = this.get('form'),
                 router  = this.get('router');
 
-            /* Clean html on paste */
-            Y.delegate('paste', form.handleFormPaste, document, '.hsuforum-textarea', form);
-
             // Implement toggling for post to all groups checkbox and groups select
             var posttoallgroups = '.hsuforum-discussion input[name="posttomygroups"]';
             Y.delegate('click', form.handlePostToGroupsToggle, document, posttoallgroups, form);
