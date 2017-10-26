@@ -594,8 +594,10 @@ FUN WITH FORMS
 
 @media all and (min-width: 62em) {
     /* REALLY BIG SCREENS */
-    #page-mod-hsuforum-view #region-main{
+
+    #page-mod-hsuforum-view #region-main div[role="main"] {
         max-width: 60.5em;
+        margin: auto;
         padding: 1em 2%;
     }
 
