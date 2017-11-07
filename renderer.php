@@ -1163,7 +1163,7 @@ HTML;
                     <input type='hidden' name='id' value='{$cm->id}'>
                     <label for='dsortkey' class='accesshide'>".get_string('orderdiscussionsby', 'hsuforum')."</label>
                     $sortselect
-                    <input type='submit' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
+                    <input type='submit' class='btn btn-secondary' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
                     </form>";
 
         return $sortform;

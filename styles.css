@@ -567,6 +567,8 @@ FUN WITH FORMS
     }
     #hsuforum-filter-options {
         text-align: right;
+        clear: both;
+        margin-top: 0.3em;
     }
     .hsuforum-discussion-sort {
         display: inline-block;
