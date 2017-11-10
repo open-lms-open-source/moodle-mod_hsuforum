@@ -97,13 +97,15 @@
 
     echo ('<div id="discussionsview">');
 
-/// Some capability checks.
+    // Some capability checks.
+    $courselink = new moodle_url('/course/view.php', ['id' => $cm->course]);
+
     if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
-        notice(get_string("activityiscurrentlyhidden"));
+        notice(get_string("activityiscurrentlyhidden"), $courselink);
     }
 
     if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
-        notice(get_string('noviewdiscussionspermission', 'hsuforum'));
+        notice(get_string('noviewdiscussionspermission', 'hsuforum'), $courselink);
     }
 
     echo $discussionview;
