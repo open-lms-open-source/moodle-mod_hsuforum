@@ -63,7 +63,7 @@ Feature: New Moodlerooms discussions and discussions with recently added replies
     And I am on "Course 1" course homepage
     And I follow "Course general forum"
     And I follow "Forum post 1"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     And I set the following fields to these values:
       | Message | Reply to the first post |
     And I press "Post to forum"

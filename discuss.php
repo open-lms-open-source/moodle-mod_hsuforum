@@ -220,7 +220,6 @@
 
     $renderer = $PAGE->get_renderer('mod_hsuforum');
     $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
-    $PAGE->requires->js_call_amd('mod_hsuforum/advanced_editor', 'initialize', ['.box.mod-hsuforum-posts-container.article', $cm->id]);
 
     $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);

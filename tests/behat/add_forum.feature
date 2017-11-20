@@ -43,5 +43,5 @@ Feature: Add Moodlerooms forum activities and discussions
     And I follow "Post with attachment"
     And I should see "empty.txt"
     And I follow "Edit"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     And the field "Attachment" matches value "empty.txt"

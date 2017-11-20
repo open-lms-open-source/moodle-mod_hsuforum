@@ -331,7 +331,7 @@ Feature: In Moodlerooms forums, posting to all groups in a separate group discus
     And I am on "Course 1" course homepage
     And I follow "Standard forum name"
     When I click on "Add a new discussion" "button"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"
@@ -364,7 +364,7 @@ Feature: In Moodlerooms forums, posting to all groups in a separate group discus
     And I am on "Course 1" course homepage
     And I follow "Standard forum name"
     When I click on "Add a new discussion" "button"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "Group A"
     And the "Group" select box should contain "Group B"

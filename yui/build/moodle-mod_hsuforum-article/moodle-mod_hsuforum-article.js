@@ -385,8 +385,6 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
             }
             return;
         }
-        // Whenever a route takes us somewhere else we need to move the editor back to its original container.
-        M.mod_hsuforum.restoreEditor();
 
         if (this.routeUrl(e.currentTarget.get('href'))) {
             e.preventDefault();
@@ -416,9 +414,6 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      */
     handleAddDiscussionRoute: function(e) {
         e.preventDefault();
-
-        // Put editor back to its original place in DOM.
-        M.mod_hsuforum.restoreEditor();
 
         if (typeof(e.currentTarget) === 'undefined') {
             // Page possiibly hasn't finished loading.
@@ -458,7 +453,6 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param next
      */
     hideForms: function(req, res, next) {
-        this.get('article').get('form').restoreDateFields();
         this.get('article').get('form').removeAllForms();
         next();
     }
@@ -696,12 +690,6 @@ Y.extend(FORM, Y.Base,
         handleCancelForm: function(e) {
             e.preventDefault();
 
-            // Put date fields back to original place in DOM.
-            this.restoreDateFields();
-
-            // Put editor back to its original place in DOM.
-            M.mod_hsuforum.restoreEditor();
-
             var node = e.target.ancestor(SELECTORS.POST_TARGET);
             if (node) {
                 node.removeClass(CSS.POST_EDIT)
@@ -736,15 +724,9 @@ Y.extend(FORM, Y.Base,
 
             e.preventDefault();
 
-            // Put editor back to its original place in DOM.
-            M.mod_hsuforum.restoreEditor();
-
             var wrapperNode = e.currentTarget.ancestor(SELECTORS.FORM_REPLY_WRAPPER);
 
             this._submitReplyForm(wrapperNode, function(data) {
-
-                // Put date fields back to original place in DOM.
-                this.restoreDateFields();
 
                 switch (data.eventaction) {
                     case 'postupdated':
@@ -926,17 +908,6 @@ Y.extend(FORM, Y.Base,
         },
 
         /**
-         * Put date fields back to where they were.
-         *
-         * @method restoreDateFields
-         */
-        restoreDateFields: function () {
-            if (Y.one('#discussion_dateform')) {
-                Y.one('#discussion_dateform').append(Y.one('.dateform_fieldset'));
-            }
-        },
-
-        /**
          * Put the default setting for date fields
          *
          */
@@ -1093,11 +1064,6 @@ ARTICLE.ATTRS = {
     liveLog: { readOnly: true },
 
     /**
-     * Observers mutation events for editor.
-     */
-    editorMutateObserver: null,
-
-    /**
      * The show advanced edit link that was clicked most recently,
      */
     currentEditLink: null
@@ -1202,7 +1168,6 @@ Y.extend(ARTICLE, Y.Base,
             var dom     = this.get('dom'),
                 form    = this.get('form'),
                 router  = this.get('router');
-            form.restoreDateFields();
             dom.handleUpdateDiscussion(e);
             router.handleViewDiscussion(e);
             dom.handleNotification(e);
@@ -1308,42 +1273,6 @@ M.mod_hsuforum.dispatchClick = function(el) {
         el.fireEvent('onclick');
     }
 };
-
-/**
- * Restore editor to original position in DOM.
- */
-M.mod_hsuforum.restoreEditor = function() {
-    var editCont = Y.one('#hiddenadvancededitorcont');
-    if (editCont) {
-        var editArea = Y.one('#hiddenadvancededitoreditable');
-        if (!editArea) {
-            return;
-        }
-        var editor = editArea.ancestor('.editor_atto'),
-        advancedEditLink = M.mod_hsuforum.Article.currentEditLink,
-        contentEditable = false;
-
-        if (advancedEditLink) {
-            contentEditable = advancedEditLink.previous('.hsuforum-textarea');
-        }
-
-        var editorHidden = (!editor || editor.getComputedStyle('display') === 'none');
-
-        // If the editor is visible then we need to make sure content is passed back to content editable div.
-        // Are we in source mode?
-        if (!editorHidden) {
-            if (editor.one('.atto_html_button.highlight')) {
-                // Trigger click on atto source button - we need to update the editor content.
-                M.mod_hsuforum.dispatchClick(editor.one('.atto_html_button.highlight')._node);
-            }
-            // Update content editable div.
-            if (contentEditable) {
-                contentEditable.setContent(editArea.getContent());
-            }
-        }
-    }
-};
-
 
 
 }, '@VERSION@', {

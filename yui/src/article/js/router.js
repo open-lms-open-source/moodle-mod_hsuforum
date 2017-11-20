@@ -84,8 +84,6 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
             }
             return;
         }
-        // Whenever a route takes us somewhere else we need to move the editor back to its original container.
-        M.mod_hsuforum.restoreEditor();
 
         if (this.routeUrl(e.currentTarget.get('href'))) {
             e.preventDefault();
@@ -115,9 +113,6 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      */
     handleAddDiscussionRoute: function(e) {
         e.preventDefault();
-
-        // Put editor back to its original place in DOM.
-        M.mod_hsuforum.restoreEditor();
 
         if (typeof(e.currentTarget) === 'undefined') {
             // Page possiibly hasn't finished loading.
@@ -157,7 +152,6 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
      * @param next
      */
     hideForms: function(req, res, next) {
-        this.get('article').get('form').restoreDateFields();
         this.get('article').get('form').removeAllForms();
         next();
     }

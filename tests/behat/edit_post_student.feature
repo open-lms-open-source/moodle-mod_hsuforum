@@ -27,7 +27,7 @@ Feature: Students can edit or delete their Moodlerooms forum posts within a set 
   Scenario: Edit forum post
     Given I follow "Forum post subject"
     And I follow "Edit"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     When I set the following fields to these values:
       | Subject | Edited post subject |
       | Message | Edited post body |

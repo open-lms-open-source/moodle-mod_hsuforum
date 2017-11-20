@@ -64,7 +64,7 @@ Feature: In Moodlerooms forums, blog posts are always displayed in reverse chron
     And I follow "Course blog forum"
     And I follow "Blog post 1"
     And I follow "Reply"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     And I set the following fields to these values:
       | Message | Reply to the first post |
     And I press "Post to forum"

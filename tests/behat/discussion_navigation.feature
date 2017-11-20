@@ -58,7 +58,7 @@ Background:
     And I should see "Discussion 2"
     And I should not see "Discussion 3"
     And I follow "Reply"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     And I set the following fields to these values:
       | Message | Answer to discussion |
     And I press "Post to forum"
