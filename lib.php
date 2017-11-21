@@ -4232,6 +4232,7 @@ function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_
         'timeend',
         'pinned',
         'attachments',
+        'privatereply',
     ];
     foreach ($modifiablefields as $field) {
         if (isset($newpost->{$field})) {
