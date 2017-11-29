@@ -192,12 +192,6 @@ Y.extend(FORM, Y.Base,
         handleCancelForm: function(e) {
             e.preventDefault();
 
-            // Put date fields back to original place in DOM.
-            this.restoreDateFields();
-
-            // Put editor back to its original place in DOM.
-            M.mod_hsuforum.restoreEditor();
-
             var node = e.target.ancestor(SELECTORS.POST_TARGET);
             if (node) {
                 node.removeClass(CSS.POST_EDIT)
@@ -234,15 +228,9 @@ Y.extend(FORM, Y.Base,
 
             e.preventDefault();
 
-            // Put editor back to its original place in DOM.
-            M.mod_hsuforum.restoreEditor();
-
             var wrapperNode = e.currentTarget.ancestor(SELECTORS.FORM_REPLY_WRAPPER);
 
             this._submitReplyForm(wrapperNode, function(data) {
-
-                // Put date fields back to original place in DOM.
-                this.restoreDateFields();
 
                 switch (data.eventaction) {
                     case 'postupdated':
@@ -421,17 +409,6 @@ Y.extend(FORM, Y.Base,
                 this.resetDateField('end');
             } else {
                 this.setDateField('end', true, enduts);
-            }
-        },
-
-        /**
-         * Put date fields back to where they were.
-         *
-         * @method restoreDateFields
-         */
-        restoreDateFields: function () {
-            if (Y.one('#discussion_dateform')) {
-                Y.one('#discussion_dateform').append(Y.one('.dateform_fieldset'));
             }
         },
 

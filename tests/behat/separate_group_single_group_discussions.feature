@@ -60,14 +60,14 @@ Feature: In Moodlerooms forums, posting to groups in a separate group discussion
     And I am on "Course 1" course homepage
     And I follow "Multiple groups forum"
     When I click on "Add a new discussion" "button"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     Then the "Group" select box should contain "All participants"
     And the "Group" select box should contain "G1G1"
     And the "Group" select box should contain "G1G2"
     And I am on "Course 1" course homepage
     And I follow "Single groups forum"
     And I click on "Add a new discussion" "button"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     And the "Group" select box should contain "All participants"
     And the "Group" select box should contain "G2G1"
     And I should not see "Post a copy to all groups"
@@ -78,13 +78,13 @@ Feature: In Moodlerooms forums, posting to groups in a separate group discussion
     And I am on "Course 1" course homepage
     And I follow "Multiple groups forum"
     When I click on "Add a new discussion" "button"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     Then the "Group" select box should not contain "All participants"
     And the "Group" select box should contain "G1G1"
     And the "Group" select box should contain "G1G2"
     And I am on "Course 1" course homepage
     And I follow "Single groups forum"
     And I click on "Add a new discussion" "button"
-    And I follow link "Use advanced editor" ignoring js onclick
+    And I follow "Use advanced editor and additional options"
     And I should see "G2G1"
     And "Group" "select" should not exist

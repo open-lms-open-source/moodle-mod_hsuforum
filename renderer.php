@@ -953,9 +953,6 @@ HTML;
                 array('manualwarning', 'hsuforum'),
                 array('subscribeshort', 'hsuforum'),
                 array('unsubscribeshort', 'hsuforum'),
-                array('useadvancededitor', 'hsuforum'),
-                array('hideadvancededitor', 'hsuforum'),
-                array('loadingeditor', 'hsuforum'),
                 array('toggle:bookmark', 'hsuforum'),
                 array('toggle:subscribe', 'hsuforum'),
                 array('toggle:substantive', 'hsuforum'),
@@ -1485,16 +1482,6 @@ HTML;
                 $actionurl->param('groupinfo', groups_get_activity_group($cm));
             }
         }
-        if ($forum->anonymous) {
-            $extrahtml .= html_writer::tag('label', get_string('reveal', 'hsuforum') . ' ' .
-                    html_writer::checkbox('reveal', 1, !empty($data['reveal'])));
-        }
-
-        $config = get_config('hsuforum');
-        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
-            // Target for pulling in date form.
-            $extrahtml .= '<div class="dateformtarget"></div>';
-        }
 
         $data += array(
             'postid'      => $postid,
@@ -1698,16 +1685,14 @@ HTML;
                 <div id="editor-target-container-$timestamp" data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
 
                 $files
-
                 <div class="advancedoptions">
-                    $mailnowcb
                     $t->extrahtml
                 </div>
                 $hidden
 
                     <button type="submit" class="btn btn-primary">$t->submitlabel</button>
                     <a href="#" class="hsuforum-cancel disable-router btn btn-link">$t->cancellabel</a>
-                    <a href="$advancedurl" aria-pressed="false" class="hsuforum-use-advanced disable-router btn btn-link">$t->advancedlabel</a>
+                    <a href="$advancedurl" class="hsuforum-use-advanced disable-router btn btn-link">$t->advancedlabel</a>
 
             </div>
         </fieldset>
