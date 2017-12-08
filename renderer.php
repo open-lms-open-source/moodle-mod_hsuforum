@@ -1432,6 +1432,11 @@ HTML;
 
         $extrahtml = '';
 
+        if ($forum->anonymous && $post->userid == $USER->id && has_capability('mod/hsuforum:revealpost', $context)) {
+            $extrahtml .= html_writer::tag('label', get_string('reveal', 'hsuforum') . ' ' .
+                    html_writer::checkbox('reveal', 1, !empty($data['reveal'])));
+        }
+
         if (groups_get_activity_groupmode($cm)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
 
@@ -1562,8 +1567,7 @@ HTML;
             $extrahtml .= html_writer::tag('label', get_string('privatereply', 'hsuforum') . ' ' .
                     html_writer::checkbox('privatereply', 1, !empty($data['privatereply'])));
         }
-        if ($forum->anonymous && !$isedit
-            || $forum->anonymous && $isedit && $ownpost) {
+        if ($forum->anonymous && $ownpost && has_capability('mod/hsuforum:revealpost', $context)) {
             $extrahtml .= html_writer::tag('label', get_string('reveal', 'hsuforum') . ' ' .
                     html_writer::checkbox('reveal', 1, !empty($data['reveal'])));
         }
