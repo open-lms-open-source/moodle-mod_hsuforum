@@ -249,6 +249,36 @@ function xmldb_hsuforum_upgrade($oldversion) {
     // Automatically generated Moodle v3.3.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2017120700) {
+
+        // Remove duplicate entries from hsuforum_subscriptions.
+        // Find records with multiple userid/forum combinations and find the highest ID.
+        // Later we will remove all those entries.
+        $sql = "
+            SELECT MIN(id) as minid, userid, forum
+            FROM {hsuforum_subscriptions}
+            GROUP BY userid, forum
+            HAVING COUNT(id) > 1";
+
+        if ($duplicatedrows = $DB->get_recordset_sql($sql)) {
+            foreach ($duplicatedrows as $row) {
+                $DB->delete_records_select('hsuforum_subscriptions',
+                    'userid = :userid AND forum = :forum AND id <> :minid', (array)$row);
+            }
+        }
+        $duplicatedrows->close();
+
+        // Define key useridforum (primary) to be added to hsuforum_subscriptions.
+        $table = new xmldb_table('hsuforum_subscriptions');
+        $key = new xmldb_key('useridforum', XMLDB_KEY_UNIQUE, array('userid', 'forum'));
+
+        // Launch add key useridforum.
+        $dbman->add_key($table, $key);
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2017120700, 'hsuforum');
+    }
+
     return true;
 }
 
