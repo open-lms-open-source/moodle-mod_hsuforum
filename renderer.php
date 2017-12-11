@@ -1396,13 +1396,16 @@ HTML;
             $params = array('edit' => $postid);
             $legend = get_string('editingpost', 'hsuforum');
             $post = $DB->get_record('hsuforum_posts', ['id' => $postid]);
+            $ownpost = true;
             if ($post->userid != $USER->id) {
+                $ownpost = false;
                 $user = $DB->get_record('user', ['id' => $post->userid]);
                 $user = hsuforum_anonymize_user($user, $forum, $post);
                 $data['userpicture'] = $this->output->user_picture($user, array('link' => false, 'size' => 100));
             }
         } else {
             $params  = array('forum' => $cm->instance);
+            $ownpost = true;
             $post = new stdClass();
             $post->parent = false;
             $legend = get_string('addyourdiscussion', 'hsuforum');
@@ -1432,9 +1435,9 @@ HTML;
 
         $extrahtml = '';
 
-        if ($forum->anonymous && $post->userid == $USER->id && has_capability('mod/hsuforum:revealpost', $context)) {
+        if ($forum->anonymous && $ownpost && has_capability('mod/hsuforum:revealpost', $context)) {
             $extrahtml .= html_writer::tag('label', get_string('reveal', 'hsuforum') . ' ' .
-                    html_writer::checkbox('reveal', 1, !empty($data['reveal'])));
+                    html_writer::checkbox('reveal', 1, !empty($post->reveal)));
         }
 
         if (groups_get_activity_groupmode($cm)) {

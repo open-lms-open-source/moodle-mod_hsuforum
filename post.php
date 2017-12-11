@@ -652,6 +652,10 @@ if ($fromform = $mform_post->get_data()) {
             print_error('cannotupdatepost', 'hsuforum');
         }
 
+        if ($realpost->userid != $USER->id || !has_capability('mod/hsuforum:revealpost', $modcontext)) {
+            unset($fromform->reveal);
+        }
+
         // If the user has access to all groups and they are changing the group, then update the post.
         if (isset($fromform->groupinfo) && has_capability('mod/hsuforum:movediscussions', $modcontext)) {
             if (empty($fromform->groupinfo)) {
