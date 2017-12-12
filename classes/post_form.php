@@ -149,26 +149,26 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addHelpButton('pinned', 'discussionpinned', 'hsuforum');
         }
 
+        if (!empty($forum->anonymous) and $post->userid == $USER->id and has_capability('mod/hsuforum:revealpost', $modcontext)) {
+            $mform->addElement('advcheckbox', 'reveal', get_string('reveal', 'hsuforum'));
+            $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
+        }
+
         if (empty($post->id) && has_capability('moodle/course:manageactivities', $coursecontext)) { // hack alert
             $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'hsuforum'));
         }
 
-        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $coursecontext)) { // hack alert
-            $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'hsuforum'));
-
-            $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
-            $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
-
-            $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
-            $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
-
-        } else {
-            $mform->addElement('hidden', 'timestart');
-            $mform->setType('timestart', PARAM_INT);
-            $mform->addElement('hidden', 'timeend');
-            $mform->setType('timeend', PARAM_INT);
-            $mform->setConstants(array('timestart'=> 0, 'timeend'=>0));
+        if (!empty($forum->allowprivatereplies) and !empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
+            if ($post->userid != $USER->id) {
+                $mform->addElement('hidden', 'privatereply', 0);
+                $mform->setType('privatereply', PARAM_INT);
+            } else {
+                $parentauthorid = $DB->get_field('hsuforum_posts', 'userid', array('id' => $post->parent), MUST_EXIST);
+                $mform->addElement('advcheckbox', 'privatereply', get_string('privatereply', 'hsuforum'), null, null, array(0, $parentauthorid));
+                $mform->addHelpButton('privatereply', 'privatereply', 'hsuforum');
+            }
         }
+
 
         if ($groupmode = groups_get_activity_groupmode($cm, $course)) {
             $groupdata = groups_get_activity_allowed_groups($cm);
@@ -244,19 +244,21 @@ class mod_hsuforum_post_form extends moodleform {
             }
         }
 
-        if (!empty($forum->anonymous) and $post->userid == $USER->id and has_capability('mod/hsuforum:revealpost', $modcontext)) {
-            $mform->addElement('advcheckbox', 'reveal', get_string('reveal', 'hsuforum'));
-            $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
-        }
-        if (!empty($forum->allowprivatereplies) and !empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
-            if ($post->userid != $USER->id) {
-                $mform->addElement('hidden', 'privatereply', 0);
-                $mform->setType('privatereply', PARAM_INT);
-            } else {
-                $parentauthorid = $DB->get_field('hsuforum_posts', 'userid', array('id' => $post->parent), MUST_EXIST);
-                $mform->addElement('advcheckbox', 'privatereply', get_string('privatereply', 'hsuforum'), null, null, array(0, $parentauthorid));
-                $mform->addHelpButton('privatereply', 'privatereply', 'hsuforum');
-            }
+        if (!empty($config->enabletimedposts) && !$post->parent && has_capability('mod/hsuforum:viewhiddentimedposts', $coursecontext)) { // hack alert
+            $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'hsuforum'));
+
+            $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'hsuforum'), array('optional' => true));
+            $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
+
+            $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
+            $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
+
+        } else {
+            $mform->addElement('hidden', 'timestart');
+            $mform->setType('timestart', PARAM_INT);
+            $mform->addElement('hidden', 'timeend');
+            $mform->setType('timeend', PARAM_INT);
+            $mform->setConstants(array('timestart'=> 0, 'timeend'=>0));
         }
 
         if (core_tag_tag::is_enabled('mod_hsuforum', 'hsuforum_posts')) {
