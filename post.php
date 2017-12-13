@@ -806,10 +806,15 @@ if ($fromform = $mform_post->get_data()) {
         $redirectto = new moodle_url('view.php', array('f' => $fromform->forum));
 
         $fromform->mailnow = empty($fromform->mailnow) ? 0 : 1;
-        $fromform->reveal = empty($fromform->reveal) ? 0 : 1;
 
         $discussion = $fromform;
         $discussion->name = $fromform->subject;
+
+        if (!empty($fromform->reveal) && has_capability('mod/hsuforum:revealpost', $modcontext)) {
+            $discussion->reveal = 1;
+        } else {
+            $discussion->reveal = 0;
+        }
 
         $newstopic = false;
         if ($forum->type == 'news' && !$fromform->parent) {

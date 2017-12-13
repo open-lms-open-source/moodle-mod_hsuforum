@@ -279,6 +279,22 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2017120700, 'hsuforum');
     }
 
+    if ($oldversion < 2017120802) {
+
+        $studentroleid = $DB->get_field('role', 'id', ['shortname' => 'student']);
+        assign_capability(
+            'mod/hsuforum:revealpost',
+            CAP_ALLOW,
+            $studentroleid,
+            context_system::instance(),
+            false // Don't update if local setting already exists.
+        );
+
+        // Moodlerooms Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2017120802, 'hsuforum');
+    }
+
+
     return true;
 }
 
