@@ -4967,11 +4967,7 @@ function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $can
         if (!is_enrolled($context, $USER, '', true)) {
             return '';
         }
-        if (is_null($subscribed_forums)) {
-            $subscribed = hsuforum_is_subscribed($USER->id, $forum);
-        } else {
-            $subscribed = !empty($subscribed_forums[$forum->id]);
-        }
+        $subscribed = hsuforum_is_subscribed($USER->id, $forum);
         if ($subscribed) {
             $linktext = $messages['subscribed'];
             $linktitle = get_string('subscribestop', 'hsuforum');
