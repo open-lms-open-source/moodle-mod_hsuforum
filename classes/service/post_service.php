@@ -91,6 +91,7 @@ class post_service {
         }
         $this->save_post($discussion, $post, $uploader, $cm);
         $this->trigger_post_created($course, $context, $cm, $forum, $discussion, $post);
+        $this->handle_user_autosubscription($forum, $post);
 
         return new json_response((object) array(
             'eventaction'  => 'postcreated',
@@ -99,6 +100,23 @@ class post_service {
             'livelog'      => get_string('postcreated', 'hsuforum'),
             'html'         => $this->discussionservice->render_full_thread($discussion->id),
         ));
+    }
+
+    /**
+     * This function handles the scenario when a forum is set with optional subscription
+     * and the user posting a reply has autosubscription set in his forum preferences.
+     *
+     * @param object $forum
+     * @param object $post
+     */
+    public function handle_user_autosubscription($forum, $post) {
+        global $USER;
+
+        if (isset($forum->forcesubscribe) && $forum->forcesubscribe == HSUFORUM_CHOOSESUBSCRIBE) {
+            if ($USER->autosubscribe) {
+                hsuforum_subscribe($USER->id, $post->forum);
+            }
+        }
     }
 
     /**

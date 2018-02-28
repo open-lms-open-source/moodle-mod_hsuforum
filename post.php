@@ -561,15 +561,12 @@ if (!empty($parent)) {
     }
 }
 
-if (hsuforum_is_subscribed($USER->id, $forum->id)) {
+if (hsuforum_is_subscribed($USER->id, $forum->id) || $USER->autosubscribe) {
     $subscribe = true;
-
 } else if (hsuforum_user_has_posted($forum->id, 0, $USER->id)) {
     $subscribe = false;
-
 } else {
-    // user not posted yet - use subscription default specified in profile
-    $subscribe = !empty($USER->autosubscribe);
+    $subscribe = false;
 }
 
 $postid = empty($post->id) ? null : $post->id;
