@@ -2766,7 +2766,8 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             'size' => '10B'
         );
         $errormessage = get_string('maxbytesfile', 'error', $params);
-        $this->setExpectedException('file_exception', $errormessage);
+        $this->expectException('file_exception');
+        $this->expectExceptionMessage($errormessage);
 
         // Call the public validate_file method
         $method->invokeArgs($uploader, array('file' => $_FILES['attachment']));
