@@ -192,4 +192,37 @@ class mod_hsuforum_output_email_testcase extends advanced_testcase {
         // Check the postdate matches our expectations.
         $this->assertEquals(userdate($expectation, "", \core_date::get_user_timezone($user)), $renderable->get_postdate());
     }
+
+    public function test_anonymous_author() {
+        global $OUTPUT, $DB;
+        $this->resetAfterTest(true);
+
+        // Create the fixture (including an anonymous forum).
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $forum = $this->getDataGenerator()->create_module('hsuforum', ['course' => $course->id, 'anonymous' => 1]);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id, false, MUST_EXIST);
+
+        $this->getDataGenerator()->enrol_user($user->id, $course->id);
+
+        // Create a new discussion.
+        $discussion = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion(
+                [
+                    'course'    => $course->id,
+                    'forum'     => $forum->id,
+                    'userid'    => $user->id,
+                ]);
+
+        $post = $DB->get_record('hsuforum_posts', ['discussion' => $discussion->id, 'userid' => $user->id]);
+
+        $anonuser = hsuforum_anonymize_user($user, $forum, $post);
+        $postemail = new \mod_hsuforum\output\hsuforum_post_email($course, $cm, $forum, $discussion, $post, $anonuser,
+                get_admin(), true);
+
+        $anonprofileurl = new moodle_url('/user/view.php', ['id' => $anonuser->id, 'course' => $course->id]);
+        $anonprofilepic = $OUTPUT->user_picture($anonuser, ['courseid' => $course->id]);
+
+        $this->assertEquals($anonprofileurl->out(false), $postemail->get_authorlink());
+        $this->assertEquals($anonprofilepic, $postemail->get_author_picture());
+    }
 }
