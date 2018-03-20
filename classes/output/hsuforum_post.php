@@ -364,7 +364,7 @@ class hsuforum_post implements \renderable, \templatable {
     public function get_authorlink() {
         $link = new \moodle_url(
             '/user/view.php', array(
-                'id' => $this->post->userid,
+                'id' => $this->author->id,
                 'course' => $this->course->id,
             )
         );
