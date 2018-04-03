@@ -256,6 +256,29 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         // information as base for the initial post.
         $forumid = $this->task->get_activityid();
         $forumrec = $DB->get_record('hsuforum', array('id' => $forumid));
+
+        // Adjust any possible special grading.
+        $oldhsuforumid = $this->get_old_parentid('hsuforum');
+        $sql1 = 'SELECT cm.id
+                   FROM {course_modules} cm
+                   JOIN {modules} m ON m.id = cm.module
+                  WHERE m.name = "hsuforum" 
+                        AND cm.instance = ?';
+        $cmid = $DB->get_field_sql($sql1, array($oldhsuforumid));
+        $ctx = context_module::instance($cmid);
+        $sql2 = 'SELECT gi.id, gi.itemid 
+                   FROM {grading_instances} gi 
+                   JOIN {grading_definitions} gd ON gi.definitionid = gd.id
+                   JOIN {grading_areas} ga ON ga.id = gd.areaid
+                  WHERE ga.contextid = ?';
+        $instances = $DB->get_records_sql($sql2, array($ctx->id));
+        foreach ($instances as $instance) {
+            $mapping = $this->get_mapping('grading_instance', $instance->id);
+            if ($mapping) {
+                $DB->set_field('grading_instances', 'itemid', $instance->itemid, array('id' => $mapping->newitemid));
+            }
+        }
+
         if ($forumrec->type == 'single' && !$DB->record_exists('hsuforum_discussions', array('forum' => $forumid))) {
             // Create single discussion/lead post from forum data
             $sd = new stdClass();
