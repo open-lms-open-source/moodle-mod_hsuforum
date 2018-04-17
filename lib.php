@@ -5635,7 +5635,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
         $discussions = $rm->get_ratings($ratingoptions);
     }
 
-    $canviewparticipants = has_capability('moodle/course:viewparticipants',$context);
+    $canviewparticipants = course_can_view_participants($context);
     $canviewhiddentimedposts = has_capability('mod/hsuforum:viewhiddentimedposts', $context);
 
     $strdatestring = get_string('strftimerecentfull');
