@@ -265,17 +265,19 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
                   WHERE m.name = "hsuforum" 
                         AND cm.instance = ?';
         $cmid = $DB->get_field_sql($sql1, array($oldhsuforumid));
-        $ctx = context_module::instance($cmid);
-        $sql2 = 'SELECT gi.id, gi.itemid 
+        if ($cmid) {
+            $ctx = context_module::instance($cmid);
+            $sql2 = 'SELECT gi.id, gi.itemid 
                    FROM {grading_instances} gi 
                    JOIN {grading_definitions} gd ON gi.definitionid = gd.id
                    JOIN {grading_areas} ga ON ga.id = gd.areaid
                   WHERE ga.contextid = ?';
-        $instances = $DB->get_records_sql($sql2, array($ctx->id));
-        foreach ($instances as $instance) {
-            $mapping = $this->get_mapping('grading_instance', $instance->id);
-            if ($mapping) {
-                $DB->set_field('grading_instances', 'itemid', $instance->itemid, array('id' => $mapping->newitemid));
+            $instances = $DB->get_records_sql($sql2, array($ctx->id));
+            foreach ($instances as $instance) {
+                $mapping = $this->get_mapping('grading_instance', $instance->id);
+                if ($mapping) {
+                    $DB->set_field('grading_instances', 'itemid', $instance->itemid, array('id' => $mapping->newitemid));
+                }
             }
         }
 
