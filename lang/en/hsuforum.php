@@ -403,6 +403,73 @@ $string['posttomygroups_help'] = 'Posts a copy of this message to all groups you
 $string['postupdated'] = 'Your post was updated';
 $string['potentialsubscribers'] = 'Potential subscribers';
 $string['previousdiscussion'] = 'Older discussion';
+
+$string['privacy:digesttypepreference'] = 'You have chosen to receive the following forum digest type: "{$a->type}".';
+$string['privacy:discussionsubscriptionpreference'] = 'You have chosen the following discussion subscription preference for this forum: "{$a->preference}"';
+
+$string['privacy:metadata:hsuforum_digests'] = 'Information about the digest preferences for each Moodlerooms forum.';
+$string['privacy:metadata:hsuforum_digests:hsuforum'] = 'The Moodlerooms forum subscribed to.';
+$string['privacy:metadata:hsuforum_digests:maildigest'] = 'The digest preference.';
+$string['privacy:metadata:hsuforum_digests:userid'] = 'The ID of the user with the digest preference.';
+
+$string['privacy:metadata:hsuforum_discussions:name'] = 'The name of the discussion, as chosen by the author.';
+$string['privacy:metadata:hsuforum_discussions:userid'] = 'The ID of the user who created the discussion';
+$string['privacy:metadata:hsuforum_discussions:assessed'] = 'Rating type for the discussion';
+$string['privacy:metadata:hsuforum_discussions:timemodified'] = 'The time that the discussion was last modified.';
+$string['privacy:metadata:hsuforum_discussions:usermodified'] = 'The ID of the user who last modified the discussion in some way.';
+$string['privacy:metadata:hsuforum_discussions'] = 'Information about the individual forum discussions that a user has created.';
+
+$string['privacy:metadata:hsuforum_queue:userid'] = 'The ID of the user who is going to be notified.';
+$string['privacy:metadata:hsuforum_queue:discussionid'] = 'The ID of the discussion.';
+$string['privacy:metadata:hsuforum_queue:postid'] = 'The ID of the post.';
+$string['privacy:metadata:hsuforum_queue:timemodified'] = 'The modified time of the original post.';
+$string['privacy:metadata:hsuforum_queue'] = 'Information to keeping track of posts that will be mailed.';
+
+
+$string['privacy:metadata:hsuforum_posts:discussion'] = 'The discussion that the post is in.';
+$string['privacy:metadata:hsuforum_posts:parent'] = 'The parent post that was replied to.';
+$string['privacy:metadata:hsuforum_posts:created'] = 'The time that the post was created.';
+$string['privacy:metadata:hsuforum_posts:modified'] = 'The time that the post was last modified.';
+$string['privacy:metadata:hsuforum_posts:subject'] = 'The subject of the Moodlerooms forum post.';
+$string['privacy:metadata:hsuforum_posts:message'] = 'The message of the Moodlerooms forum post.';
+$string['privacy:metadata:hsuforum_posts:userid'] = 'The ID of the user who authored the Moodlerooms forum post.';
+$string['privacy:metadata:hsuforum_posts'] = 'Information about the digest preferences for each Moodlerooms forum.';
+
+$string['privacy:metadata:hsuforum_subscriptions_disc:discussion'] = 'The ID of the discussion that was subscribed to.';
+$string['privacy:metadata:hsuforum_subscriptions_disc:userid'] = 'The ID of the user with the discussion subscription.';
+$string['privacy:metadata:hsuforum_subscriptions_disc'] = 'Information about the subscriptions to individual Moodlerooms forum discussions.';
+
+$string['privacy:metadata:hsuforum_read:userid'] = 'The ID of the user that this record relates to.';
+$string['privacy:metadata:hsuforum_read:discussionid'] = 'The discussion that the post is in.';
+$string['privacy:metadata:hsuforum_read:postid'] = 'The post that was read.';
+$string['privacy:metadata:hsuforum_read:firstread'] = 'The first time that the post was read.';
+$string['privacy:metadata:hsuforum_read:lastread'] = 'The most recent time that the post was read.';
+$string['privacy:metadata:hsuforum_read'] = 'Information about which posts have been read by the user.';
+
+$string['privacy:metadata:hsuforum_subscriptions:userid'] = 'The ID of the user that this Moodlerooms forum subscription relates to.';
+$string['privacy:metadata:hsuforum_subscriptions:forum'] = 'The forum that was subscribed to.';
+$string['privacy:metadata:hsuforum_subscriptions'] = 'Information about which Moodlerooms forums the user has subscribed to.';
+
+$string['privacy:metadata:hsuforum_track_prefs:userid'] = 'The ID of the user that this Moodlerooms forum tracking preference relates to.';
+$string['privacy:metadata:hsuforum_track_prefs:forumid'] = 'The Moodlerooms forum that has read tracking enabled.';
+$string['privacy:metadata:hsuforum_track_prefs'] = 'Information about which forums the user has chosen to track post reads for.';
+
+$string['privacy:metadata:core_tag'] = 'The Moodlerooms forum makes use of the tag subsystem to support tagging of posts.';
+$string['privacy:metadata:core_rating'] = 'The Moodlerooms forum makes use of the rating subsystem to support the rating of posts.';
+
+
+$string['privacy:metadata:preference:autosubscribe'] = 'Whether to subscribe to discussions when replying to posts within them.';
+$string['privacy:metadata:preference:maildigest'] = 'The site-wide mail digest preference.';
+$string['privacy:metadata:preference:markasreadonnotification'] = 'Whether to mark forum posts as read when receiving them as messages.';
+$string['privacy:metadata:preference:trackforums'] = 'Whether to enable read tracking.';
+
+$string['privacy:subscribedtoforum'] = 'You are subscribed to this forum.';
+$string['privacy:readtrackingdisabled'] = 'You have chosen to not track which posts that you have read within this forum.';
+$string['privacy:postwasread'] = 'This post was first read on {$a->firstread} and most recently read on {$a->lastread}';
+
+$string['privacy:request:delete:post:message'] = 'The content of this post has been deleted at the request of its author.';
+$string['privacy:request:delete:post:subject'] = 'Delete at the request of the author';
+$string['privacy:request:delete:discussion:name'] = 'Delete at the request of the author';
 $string['processingdigest'] = 'Processing email digest for user {$a}';
 $string['processingpost'] = 'Processing post {$a}';
 $string['prune'] = 'Split';

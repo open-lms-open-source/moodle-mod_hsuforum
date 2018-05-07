@@ -746,8 +746,8 @@ if ($fromform = $mform_post->get_data()) {
         $addpost = $fromform;
         $addpost->forum=$forum->id;
         if ($fromform->id = hsuforum_add_new_post($addpost, $mform_post, $message)) {
-
-           $subscribemessage = hsuforum_post_subscription($fromform, $forum);
+            $fromform->deleted = 0;
+            $subscribemessage = hsuforum_post_subscription($fromform, $forum);
 
             if (!empty($fromform->mailnow)) {
                 $message .= get_string("postmailnow", "hsuforum");

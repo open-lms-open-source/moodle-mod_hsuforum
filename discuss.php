@@ -195,7 +195,7 @@
         print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
     }
 
-    if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+    if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm, false)) {
         print_error('noviewdiscussionspermission', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
     }
 
