@@ -627,7 +627,25 @@ FUN WITH FORMS
     }
 }
 
+@media (max-width:53em) and (min-width:48em) {
+    .section .activity.hsuforum.modtype_hsuforum .activityinstance > a {
+        white-space: nowrap;
+        display: block;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 15em !important;
+    }
+}
 
+@media (max-width: 45em) {
+    .section .activity.hsuforum.modtype_hsuforum .activityinstance > a {
+        white-space: nowrap;
+        display: block;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 10em !important;
+    }
+}
 
 /* small screen */
 @media (max-width: 35em) {
@@ -666,8 +684,7 @@ FUN WITH FORMS
     }
 }
 
-
-/* end meida 45 */
+/* end media 45 */
 
 
 /* recent activity, recent posts output in non-Snap themes */
