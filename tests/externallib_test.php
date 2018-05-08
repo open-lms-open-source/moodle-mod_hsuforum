@@ -64,14 +64,12 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $record = new stdClass();
         $record->introformat = FORMAT_HTML;
         $record->course = $course1->id;
-        $record->trackingtype = HSUFORUM_TRACKING_FORCED;
         $forum1 = self::getDataGenerator()->create_module('hsuforum', $record);
 
         // Second forum.
         $record = new stdClass();
         $record->introformat = FORMAT_HTML;
         $record->course = $course2->id;
-        $record->trackingtype = HSUFORUM_TRACKING_OFF;
         $forum2 = self::getDataGenerator()->create_module('hsuforum', $record);
         $forum2->introfiles = [];
 
