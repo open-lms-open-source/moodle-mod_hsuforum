@@ -625,6 +625,10 @@ FUN WITH FORMS
         width: 50%;
         float: left;
     }
+
+    .section .activity.hsuforum.modtype_hsuforum .activityinstance > a {
+        display: block;
+    }
 }
 
 @media (max-width:53em) and (min-width:48em) {
