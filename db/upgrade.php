@@ -294,6 +294,20 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2017120802, 'hsuforum');
     }
 
+    if ($oldversion < 2017120803) {
+
+        // Define field trackingtype to be dropped from hsuforum.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('trackingtype');
+
+        // Conditionally launch drop field trackingtype.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Hsuforum savepoint reached.
+        upgrade_mod_savepoint(true, 2017120803, 'hsuforum');
+    }
 
     return true;
 }

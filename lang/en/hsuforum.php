@@ -101,7 +101,6 @@ $string['configreplytouser'] = 'When a forum post is mailed out, should it conta
 $string['configrsstypedefault'] = 'If RSS feeds are enabled, sets the default activity type.';
 $string['configrssarticlesdefault'] = 'If RSS feeds are enabled, sets the default number of articles (either discussions or posts).';
 $string['configshortpost'] = 'Any post under this length (in characters not including HTML) is considered short (see below).';
-$string['configtrackingtype'] = 'Default setting for read tracking.';
 $string['configusermarksread'] = 'If \'yes\', the user must manually mark a post as read. If \'no\', when the post is viewed it is marked as read.';
 $string['confirmsubscribe'] = 'Do you really want to subscribe to forum \'{$a}\'?';
 $string['confirmunsubscribe'] = 'Do you really want to unsubscribe from forum \'{$a}\'?';
@@ -503,16 +502,6 @@ $string['timedvisible'] = 'Timed status: Visible to all users';
 $string['timestartenderror'] = 'Display end date cannot be earlier than the start date';
 $string['trackforum'] = 'Track unread posts';
 $string['trackreadposts_header'] = 'Forum tracking';
-$string['tracking'] = 'Track';
-$string['trackingoff'] = 'Off';
-$string['trackingon'] = 'Forced';
-$string['trackingoptional'] = 'Optional';
-$string['trackingtype'] = 'Read tracking for this forum?';
-$string['trackingtype_help'] = 'Read tracking enables participants to easily check which posts they have not yet seen by highlighting any new posts.
-
-If set to optional, participants can choose whether to turn tracking on or off via a link in the administration block. (Users must also enable forum tracking in their forum preferences.)
-
-If \'Allow forced read tracking\' is enabled in the site administration, then a further option is available - forced. This means that tracking is always on, regardless of users\' forum preferences.';
 $string['unread'] = 'New';
 $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';
