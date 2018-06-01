@@ -294,7 +294,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'canreply' => true,
             'postread' => false,
             'userfullname' => fullname($user2),
-            'userpictureurl' => ''
+            'userpictureurl' => '',
+            'deleted' => false
         );
         $expectedposts['posts'][] = array(
             'id' => $discussion1reply2->id,
@@ -316,7 +317,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
             'canreply' => true,
             'postread' => false,
             'userfullname' => fullname($user3),
-            'userpictureurl' => ''
+            'userpictureurl' => '',
+            'deleted' => false
         );
 
         // Test a discussion with two additional posts (total 3 posts).

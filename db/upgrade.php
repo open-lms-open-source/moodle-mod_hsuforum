@@ -309,6 +309,21 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2017120803, 'hsuforum');
     }
 
+    if ($oldversion < 2017120804) {
+
+        // Define field deleted to be added to hsuforum_posts.
+        $table = new xmldb_table('hsuforum_posts');
+        $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'privatereply');
+
+        // Conditionally launch add field deleted.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Moodlerooms Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2017120804, 'hsuforum');
+    }
+
     return true;
 }
 

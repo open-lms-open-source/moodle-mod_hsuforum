@@ -1484,6 +1484,7 @@ function hsuforum_print_overview($courses,&$htmlarray) {
                 .'FROM {hsuforum_discussions} d '
                 .'JOIN {hsuforum_posts} p ON p.discussion = d.id '
                 ."WHERE ($coursessql) "
+                .'AND p.deleted <> 1 '
                 .'AND p.userid != ? '
                 .'AND (d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?)) '
                 .'GROUP BY d.id, d.forum, d.course, d.groupid '
@@ -1509,7 +1510,7 @@ function hsuforum_print_overview($courses,&$htmlarray) {
         $sql = 'SELECT d.forum,d.course,COUNT(p.id) AS count '.
             ' FROM {hsuforum_posts} p '.
             ' JOIN {hsuforum_discussions} d ON p.discussion = d.id '.
-            ' LEFT JOIN {hsuforum_read} r ON r.postid = p.id AND r.userid = ? WHERE (';
+            ' LEFT JOIN {hsuforum_read} r ON r.postid = p.id AND r.userid = ? WHERE p.deleted <> 1 AND (';
         $params = array($USER->id);
 
         foreach ($trackingforums as $track) {
@@ -1641,6 +1642,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
               JOIN {user} u                 ON u.id = p.userid
              WHERE p.created > ?
                    AND f.course = ?
+                   AND p.deleted <> 1
                    AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                    $andforumid
           ORDER BY p.created DESC
@@ -4593,6 +4595,7 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
                 'forumtype' => $forum->type,
             )
         );
+        $post->deleted = 1;
         if ($post->userid !== $USER->id) {
             $params['relateduserid'] = $post->userid;
         }
@@ -5350,13 +5353,11 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
  * @param object $post
  * @param object $user
  * @param object $cm
+ * @params bool $checkdeleted Whether to check the deleted flag on the post.
  * @return bool
  */
-function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=NULL) {
+function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=NULL, $checkdeleted = true) {
     global $CFG, $USER, $DB;
-
-    // Context used throughout function.
-    $modcontext = context_module::instance($cm->id);
 
     // retrieve objects (yuk)
     if (is_numeric($forum)) {
@@ -5383,12 +5384,19 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
         $post->id = $post->parent;
     }
 
+    if ($checkdeleted && !empty($post->deleted)) {
+        return false;
+    }
+
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
             print_error('invalidcoursemodule');
         }
     }
+
+    // Context used throughout function.
+    $modcontext = context_module::instance($cm->id);
 
     if (empty($user) || empty($user->id)) {
         $user = $USER;
