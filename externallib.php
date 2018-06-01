@@ -231,7 +231,7 @@ class mod_hsuforum_external extends external_api {
 
         foreach ($allposts as $pid => $post) {
 
-            if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+            if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm, false)) {
                 $warning = array();
                 $warning['item'] = 'post';
                 $warning['itemid'] = $post->id;
@@ -255,6 +255,20 @@ class mod_hsuforum_external extends external_api {
             } else {
                 $post->children = array();
             }
+
+            if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+                // The post is available, but has been marked as deleted.
+                // It will still be available but filled with a placeholder.
+                $post->userid = null;
+                $post->userfullname = null;
+                $post->userpictureurl = null;
+                $post->subject = get_string('privacy:request:delete:post:subject', 'mod_hsuforum');
+                $post->message = get_string('privacy:request:delete:post:message', 'mod_hsuforum');
+                $post->deleted = true;
+                $posts[] = $post;
+                continue;
+            }
+            $post->deleted = false;
 
             if (hsuforum_is_author_hidden($post, $forum)) {
                 $post->userid = null;
@@ -325,7 +339,8 @@ class mod_hsuforum_external extends external_api {
                                 'canreply' => new external_value(PARAM_BOOL, 'The user can reply to posts?'),
                                 'postread' => new external_value(PARAM_BOOL, 'The post was read'),
                                 'userfullname' => new external_value(PARAM_TEXT, 'Post author full name'),
-                                'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.', VALUE_OPTIONAL)
+                                'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.', VALUE_OPTIONAL),
+                                'deleted' => new external_value(PARAM_BOOL, 'This post has been removed.')
                             ), 'post'
                         )
                     ),
@@ -834,6 +849,7 @@ class mod_hsuforum_external extends external_api {
 
         $post->itemid = $options['inlineattachmentsid'];
         $post->attachments   = $options['attachmentsid'];
+        $post->deleted = 0;
         $fakemform = $post->attachments;
         if ($postid = hsuforum_add_new_post($post, $fakemform)) {
 
