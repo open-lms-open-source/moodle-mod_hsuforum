@@ -761,30 +761,32 @@ class provider implements
         // Get the course module.
         $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
         $forum = $DB->get_record('hsuforum', ['id' => $cm->instance]);
+        if ($forum) {
+            $DB->delete_records('hsuforum_track_prefs', ['forumid' => $forum->id]);
+            $DB->delete_records('hsuforum_subscriptions', ['forum' => $forum->id]);
+            $DB->delete_records('hsuforum_read', ['forumid' => $forum->id]);
 
-        $DB->delete_records('hsuforum_track_prefs', ['forumid' => $forum->id]);
-        $DB->delete_records('hsuforum_subscriptions', ['forum' => $forum->id]);
-        $DB->delete_records('hsuforum_read', ['forumid' => $forum->id]);
+            // Delete all discussion items.
+            $DB->delete_records_select(
+                'hsuforum_queue',
+                "discussionid IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)",
+                [
+                    'forum' => $forum->id,
+                ]
+            );
 
-        // Delete all discussion items.
-        $DB->delete_records_select(
-            'hsuforum_queue',
-            "discussionid IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)",
-            [
-                'forum' => $forum->id,
-            ]
-        );
+            $DB->delete_records_select(
+                'hsuforum_posts',
+                "discussion IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)",
+                [
+                    'forum' => $forum->id,
+                ]
+            );
 
-        $DB->delete_records_select(
-            'hsuforum_posts',
-            "discussion IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)",
-            [
-                'forum' => $forum->id,
-            ]
-        );
+            $DB->delete_records('hsuforum_subscriptions_disc', ['discussion' => $forum->id]);
+            $DB->delete_records('hsuforum_discussions', ['forum' => $forum->id]);
+        }
 
-        $DB->delete_records('hsuforum_subscriptions_disc', ['discussion' => $forum->id]);
-        $DB->delete_records('hsuforum_discussions', ['forum' => $forum->id]);
 
         // Delete all files from the posts.
         $fs = get_file_storage();
