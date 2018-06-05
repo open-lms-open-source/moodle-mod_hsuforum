@@ -2188,7 +2188,7 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
         return false;
     }
 
-    $now = round(time(), -2); // db friendly
+    $now = floor(time() / 60) * 60; // DB Cache Friendly.
 
     $fullaccess = array();
     $where = array();
@@ -2723,7 +2723,7 @@ function hsuforum_count_discussions($forum, $cm, $course) {
 
     static $cache = array();
 
-    $now = round(time(), -2); // db cache friendliness
+    $now = floor(time() / 60) * 60; // DB Cache Friendly.
     $config = get_config('hsuforum');
 
     $params = array($course->id);
@@ -2825,7 +2825,7 @@ function hsuforum_get_discussions($cm, $forumsort="", $forumselect=true, $unused
     $config = get_config('hsuforum');
     $timelimit = '';
 
-    $now = round(time(), -2);
+    $now = floor(time() / 60) * 60;
     $cutoffdate = $now - ($config->oldpostdays*24*60*60);
     $params = array($cm->instance, $USER->id, $USER->id, $cm->instance);
 
@@ -3043,7 +3043,7 @@ function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
     }
 
     $neighbours = array('prev' => false, 'next' => false);
-    $now = round(time(), -2);
+    $now = floor(time() / 60) * 60;
     $params = array();
 
     $modcontext = context_module::instance($cm->id);
@@ -3216,7 +3216,7 @@ function hsuforum_get_discussions_unread($cm) {
 
     $config = get_config('hsuforum');
 
-    $now = round(time(), -2);
+    $now = floor(time() / 60) * 60;
     $cutoffdate = $now - ($config->oldpostdays*24*60*60);
 
     $params = array();
@@ -3288,7 +3288,7 @@ function hsuforum_get_discussions_count($cm) {
     global $CFG, $DB, $USER;
 
     $config = get_config('hsuforum');
-    $now = round(time(), -2);
+    $now = floor(time() / 60) * 60;
     $params = array($cm->instance);
     $groupmode    = groups_get_activity_groupmode($cm);
     $currentgroup = groups_get_activity_group($cm);
@@ -3627,10 +3627,11 @@ function hsuforum_rating_validate($params) {
         }
         if (!empty($discussion->unread) && $discussion->unread !== '-') {
             $replystring .= ' <span class="sep">/</span> <span class="unread">';
+            $unreadlink = new moodle_url($discussionlink, null, 'unread');
             if ($discussion->unread == 1) {
-                $replystring .= get_string('unreadpostsone', 'hsuforum');
+                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsone', 'forum'));
             } else {
-                $replystring .= get_string('unreadpostsnumber', 'hsuforum', $discussion->unread);
+                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsnumber', 'forum', $discussion->unread));
             }
             $replystring .= '</span>';
         }
@@ -6322,7 +6323,7 @@ function hsuforum_tp_is_post_old($post, $time=null) {
 function hsuforum_tp_get_course_unread_posts($userid, $courseid) {
     global $CFG, $DB;
 
-    $now = round(time(), -2); // DB cache friendliness.
+    $now = floor(time() / 60) * 60; // DB cache friendliness.
     $config = get_config('hsuforum');
     $cutoffdate = $now - ($config->oldpostdays * 24 * 60 * 60);
     $params = array($userid, $userid, $courseid, $cutoffdate, $userid, $userid);
@@ -6413,7 +6414,7 @@ function hsuforum_count_forum_unread_posts($cm, $course, $resetreadcache = false
 
     list ($groups_sql, $groups_params) = $DB->get_in_or_equal($mygroups);
 
-    $now = round(time(), -2); // DB cache friendliness.
+    $now = floor(time() / 60) * 60; // DB Cache Friendly.
     $cutoffdate = $now - ($config->oldpostdays * 24 * 60 * 60);
     $params = array($USER->id, $forumid, $cutoffdate, $USER->id, $USER->id);
 
@@ -7632,7 +7633,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
     // Will record forums where the user can freely access everything
     $forumsearchfullaccess = array();
     // DB caching friendly
-    $now = round(time(), -2);
+    $now = floor(time() / 60) * 60;
     // For each course to search we want to find the forums the user has posted in
     // and providing the current user can access the forum create a search condition
     // for the forum to get the requested users posts.

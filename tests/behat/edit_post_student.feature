@@ -44,7 +44,7 @@ Feature: Students can edit or delete their Moodlerooms forum posts within a set 
     Then I should see "Test forum description"
     And I should not see "Forum post subject"
 
-  @javascript
+  @javascript @block_recent_activity
   Scenario: Time limit expires
     Given the following config values are set as admin:
       | maxeditingtime | 1 minutes |

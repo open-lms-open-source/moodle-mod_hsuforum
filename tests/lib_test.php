@@ -499,8 +499,8 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Adding timed discussions.
         set_config('enabletimedposts', true, 'hsuforum');
         $now = $record->timemodified;
-        $past = $now - 60;
-        $future = $now + 60;
+        $past = $now - 600;
+        $future = $now + 600;
 
         $record = new stdClass();
         $record->course = $course->id;
@@ -746,8 +746,8 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Adding timed discussions.
         set_config('enabletimedposts', true, 'hsuforum');
         $now = $record->timemodified;
-        $past = $now - 60;
-        $future = $now + 60;
+        $past = $now - 600;
+        $future = $now + 600;
 
         $record = new stdClass();
         $record->course = $course->id;

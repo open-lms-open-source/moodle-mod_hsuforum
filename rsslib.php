@@ -149,7 +149,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
 
     $modcontext = null;
 
-    $now = round(time(), -2);
+    $now = floor(time() / 60) * 60;
     $params = array();
 
     $modcontext = context_module::instance($cm->id);
