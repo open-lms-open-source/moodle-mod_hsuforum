@@ -71,6 +71,11 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('hsuforum/maxattachments', get_string('maxattachments', 'hsuforum'),
                        get_string('configmaxattachments', 'hsuforum'), 9, $options));
 
+    // Default Subscription mode setting.
+    $options = hsuforum_get_subscriptionmode_options();
+    $settings->add(new admin_setting_configselect('hsuforum_subscription', get_string('subscriptionmode', 'hsuforum'),
+        get_string('configsubscriptiontype', 'hsuforum'), HSUFORUM_CHOOSESUBSCRIBE, $options));
+
     // Default number of days that a post is considered old
     $settings->add(new admin_setting_configtext('hsuforum/oldpostdays', get_string('oldpostdays', 'hsuforum'),
                        get_string('configoldpostdays', 'hsuforum'), 14, PARAM_INT));

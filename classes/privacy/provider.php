@@ -55,7 +55,7 @@ class provider implements
      * @param   collection     $collection The initialised collection to add items to.
      * @return  collection     A listing of user data stored through this system.
      */
-    public static function _get_metadata(collection $items) {
+    public static function _get_metadata(collection $items) : collection {
         // The 'forum' table does not store any specific user data.
         $items->add_database_table('hsuforum_digests', [
             'forum' => 'privacy:metadata:hsuforum_digests:hsuforum',
@@ -137,7 +137,7 @@ class provider implements
      * @param   int $userid   The user to search.
      * @return  contextlist   $contextlist  The contextlist containing the list of contexts used in this plugin.
      */
-    public static function _get_contexts_for_userid($userid) {
+    public static function _get_contexts_for_userid(int $userid) : \core_privacy\local\request\contextlist {
         $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_hsuforum', 'post', 'p.id', $userid);
         // Fetch all forum discussions, and forum posts.
         $sql = "SELECT c.id
@@ -188,7 +188,7 @@ class provider implements
      *
      * @param  int   $userid The userid of the user whose data is to be exported.
      */
-    public static function _export_user_preferences($userid) {
+    public static function _export_user_preferences(int $userid) {
         $user = \core_user::get_user($userid);
 
         switch ($user->maildigest) {
@@ -319,7 +319,7 @@ class provider implements
      * @param   array       $mappings A list of mappings from forumid => contextid.
      * @return  array       Which forums had data written for them.
      */
-    protected static function export_discussion_data($userid, array $mappings) {
+    protected static function export_discussion_data(int $userid, array $mappings) {
         global $DB;
 
         // Find all of the discussions, and discussion subscriptions for this forum.
@@ -422,7 +422,7 @@ class provider implements
      * @param   array       $mappings A list of mappings from forumid => contextid.
      * @return  array       Which forums had data written for them.
      */
-    protected static function export_all_posts($userid, array $mappings) {
+    protected static function export_all_posts(int $userid, array $mappings) {
         global $DB;
 
         // Find all of the posts, and post subscriptions for this forum.
@@ -467,7 +467,7 @@ class provider implements
      * @param   \context_module The instance of the forum context.
      * @param   \stdClass   $discussion The discussion whose data is being exported.
      */
-    protected static function export_all_posts_in_discussion($userid, \context $context, \stdClass $discussion) {
+    protected static function export_all_posts_in_discussion(int $userid, \context $context, \stdClass $discussion) {
         global $DB, $USER;
 
         $discussionid = $discussion->id;
@@ -537,7 +537,7 @@ class provider implements
      * @param   array       $parentarea The subcontext fo the parent post.
      * @param   \stdClass   $structure The post structure and all of its children
      */
-    protected static function export_posts_in_structure($userid, \context $context, $parentarea, \stdClass $structure) {
+    protected static function export_posts_in_structure(int $userid, \context $context, $parentarea, \stdClass $structure) {
         foreach ($structure->children as $post) {
             if (!$post->hasdata) {
                 // This tree has no content belonging to the user. Skip it and all children.
@@ -564,7 +564,7 @@ class provider implements
      * @param   array       $parentarea The subcontext fo the parent post.
      * @param   \stdClass   $structure The post structure and all of its children
      */
-    protected static function export_post_data($userid, \context $context, $postarea, $post) {
+    protected static function export_post_data(int $userid, \context $context, $postarea, $post) {
         // Store related metadata.
         static::export_read_data($userid, $context, $postarea, $post);
 
@@ -611,7 +611,7 @@ class provider implements
      * @param   \stdClass   $forum The forum whose data is being exported.
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_digest_data($userid, \stdClass $forum) {
+    protected static function export_digest_data(int $userid, \stdClass $forum) {
         if (null !== $forum->maildigest) {
             // The user has a specific maildigest preference for this forum.
             $a = (object) [
@@ -646,7 +646,7 @@ class provider implements
      * @param   \stdClass   $forum The forum whose data is being exported.
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_subscription_data($userid, \stdClass $forum) {
+    protected static function export_subscription_data(int $userid, \stdClass $forum) {
         if (null !== $forum->subscribed) {
             // The user is subscribed to this forum.
             writer::with_context(\context_module::instance($forum->cmid))
@@ -666,7 +666,7 @@ class provider implements
      * @param   \stdClass   $discussion The discussion whose data is being exported.
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_discussion_subscription_data($userid, \context_module $context, \stdClass $discussion) {
+    protected static function export_discussion_subscription_data(int $userid, \context_module $context, \stdClass $discussion) {
         global $DB;
         $area = static::get_discussion_area($discussion);
         if (null !== $discussion->subscribedto) {
@@ -701,7 +701,7 @@ class provider implements
      * @param   \stdClass   $forum The forum whose data is being exported.
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_tracking_data($userid, \stdClass $forum) {
+    protected static function export_tracking_data(int $userid, \stdClass $forum) {
         if (null !== $forum->tracked) {
             // The user has a main preference to track all forums, but has opted out of this one.
             writer::with_context(\context_module::instance($forum->cmid))
@@ -721,7 +721,7 @@ class provider implements
      * @param   \stdClass   $post The post whose data is being exported.
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_read_data($userid, \context_module $context, array $postarea, \stdClass $post) {
+    protected static function export_read_data(int $userid, \context_module $context, array $postarea, \stdClass $post) {
         if (null !== $post->firstread) {
             $a = (object) [
                 'firstread' => $post->firstread,

@@ -1,4 +1,3 @@
-subscribersto,mod_hsuforum
 postmailinfo,mod_hsuforum
 emaildigestupdated,mod_hsuforum
 emaildigestupdated_default,mod_hsuforum

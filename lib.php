@@ -3629,9 +3629,9 @@ function hsuforum_rating_validate($params) {
             $replystring .= ' <span class="sep">/</span> <span class="unread">';
             $unreadlink = new moodle_url($discussionlink, null, 'unread');
             if ($discussion->unread == 1) {
-                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsone', 'forum'));
+                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsone', 'hsuforum'));
             } else {
-                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsnumber', 'forum', $discussion->unread));
+                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsnumber', 'hsuforum', $discussion->unread));
             }
             $replystring .= '</span>';
         }
@@ -6563,6 +6563,21 @@ function hsuforum_get_view_actions() {
 }
 
 /**
+ * List the options for forum subscription modes.
+ * This is used by the settings page and by the mod_form page.
+ *
+ * @return array
+ */
+function hsuforum_get_subscriptionmode_options() {
+    $options = array();
+    $options[HSUFORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'hsuforum');
+    $options[HSUFORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'hsuforum');
+    $options[HSUFORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'hsuforum');
+    $options[HSUFORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled', 'hsuforum');
+    return $options;
+}
+
+/**
  * List the actions that correspond to a post of this module.
  * This is used by the participation report.
  *
@@ -6757,13 +6772,17 @@ function hsuforum_reset_userdata($data) {
 
     $forumssql = $forums = $rm = null;
 
-    if( $removeposts || !empty($data->reset_hsuforum_ratings) ) {
-        $forumssql      = "$allforumssql $typesql";
-        $forums = $forums = $DB->get_records_sql($forumssql, $params);
+    // Check if we need to get additional data.
+    if ($removeposts || !empty($data->reset_forum_ratings) || !empty($data->reset_forum_tags)) {
+        // Set this up if we have to remove ratings.
         $rm = new rating_manager();
         $ratingdeloptions = new stdClass;
         $ratingdeloptions->component = 'mod_hsuforum';
         $ratingdeloptions->ratingarea = 'post';
+
+        // Get the forums for actions that require it.
+        $forumssql = "$allforumssql $typesql";
+        $forums = $DB->get_records_sql($forumssql, $params);
     }
 
     if ($removeposts) {
@@ -6784,6 +6803,8 @@ function hsuforum_reset_userdata($data) {
                 //remove ratings
                 $ratingdeloptions->contextid = $context->id;
                 $rm->delete_ratings($ratingdeloptions);
+
+                core_tag_tag::delete_instances('mod_hsuforum', null, $context->id);
             }
         }
 
@@ -6838,6 +6859,22 @@ function hsuforum_reset_userdata($data) {
         }
     }
 
+    // Remove all the tags.
+    if (!empty($data->reset_forum_tags)) {
+        if ($forums) {
+            foreach ($forums as $forumid => $unused) {
+                if (!$cm = get_coursemodule_from_instance('hsuforum', $forumid)) {
+                    continue;
+                }
+
+                $context = context_module::instance($cm->id);
+                core_tag_tag::delete_instances('mod_hsuforum', null, $context->id);
+            }
+        }
+
+        $status[] = array('component' => $componentstr, 'item' => get_string('tagsdeleted', 'hsuforum'), 'error' => false);
+    }
+
     // remove all digest settings unconditionally - even for users still enrolled in course.
     if (!empty($data->reset_forum_digests)) {
         $DB->delete_records_select('hsuforum_digests', "forum IN ($allforumssql)", $params);
@@ -6858,6 +6895,8 @@ function hsuforum_reset_userdata($data) {
 
     /// updating dates - shift may be negative too
     if ($data->timeshift) {
+        // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
+        // See MDL-9367.
         shift_course_mod_dates('hsuforum', array('assesstimestart', 'assesstimefinish'), $data->timeshift, $data->courseid);
         $status[] = array('component'=>$componentstr, 'item'=>get_string('datechanged'), 'error'=>false);
     }
@@ -6891,6 +6930,10 @@ function hsuforum_reset_course_form_definition(&$mform) {
 
     $mform->addElement('checkbox', 'reset_hsuforum_ratings', get_string('deleteallratings'));
     $mform->disabledIf('reset_hsuforum_ratings', 'reset_hsuforum_all', 'checked');
+
+    $mform->addElement('checkbox', 'reset_hsuforum_tags', get_string('removeallforumtags', 'hsuforum'));
+    $mform->disabledIf('reset_hsuforum_tags', 'reset_hsuforum_all', 'checked');
+
 }
 
 /**

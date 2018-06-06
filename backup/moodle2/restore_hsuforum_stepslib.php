@@ -70,6 +70,8 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $data->showbookmark = 1;
         }
 
+        // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
+        // See MDL-9367.
         $data->assesstimestart = $this->apply_date_offset($data->assesstimestart);
         $data->assesstimefinish = $this->apply_date_offset($data->assesstimefinish);
         if ($data->scale < 0) { // scale found, get mapping
@@ -93,7 +95,6 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data->course = $this->get_courseid();
 
         $data->forum = $this->get_new_parentid('hsuforum');
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
         $data->timestart = $this->apply_date_offset($data->timestart);
         $data->timeend = $this->apply_date_offset($data->timeend);
         $data->userid = $this->get_mappingid('user', $data->userid);
@@ -126,8 +127,6 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $oldid = $data->id;
         $olduserid = $data->userid;
         $data->discussion = $this->get_new_parentid('hsuforum_discussion');
-        $data->created = $this->apply_date_offset($data->created);
-        $data->modified = $this->apply_date_offset($data->modified);
         $data->userid = $this->get_mappingid('user', $data->userid);
         // If post has parent, map it (it has been already restored)
         if (!empty($data->parent)) {
@@ -174,8 +173,6 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         }
         $data->rating = $data->value;
         $data->userid = $this->get_mappingid('user', $data->userid);
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
 
         // We need to check that component and ratingarea are both set here.
         if (empty($data->component)) {

@@ -260,7 +260,8 @@
     }
 
     if (hsuforum_discussion_is_locked($forum, $discussion)) {
-        echo html_writer::div(get_string('discussionlocked', 'hsuforum'), 'discussionlocked');
+        echo $OUTPUT->notification(get_string('discussionlocked', 'hsuforum'),
+            \core\output\notification::NOTIFY_INFO . ' discussionlocked');
     }
 
     if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {

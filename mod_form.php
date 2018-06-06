@@ -120,20 +120,18 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('maxattachments', 'maxattachments', 'hsuforum');
         $mform->setDefault('maxattachments', $config->maxattachments);
 
-
-
-
-
         // Subscription and tracking.
         $mform->addElement('header', 'subscriptionhdr', get_string('subscription', 'hsuforum'));
 
-        $options = array();
-        $options[HSUFORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'hsuforum');
-        $options[HSUFORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'hsuforum');
-        $options[HSUFORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'hsuforum');
-        $options[HSUFORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled','hsuforum');
+        $options = hsuforum_get_subscriptionmode_options();
         $mform->addElement('select', 'forcesubscribe', get_string('subscriptionmode', 'hsuforum'), $options);
         $mform->addHelpButton('forcesubscribe', 'subscriptionmode', 'hsuforum');
+        if (isset($CFG->hsuforum_subscription)) {
+            $defaultforumsubscription = $CFG->hsuforum_subscription;
+        } else {
+            $defaultforumsubscription = HSUFORUM_CHOOSESUBSCRIBE;
+        }
+        $mform->setDefault('forcesubscribe', $defaultforumsubscription);
 
         if ($CFG->enablerssfeeds && isset($config->enablerssfeeds) && $config->enablerssfeeds) {
 //-------------------------------------------------------------------------------
