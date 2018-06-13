@@ -230,6 +230,7 @@ class post_service {
         $post->itemid        = 0; // For text editor stuffs.
         $post->groupid       = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
         $post->flags         = null;
+        $post->deleted       = 0;
 
         $strre = get_string('re', 'hsuforum');
         if (!(\core_text::substr($post->subject, 0, \core_text::strlen($strre)) == $strre)) {
