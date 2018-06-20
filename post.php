@@ -37,6 +37,8 @@ $prune   = optional_param('prune', 0, PARAM_INT);
 $name    = optional_param('name', '', PARAM_CLEAN);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $groupid = optional_param('groupid', null, PARAM_INT);
+$messagecontent = optional_param('msgcontent', '', PARAM_TEXT);
+$subjectcontent = optional_param('subcontent', '', PARAM_TEXT);
 
 $PAGE->set_url('/mod/hsuforum/post.php', array(
         'reply' => $reply,
@@ -234,7 +236,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
 
     $strre = get_string('re', 'hsuforum');
-    if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
+    if (!(substr($post->subject, 0, strlen($strre)) == $strre) && empty($subjectcontent)) {
         $post->subject = $strre.' '.$post->subject;
     }
 
@@ -572,6 +574,12 @@ if (hsuforum_is_subscribed($USER->id, $forum->id) || $USER->autosubscribe) {
 $postid = empty($post->id) ? null : $post->id;
 $draftid_editor = file_get_submitted_draft_itemid('message');
 $currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', $postid, mod_hsuforum_post_form::editor_options($modcontext, $postid), $post->message);
+if (!empty($messagecontent) && $edit === 0) {
+    $currenttext = $messagecontent;
+}
+if (!empty($subjectcontent) && $edit === 0) {
+    $post->subject = $subjectcontent;
+}
 $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'subject'=>$post->subject,
                                     'message'=>array(

@@ -77,6 +77,11 @@ Y.extend(FORM, Y.Base,
 
             var advNode = wrapperNode.one(SELECTORS.FORM_ADVANCED);
             advNode.setAttribute('href', advNode.getAttribute('href').replace(/reply=\d+/, 'reply=' + parentNode.getData('postid')));
+            var message = wrapperNode.one('div[id^=editor-target-container-]');
+            advNode.on("click", function (e) {
+                advNode.setAttribute('href', advNode.getAttribute('href') + '&msgcontent=' +
+                    message.get('textContent'));
+            });
 
             if (parentNode.hasAttribute('data-ispost')) {
                 wrapperNode.one('legend').setHTML(
@@ -246,6 +251,15 @@ Y.extend(FORM, Y.Base,
             });
         },
 
+        sendInProgressData:function (e) {
+            var message = Y.one('div[id^=editor-target-container-]');
+            var subject = Y.one('input[name=subject]');
+            var link = e.target.getAttribute('href');
+            if (!link.includes('post.php?edit')) {
+                e.target.setAttribute('href', e.target.getAttribute('href') + '&msgcontent=' +
+                    message.get('textContent') + '&subcontent=' + subject.get('value'));
+            }
+        },
         /**
          * Show a reply form for a given post
          *
@@ -444,6 +458,14 @@ Y.extend(FORM, Y.Base,
             catch(err) {
                 Y.log('Timed post disabled');
             }
+            var advNode = Y.one(SELECTORS.FORM_ADVANCED);
+            var message = Y.one('div[id^=editor-target-container-]');
+            var subject = Y.one('input[name=subject]');
+            advNode.on("click", function (e) {
+                advNode.setAttribute('href', advNode.getAttribute('href') + '&msgcontent=' +
+                    message.get('textContent') + '&subcontent=' + subject.get('value'));
+            });
+
         },
 
         /**

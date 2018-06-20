@@ -144,7 +144,7 @@ Y.extend(ARTICLE, Y.Base,
             // We bind to document for these buttons as they get re-added on each discussion addition.
             Y.delegate('submit', form.handleFormSubmit, document, SELECTORS.FORM, form);
             Y.delegate('click', router.handleAddDiscussionRoute, document, SELECTORS.ADD_DISCUSSION, router);
-
+            Y.delegate('click', form.sendInProgressData, document, SELECTORS.FORM_ADVANCED, form);
             // On post created, update HTML, URL and log.
             form.on(EVENTS.POST_CREATED, dom.handleUpdateDiscussion, dom);
             form.on(EVENTS.POST_CREATED, dom.handleNotification, dom);
