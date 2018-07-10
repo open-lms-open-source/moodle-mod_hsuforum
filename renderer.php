@@ -1198,9 +1198,10 @@ HTML;
         if (!empty($CFG->enableplagiarism)) {
             require_once($CFG->libdir.'/plagiarismlib.php');
             $message .= plagiarism_get_links(array('userid' => $post->userid,
-                'content' => $post->message,
+                'content' => $message,
                 'cmid' => $cm->id,
-                'course' => $cm->course));
+                'course' => $cm->course,
+                'hsuforum' => $cm->instance));
         }
         
         $postcontent = format_text($message, $post->messageformat, $options, $cm->course);
