@@ -831,7 +831,7 @@ class provider implements
             // Delete all discussion items.
             $DB->delete_records_select(
                 'hsuforum_queue',
-                "userid AND discussionid IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)",
+                "userid = :userid AND discussionid IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)",
                 [
                     'userid' => $userid,
                     'forum' => $forum->id,
