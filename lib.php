@@ -1645,7 +1645,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
                    AND p.deleted <> 1
                    AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
                    $andforumid
-          ORDER BY p.created DESC
+          ORDER BY p.created ASC
     ";
     $params = array($timestart, $course->id, $USER->id, $USER->id, $forumid);
     if (!$posts = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum)) {
