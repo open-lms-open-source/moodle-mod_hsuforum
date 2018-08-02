@@ -1609,22 +1609,16 @@ function hsuforum_print_recent_activity($course, $viewfullnames, $timestart) {
 }
 
 /**
- * Given a course and a date, prints a summary of all the new
- * messages posted in the course since that date as HTML media objects
+ * Retrieve recent activity posted in a forum from a date.
  *
- * @global object $CFG
  * @global object $USER
  * @global object $DB
- * @global object $OUTPUT
- * @uses CONTEXT_MODULE
- * @uses VISIBLEGROUPS
  * @param object $course
- * @param bool $viewfullnames capability
- * @param int $timestart
- * @return string recent activity
+ * @return array $posts
  */
-function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid = null) {
-    global $CFG, $USER, $DB, $OUTPUT;
+
+function hsuforum_recent_activity_query($course, $timestart, $forumid = null) {
+    global $USER, $DB;
 
     $limitfrom = 0;
     $limitnum = 0;
@@ -1647,10 +1641,34 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
                    $andforumid
           ORDER BY p.created ASC
     ";
+
     $params = array($timestart, $course->id, $USER->id, $USER->id, $forumid);
     if (!$posts = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum)) {
-         return '';
+        return '';
     }
+
+    return $posts;
+}
+
+/**
+ * Given a course and a date, prints a summary of all the new
+ * messages posted in the course since that date as HTML media objects
+ *
+ * @global object $CFG
+ * @global object $USER
+ * @global object $DB
+ * @global object $OUTPUT
+ * @uses CONTEXT_MODULE
+ * @uses VISIBLEGROUPS
+ * @param object $course
+ * @param bool $viewfullnames capability
+ * @param int $timestart
+ * @return string recent activity
+ */
+function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid = null) {
+    global $CFG, $USER, $DB, $OUTPUT;
+
+    $posts = hsuforum_recent_activity_query($course, $timestart, $forumid = null);
 
     $modinfo = get_fast_modinfo($course);
     $config = get_config('hsuforum');
@@ -1658,50 +1676,53 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
     $groupmodes = array();
     $cms    = array();
     $out = '';
-    foreach ($posts as $post) {
-        if (!isset($modinfo->instances['hsuforum'][$post->forum])) {
-            // not visible
-            continue;
-        }
-        $cm = $modinfo->instances['hsuforum'][$post->forum];
-        if (!$cm->uservisible) {
-            continue;
-        }
-        $context = context_module::instance($cm->id);
-
-        if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
-            continue;
-        }
-
-        if (!empty($config->enabletimedposts) and $USER->id != $post->duserid
-          and (($post->timestart > 0 and $post->timestart > time()) or ($post->timeend > 0 and $post->timeend < time()))) {
-            if (!has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
+    if (is_array($posts)) {
+        foreach ($posts as $post) {
+            if (!isset($modinfo->instances['hsuforum'][$post->forum])) {
+                // not visible
                 continue;
             }
-        }
+            $cm = $modinfo->instances['hsuforum'][$post->forum];
+            if (!$cm->uservisible) {
+                continue;
+            }
+            $context = context_module::instance($cm->id);
 
-        // Check that the user can see the discussion.
-        if (hsuforum_is_user_group_discussion($cm, $post->groupid)) {
-            $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
-
-            $userpicture = new user_picture($postuser);
-            $userpicture->link = false;
-            $userpicture->alttext = false;
-            $userpicture->size = 100;
-            $picture = $OUTPUT->render($userpicture);
-
-            $url = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion;
-            if (!empty($post->parent)) {
-                $url .= '#p'.$post->id;
+            if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+                continue;
             }
 
-            $postusername = fullname($postuser, $viewfullnames);
-            $postsubject = break_up_long_words(format_string($post->subject, true));
-            $posttime = hsuforum_relative_time($post->modified);
-            $out .= hsuforum_media_object($url, $picture, $postusername, $posttime, $postsubject);
+            if (!empty($config->enabletimedposts) and $USER->id != $post->duserid
+                and (($post->timestart > 0 and $post->timestart > time()) or ($post->timeend > 0 and $post->timeend < time()))
+            ) {
+                if (!has_capability('mod/hsuforum:viewhiddentimedposts', $context)) {
+                    continue;
+                }
+            }
+
+            // Check that the user can see the discussion.
+            if (hsuforum_is_user_group_discussion($cm, $post->groupid)) {
+                $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
+
+                $userpicture = new user_picture($postuser);
+                $userpicture->link = false;
+                $userpicture->alttext = false;
+                $userpicture->size = 100;
+                $picture = $OUTPUT->render($userpicture);
+
+                $url = $CFG->wwwroot . '/mod/hsuforum/discuss.php?d=' . $post->discussion;
+                if (!empty($post->parent)) {
+                    $url .= '#p' . $post->id;
+                }
+
+                $postusername = fullname($postuser, $viewfullnames);
+                $postsubject = break_up_long_words(format_string($post->subject, true));
+                $posttime = hsuforum_relative_time($post->modified);
+                $out .= hsuforum_media_object($url, $picture, $postusername, $posttime, $postsubject);
+
+            }
 
         }
-
     }
 
     if($out) {
