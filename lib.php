@@ -1668,7 +1668,7 @@ function hsuforum_recent_activity_query($course, $timestart, $forumid = null) {
 function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid = null) {
     global $CFG, $USER, $DB, $OUTPUT;
 
-    $posts = hsuforum_recent_activity_query($course, $timestart, $forumid = null);
+    $posts = hsuforum_recent_activity_query($course, $timestart, $forumid);
 
     $modinfo = get_fast_modinfo($course);
     $config = get_config('hsuforum');
