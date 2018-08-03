@@ -3364,4 +3364,41 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions($moddefaults), $activeruledescriptions);
         $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions(new stdClass()), []);
     }
+
+    public function test_hsuforum_recent_activity_query() {
+        global $DB;
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+        $record = new stdClass();
+        $record->course = $course->id;
+        $forum = $generator->create_module('hsuforum', $record);
+        $now = time();
+        $forumgenerator = $generator->get_plugin_generator('mod_hsuforum');
+
+        //Create 3 discussions.
+        $record = new stdClass();
+        $record->course = $forum->course;
+        $record->forum = $forum->id;
+        $record->userid = $user->id;
+        $record->name = 'Discussion number 1';
+        $record->timemodified = $now;
+        $forumgenerator->create_discussion($record);
+
+        $record->name = 'Discussion number 2';
+        $record->timemodified = $now + 3600;
+        $forumgenerator->create_discussion($record);
+
+        $record->name = 'Discussion number 3';
+        $record->timemodified = $now + 7200;
+        $forumgenerator->create_discussion($record);
+
+        $post3 = $DB->get_record('hsuforum_posts', ['subject' => 'Discussion number 3']);
+
+        $recent = hsuforum_recent_activity_query($course, 0, $forum->id);
+        $mostrecent = array_pop($recent);
+        $this->assertEquals($mostrecent->subject, $post3->subject);
+    }
 }
