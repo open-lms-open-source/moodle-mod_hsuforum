@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Moodlerooms forums in 'No groups' mode allow posting to All participants for all users
+Feature: Open Forums in 'No groups' mode allow posting to All participants for all users
   In order to post to a forum in 'No groups' mode, which is in course which has groups
   As any user
   I need to post

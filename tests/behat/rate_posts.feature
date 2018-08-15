@@ -18,7 +18,7 @@ Feature: Users can rate other users forum posts
       | student1 | C1     | student        |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name     | Test forum name        |
       | Description    | Test forum description |
       | Aggregate type | Average of ratings     |
@@ -28,7 +28,7 @@ Feature: Users can rate other users forum posts
     Given I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Student post subject |
       | Message | Student post message |
     And I log out
@@ -39,7 +39,7 @@ Feature: Users can rate other users forum posts
     And I select "1" from the "rating" singleselect
     Then I should see "1 (1)"
     And I wait until the page is ready
-    And I reply "Student post subject" post from "Test forum name" Moodlerooms forum with:
+    And I reply "Student post subject" post from "Test forum name" Open Forum with:
       | Subject | Teacher reply subject |
       | Message | Teacher reply message |
     Then I should see "1 (1)"

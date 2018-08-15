@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Moodlerooms Forum subscription manager.
+ * Open Forum subscription manager.
  *
  * @package    mod_hsuforum
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,7 +26,7 @@ namespace mod_hsuforum;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Moodlerooms Forum subscription manager.
+ * Open Forum subscription manager.
  *
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

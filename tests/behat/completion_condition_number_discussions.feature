@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Set a certain number of discussions as a completion condition for a Moodlerooms forum
+Feature: Set a certain number of discussions as a completion condition for a Open Forum
   In order to ensure students are participating on forums
   As a teacher
   I need to set a minimum number of discussions to mark the forum activity as completed
@@ -22,7 +22,7 @@ Feature: Set a certain number of discussions as a completion condition for a Moo
     And I set the following fields to these values:
       | Enable completion tracking | Yes |
     And I press "Save and display"
-    When I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    When I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
       | Completion tracking | Show activity as complete when conditions are met |
@@ -34,10 +34,10 @@ Feature: Set a certain number of discussions as a completion condition for a Moo
     And I log in as "student1"
     And I am on "Course 1" course homepage
     Then the "Test forum name" "hsuforum" activity with "auto" completion should be marked as not complete
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Post 1 subject |
       | Message | Body 1 content |
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Post 2 subject |
       | Message | Body 2 content |
     And I am on "Course 1" course homepage

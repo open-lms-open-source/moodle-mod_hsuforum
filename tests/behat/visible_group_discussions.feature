@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Posting to all groups in Moodlerooms forums in a visible group discussion is restricted to users with access to all groups
+Feature: Posting to all groups in Open Forums in a visible group discussion is restricted to users with access to all groups
   In order to post to all groups in a forum with visible groups
   As a teacher
   I need to have the accessallgroups capability

@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A user can see a link to their Moodlerooms forum posts in their profile
+Feature: A user can see a link to their Open Forum posts in their profile
   In order to view my own or others advanced for posts
   As a user
   I need to click on the link in the profile page
@@ -26,23 +26,23 @@ Background:
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test forum name"
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Discussion 1 |
       | Message | Test post message |
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Discussion 2 |
       | Message | Test post message |
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Discussion 3 |
       | Message | Test post message |
     And I follow "Discussion 1"
     When I follow "Profile" in the user menu
-    And I follow "Moodlerooms Forum discussions"
+    And I follow "Open Forum discussions"
     Then I should see "Discussion 1"
     And I should see "Discussion 2"
     And I should see "Discussion 3"
     When I follow "Profile" in the user menu
-    And I follow "Moodlerooms Forum posts"
+    And I follow "Open Forum posts"
     Then I should see "Discussion 1"
     And I should see "Discussion 2"
     And I should see "Discussion 3"

@@ -1,6 +1,6 @@
 @mod @mod_hsuforum
-Feature: New Moodlerooms discussions and discussions with recently added replies are displayed first
-  In order to use Moodlerooms forum as a discussion tool
+Feature: New Open discussions and discussions with recently added replies are displayed first
+  In order to use Open Forum as a discussion tool
   As a user
   I need to see currently active discussions first
 
@@ -18,7 +18,7 @@ Feature: New Moodlerooms discussions and discussions with recently added replies
       | student1  | C1        | student         |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name  | Course general forum                |
       | Description | Single discussion forum description |
       | Forum type  | Standard forum for general use      |
@@ -37,13 +37,13 @@ Feature: New Moodlerooms discussions and discussions with recently added replies
     #
     # Add three posts into the forum.
     #
-    When I add a new discussion to "Course general forum" Moodlerooms forum with:
+    When I add a new discussion to "Course general forum" Open Forum with:
       | Subject | Forum post 1            |
       | Message | This is the first post  |
-    And I add a new discussion to "Course general forum" Moodlerooms forum with:
+    And I add a new discussion to "Course general forum" Open Forum with:
       | Subject | Forum post 2            |
       | Message | This is the second post |
-    And I add a new discussion to "Course general forum" Moodlerooms forum with:
+    And I add a new discussion to "Course general forum" Open Forum with:
       | Subject | Forum post 3            |
       | Message | This is the third post  |
     #

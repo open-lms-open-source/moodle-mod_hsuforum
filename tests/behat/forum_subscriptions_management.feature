@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A teacher can control the subscription to a Moodlerooms forum
+Feature: A teacher can control the subscription to a Open Forum
   In order to change individual user's subscriptions
   As a course administrator
   I can change subscription setting for my users
@@ -20,7 +20,7 @@ Feature: A teacher can control the subscription to a Moodlerooms forum
       | student2 | C1     | student        |
     And I log in as "teacher"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name        | Test forum name                |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description         |
