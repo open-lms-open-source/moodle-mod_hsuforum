@@ -21,7 +21,7 @@
  * @package   mod_hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboardopenlms.com)
  * @author Mark Nielsen
  */
 
@@ -39,7 +39,7 @@ require_once($CFG->dirroot.'/lib/formslib.php');
  * @package   mod_hsuforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboardopenlms.com)
  * @author Mark Nielsen
  **/
 class mod_hsuforum_renderer extends plugin_renderer_base {

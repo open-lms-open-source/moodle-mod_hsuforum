@@ -23,7 +23,7 @@ require_once($CFG->libdir.'/formslib.php');
 /**
  * Date form.
  * @author    gthomas2
- * @copyright Copyright (c) 2015 Blackboard Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2015 Blackboard Inc. (http://www.blackboardopenlms.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
