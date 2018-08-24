@@ -3400,5 +3400,10 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $recent = hsuforum_recent_activity_query($course, 0, $forum->id);
         $mostrecent = array_pop($recent);
         $this->assertEquals($mostrecent->subject, $post3->subject);
+
+        $post1 = $DB->get_record('hsuforum_posts', ['subject' => 'Discussion number 1']);
+        $recent2 = hsuforum_recent_activity_query($course, 0, $forum->id, false);
+        $mostrecent2 = array_pop($recent2);
+        $this->assertEquals($mostrecent2->subject, $post1->subject);
     }
 }
