@@ -183,6 +183,9 @@ class hsuforum_post implements \renderable, \templatable {
             'authorpicture'                 => $this->get_author_picture(),
 
             'grouppicture'                  => $this->get_group_picture(),
+
+            // Check if this post was made for an anonymous author.
+            'anonymousauthor'               => guest_user()->id == $this->author->id,
         );
     }
 
@@ -224,6 +227,9 @@ class hsuforum_post implements \renderable, \templatable {
             'authorpicture'                 => $this->get_author_picture(),
 
             'grouppicture'                  => $this->get_group_picture(),
+
+            // Check if this post was made for an anonymous author.
+            'anonymousauthor'               => guest_user()->id == $this->author->id,
         );
     }
 
@@ -543,7 +549,8 @@ class hsuforum_post implements \renderable, \templatable {
     public function get_author_picture() {
         global $OUTPUT;
 
-        return $OUTPUT->user_picture($this->author, array('courseid' => $this->course->id));
+        $link = !(guest_user()->id == $this->author->id);
+        return $OUTPUT->user_picture($this->author, array('courseid' => $this->course->id, 'link' => $link));
     }
 
     /**
