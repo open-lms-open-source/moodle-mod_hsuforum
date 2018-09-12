@@ -332,7 +332,7 @@
     if (!empty($forummenu)) {
         echo '<div class="movediscussionoption">';
         $select = new url_select($forummenu, '',
-            array('' => get_string("movethisdiscussionto", "hsuforum")),
+            array('/mod/hsuforum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "hsuforum")),
             'forummenu');
         echo $OUTPUT->render($select);
         echo "</div>";
