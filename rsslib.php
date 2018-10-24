@@ -192,7 +192,7 @@ function hsuforum_rss_feed_discussions_sql($forum, $cm, $newsince=0) {
               FROM {hsuforum_discussions} d
                    JOIN {hsuforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
-             WHERE d.forum = {$forum->id} AND p.parent = 0 AND p.deleted <> 0
+             WHERE d.forum = {$forum->id} AND p.parent = 0 AND p.deleted <> 1
                    $timelimit $groupselect $newsince
           ORDER BY $forumsort";
     return array($sql, $params);
@@ -250,7 +250,7 @@ function hsuforum_rss_feed_posts_sql($forum, $cm, $newsince=0) {
                {hsuforum_posts} p,
                {user} u
             WHERE d.forum = {$forum->id} AND
-                p.discussion = d.id AND p.deleted <> 0 AND
+                p.discussion = d.id AND p.deleted <> 1 AND
                 (p.privatereply = 0 OR p.privatereply = $USER->id OR p.userid = $USER->id) AND
                 u.id = p.userid $newsince
                 $groupselect

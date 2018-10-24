@@ -808,7 +808,7 @@ if ($fromform = $mform_post->get_data()) {
 
     } else { // Adding a new discussion.
         // The location to redirect to after successfully posting.
-        $redirectto = new moodle_url('view.php', array('f' => $fromform->forum));
+        $redirectto = new moodle_url('/mod/hsuforum/view.php', array('f' => $fromform->forum));
 
         $fromform->mailnow = empty($fromform->mailnow) ? 0 : 1;
 
@@ -1016,13 +1016,15 @@ if (!empty($parent)) {
 } else {
     if (!empty($forum->intro)) {
         echo $OUTPUT->box(format_module_intro('hsuforum', $forum, $cm->id), 'generalbox', 'intro');
-
-        if (!empty($CFG->enableplagiarism)) {
-            require_once($CFG->libdir.'/plagiarismlib.php');
-            echo plagiarism_print_disclosure($cm->id);
-        }
     }
 }
+
+// Call print disclosure for enabled plagiarism plugins.
+if (!empty($CFG->enableplagiarism)) {
+    require_once($CFG->libdir.'/plagiarismlib.php');
+    echo plagiarism_print_disclosure($cm->id);
+}
+
 if (!empty($formheading)) {
     echo $OUTPUT->heading($formheading, 4);
 }

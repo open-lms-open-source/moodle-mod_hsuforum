@@ -324,6 +324,9 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2017120804, 'hsuforum');
     }
 
+    // Automatically generated Moodle v3.5.0 release upgrade line.
+    // Put any upgrade step following this.
+
     return true;
 }
 

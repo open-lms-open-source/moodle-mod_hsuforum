@@ -416,7 +416,7 @@ $string['privacy:metadata:hsuforum_digests'] = 'Information about the digest pre
 $string['privacy:metadata:hsuforum_digests:hsuforum'] = 'The Open Forum subscribed to.';
 $string['privacy:metadata:hsuforum_digests:maildigest'] = 'The digest preference.';
 $string['privacy:metadata:hsuforum_digests:userid'] = 'The ID of the user with the digest preference.';
-
+$string['privacy:metadata:hsuforum_discussion_subs'] = 'Information about the subscriptions to individual forum discussions.';
 $string['privacy:metadata:hsuforum_discussions:name'] = 'The name of the discussion, as chosen by the author.';
 $string['privacy:metadata:hsuforum_discussions:userid'] = 'The ID of the user who created the discussion';
 $string['privacy:metadata:hsuforum_discussions:assessed'] = 'Rating type for the discussion';
@@ -742,13 +742,5 @@ $string['manageforumsubscriptions'] = 'Manage forum subscriptions';
 $string['nonanonymous'] = 'Non anonymously';
 $string['hiderecentposts'] = 'Hide recent Posts';
 $string['confighiderecentposts'] = 'Set to yes to stop the display of recent forum posts on the course page.';
-
-// Deprecated since Moodle 3.1.
-$string['postmailinfo'] = 'This is a copy of a message posted on the {$a} website.
-
-To reply click on this link:';
-$string['emaildigestupdated'] = 'The e-mail digest option was changed to \'{$a->maildigesttitle}\' for the forum \'{$a->forum}\'. {$a->maildigestdescription}';
-$string['emaildigestupdated_default'] = 'Your default profile setting of \'{$a->maildigesttitle}\' was used for the forum \'{$a->forum}\'. {$a->maildigestdescription}.';
-$string['emaildigest_0'] = 'You will receive one e-mail per forum post.';
-$string['emaildigest_1'] = 'You will receive one digest e-mail per day containing the complete contents of each forum post.';
-$string['emaildigest_2'] = 'You will receive one digest e-mail per day containing the subject of each forum post.';
+$string['forumsubjectdeleted'] = 'This forum post has been removed';
+$string['forumbodydeleted'] = 'The content of this forum post has been removed and can no longer be accessed.';
