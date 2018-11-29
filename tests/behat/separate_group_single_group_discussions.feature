@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: In Moodlerooms forums, posting to groups in a separate group discussion when restricted to groupings
+Feature: In Open Forums, posting to groups in a separate group discussion when restricted to groupings
   In order to post to groups in a forum with separate groups and groupings
   As a teacher
   I need to have groups configured to post to a group
@@ -40,13 +40,13 @@ Feature: In Moodlerooms forums, posting to groups in a separate group discussion
       | G2       | G2G1    |
     And I log in as "admin"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name  | Multiple groups forum             |
       | Forum type  | Standard forum for general use    |
       | Description | Standard forum description        |
       | Group mode  | Separate groups                   |
       | Grouping    | G1                                |
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name  | Single groups forum               |
       | Forum type  | Standard forum for general use    |
       | Description | Standard forum description        |

@@ -49,7 +49,7 @@ class discussion_unpinned extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user {$this->userid} has unpinned the discussion {$this->objectid} in the Moodlerooms forum {$this->other['forumid']}";
+        return "The user {$this->userid} has unpinned the discussion {$this->objectid} in the Open Forum {$this->other['forumid']}";
     }
 
     /**

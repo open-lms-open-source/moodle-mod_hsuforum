@@ -20,7 +20,7 @@
  * @subpackage backup-moodle2
  * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
  * @author Mark Nielsen
  */
 
@@ -119,7 +119,7 @@ class restore_hsuforum_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('hsuforum', 'add', 'view.php?id={course_module}', '{hsuforum}');
         $rules[] = new restore_log_rule('hsuforum', 'update', 'view.php?id={course_module}', '{hsuforum}');
         $rules[] = new restore_log_rule('hsuforum', 'view', 'view.php?id={course_module}', '{hsuforum}');
-        $rules[] = new restore_log_rule('hsuforum', 'view forum', 'view.php?id={course_module}', '{hsuforum}');
+        $rules[] = new restore_log_rule('hsuforum', 'view forum', 'view.php?f={hsuforum}', '{hsuforum}');
         $rules[] = new restore_log_rule('hsuforum', 'mark read', 'view.php?f={hsuforum}', '{hsuforum}');
         $rules[] = new restore_log_rule('hsuforum', 'start tracking', 'view.php?f={hsuforum}', '{hsuforum}');
         $rules[] = new restore_log_rule('hsuforum', 'stop tracking', 'view.php?f={hsuforum}', '{hsuforum}');
@@ -161,6 +161,7 @@ class restore_hsuforum_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('hsuforum', 'unsubscribeall', 'index.php?id={course}', '{course}');
         $rules[] = new restore_log_rule('hsuforum', 'user report', 'user.php?course={course}&id={user}&mode=[mode]', '{user}');
         $rules[] = new restore_log_rule('hsuforum', 'search', 'search.php?id={course}&search=[searchenc]', '[search]');
+        $rules[] = new restore_log_rule('hsuforum', 'view all', 'index.php?id={course}', '{course}');
 
         return $rules;
     }

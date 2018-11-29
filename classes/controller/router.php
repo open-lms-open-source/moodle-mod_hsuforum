@@ -18,7 +18,7 @@
  * Controller Router
  *
  * @package   mod_hsuforum
- * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2013 Blackboard Inc. (http://www.blackboard.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * that matches the action wins.
  *
  * @package   mod_hsuforum
- * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2013 Blackboard Inc. (http://www.blackboard.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class router {

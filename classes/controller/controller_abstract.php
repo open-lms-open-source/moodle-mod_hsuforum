@@ -18,7 +18,7 @@
  * Controller Abstract
  *
  * @package   mod_hsuforum
- * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2013 Blackboard Inc. (http://www.blackboard.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * can be routed to via the URL.  See the router for how this happens.
  *
  * @package   mod_hsuforum
- * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2013 Blackboard Inc. (http://www.blackboard.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class controller_abstract {

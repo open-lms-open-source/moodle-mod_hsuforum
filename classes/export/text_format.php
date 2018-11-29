@@ -18,7 +18,7 @@
  * Text Export Format
  *
  * @package   mod_hsuforum
- * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2013 Blackboard Inc. (http://www.blackboard.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,7 +30,7 @@ require_once(__DIR__.'/format_abstract.php');
 
 /**
  * @package   mod_hsuforum
- * @copyright Copyright (c) 2013 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2013 Blackboard Inc. (http://www.blackboard.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class text_format extends format_abstract {

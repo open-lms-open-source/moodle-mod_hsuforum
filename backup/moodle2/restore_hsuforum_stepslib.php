@@ -20,7 +20,7 @@
  * @subpackage backup-moodle2
  * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
  * @author Mark Nielsen
  */
 
@@ -195,7 +195,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         // Create only a new subscription if it does not already exist (see MDL-59854).
-        if ($subscription = $DB->get_record('hsuforum_subscription',
+        if ($subscription = $DB->get_record('hsuforum_subscriptions',
                 array('forum' => $data->forum, 'userid' => $data->userid))) {
             $this->set_mapping('hsuforum_subscription', $oldid, $subscription->id, true);
         } else {

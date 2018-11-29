@@ -60,7 +60,7 @@ class discussion_subscription_created extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' subscribed the user with id '$this->relateduserid' to the discussion " .
-            " with id '{$this->other['discussion']}' in the Moodlerooms forum with the course module id '$this->contextinstanceid'.";
+            " with id '{$this->other['discussion']}' in the Open Forum with the course module id '$this->contextinstanceid'.";
     }
 
     /**

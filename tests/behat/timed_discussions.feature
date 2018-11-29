@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: In Moodlerooms forums users can choose to set start and end time for display of their discussions
+Feature: In Open Forums users can choose to set start and end time for display of their discussions
   In order to temporarly hide discussions to students
   As a teacher
   I need to set a discussion time start and time end
@@ -18,18 +18,18 @@ Feature: In Moodlerooms forums users can choose to set start and end time for di
     And the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Discussion 1 |
       | Message | Discussion contents 1, first message |
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject          | Discussion 2 timed not visible       |
       | Message          | Discussion contents 2, first message |
       | timeend[enabled] | 1 |
       | timeend[year]    | 2014 |
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject            | Discussion 3 timed visible now       |
       | Message            | Discussion contents 3, first message |
       | timestart[enabled] | 1 |

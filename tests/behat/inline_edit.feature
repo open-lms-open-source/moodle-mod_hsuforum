@@ -17,7 +17,7 @@ Feature: Teachers and students can add discussions inline
       | enabletimedposts | 1 | hsuforum |
     And I log in as "admin"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |

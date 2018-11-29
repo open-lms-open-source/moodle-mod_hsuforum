@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Teachers can edit or delete any Moodlerooms forum post
+Feature: Teachers can edit or delete any Open Forum post
   In order to refine the forum contents
   As a teacher
   I need to edit or delete any user's forum posts
@@ -18,16 +18,16 @@ Feature: Teachers can edit or delete any Moodlerooms forum post
       | student1 | C1 | student |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
+    And I add a "Open Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Teacher post subject |
       | Message | Teacher post message |
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
-    And I reply "Teacher post subject" post from "Test forum name" Moodlerooms forum with:
+    And I reply "Teacher post subject" post from "Test forum name" Open Forum with:
       | Subject | Student post subject |
       | Message | Student post message |
 

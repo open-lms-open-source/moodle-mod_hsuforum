@@ -43,7 +43,7 @@ class behat_mod_hsuforum extends behat_base {
     /**
      * Adds a topic to the forum specified by it's name. Useful for the Announcements and blog-style forums.
      *
-     * @Given /^I add a new topic to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" Moodlerooms forum with:$/
+     * @Given /^I add a new topic to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" Open Forum with:$/
      * @param string $forumname
      * @param TableNode $table
      */
@@ -54,7 +54,7 @@ class behat_mod_hsuforum extends behat_base {
     /**
      * Adds a discussion to the forum specified by it's name with the provided table data (usually Subject and Message). The step begins from the forum's course page.
      *
-     * @Given /^I add a new discussion to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" Moodlerooms forum with:$/
+     * @Given /^I add a new discussion to "(?P<hsuforum_name_string>(?:[^"]|\\")*)" Open Forum with:$/
      * @param string $forumname
      * @param TableNode $table
      */
@@ -65,7 +65,7 @@ class behat_mod_hsuforum extends behat_base {
     /**
      * Adds a reply to the specified post of the specified forum. The step begins from the forum's page or from the forum's course page.
      *
-     * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<hsuforum_name_string>(?:[^"]|\\")*)" Moodlerooms forum with:$/
+     * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<hsuforum_name_string>(?:[^"]|\\")*)" Open Forum with:$/
      * @param string $postname The subject of the post
      * @param string $forumname The forum name
      * @param TableNode $table
@@ -242,7 +242,7 @@ class behat_mod_hsuforum extends behat_base {
      * @param string $fixturefilename this is a filename relative to the snap fixtures folder.
      * @param string $input
      *
-     * @Given /^Moodlerooms Forums I upload file "(?P<fixturefilename_string>(?:[^"]|\\")*)" using input "(?P<input_string>(?:[^"]|\\")*)"$/
+     * @Given /^Open Forums I upload file "(?P<fixturefilename_string>(?:[^"]|\\")*)" using input "(?P<input_string>(?:[^"]|\\")*)"$/
      */
     public function i_upload_file_using_input($fixturefilename, $input) {
         global $CFG;
@@ -256,7 +256,7 @@ class behat_mod_hsuforum extends behat_base {
      * Upload image via inline advanced editor.
      * @param string $fixturefilename
      *
-     * @Given /^Moodlerooms Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor$/
+     * @Given /^Open Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor$/
      */
     public function i_upload_image_using_inline_advanced_editor($fixturefilename) {
         $this->execute('behat_general::click_link', 'Use advanced editor');
@@ -273,7 +273,7 @@ class behat_mod_hsuforum extends behat_base {
      * Upload image via inline advanced editor (TinyMCE).
      * @param string $fixturefilename
      *
-     * @Given /^Moodlerooms Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor tinymce$/
+     * @Given /^Open Forums I upload image "(?P<link>(?:[^"]|\\")*)" using inline advanced editor tinymce$/
      */
     public function i_upload_image_using_inline_advanced_editor_tinymce($fixturefilename) {
         $this->execute('behat_forms::press_button', 'Insert/edit image');

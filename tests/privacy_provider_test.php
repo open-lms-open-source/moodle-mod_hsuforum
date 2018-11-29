@@ -880,8 +880,9 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
             $this->assertEmpty($ratings);
         }
         // All tags should have been deleted.
-        foreach (array_keys($postsinforum) as $postid) {
-            $this->assertCount(0, \core_tag_tag::get_item_tags('mod_hsuforum', 'hsuforum_posts', $postid));
+        $posttags = \core_tag_tag::get_items_tags('mod_hsuforum', 'hsuforum_posts', array_keys($postsinforum));
+        foreach ($posttags as $tags) {
+            $this->assertEmpty($tags);
         }
         // Check the other forum too. It should remain intact.
         $forum = next($forums);
@@ -918,8 +919,9 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
             $this->assertNotEmpty($ratings);
         }
         // All tags should remain.
-        foreach (array_keys($postsinforum) as $postid) {
-            $this->assertNotEmpty(\core_tag_tag::get_item_tags('mod_hsuforum', 'hsuforum_posts', $postid));
+        $posttags = \core_tag_tag::get_items_tags('mod_hsuforum', 'hsuforum_posts', array_keys($postsinforum));
+        foreach ($posttags as $tags) {
+            $this->assertNotEmpty($tags);
         }
     }
 
@@ -1089,7 +1091,7 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
         ));
         // Ratings should have been removed from the affected posts.
         $this->assertCount(0, $DB->get_records_select('rating', "itemid {$postinsql}", $postinparams));
-        // Ratings should remain on posts in the other context.
+        // Ratings should remain on posts in the other context, and posts not belonging to the affected user.
         $this->assertCount(144, $DB->get_records_select('rating', "itemid {$otherpostinsql}", $otherpostinparams));
         // Ratings should remain where the user has rated another person's post.
         $this->assertCount(32, $DB->get_records('rating', ['userid' => $user1->id]));

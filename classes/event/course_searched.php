@@ -59,7 +59,7 @@ class course_searched extends \core\event\base {
      */
     public function get_description() {
         $searchterm = s($this->other['searchterm']);
-        return "The user with id '$this->userid' has searched the course with id '$this->courseid' for Moodlerooms forum posts " .
+        return "The user with id '$this->userid' has searched the course with id '$this->courseid' for Open Forum posts " .
             "containing \"{$searchterm}\".";
     }
 

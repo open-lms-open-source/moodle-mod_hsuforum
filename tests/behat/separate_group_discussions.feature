@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: In Moodlerooms forums, posting to all groups in a separate group discussion is restricted to users with access to all groups
+Feature: In Open Forums, posting to all groups in a separate group discussion is restricted to users with access to all groups
   In order to post to all groups in a forum with separate groups
   As a teacher
   I need to have the accessallgroups capability
@@ -390,7 +390,7 @@ Feature: In Moodlerooms forums, posting to all groups in a separate group discus
   Scenario: Students can view all participants discussions in separate groups mode
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    When I add a new discussion to "Standard forum name" Moodlerooms forum with:
+    When I add a new discussion to "Standard forum name" Open Forum with:
       | Subject | Forum post to all participants |
       | Message | This is the body |
       | Group   | All participants |

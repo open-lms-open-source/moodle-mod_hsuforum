@@ -22,7 +22,7 @@
  *
  * @package    mod
  * @subpackage hsuforum
- * @copyright  Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright  Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
  * @author     Mark Nielsen
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -36,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @package    mod
  * @subpackage hsuforum
- * @copyright  Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
+ * @copyright  Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
  * @author     Mark Nielsen
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

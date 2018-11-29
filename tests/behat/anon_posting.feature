@@ -21,7 +21,7 @@ Feature: Students can post anonymously or not if they choose
       | hsuforum | Test forum name | Test forum description | C1     | forum    | 1         |
     And I log in as "student1"
     And I am on "Course 1" course homepage
-    And I add a new discussion to "Test forum name" Moodlerooms forum with:
+    And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Forum post subject |
       | Message | This is the body   |
 
