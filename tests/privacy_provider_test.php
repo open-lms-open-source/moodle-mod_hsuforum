@@ -119,6 +119,8 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
      * that context.
      */
     public function test_user_has_never_posted() {
+        global $DB;
+
         // Create a course, with a forum, our user under test, another user, and a discussion + post from the other user.
         $course = $this->getDataGenerator()->create_course();
         $this->getDataGenerator()->create_module('hsuforum', ['course' => $course->id]);
@@ -204,6 +206,17 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
         $this->assertNotEmpty($expecteddata);
         // The comment should be in the exported data.
         $this->assertContains('This is a test', $exportedcomments->comments[0]->content);
+
+        // Delete the data now.
+        // Only the post by the user under test will be removed.
+        $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
+            \core_user::get_user($user->id),
+            'mod_hsuforum',
+            [$context->id]
+        );
+        $this->assertCount(1, $DB->get_records('hsuforum_subscriptions', ['userid' => $user->id]));
+        provider::delete_data_for_user($approvedcontextlist);
+        $this->assertCount(0, $DB->get_records('hsuforum_subscriptions', ['userid' => $user->id]));
     }
 
     /**
@@ -244,8 +257,8 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
     }
 
     /**
-     * Test that a user who has posted a reply to another users discussion
-     * will have all content returned.
+     * Test that a user who has posted a reply to another users discussion will have all content returned, and
+     * appropriate content removed.
      */
     public function test_user_has_posted_reply() {
         global $DB;
@@ -295,6 +308,25 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
 
         // The reply will be included.
         $this->assert_post_data($reply, $writer->get_data($this->get_subcontext($forum, $discussion, $reply)), $writer);
+
+        // Delete the data now.
+        // Only the post by the user under test will be removed.
+        $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
+            \core_user::get_user($user->id),
+            'mod_hsuforum',
+            [$context->id]
+        );
+        provider::delete_data_for_user($approvedcontextlist);
+
+        $reply = $DB->get_record('hsuforum_posts', ['id' => $reply->id]);
+        $this->assertEmpty($reply->subject);
+        $this->assertEmpty($reply->message);
+        $this->assertEquals(1, $reply->deleted);
+
+        $post = $DB->get_record('hsuforum_posts', ['id' => $post->id]);
+        $this->assertNotEmpty($post->subject);
+        $this->assertNotEmpty($post->message);
+        $this->assertEquals(0, $post->deleted);
     }
 
     /**
@@ -302,6 +334,7 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
      * rater's information returned.
      */
     public function test_user_has_rated_others() {
+        global $DB;
         $course = $this->getDataGenerator()->create_course();
         $forum = $this->getDataGenerator()->create_module('hsuforum', [
             'course' => $course->id,
@@ -352,12 +385,26 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
 
         // The original post will not be included.
         $this->assert_post_data($post, $writer->get_data($this->get_subcontext($forum, $discussion, $post)), $writer);
+
+        // Delete the data of the user who rated the other user.
+        // The rating should not be deleted as it the rating is considered grading data.
+        $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
+            \core_user::get_user($user->id),
+            'mod_hsuforum',
+            [$context->id]
+        );
+        provider::delete_data_for_user($approvedcontextlist);
+
+        // Ratings should remain as they are of another user's content.
+        $this->assertCount(1, $DB->get_records('rating', ['itemid' => $post->id]));
     }
 
     /**
      * Test that ratings of a users own content will all be returned.
      */
     public function test_user_has_been_rated() {
+        global $DB;
+
         $course = $this->getDataGenerator()->create_course();
         $forum = $this->getDataGenerator()->create_module('hsuforum', [
             'course' => $course->id,
@@ -405,6 +452,18 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
             'post',
             $post->id
         );
+
+        // Delete the data of the user who was rated.
+        // The rating should now be deleted.
+        $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
+            \core_user::get_user($user->id),
+            'mod_hsuforum',
+            [$context->id]
+        );
+        provider::delete_data_for_user($approvedcontextlist);
+
+        // Ratings should remain as they are of another user's content.
+        $this->assertCount(0, $DB->get_records('rating', ['itemid' => $post->id]));
     }
 
     /**
@@ -412,6 +471,7 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
      */
     public function test_user_forum_digest() {
         $course = $this->getDataGenerator()->create_course();
+        global $DB;
 
         $forum0 = $this->getDataGenerator()->create_module('hsuforum', ['course' => $course->id]);
         $cm0 = get_coursemodule_from_instance('hsuforum', $forum0->id);
@@ -462,6 +522,21 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
 
         $this->export_context_data_for_user($user->id, $context2, 'mod_hsuforum');
         $this->assertEquals(2, \core_privacy\local\request\writer::with_context($context2)->get_metadata([], 'digestpreference'));
+
+        // Delete the data for one of the users in one of the forums.
+        $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
+            \core_user::get_user($user->id),
+            'mod_hsuforum',
+            [$context1->id]
+        );
+
+        $this->assertEquals(0, $DB->get_field('hsuforum_digests', 'maildigest', ['userid' => $user->id, 'forum' => $forum0->id]));
+        $this->assertEquals(1, $DB->get_field('hsuforum_digests', 'maildigest', ['userid' => $user->id, 'forum' => $forum1->id]));
+        $this->assertEquals(2, $DB->get_field('hsuforum_digests', 'maildigest', ['userid' => $user->id, 'forum' => $forum2->id]));
+        provider::delete_data_for_user($approvedcontextlist);
+        $this->assertEquals(0, $DB->get_field('hsuforum_digests', 'maildigest', ['userid' => $user->id, 'forum' => $forum0->id]));
+        $this->assertFalse($DB->get_field('hsuforum_digests', 'maildigest', ['userid' => $user->id, 'forum' => $forum1->id]));
+        $this->assertEquals(2, $DB->get_field('hsuforum_digests', 'maildigest', ['userid' => $user->id, 'forum' => $forum2->id]));
     }
 
     /**
@@ -622,6 +697,23 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
         $this->assertNotEmpty($readdata);
         $this->assertTrue(isset($readdata->firstread));
         $this->assertTrue(isset($readdata->lastread));
+
+        // Delete all data for one of the users in one of the forums.
+        $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
+            \core_user::get_user($user->id),
+            'mod_hsuforum',
+            [$context3->id]
+        );
+
+        $this->assertTrue($DB->record_exists('hsuforum_read', ['userid' => $user->id, 'forumid' => $forum1->id]));
+        $this->assertTrue($DB->record_exists('hsuforum_read', ['userid' => $user->id, 'forumid' => $forum2->id]));
+        $this->assertTrue($DB->record_exists('hsuforum_read', ['userid' => $user->id, 'forumid' => $forum3->id]));
+
+        provider::delete_data_for_user($approvedcontextlist);
+
+        $this->assertTrue($DB->record_exists('hsuforum_read', ['userid' => $user->id, 'forumid' => $forum1->id]));
+        $this->assertTrue($DB->record_exists('hsuforum_read', ['userid' => $user->id, 'forumid' => $forum2->id]));
+        $this->assertFalse($DB->record_exists('hsuforum_read', ['userid' => $user->id, 'forumid' => $forum3->id]));
     }
 
     /**
@@ -1106,5 +1198,215 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
         $this->assertCount(0, $DB->get_records_select('files', "itemid {$postinsql}", $postinparams));
         // Files for the other posts should remain.
         $this->assertCount(18, $DB->get_records_select('files', "filename <> '.' AND itemid {$otherpostinsql}", $otherpostinparams));
+    }
+
+
+    /**
+     * Ensure that user data for specific users is deleted from a specified context.
+     */
+    public function test_delete_data_for_users() {
+        global $DB;
+
+        $fs = get_file_storage();
+        $course = $this->getDataGenerator()->create_course();
+        $users = $this->helper_create_users($course, 5);
+
+        $forums = [];
+        $contexts = [];
+        for ($i = 0; $i < 2; $i++) {
+            $forum = $this->getDataGenerator()->create_module('hsuforum', [
+                'course' => $course->id,
+                'scale' => 100,
+            ]);
+            $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+            $context = \context_module::instance($cm->id);
+            $forums[$forum->id] = $forum;
+            $contexts[$forum->id] = $context;
+        }
+
+        $discussions = [];
+        $posts = [];
+        $postsbyforum = [];
+        foreach ($users as $user) {
+            $postsbyforum[$user->id] = [];
+            foreach ($forums as $forum) {
+                $context = $contexts[$forum->id];
+
+                // Create a new discussion + post in the forum.
+                list($discussion, $post) = $this->helper_post_to_forum($forum, $user);
+                $discussion = $DB->get_record('hsuforum_discussions', ['id' => $discussion->id]);
+                $discussions[$discussion->id] = $discussion;
+                $postsbyforum[$user->id][$context->id] = [];
+
+                // Add a number of replies.
+                $posts[$post->id] = $post;
+                $thisforumposts[$post->id] = $post;
+                $postsbyforum[$user->id][$context->id][$post->id] = $post;
+
+                $reply = $this->helper_reply_to_post($post, $user);
+                $posts[$reply->id] = $reply;
+                $postsbyforum[$user->id][$context->id][$reply->id] = $reply;
+
+                $reply = $this->helper_reply_to_post($post, $user);
+                $posts[$reply->id] = $reply;
+                $postsbyforum[$user->id][$context->id][$reply->id] = $reply;
+
+                $reply = $this->helper_reply_to_post($reply, $user);
+                $posts[$reply->id] = $reply;
+                $postsbyforum[$user->id][$context->id][$reply->id] = $reply;
+
+                // Add a fake inline image to the original post.
+                $fs->create_file_from_string([
+                    'contextid' => $context->id,
+                    'component' => 'mod_hsuforum',
+                    'filearea'  => 'post',
+                    'itemid'    => $post->id,
+                    'filepath'  => '/',
+                    'filename'  => 'example.jpg',
+                ], 'image contents (not really)');
+                // And a fake attachment.
+                $fs->create_file_from_string([
+                    'contextid' => $context->id,
+                    'component' => 'mod_hsuforum',
+                    'filearea'  => 'attachment',
+                    'itemid'    => $post->id,
+                    'filepath'  => '/',
+                    'filename'  => 'example.jpg',
+                ], 'image contents (not really)');
+            }
+        }
+
+        // Mark all posts as read by user1.
+        $user1 = reset($users);
+        foreach ($posts as $post) {
+            $discussion = $discussions[$post->discussion];
+            $forum = $forums[$discussion->forum];
+            $context = $contexts[$forum->id];
+
+            // Mark the post as being read by user1.
+            hsuforum_tp_add_read_record($user1->id, $post->id);
+        }
+
+        // Rate and tag all posts.
+        $ratedposts = [];
+        foreach ($users as $user) {
+            foreach ($posts as $post) {
+                $discussion = $discussions[$post->discussion];
+                $forum = $forums[$discussion->forum];
+                $context = $contexts[$forum->id];
+
+                // Tag the post.
+                \core_tag_tag::set_item_tags('mod_hsuforum', 'hsuforum_posts', $post->id, $context, ['example', 'tag']);
+
+                // Rate the other users content.
+                if ($post->userid != $user->id) {
+                    $ratedposts[$post->id] = $post;
+                    $rm = new rating_manager();
+                    $ratingoptions = (object) [
+                        'context' => $context,
+                        'component' => 'mod_hsuforum',
+                        'ratingarea' => 'post',
+                        'itemid' => $post->id,
+                        'scaleid' => $forum->scale,
+                        'userid' => $user->id,
+                    ];
+
+                    $rating = new \rating($ratingoptions);
+                    $rating->update_rating(75);
+                }
+            }
+        }
+
+        // Delete for one of the forums for the first user.
+        $firstcontext = reset($contexts);
+
+        $deletedpostids = [];
+        $otherpostids = [];
+        foreach ($postsbyforum as $user => $contexts) {
+            foreach ($contexts as $thiscontextid => $theseposts) {
+                $thesepostids = array_map(function($post) {
+                    return $post->id;
+                }, $theseposts);
+
+                if ($user == $user1->id && $thiscontextid == $firstcontext->id) {
+                    // This post is in the deleted context and by the target user.
+                    $deletedpostids = array_merge($deletedpostids, $thesepostids);
+                } else {
+                    // This post is by another user, or in a non-target context.
+                    $otherpostids = array_merge($otherpostids, $thesepostids);
+                }
+            }
+        }
+        list($postinsql, $postinparams) = $DB->get_in_or_equal($deletedpostids, SQL_PARAMS_NAMED);
+        list($otherpostinsql, $otherpostinparams) = $DB->get_in_or_equal($otherpostids, SQL_PARAMS_NAMED);
+
+        $approveduserlist = new \core_privacy\local\request\approved_userlist($firstcontext, 'mod_hsuforum', [$user1->id]);
+        provider::delete_data_for_users($approveduserlist);
+
+        // All posts should remain.
+        $this->assertCount(40, $DB->get_records('hsuforum_posts'));
+
+        // There should be 8 posts belonging to user1.
+        $this->assertCount(8, $DB->get_records('hsuforum_posts', [
+            'userid' => $user1->id,
+        ]));
+
+        // Four of those posts should have been marked as deleted.
+        // That means that the deleted flag is set, and both the subject and message are empty.
+        $this->assertCount(4, $DB->get_records_select('hsuforum_posts', "userid = :userid AND deleted = :deleted"
+            . " AND " . $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject')
+            . " AND " . $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message')
+            , [
+                'userid' => $user1->id,
+                'deleted' => 1,
+                'subject' => '',
+                'message' => '',
+            ]));
+
+        // Only user1's posts should have been marked this way.
+        $this->assertCount(4, $DB->get_records('hsuforum_posts', [
+            'deleted' => 1,
+        ]));
+        $this->assertCount(4, $DB->get_records_select('hsuforum_posts',
+            $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject'), [
+                'subject' => '',
+            ]));
+        $this->assertCount(4, $DB->get_records_select('hsuforum_posts',
+            $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message'), [
+                'message' => '',
+            ]));
+
+        // Only the posts in the first discussion should have been marked this way.
+        $this->assertCount(4, $DB->get_records_select('hsuforum_posts',
+            "deleted = :deleted AND id {$postinsql}",
+            array_merge($postinparams, [
+                'deleted' => 1,
+            ])
+        ));
+
+        // Ratings should have been removed from the affected posts.
+        $this->assertCount(0, $DB->get_records_select('rating', "itemid {$postinsql}", $postinparams));
+
+        // Ratings should remain on posts in the other context, and posts not belonging to the affected user.
+        $this->assertCount(144, $DB->get_records_select('rating', "itemid {$otherpostinsql}", $otherpostinparams));
+
+        // Ratings should remain where the user has rated another person's post.
+        $this->assertCount(32, $DB->get_records('rating', ['userid' => $user1->id]));
+
+        // Tags for the affected posts should be removed.
+        $this->assertCount(0, $DB->get_records_select('tag_instance', "itemid {$postinsql}", $postinparams));
+
+        // Tags should remain for the other posts by this user, and all posts by other users.
+        $this->assertCount(72, $DB->get_records_select('tag_instance', "itemid {$otherpostinsql}", $otherpostinparams));
+
+        // Files for the affected posts should be removed.
+        // 5 users * 2 forums * 1 file in each forum
+        // Original total: 10
+        // One post with file removed.
+        $this->assertCount(0, $DB->get_records_select('files', "itemid {$postinsql}", $postinparams));
+
+        // Files for the other posts should remain.
+        $this->assertCount(18,
+            $DB->get_records_select('files', "filename <> '.' AND itemid {$otherpostinsql}", $otherpostinparams));
     }
 }

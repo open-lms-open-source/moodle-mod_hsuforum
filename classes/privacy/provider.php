@@ -21,7 +21,10 @@
  */
 
 namespace mod_hsuforum\privacy;
+
+use \core_privacy\local\request\userlist;
 use \core_privacy\local\request\approved_contextlist;
+use \core_privacy\local\request\approved_userlist;
 use \core_privacy\local\request\deletion_criteria;
 use \core_privacy\local\request\writer;
 use \core_privacy\local\request\helper as request_helper;
@@ -42,6 +45,9 @@ class provider implements
 
     // This plugin currently implements the original plugin\provider interface.
     \core_privacy\local\request\plugin\provider,
+
+    // This plugin is capable of determining which users have data within it.
+    \core_privacy\local\request\core_userlist_provider,
 
     // This plugin has some sitewide user preferences to export.
     \core_privacy\local\request\user_preference_provider {
@@ -184,9 +190,92 @@ class provider implements
     }
 
     /**
+     * Get the list of users within a specific context.
+     *
+     * @param   userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
+     */
+    public static function get_users_in_context(userlist $userlist)  {
+        $context = $userlist->get_context();
+
+        if (!is_a($context, \context_module::class)) {
+            return;
+        }
+
+        $params = [
+            'instanceid' => $context->instanceid,
+            'modulename' => 'forum',
+        ];
+
+        // Discussion authors.
+        $sql = "SELECT d.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {hsuforum} f ON f.id = cm.instance
+                  JOIN {hsuforum_discussions} d ON d.forum = f.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Forum authors.
+        $sql = "SELECT p.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {hsuforum} f ON f.id = cm.instance
+                  JOIN {hsuforum_discussions} d ON d.forum = f.id
+                  JOIN {hsuforum_posts} p ON d.id = p.discussion
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Forum post ratings.
+        $sql = "SELECT p.id
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {hsuforum} f ON f.id = cm.instance
+                  JOIN {hsuforum_discussions} d ON d.forum = f.id
+                  JOIN {hsuforum_posts} p ON d.id = p.discussion
+                 WHERE cm.id = :instanceid";
+        \core_rating\privacy\provider::get_users_in_context_from_sql($userlist, 'rat', 'mod_hsuforum', 'post', $sql, $params);
+
+        // Forum Digest settings.
+        $sql = "SELECT dig.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {hsuforum} f ON f.id = cm.instance
+                  JOIN {hsuforum_digests} dig ON dig.forum = f.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Forum Subscriptions.
+        $sql = "SELECT sub.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {hsuforum} f ON f.id = cm.instance
+                  JOIN {hsuforum_subscriptions} sub ON sub.forum = f.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Read Posts.
+        $sql = "SELECT hasread.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {hsuforum} f ON f.id = cm.instance
+                  JOIN {hsuforum_read} hasread ON hasread.forumid = f.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+
+        // Tracking Preferences.
+        $sql = "SELECT pref.userid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {hsuforum} f ON f.id = cm.instance
+                  JOIN {hsuforum_track_prefs} pref ON pref.forumid = f.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('userid', $sql, $params);
+    }
+
+    /**
      * Store all user preferences for the plugin.
      *
-     * @param  int   $userid The userid of the user whose data is to be exported.
+     * @param  int $userid The userid of the user whose data is to be exported.
      */
     public static function _export_user_preferences(int $userid) {
         $user = \core_user::get_user($userid);
@@ -245,7 +334,7 @@ class provider implements
     /**
      * Export all user data for the specified user, in the specified contexts.
      *
-     * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
+     * @param   approved_contextlist $contextlist The approved contexts to export information for.
      */
     public static function _export_user_data(approved_contextlist $contextlist) {
         global $DB;
@@ -274,9 +363,9 @@ class provider implements
         ";
 
         $params = [
-            'digestuserid'  => $userid,
-            'subuserid'     => $userid,
-            'prefuserid'    => $userid
+            'digestuserid' => $userid,
+            'subuserid' => $userid,
+            'prefuserid' => $userid
         ];
         $params += $contextparams;
 
@@ -348,8 +437,8 @@ class provider implements
         ";
 
         $params = [
-            'postuserid'        => $userid,
-            'discussionuserid'  => $userid,
+            'postuserid' => $userid,
+            'discussionuserid' => $userid,
         ];
         $params += $forumparams;
 
@@ -366,9 +455,9 @@ class provider implements
             static::export_discussion_subscription_data($userid, $context, $discussion);
 
 
-            $discussiondata = (object) [
+            $discussiondata = (object)[
                 'name' => format_string($discussion->name, true),
-                'pinned' => transform::yesno((bool) $discussion->pinned),
+                'pinned' => transform::yesno((bool)$discussion->pinned),
                 'timemodified' => transform::datetime($discussion->timemodified),
                 'usermodified' => transform::datetime($discussion->usermodified),
                 'creator_was_you' => transform::yesno($discussion->userid == $userid)
@@ -391,9 +480,9 @@ class provider implements
     /**
      * Formats and then exports the user's grade data.
      *
-     * @param  \stdClass $grade The assign grade object
-     * @param  \context $context The context object
-     * @param  array $area
+     * @param  \stdClass $grade   The assign grade object
+     * @param  \context  $context The context object
+     * @param  array     $area
      */
     protected static function export_grade_data(\stdClass $data, \context $context, array $area) {
         $gradedata = (object)[
@@ -403,7 +492,7 @@ class provider implements
             'finalgrade' => $data->finalgrade,
         ];
 
-        if(!empty($data->gradefeedback)) {
+        if (!empty($data->gradefeedback)) {
             $gradedata->feedback = $data->gradefeedback;
         }
         writer::with_context($context)
@@ -447,8 +536,8 @@ class provider implements
         ";
 
         $params = [
-            'postuserid'    => $userid,
-            'readuserid'    => $userid,
+            'postuserid' => $userid,
+            'readuserid' => $userid,
         ];
         $params += $forumparams;
         $params += $ratingsql->params;
@@ -463,9 +552,9 @@ class provider implements
     /**
      * Store all information about all posts that we have detected this user to have access to.
      *
-     * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context_module The instance of the forum context.
-     * @param   \stdClass   $discussion The discussion whose data is being exported.
+     * @param   int             $userid     The userid of the user whose data is to be exported.
+     * @param   \context_module The         instance of the forum context.
+     * @param   \stdClass       $discussion The discussion whose data is being exported.
      */
     protected static function export_all_posts_in_discussion(int $userid, \context $context, \stdClass $discussion) {
         global $DB, $USER;
@@ -489,13 +578,13 @@ class provider implements
         ";
 
         $params = [
-            'discussionid'  => $discussionid,
-            'readuserid'    => $userid,
+            'discussionid' => $discussionid,
+            'readuserid' => $userid,
         ];
         $params += $ratingsql->params;
 
         // Keep track of the forums which have data.
-        $structure = (object) [
+        $structure = (object)[
             'children' => [],
         ];
 
@@ -532,10 +621,10 @@ class provider implements
     /**
      * Export all posts in the provided structure.
      *
-     * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context_module The instance of the forum context.
-     * @param   array       $parentarea The subcontext fo the parent post.
-     * @param   \stdClass   $structure The post structure and all of its children
+     * @param   int             $userid     The userid of the user whose data is to be exported.
+     * @param   \context_module The         instance of the forum context.
+     * @param   array           $parentarea The subcontext fo the parent post.
+     * @param   \stdClass       $structure  The post structure and all of its children
      */
     protected static function export_posts_in_structure(int $userid, \context $context, $parentarea, \stdClass $structure) {
         foreach ($structure->children as $post) {
@@ -559,16 +648,16 @@ class provider implements
     /**
      * Export all data in the post.
      *
-     * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context_module The instance of the forum context.
-     * @param   array       $parentarea The subcontext fo the parent post.
-     * @param   \stdClass   $structure The post structure and all of its children
+     * @param   int             $userid     The userid of the user whose data is to be exported.
+     * @param   \context_module The         instance of the forum context.
+     * @param   array           $parentarea The subcontext fo the parent post.
+     * @param   \stdClass       $structure  The post structure and all of its children
      */
     protected static function export_post_data(int $userid, \context $context, $postarea, $post) {
         // Store related metadata.
         static::export_read_data($userid, $context, $postarea, $post);
 
-        $postdata = (object) [
+        $postdata = (object)[
             'subject' => format_string($post->subject, true),
             'created' => transform::datetime($post->created),
             'modified' => transform::datetime($post->modified),
@@ -578,8 +667,8 @@ class provider implements
         $postdata->message = writer::with_context($context)
             ->rewrite_pluginfile_urls($postarea, 'mod_hsuforum', 'post', $post->id, $post->message);
 
-        $postdata->message = format_text($postdata->message, $post->messageformat, (object) [
-            'para'    => false,
+        $postdata->message = format_text($postdata->message, $post->messageformat, (object)[
+            'para' => false,
             'trusted' => $post->messagetrust,
             'context' => $context,
         ]);
@@ -614,20 +703,20 @@ class provider implements
     protected static function export_digest_data(int $userid, \stdClass $forum) {
         if (null !== $forum->maildigest) {
             // The user has a specific maildigest preference for this forum.
-            $a = (object) [
+            $a = (object)[
                 'forum' => format_string($forum->name, true),
             ];
 
             switch ($forum->maildigest) {
-            case 0:
-                $a->type = get_string('emaildigestoffshort', 'mod_hsuforum');
-                break;
-            case 1:
-                $a->type = get_string('emaildigestcompleteshort', 'mod_hsuforum');
-                break;
-            case 2:
-                $a->type = get_string('emaildigestsubjectsshort', 'mod_hsuforum');
-                break;
+                case 0:
+                    $a->type = get_string('emaildigestoffshort', 'mod_hsuforum');
+                    break;
+                case 1:
+                    $a->type = get_string('emaildigestcompleteshort', 'mod_hsuforum');
+                    break;
+                case 2:
+                    $a->type = get_string('emaildigestsubjectsshort', 'mod_hsuforum');
+                    break;
             }
 
             writer::with_context(\context_module::instance($forum->cmid))
@@ -671,8 +760,8 @@ class provider implements
         $area = static::get_discussion_area($discussion);
         if (null !== $discussion->subscribedto) {
             // The user has a specific subscription preference for this discussion.
-            $a = (object) [];
-            $subscribed =  mod_hsuforum\subscriptions::is_subscribed($userid, $DB->get_record('hsuforum', array('id' => $discussion->forum)));
+            $a = (object)[];
+            $subscribed = mod_hsuforum\subscriptions::is_subscribed($userid, $DB->get_record('hsuforum', array('id' => $discussion->forum)));
             if ($subscribed) {
                 $a->preference = get_string('subscribed', 'mod_hsuforum');
             } else {
@@ -723,16 +812,16 @@ class provider implements
      */
     protected static function export_read_data(int $userid, \context_module $context, array $postarea, \stdClass $post) {
         if (null !== $post->firstread) {
-            $a = (object) [
+            $a = (object)[
                 'firstread' => $post->firstread,
-                'lastread'  => $post->lastread,
+                'lastread' => $post->lastread,
             ];
 
             writer::with_context($context)
                 ->export_metadata(
                     $postarea,
                     'postread',
-                    (object) [
+                    (object)[
                         'firstread' => $post->firstread,
                         'lastread' => $post->lastread,
                     ],
@@ -765,6 +854,7 @@ class provider implements
             $DB->delete_records('hsuforum_track_prefs', ['forumid' => $forum->id]);
             $DB->delete_records('hsuforum_subscriptions', ['forum' => $forum->id]);
             $DB->delete_records('hsuforum_read', ['forumid' => $forum->id]);
+            $DB->delete_records('hsuforum_digests', ['forum' => $forum->id]);
 
             // Delete all discussion items.
             $DB->delete_records_select(
@@ -797,14 +887,14 @@ class provider implements
         \core_rating\privacy\provider::delete_ratings($context, 'mod_hsuforum', 'post');
 
         // Delete all Tags.
-        \core_tag\privacy\provider::delete_item_tags($context, 'mod_hsuforum','hsuforum_posts');
+        \core_tag\privacy\provider::delete_item_tags($context, 'mod_hsuforum', 'hsuforum_posts');
 
     }
 
     /**
      * Delete all user data for the specified user, in the specified contexts.
      *
-     * @param   approved_contextlist    $contextlist    The approved contexts and user information to delete information for.
+     * @param   approved_contextlist $contextlist The approved contexts and user information to delete information for.
      */
     public static function _delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
@@ -828,6 +918,11 @@ class provider implements
                 'userid' => $userid,
             ]);
 
+            $DB->delete_records('hsuforum_digests', [
+                'forum' => $forum->id,
+                'userid' => $userid,
+            ]);
+
             // Delete all discussion items.
             $DB->delete_records_select(
                 'hsuforum_queue',
@@ -843,49 +938,91 @@ class provider implements
                 'userid' => $userid,
             ]);
 
-            $uniquediscussions = $DB->get_recordset('hsuforum_discussions', [
-                    'forum' => $forum->id,
-                    'userid' => $userid,
-                ]);
+            // Do not delete discussion or forum posts.
+            // Instead update them to reflect that the content has been deleted.
+            $postsql = "userid = :userid AND discussion IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)";
+            $postidsql = "SELECT fp.id FROM {hsuforum_posts} fp WHERE {$postsql}";
+            $postparams = [
+                'forum' => $forum->id,
+                'userid' => $userid,
+            ];
 
-            foreach ($uniquediscussions as $discussion) {
-                // Do not delete discussion or forum posts.
-                // Instead update them to reflect that the content has been deleted.
-                $postsql = "userid = :userid AND discussion IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forum)";
-                $postidsql = "SELECT fp.id FROM {hsuforum_posts} fp WHERE {$postsql}";
-                $postparams = [
-                    'forum' => $forum->id,
-                    'userid' => $userid,
-                ];
+            // Update the subject.
+            $DB->set_field_select('hsuforum_posts', 'subject', '', $postsql, $postparams);
 
-                // Update the subject.
-                $DB->set_field_select('hsuforum_posts', 'subject', '', $postsql, $postparams);
+            // Update the subject and its format.
+            $DB->set_field_select('hsuforum_posts', 'message', '', $postsql, $postparams);
+            $DB->set_field_select('hsuforum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $postparams);
 
-                // Update the subject and its format.
-                $DB->set_field_select('hsuforum_posts', 'message', '', $postsql, $postparams);
-                $DB->set_field_select('hsuforum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $postparams);
+            // Mark the post as deleted.
+            $DB->set_field_select('hsuforum_posts', 'deleted', 1, $postsql, $postparams);
 
-                // Mark the post as deleted.
-                $DB->set_field_select('hsuforum_posts', 'deleted', 1, $postsql, $postparams);
+            // Note: Do _not_ delete ratings of other users. Only delete ratings on the users own posts.
+            // Ratings are aggregate fields and deleting the rating of this post will have an effect on the rating
+            // of any post.
+            \core_rating\privacy\provider::delete_ratings_select($context, 'mod_hsuforum', 'post',
+                "IN ($postidsql)", $postparams);
 
-                // Note: Do _not_ delete ratings of other users. Only delete ratings on the users own posts.
-                // Ratings are aggregate fields and deleting the rating of this post will have an effect on the rating
-                // of any post.
-                \core_rating\privacy\provider::delete_ratings_select($context, 'mod_hsuforum', 'post',
-                    "IN ($postidsql)", $postparams);
+            \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_hsuforum', 'hsuforum_posts',
+                "IN ($postidsql)", $postparams);
 
-                \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_hsuforum', 'hsuforum_posts',
-                    "IN ($postidsql)", $postparams);
-
-                // Delete all files from the posts.
-                $fs = get_file_storage();
-                $fs->delete_area_files_select($context->id, 'mod_hsuforum', 'post', "IN ($postidsql)", $postparams);
-                $fs->delete_area_files_select($context->id, 'mod_hsuforum', 'attachment', "IN ($postidsql)", $postparams);
-
-            }
-
-            $uniquediscussions->close();
-
+            // Delete all files from the posts.
+            $fs = get_file_storage();
+            $fs->delete_area_files_select($context->id, 'mod_hsuforum', 'post', "IN ($postidsql)", $postparams);
+            $fs->delete_area_files_select($context->id, 'mod_hsuforum', 'attachment', "IN ($postidsql)", $postparams);
         }
+    }
+
+    /**
+     * Delete multiple users within a single context.
+     *
+     * @param   approved_userlist       $userlist The approved context and user information to delete information for.
+     */
+    public static function delete_data_for_users(approved_userlist $userlist) {
+        global $DB;
+
+        $context = $userlist->get_context();
+        $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
+        $forum = $DB->get_record('hsuforum', ['id' => $cm->instance]);
+
+        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        $params = array_merge(['forumid' => $forum->id], $userinparams);
+
+        $DB->delete_records_select('hsuforum_track_prefs', "forumid = :forumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select('hsuforum_subscriptions', "forum = :forumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select('hsuforum_read', "forumid = :forumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select(
+            'hsuforum_queue',
+            "userid {$userinsql} AND discussionid IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forumid)",
+            $params
+        );
+
+        // Do not delete discussion or forum posts.
+        // Instead update them to reflect that the content has been deleted.
+        $postsql = "userid {$userinsql} AND discussion IN (SELECT id FROM {hsuforum_discussions} WHERE forum = :forumid)";
+        $postidsql = "SELECT fp.id FROM {hsuforum_posts} fp WHERE {$postsql}";
+
+        // Update the subject.
+        $DB->set_field_select('hsuforum_posts', 'subject', '', $postsql, $params);
+
+        // Update the subject and its format.
+        $DB->set_field_select('hsuforum_posts', 'message', '', $postsql, $params);
+        $DB->set_field_select('hsuforum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $params);
+
+        // Mark the post as deleted.
+        $DB->set_field_select('hsuforum_posts', 'deleted', 1, $postsql, $params);
+
+        // Note: Do _not_ delete ratings of other users. Only delete ratings on the users own posts.
+        // Ratings are aggregate fields and deleting the rating of this post will have an effect on the rating
+        // of any post.
+        \core_rating\privacy\provider::delete_ratings_select($context, 'mod_hsuforum', 'post', "IN ($postidsql)", $params);
+
+        // Delete all Tags.
+        \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_hsuforum', 'hsuforum_posts', "IN ($postidsql)", $params);
+
+        // Delete all files from the posts.
+        $fs = get_file_storage();
+        $fs->delete_area_files_select($context->id, 'mod_hsuforum', 'post', "IN ($postidsql)", $params);
+        $fs->delete_area_files_select($context->id, 'mod_hsuforum', 'attachment', "IN ($postidsql)", $params);
     }
 }

@@ -2977,7 +2977,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $forumsort = hsuforum_get_default_sort_order();
     }
     if (empty($forumselect)) {
-        $postdata = "p.id,p.subject,p.modified,p.discussion,p.userid,p.reveal,p.flags,p.privatereply";
+        $postdata = "p.id, p.subject, p.modified, p.discussion, p.userid, p.reveal, p.flags, p.privatereply, p.created";
     } else {
         $postdata = "p.*";
     }
@@ -3495,6 +3495,7 @@ function hsuforum_get_course_forum($courseid, $type) {
         case "news":
             $forum->name  = get_string("namenews", "hsuforum");
             $forum->intro = get_string("intronews", "hsuforum");
+            $forum->introformat = FORMAT_HTML;
             $forum->forcesubscribe = HSUFORUM_FORCESUBSCRIBE;
             $forum->assessed = 0;
             if ($courseid == SITEID) {
@@ -3505,12 +3506,14 @@ function hsuforum_get_course_forum($courseid, $type) {
         case "social":
             $forum->name  = get_string("namesocial", "hsuforum");
             $forum->intro = get_string("introsocial", "hsuforum");
+            $forum->introformat = FORMAT_HTML;
             $forum->assessed = 0;
             $forum->forcesubscribe = 0;
             break;
         case "blog":
             $forum->name = get_string('blogforum', 'hsuforum');
             $forum->intro = get_string('introblog', 'hsuforum');
+            $forum->introformat = FORMAT_HTML;
             $forum->assessed = 0;
             $forum->forcesubscribe = 0;
             break;
@@ -8770,22 +8773,33 @@ function mod_hsuforum_core_calendar_event_action_shows_item_count(calendar_event
  *
  * @param calendar_event $event
  * @param \core_calendar\action_factory $factory
+ * @param int $userid User id to use for all capability checks, etc. Set to 0 for current user (default).
  * @return \core_calendar\local\event\entities\action_interface|null
  */
 function mod_hsuforum_core_calendar_provide_event_action(calendar_event $event,
-                                                       \core_calendar\action_factory $factory) {
+                                                       \core_calendar\action_factory $factory, int $userid = 0) {
     global $DB, $USER;
 
-    $cm = get_fast_modinfo($event->courseid)->instances['hsuforum'][$event->instance];
+    if (!$userid) {
+        $userid = $USER->id;
+    }
+
+    $cm = get_fast_modinfo($event->courseid, $userid)->instances['hsuforum'][$event->instance];
+
+    if (!$cm->uservisible) {
+        // The module is not visible to the user for any reason.
+        return null;
+    }
+
     $context = context_module::instance($cm->id);
 
-    if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
+    if (!has_capability('mod/hsuforum:viewdiscussion', $context, $userid)) {
         return null;
     }
 
     $completion = new \completion_info($cm->get_course());
 
-    $completiondata = $completion->get_data($cm, false);
+    $completiondata = $completion->get_data($cm, false, $userid);
 
     if ($completiondata->completionstate != COMPLETION_INCOMPLETE) {
         return null;
@@ -8802,10 +8816,10 @@ function mod_hsuforum_core_calendar_provide_event_action(calendar_event $event,
                     INNER JOIN {hsuforum_discussions} fd ON fp.discussion=fd.id
                  WHERE
                     fp.userid=:userid AND fd.forum=:forumid";
-    $postcountparams = array('userid' => $USER->id, 'forumid' => $forum->id);
+    $postcountparams = array('userid' => $userid, 'forumid' => $forum->id);
 
     if ($forum->completiondiscussions) {
-        $count = $DB->count_records('hsuforum_discussions', array('forum' => $forum->id, 'userid' => $USER->id));
+        $count = $DB->count_records('hsuforum_discussions', array('forum' => $forum->id, 'userid' => $userid));
         $itemcount += ($forum->completiondiscussions >= $count) ? ($forum->completiondiscussions - $count) : 0;
     }
 
