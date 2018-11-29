@@ -698,12 +698,14 @@ FUN WITH FORMS
     width: 90%;
 }
 
+
+.block_flexpagemod_hsuforum .hsuforum-recent-heading,
 .hsuforum.modtype_hsuforum .hsuforum-recent-heading,
 .section .activity.modtype_hsuforum .availabilityinfo {
     font-size: 1em;
     clear: both;
 }
-
+.block_flexpagemod_hsuforum .snap-media-object,
 .hsuforum.modtype_hsuforum .snap-media-object,
 .block_recent_activity .snap-media-object {
     margin-bottom: 0.3em;
@@ -711,11 +713,14 @@ FUN WITH FORMS
     width: 310px;
 }
 
+.block_flexpagemod_hsuforum .snap-media-object > a,
 .modtype_hsuforum .snap-media-object > a,
 .block_recent_activity .snap-media-object > a {
     text-decoration: none;
 }
 
+.format-flexpage .block_flexpagemod_hsuforum .snap-media-object > a > img,
+.block_flexpagemod_hsuforum .snap-media-object > img,
 .modtype_hsuforum .snap-media-object > a > img,
 .modtype_hsuforum .snap-media-object > img,
 .block_recent_activity .snap-media-object > a > img,
@@ -728,6 +733,7 @@ FUN WITH FORMS
     vertical-align: baseline;
 }
 
+.block_flexpagemod_hsuforum .snap-media-body,
 .activity.modtype_hsuforum .snap-media-body,
 .block_recent_activity .snap-media-body {
     overflow: hidden;
@@ -736,6 +742,7 @@ FUN WITH FORMS
     display: block !important;
 }
 
+.block_flexpagemod_hsuforum .snap-media-body p,
 .modtype_hsuforum .snap-media-body p,
 .block_recent_activity .snap-media-body p {
     white-space: nowrap;
@@ -743,6 +750,8 @@ FUN WITH FORMS
     text-overflow: ellipsis;
 }
 
+.format-flexpage .block_flexpagemod_hsuforum .snap-media-body  h3,
+.block_flexpagemod_hsuforum .snap-media-body  h3 small,
 .modtype_hsuforum .snap-media-body  h3,
 .modtype_hsuforum .snap-media-body  h3 small,
 .block_recent_activity .snap-media-body  h3,
@@ -753,11 +762,13 @@ FUN WITH FORMS
     margin: 0;
 }
 
+.block_flexpagemod_hsuforum .snap-media-body  h3 small,
 .modtype_hsuforum .snap-media-body  h3 small,
 .block_recent_activity .snap-media-body  h3 small {
         opacity: 0.75;
 }
 
+.block_flexpagemod_hsuforum .snap-media-meta,
 .modtype_hsuforum .snap-media-meta,
 .block_recent_activity .snap-media-meta {
     display: block;
@@ -765,20 +776,43 @@ FUN WITH FORMS
     opacity: 0.75;
 }
 
+.block_flexpagemod_hsuforum .snap-media-meta  time,
 .modtype_hsuforum .snap-media-meta  time,
 .block_recent_activity .snap-media-meta  time {
     margin-right: 1em;
 }
 
+.format-flexpage .block_flexpagemod_hsuforum .snap-media-object h3 {
+    padding: 0;
+}
+
+.block_flexpagemod_hsuforum .mod-indent-outer {
+    margin-bottom: 1em;
+}
+
+.block_flexpagemod_hsuforum .instancename {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: block;
+}
+
+.block_flexpagemod_hsuforum .hsuforum-recent-heading {
+    padding: 10px 0px;
+}
+
 .modtype_hsuforum.activity:before,
 .modtype_hsuforum.activity:after,
+.format-flexpage  .block_flexpagemod_hsuforum li.activity:before,
+.format-flexpage  .block_flexpagemod_hsuforum li.activity:after,
 .activity.modtype_hsuforum .unread:before {
     content: "";
     display: table;
 }
 
 .modtype_hsuforum .no-overflow,
-.modtype_hsuforum.activity:after {
+.modtype_hsuforum.activity:after,
+.format-flexpage  .block_flexpagemod_hsuforum li.activity:after {
     clear: both;
 }
 
@@ -815,6 +849,8 @@ FUN WITH FORMS
     display: none;
 }
 
+.format-flexpage .block_flexpagemod_hsuforum li.activity:before,
+.format-flexpage .block_flexpagemod_hsuforum li.activity:after,
 .modtype_hsuforum.activity:before,
 .modtype_hsuforum.activity:after,
 .modtype_hsuforum.activity .unread:before {

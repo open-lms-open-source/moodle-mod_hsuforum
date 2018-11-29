@@ -38,7 +38,7 @@
  * @package   mod_hsuforum
  * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2012 Moodlerooms Inc. (http://www.moodlerooms.com)
  * @author Mark Nielsen
  */
 
@@ -290,7 +290,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
             false // Don't update if local setting already exists.
         );
 
-        // Open Forum savepoint reached.
+        // Moodlerooms Forum savepoint reached.
         upgrade_mod_savepoint(true, 2017120802, 'hsuforum');
     }
 
@@ -320,12 +320,9 @@ function xmldb_hsuforum_upgrade($oldversion) {
             $dbman->add_field($table, $field);
         }
 
-        // Open Forum savepoint reached.
+        // Moodlerooms Forum savepoint reached.
         upgrade_mod_savepoint(true, 2017120804, 'hsuforum');
     }
-
-    // Automatically generated Moodle v3.5.0 release upgrade line.
-    // Put any upgrade step following this.
 
     return true;
 }

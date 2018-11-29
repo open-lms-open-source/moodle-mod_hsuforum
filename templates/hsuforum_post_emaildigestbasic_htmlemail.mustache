@@ -31,7 +31,6 @@
     * authorlink
     * authorfullname
     * postdate
-    * anonymousauthor
 
     Example context (json):
     {
@@ -40,21 +39,12 @@
         "authorlink": "https://example.com/user/view.php?id=2&course=2",
         "authorfullname": "Lucius Caecilius lucundus",
         "postdate": "Sunday, 13 September 2015, 2:22 pm"
-        "anonymousauthor" : false
     }
 }}
 <div>
   <a target="_blank" href="{{{ permalink }}}">{{{ subject }}}</a>
-  {{# anonymousauthor }}
-    {{# str }} bynameondate, hsuforum, {
-            "name": {{# quote }}{{ authorfullname }}{{/ quote }},
-            "date": {{# quote }}{{ postdate }}{{/ quote }}
-        } {{/ str }}
-  {{/ anonymousauthor}}
-  {{^ anonymousauthor }}
-    {{# str }} bynameondate, hsuforum, {
-            "name": {{# quote }}<a target="_blank" href="{{{ authorlink }}}">{{ authorfullname }}</a>{{/ quote }},
-            "date": {{# quote }}{{ postdate }}{{/ quote }}
-        } {{/ str }}
-  {{/ anonymousauthor}}
+  {{# str }} bynameondate, hsuforum, {
+          "name": {{# quote }}<a target="_blank" href="{{{ authorlink }}}">{{ authorfullname }}</a>{{/ quote }},
+          "date": {{# quote }}{{ postdate }}{{/ quote }}
+      } {{/ str }}
 </div>

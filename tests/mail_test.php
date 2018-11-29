@@ -911,7 +911,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => HSUFORUM_FORCESUBSCRIBE, 'anonymous' => 1);
+        $options = array('course' => $course->id, 'forcesubscribe' => HSUFORUM_FORCESUBSCRIBE);
         $forum = $this->getDataGenerator()->create_module('hsuforum', $options);
 
         list($author) = $this->helper_create_users($course, 1);
@@ -919,35 +919,15 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
         $strre = get_string('re', 'hsuforum');
 
-        // Container of profile link.
-        $profilelink = 'by <a target=\'_blank\'';
-
         // New posts should not have Re: in the subject.
-        list($discussion, $post) = $this->helper_post_to_forum($forum, $author, ['reveal' => 1]);
+        list($discussion, $post) = $this->helper_post_to_forum($forum, $author);
         $messages = $this->helper_run_cron_check_count($post, 2);
         $this->assertNotContains($strre, $messages[0]->subject);
-        // Author's profile link should be visible for all users subscribed to the post.
-        $this->assertContains(fullname($author), $messages[0]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[0]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[1]->fullmessagehtml);
 
         // Replies should have Re: in the subject.
         $reply = $this->helper_post_to_discussion($forum, $discussion, $commenter);
         $messages = $this->helper_run_cron_check_count($reply, 2);
         $this->assertContains($strre, $messages[0]->subject);
-        // Commenter's profile link should only be visible only for himself and not for the post author.
-        $this->assertNotContains(fullname($commenter), $messages[0]->fullmessagehtml);
-        $this->assertNotContains($profilelink, $messages[0]->fullmessagehtml);
-        $this->assertContains(fullname($commenter), $messages[1]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[1]->fullmessagehtml);
-
-        list($discussion, $post) = $this->helper_post_to_forum($forum, $author);
-        $messages = $this->helper_run_cron_check_count($post, 2);
-        // Author's profile link should only be visible for himself.
-        $this->assertContains(fullname($author), $messages[0]->fullmessagehtml);
-        $this->assertContains($profilelink, $messages[0]->fullmessagehtml);
-        $this->assertNotContains($profilelink, $messages[1]->fullmessagehtml);
-
     }
 
     /**

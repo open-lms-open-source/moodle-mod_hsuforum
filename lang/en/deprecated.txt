@@ -1,0 +1,6 @@
+postmailinfo,mod_hsuforum
+emaildigestupdated,mod_hsuforum
+emaildigestupdated_default,mod_hsuforum
+emaildigest_0,mod_hsuforum
+emaildigest_1,mod_hsuforum
+emaildigest_2,mod_hsuforum

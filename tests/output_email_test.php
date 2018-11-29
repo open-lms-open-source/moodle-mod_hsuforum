@@ -220,7 +220,7 @@ class mod_hsuforum_output_email_testcase extends advanced_testcase {
                 get_admin(), true);
 
         $anonprofileurl = new moodle_url('/user/view.php', ['id' => $anonuser->id, 'course' => $course->id]);
-        $anonprofilepic = $OUTPUT->user_picture($anonuser, ['courseid' => $course->id, 'link' => false]);
+        $anonprofilepic = $OUTPUT->user_picture($anonuser, ['courseid' => $course->id]);
 
         $this->assertEquals($anonprofileurl->out(false), $postemail->get_authorlink());
         $this->assertEquals($anonprofilepic, $postemail->get_author_picture());

@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: Students can edit or delete their Open Forum posts within a set time limit
+Feature: Students can edit or delete their Moodlerooms forum posts within a set time limit
   In order to refine forum posts
   As a user
   I need to edit or delete my forum posts within a certain period of time after posting
@@ -19,7 +19,7 @@ Feature: Students can edit or delete their Open Forum posts within a set time li
       | hsuforum   | Test forum name        | Test forum description  | C1      | forum     |
     And I log in as "student1"
     And I am on "Course 1" course homepage
-    And I add a new discussion to "Test forum name" Open Forum with:
+    And I add a new discussion to "Test forum name" Moodlerooms forum with:
       | Subject | Forum post subject |
       | Message | This is the body |
 
@@ -51,7 +51,7 @@ Feature: Students can edit or delete their Open Forum posts within a set time li
     And I log out
     And I log in as "admin"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add a "Moodlerooms Forum" to section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |

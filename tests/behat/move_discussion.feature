@@ -1,5 +1,5 @@
 @mod @mod_hsuforum
-Feature: A teacher can move discussions between Open Forums
+Feature: A teacher can move discussions between Moodlerooms forums
   In order to move a discussion
   As a teacher
   I need to use the move discussion selector
@@ -26,7 +26,7 @@ Feature: A teacher can move discussions between Open Forums
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Test forum 1"
-    And I add a new discussion to "Test forum 1" Open Forum with:
+    And I add a new discussion to "Test forum 1" Moodlerooms forum with:
       | Subject | Discussion 1 |
       | Message | Test post message |
     And I log out
