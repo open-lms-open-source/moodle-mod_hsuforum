@@ -61,16 +61,16 @@ if (empty($cm)) {
 }
 $instance = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
 
+$PAGE->set_url('/mod/hsuforum/route.php', array(
+    'contextid' => $context->id,
+    'action'    => $action,
+));
 require_login($course, true, $cm);
 
 $PAGE->set_title("$course->shortname: $instance->name");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($instance);
 $PAGE->set_context($context);
-$PAGE->set_url('/mod/hsuforum/route.php', array(
-    'contextid' => $context->id,
-    'action'    => $action,
-));
 
 $router = new router();
 $router->add_controller(new posters_controller());
