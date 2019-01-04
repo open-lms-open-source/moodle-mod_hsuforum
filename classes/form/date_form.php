@@ -39,5 +39,6 @@ class date_form extends \moodleform {
         $mform->addHelpButton('timestart', 'displaystart', 'hsuforum');
         $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'hsuforum'), array('optional' => true));
         $mform->addHelpButton('timeend', 'displayend', 'hsuforum');
+        $mform->disable_form_change_checker();
     }
 }
