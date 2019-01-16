@@ -283,8 +283,11 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
         // Reset the message sink for other tests.
         $this->helper->messagesink = $this->redirectMessages();
-        $event = reset($events);
-        $this->assertEquals($course->id, $event->other['courseid']);
+        foreach ($events as $event) {
+            if ($event instanceof core\event\notification_sent) {
+                $this->assertEquals($course->id, $event->other['courseid']);
+            }
+        }
     }
 
     public function test_forced_subscription() {
