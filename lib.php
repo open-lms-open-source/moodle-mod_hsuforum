@@ -7998,6 +7998,24 @@ function hsuforum_get_cm_forum($cm) {
 }
 
 /**
+ * Get correct count of words for posts and replies with open tags
+ * @author Rafael Becerra
+ *
+ * @param $string
+ * @return object
+ */
+function hsuforum_word_count($string) {
+    $string = preg_replace('/<\s*\/?[a-z0-9]+(\s*[a-z\-0-9]+)*(\s*[a-z\-0-9]+\="[^"]*")*\s*\/?>/ims', ' ', $string);
+    $novalidchars = ['<', '>', '=', '!', '&lt;', '|', '@', '#', '$',
+        '%', '^', '&', '*', '(', ')', '-', '+', '=', '.', '{', '}',
+        '[', ']', '~', ';', ':', '"', '\\', '/', ',', '?', '¿'];
+    foreach ($novalidchars as $char) {
+        $string = str_replace($char, ' ', $string);
+    }
+    return count(explode(' ', preg_replace('/\s+/', ' ', trim($string))));
+}
+
+/**
  * Get course record from course module instance
  * @author Guy Thomas
  *

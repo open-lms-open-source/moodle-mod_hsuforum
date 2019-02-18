@@ -1223,7 +1223,7 @@ HTML;
 
         $forum = hsuforum_get_cm_forum($cm);
         if (!empty($forum->displaywordcount)) {
-            $postcontent .= "<div class='post-word-count'>".get_string('numwords', 'moodle', count_words($post->message))."</div>";
+            $postcontent .= "<div class='post-word-count'>".get_string('numwords', 'moodle', hsuforum_word_count($post->message))."</div>";
         }
         $postcontent  = "<div class='posting'>".$postcontent."</div>";
         return $postcontent;

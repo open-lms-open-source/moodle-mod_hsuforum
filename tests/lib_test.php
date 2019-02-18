@@ -3520,4 +3520,42 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $mostrecent2 = array_pop($recent2);
         $this->assertEquals($mostrecent2->subject, $post1->subject);
     }
+
+    /**
+     * Test for word count with open tags and special characters.
+     */
+
+    public function test_hsuforum_word_count() {
+        $this -> resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $user = $generator->create_user();
+        $course = $generator->create_course();
+        $record = new stdClass();
+        $record->course = $course->id;
+        $forum = $generator->create_module('hsuforum', $record);
+        $forumgenerator = $generator->get_plugin_generator('mod_hsuforum');
+
+        //Create a discussion.
+        $record = new stdClass();
+        $record->course = $forum->course;
+        $record->forum = $forum->id;
+        $record->userid = $user->id;
+        $record->name = 'Discussion number 1';
+        $record->message = 'Discussion number 1';
+        $forumgenerator->create_discussion($record);
+
+        $wordcount = hsuforum_word_count('one / two < three');
+        $wordcount2 = hsuforum_word_count('one . two <= three');
+        $wordcount3 = hsuforum_word_count('one/two<three');
+        $wordcount4 = hsuforum_word_count('one\two > three');
+        $wordcount5 = hsuforum_word_count('one @ two/three');
+        $wordcount6 = hsuforum_word_count('one*two < three');
+        $this->assertEquals(3, $wordcount);
+        $this->assertEquals(3, $wordcount2);
+        $this->assertEquals(3, $wordcount3);
+        $this->assertEquals(3, $wordcount4);
+        $this->assertEquals(3, $wordcount5);
+        $this->assertEquals(3, $wordcount6);
+    }
 }
