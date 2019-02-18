@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 /** Include required files */
 require_once($CFG->libdir.'/filelib.php');
-require_once($CFG->libdir.'/eventslib.php');
+//require_once($CFG->libdir.'/eventslib.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
 use mod_hsuforum\renderables\discussion_dateform;
 use mod_hsuforum\renderables\advanced_editor;
