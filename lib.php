@@ -8008,7 +8008,7 @@ function hsuforum_word_count($string) {
     $string = preg_replace('/<\s*\/?[a-z0-9]+(\s*[a-z\-0-9]+)*(\s*[a-z\-0-9]+\="[^"]*")*\s*\/?>/ims', ' ', $string);
     $novalidchars = ['<', '>', '=', '!', '&lt;', '|', '@', '#', '$',
         '%', '^', '&', '*', '(', ')', '-', '+', '=', '.', '{', '}',
-        '[', ']', '~', ';', ':', '"', '\\', '/', ',', '?', '¿'];
+        '[', ']', '~', ';', ':', '"', '\\', '/', ',', '?', '¿', 'nbsp'];
     foreach ($novalidchars as $char) {
         $string = str_replace($char, ' ', $string);
     }
