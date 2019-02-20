@@ -8006,13 +8006,14 @@ function hsuforum_get_cm_forum($cm) {
  */
 function hsuforum_word_count($string) {
     $string = preg_replace('/<\s*\/?[a-z0-9]+(\s*[a-z\-0-9]+)*(\s*[a-z\-0-9]+\="[^"]*")*\s*\/?>/ims', ' ', $string);
+    $string = html_entity_decode($string);
     $novalidchars = ['<', '>', '=', '!', '&lt;', '|', '@', '#', '$',
         '%', '^', '&', '*', '(', ')', '-', '+', '=', '.', '{', '}',
         '[', ']', '~', ';', ':', '"', '\\', '/', ',', '?', '¿', 'nbsp'];
     foreach ($novalidchars as $char) {
         $string = str_replace($char, ' ', $string);
     }
-    return count(explode(' ', preg_replace('/\s+/', ' ', trim($string))));
+    return count(preg_split('/\w\b/u', $string)) - 1;
 }
 
 /**
