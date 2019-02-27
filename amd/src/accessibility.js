@@ -28,7 +28,7 @@ define(['jquery'],
         return {
             init: function() {
                 // Change pin button class on click to aria-pressed = "true".
-                var button = $('.pinbutton.btn.btn-default').click(function() {
+                $('.pinbutton.btn.btn-default').click(function() {
                     $(this).attr('aria-pressed', 'true');
                 });
 
