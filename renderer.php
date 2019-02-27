@@ -1852,10 +1852,38 @@ HTML;
                 'd' => $discussion->id,
                 'sesskey' => sesskey(),
             ]);
-            $commands['pin'] = html_writer::link($pinurl, $pintext, ['class' => 'disable-router']);
+            $commands['pin'] = $this->render_ax_button($pinurl, $pintext, 'post', $pinlink, $discussion->id);
         }
 
         return $commands;
+    }
+
+    /**
+     * Render ax button for pin/unpin.
+     * @param moodle_url $url
+     * @param string $content
+     * @param string $method
+     * @param int $pinlink
+     * @param int $discussion
+     * @return string
+     */
+    public function render_ax_button(moodle_url $url, $content, $method = 'post', $pinlink, $discussion) {
+        global $PAGE;
+
+        $PAGE->requires->js_call_amd('mod_hsuforum/accessibility', 'init', array());
+        $url = $method === 'get' ? $url->out_omit_querystring(true) : $url->out_omit_querystring();
+        $output = html_writer::start_tag('div', ['class' => 'singlebutton']);
+        $output .= html_writer::start_tag('form', ['method' => $method, 'action' => $url]);
+        $output .= html_writer::tag('input', '',['type' => 'hidden', 'name' => 'pin', 'value' => $pinlink]);
+        $output .= html_writer::tag('input', '',['type' => 'hidden', 'name' => 'd', 'value' => $discussion]);
+        $output .= html_writer::tag('input', '',['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
+        $output .= html_writer::start_tag('button', ['class' => 'pinbutton btn btn-default', 'aria-pressed' => 'false',
+            'type' => 'submit', 'id' => html_writer::random_id('single_button')]);
+        $output .= $content;
+        $output .= html_writer::end_tag('button');
+        $output .= html_writer::end_tag('form');
+        $output .= html_writer::end_tag('div');
+        return $output;
     }
 
     /**
