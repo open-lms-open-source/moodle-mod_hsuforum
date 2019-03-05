@@ -923,3 +923,10 @@ the use of id^="" */
     margin: auto;
 }
 
+/* Recover data-placeholder attribute from for post message div*/
+[contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: grey;
+    display: inline-block;
+    mix-blend-mode: difference;
+}
