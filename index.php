@@ -223,7 +223,7 @@ if ($generalforums) {
 
         $count = hsuforum_count_discussions($forum, $cm, $course);
         if ($unread = hsuforum_count_forum_unread_posts($cm, $course)) {
-            $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
+            $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'#unread">'.$unread.'</a>';
          } else {
              $unreadlink = '<span class="read">0</span>';
          }
@@ -315,7 +315,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
 
             $count = hsuforum_count_discussions($forum, $cm, $course);
             if ($unread = hsuforum_count_forum_unread_posts($cm, $course)) {
-                $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
+                $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'#unread">'.$unread.'</a>';
              } else {
                  $unreadlink = '<span class="read">0</span>';
              }

@@ -550,7 +550,7 @@ file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_hsuforum', 'attachme
 
 if ($USER->id != $post->userid) {   // Not the original author, so add a message to the end.
     $data = new stdClass();
-    $data->date = userdate($post->modified);
+    $data->date = userdate($post->created);
     if ($post->messageformat == FORMAT_HTML) {
         $data->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$USER->id.'&course='.$post->course.'">'.
             fullname($USER).'</a>';
@@ -638,6 +638,9 @@ if ($fromform = $mformpost->get_data()) {
     $fromform->message       = $fromform->message['text'];
     // WARNING: the $fromform->message array has been overwritten, do not use it anymore!
     $fromform->messagetrust  = trusttext_trusted($modcontext);
+
+    // Clean message text.
+    $fromform = trusttext_pre_edit($fromform, 'message', $modcontext);
 
     if ($fromform->edit) {           // Updating a post.
         unset($fromform->groupid);

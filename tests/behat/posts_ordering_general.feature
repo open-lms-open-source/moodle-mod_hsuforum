@@ -71,14 +71,14 @@ Feature: New Open discussions and discussions with recently added replies are di
     And I am on "Course 1" course homepage
     And I follow "Course general forum"
     #
-    # Make sure the order of the forum posts is as expected (most recently participated first).
+    # Make sure the order of the forum posts is as expected, with most recent new participation first (ie excluding edits).
     #
-    Then I should see "Forum post 3" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][position()=3]" "xpath_element"
-    And I should see "Edited forum post 2" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][position()=2]" "xpath_element"
-    And I should see "Forum post 1" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][position()=1]" "xpath_element"
+    Then I should see "Forum post 1" in the "//tr[contains(concat(' ', normalize-space(@class), ' '), ' discussion ')][position()=1]" "xpath_element"
+    And I should see "Forum post 3" in the "//tr[contains(concat(' ', normalize-space(@class), ' '), ' discussion ')][position()=2]" "xpath_element"
+    And I should see "Edited forum post 2" in the "//tr[contains(concat(' ', normalize-space(@class), ' '), ' discussion ')][position()=3]" "xpath_element"
     #
     # Make sure the next/prev navigation uses the same order of the posts.
     #
-    And I follow "Edited forum post 2"
+    And I follow "Forum post 3"
     And I should see "Forum post 1" in the ".navigatenext" "css_element"
-    And I should see "Forum post 3" in the ".navigateprevious" "css_element"
+    And "//a[@aria-label='Previous discussion: Edited forum post 2']" "xpath_element" should exist
