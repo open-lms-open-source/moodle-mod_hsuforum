@@ -26,7 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 /** Include required files */
 require_once($CFG->libdir.'/filelib.php');
-//require_once($CFG->libdir.'/eventslib.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
 use mod_hsuforum\renderables\discussion_dateform;
 use mod_hsuforum\renderables\advanced_editor;
@@ -697,6 +696,12 @@ function hsuforum_cron() {
                     if (!isset($discussionsubscribers[$post->discussion][$userto->id])) {
                         continue; // user does not subscribe to this forum
                     }
+                }
+
+                $coursecontext = context_course::instance($course->id);
+                if (!$course->visible and !has_capability('moodle/course:viewhiddencourses', $coursecontext, $userto->id)) {
+                    // The course is hidden and the user does not have access to it.
+                    continue;
                 }
 
                 // Don't send email if the forum is Q&A and the user has not posted.
@@ -3545,6 +3550,99 @@ function hsuforum_get_course_forum($courseid, $type) {
 }
 
 /**
+ * Return a static array of posts that are open.
+ *
+ * @return array
+ */
+function hsuforum_post_nesting_cache() {
+    static $nesting = array();
+    return $nesting;
+}
+
+/**
+ * Return true for the first time this post was started
+ *
+ * @param int $id The id of the post to start
+ * @return bool
+ */
+function hsuforum_should_start_post_nesting($id) {
+    $cache = hsuforum_post_nesting_cache();
+    if (!array_key_exists($id, $cache)) {
+        $cache[$id] = 1;
+        return true;
+    } else {
+        $cache[$id]++;
+        return false;
+    }
+}
+
+/**
+ * Return true when all the opens are nested with a close.
+ *
+ * @param int $id The id of the post to end
+ * @return bool
+ */
+function hsuforum_should_end_post_nesting($id) {
+    $cache = hsuforum_post_nesting_cache();
+    if (!array_key_exists($id, $cache)) {
+        return true;
+    } else {
+        $cache[$id]--;
+        if ($cache[$id] == 0) {
+            unset($cache[$id]);
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Start a forum post container
+ *
+ * @param object $post The post to print.
+ * @param bool $return Return the string or print it
+ * @return string
+ */
+function hsuforum_print_post_start($post, $return = false) {
+    $output = '';
+
+    if (hsuforum_should_start_post_nesting($post->id)) {
+        $attributes = [
+            'id' => 'p'.$post->id,
+            'tabindex' => -1,
+            'class' => 'relativelink'
+        ];
+        $output .= html_writer::start_tag('article', $attributes);
+    }
+    if ($return) {
+        return $output;
+    }
+    echo $output;
+    return;
+}
+
+/**
+ * End a forum post container
+ *
+ * @param object $post The post to print.
+ * @param bool $return Return the string or print it
+ * @return string
+ */
+function hsuforum_print_post_end($post, $return = false) {
+    $output = '';
+
+    if (hsuforum_should_end_post_nesting($post->id)) {
+        $output .= html_writer::end_tag('article');
+    }
+    if ($return) {
+        return $output;
+    }
+    echo $output;
+    return;
+}
+
+
+/**
  * Return rating related permissions
  *
  * @param string $options the context id
@@ -6017,7 +6115,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
     $output .= html_writer::link($discussionurl, $content->subject);
     $output .= html_writer::end_div();
 
-    $timestamp = userdate($activity->timestamp);
+    $timestamp = userdate_htmltime($activity->timestamp);
     if ($authorhidden) {
         $authornamedate = $timestamp;
     } else {
@@ -7014,7 +7112,7 @@ function hsuforum_get_grading_types(){
  * @return array
  */
 function hsuforum_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups', 'moodle/site:viewfullnames', 'moodle/site:trustcontent', 'moodle/rating:view', 'moodle/rating:viewany', 'moodle/rating:viewall', 'moodle/rating:rate');
+    return ['moodle/rating:view', 'moodle/rating:viewany', 'moodle/rating:viewall', 'moodle/rating:rate'];
 }
 
 /**
@@ -8918,22 +9016,19 @@ function mod_hsuforum_get_completion_active_rule_descriptions($cm) {
     foreach ($cm->customdata['customcompletionrules'] as $key => $val) {
         switch ($key) {
             case 'completiondiscussions':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completiondiscussionsdesc', 'hsuforum', $val);
                 }
-                $descriptions[] = get_string('completiondiscussionsdesc', 'hsuforum', $val);
                 break;
             case 'completionreplies':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionrepliesdesc', 'hsuforum', $val);
                 }
-                $descriptions[] = get_string('completionrepliesdesc', 'hsuforum', $val);
                 break;
             case 'completionposts':
-                if (empty($val)) {
-                    continue;
+                if (!empty($val)) {
+                    $descriptions[] = get_string('completionpostsdesc', 'hsuforum', $val);
                 }
-                $descriptions[] = get_string('completionpostsdesc', 'hsuforum', $val);
                 break;
             default:
                 break;

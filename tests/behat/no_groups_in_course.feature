@@ -123,12 +123,12 @@ Feature: Posting to Open Forums in a course with no groups behaves correctly
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     When I follow "Separate forum"
-    Then I should see "You do not have permission to add a new discussion topic for all participants."
+    Then I should see "You are not able to create a discussion because you are not a member of any group."
     And I should not see "Add a new discussion"
 
   Scenario: Students cannot post in forum with visible groups
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     When I follow "Visible forum"
-    Then I should see "You do not have permission to add a new discussion topic for all participants."
+    Then I should see "You are not able to create a discussion because you are not a member of any group."
     And I should not see "Add a new discussion"

@@ -74,9 +74,9 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     #
     # Make sure the order of the blog posts is still reverse chronological.
     #
-    Then I should see "This is the third post" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][position()=1]" "xpath_element"
-    And I should see "This is the second post" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][position()=2]" "xpath_element"
-    And I should see "This is the first post" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][position()=3]" "xpath_element"
+    Then I should see "This is the third post" in the "//article[position()=1]" "xpath_element"
+    And I should see "This is the second post" in the "//article[position()=2]" "xpath_element"
+    And I should see "This is the first post" in the "//article[position()=3]" "xpath_element"
     #
     # Make sure the next/prev navigation uses the same order of the posts.
     #

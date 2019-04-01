@@ -53,9 +53,17 @@ class renderer_textemail extends \mod_hsuforum\output\email\renderer_textemail {
      * @return string
      */
     public function format_message_text($cm, $post) {
-        $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
-            \context_module::instance($cm->id)->id,
-            'mod_hsuforum', 'post', $post->id);
+        $context = \context_module::instance($cm->id);
+        $message = file_rewrite_pluginfile_urls(
+            $post->message,
+            'pluginfile.php',
+            $context->id,
+            'mod_hsuforum',
+            'post',
+            $post->id,
+            [
+                'includetoken' => true,
+            ]);
         return format_text_email($message, $post->messageformat);
     }
 }

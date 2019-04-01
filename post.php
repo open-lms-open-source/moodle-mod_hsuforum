@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -41,32 +40,32 @@ $messagecontent = optional_param('msgcontent', '', PARAM_TEXT);
 $subjectcontent = optional_param('subcontent', '', PARAM_TEXT);
 
 $PAGE->set_url('/mod/hsuforum/post.php', array(
-        'reply' => $reply,
-        'forum' => $forum,
-        'edit'  => $edit,
-        'delete'=> $delete,
-        'prune' => $prune,
-        'name'  => $name,
-        'confirm'=>$confirm,
-        'groupid'=>$groupid,
-        ));
-//these page_params will be passed as hidden variables later in the form.
-$page_params = array('reply'=>$reply, 'forum'=>$forum, 'edit'=>$edit);
+    'reply' => $reply,
+    'forum' => $forum,
+    'edit'  => $edit,
+    'delete' => $delete,
+    'prune' => $prune,
+    'name'  => $name,
+    'confirm' => $confirm,
+    'groupid' => $groupid,
+));
+// These page_params will be passed as hidden variables later in the form.
+$pageparams = array('reply' => $reply, 'forum' => $forum, 'edit' => $edit);
 
 $sitecontext = context_system::instance();
 
 if (!isloggedin() or isguestuser()) {
 
     if (!isloggedin() and !get_local_referer()) {
-        // No referer+not logged in - probably coming in via email  See MDL-9052
+        // No referer+not logged in - probably coming in via email  See MDL-9052.
         require_login();
     }
 
-    if (!empty($forum)) {      // User is starting a new discussion in a forum
+    if (!empty($forum)) {      // User is starting a new discussion in a forum.
         if (! $forum = $DB->get_record('hsuforum', array('id' => $forum))) {
             print_error('invalidforumid', 'hsuforum');
         }
-    } else if (!empty($reply)) {      // User is writing a new reply
+    } else if (!empty($reply)) {      // User is writing a new reply.
         if (! $parent = hsuforum_get_post_full($reply)) {
             print_error('invalidparentpostid', 'hsuforum');
         }
@@ -81,7 +80,7 @@ if (!isloggedin() or isguestuser()) {
         print_error('invalidcourseid');
     }
 
-    if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) { // For the logs
+    if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) { // For the logs.
         print_error('invalidcoursemodule');
     } else {
         $modcontext = context_module::instance($cm->id);
@@ -99,9 +98,9 @@ if (!isloggedin() or isguestuser()) {
     exit;
 }
 
-require_login(0, false);   // Script is useless unless they're logged in
+require_login(0, false);   // Script is useless unless they're logged in.
 
-if (!empty($forum)) {      // User is starting a new discussion in a forum
+if (!empty($forum)) {      // User is starting a new discussion in a forum.
     if (! $forum = $DB->get_record("hsuforum", array("id" => $forum))) {
         print_error('invalidforumid', 'hsuforum');
     }
@@ -142,7 +141,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $post = new stdClass();
     $post->course        = $course->id;
     $post->forum         = $forum->id;
-    $post->discussion    = 0;           // ie discussion # not defined yet
+    $post->discussion    = 0;           // Ie discussion # not defined yet.
     $post->parent        = 0;
     $post->subject       = '';
     $post->userid        = $USER->id;
@@ -160,7 +159,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     hsuforum_set_return();
 
-} else if (!empty($reply)) {      // User is writing a new reply
+} else if (!empty($reply)) {      // User is writing a new reply.
 
     if (! $parent = hsuforum_get_post_full($reply)) {
         print_error('invalidparentpostid', 'hsuforum');
@@ -178,7 +177,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('invalidcoursemodule');
     }
 
-    // Ensure lang, theme, etc. is set up properly. MDL-6926
+    // Ensure lang, theme, etc. is set up properly. MDL-6926.
     $PAGE->set_cm($cm, $course, $forum);
     $renderer = $PAGE->get_renderer('mod_hsuforum');
     $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
@@ -200,9 +199,9 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         print_error('nopostforum', 'hsuforum');
     }
 
-    // Make sure user can post here
+    // Make sure user can post here.
     if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
-        $groupmode =  $cm->groupmode;
+        $groupmode = $cm->groupmode;
     } else {
         $groupmode = $course->groupmode;
     }
@@ -242,7 +241,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     unset($SESSION->fromdiscussion);
 
-} else if (!empty($edit)) {  // User is editing their own post
+} else if (!empty($edit)) {  // User is editing their own post.
 
     if (! $post = hsuforum_get_post_full($edit)) {
         print_error('invalidpostid', 'hsuforum');
@@ -274,12 +273,12 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
         if (((time() - $post->created) > $CFG->maxeditingtime) and
-                    !has_capability('mod/hsuforum:editanypost', $modcontext)) {
+            !has_capability('mod/hsuforum:editanypost', $modcontext)) {
             print_error('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
         }
     }
     if (($post->userid <> $USER->id) and
-                !has_capability('mod/hsuforum:editanypost', $modcontext)) {
+        !has_capability('mod/hsuforum:editanypost', $modcontext)) {
         print_error('cannoteditposts', 'hsuforum');
     }
 
@@ -295,7 +294,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     unset($SESSION->fromdiscussion);
 
 
-}else if (!empty($delete)) {  // User is deleting a post
+} else if (!empty($delete)) {  // User is deleting a post.
 
     if (! $post = hsuforum_get_post_full($delete)) {
         print_error('invalidpostid', 'hsuforum');
@@ -317,18 +316,18 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     $modcontext = context_module::instance($cm->id);
 
     if ( !(($post->userid == $USER->id && has_capability('mod/hsuforum:deleteownpost', $modcontext))
-                || has_capability('mod/hsuforum:deleteanypost', $modcontext)) ) {
+        || has_capability('mod/hsuforum:deleteanypost', $modcontext)) ) {
         print_error('cannotdeletepost', 'hsuforum');
     }
 
 
     $replycount = hsuforum_count_replies($post);
 
-    if (!empty($confirm) && confirm_sesskey()) {    // User has confirmed the delete
+    if (!empty($confirm) && confirm_sesskey()) {    // User has confirmed the delete.
         redirect(
             hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $discussion, $post)
         );
-    } else { // User just asked to delete something
+    } else { // User just asked to delete something.
 
         hsuforum_set_return();
         $PAGE->navbar->add(get_string('delete', 'hsuforum'));
@@ -340,21 +339,21 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         if ($replycount) {
             if (!has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
                 print_error("couldnotdeletereplies", "hsuforum",
-                      hsuforum_go_back_to(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id)));
+                    hsuforum_go_back_to(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id)));
             }
             echo $OUTPUT->header();
             echo $OUTPUT->heading(format_string($forum->name), 2);
-            echo $OUTPUT->confirm(get_string("deletesureplural", "hsuforum", $replycount+1),
-                         "post.php?delete=$delete&confirm=$delete",
-                         $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
+            echo $OUTPUT->confirm(get_string("deletesureplural", "hsuforum", $replycount + 1),
+                "post.php?delete=$delete&confirm=$delete",
+                $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
 
             echo $renderer->post($cm, $discussion, $post, false, null, false);
         } else {
             echo $OUTPUT->header();
             echo $OUTPUT->heading(format_string($forum->name), 2);
             echo $OUTPUT->confirm(get_string("deletesure", "hsuforum", $replycount),
-                         "post.php?delete=$delete&confirm=$delete",
-                         $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
+                "post.php?delete=$delete&confirm=$delete",
+                $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
 
             echo $renderer->post($cm, $discussion, $post, false, null, false);
         }
@@ -364,7 +363,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     die;
 
 
-} else if (!empty($prune)) {  // Pruning
+} else if (!empty($prune)) {  // Pruning.
 
     if (!$post = hsuforum_get_post_full($prune)) {
         print_error('invalidpostid', 'hsuforum');
@@ -381,7 +380,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     if (!$post->parent) {
         print_error('alreadyfirstpost', 'hsuforum');
     }
-    if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $forum->course)) { // For the logs
+    if (!$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $forum->course)) { // For the logs.
         print_error('invalidcoursemodule');
     } else {
         $modcontext = context_module::instance($cm->id);
@@ -466,7 +465,13 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
         $event->trigger();
 
-        redirect(hsuforum_go_back_to(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $newid))));
+        $message = get_string('discussionsplit', 'hsuforum');
+        redirect(
+            hsuforum_go_back_to(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $newid))),
+            $message,
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
 
     } else {
         // Display the prune form.
@@ -474,7 +479,8 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
         $renderer = $PAGE->get_renderer('mod_hsuforum');
         $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
-        $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
+        $subjectstr = format_string($post->subject, true);
+        $PAGE->navbar->add($subjectstr, new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
         $PAGE->set_title("$discussion->name: $post->subject");
         $PAGE->set_heading($course->fullname);
@@ -506,44 +512,48 @@ if (!isset($coursecontext)) {
 }
 
 
-// from now on user must be logged on properly
+// from now on user must be logged on properly.
 
-if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) { // For the logs
+if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) { // For the logs.
     print_error('invalidcoursemodule');
 }
 $modcontext = context_module::instance($cm->id);
 require_login($course, false, $cm);
 
 if (isguestuser()) {
-    // just in case
+    // Just in case.
     print_error('noguest');
 }
 
-if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field to the forum table
+if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field to the forum table.
     $forum->maxattachments = 3;
 }
 
 $thresholdwarning = hsuforum_check_throttling($forum, $cm);
-$mform_post = new mod_hsuforum_post_form('post.php', array('course' => $course,
-                                                        'cm' => $cm,
-                                                        'coursecontext' => $coursecontext,
-                                                        'modcontext' => $modcontext,
-                                                        'forum' => $forum,
-                                                        'post' => $post,
-                                                        'thresholdwarning' => $thresholdwarning,
-                                                        'edit' => $edit), 'post', '', array('id' => 'mformhsuforum'));
+$mformpost = new mod_hsuforum_post_form('post.php', array('course' => $course,
+    'cm' => $cm,
+    'coursecontext' => $coursecontext,
+    'modcontext' => $modcontext,
+    'forum' => $forum,
+    'post' => $post,
+    'subscribe' => \mod_hsuforum\subscriptions::is_subscribed($USER->id, $forum,
+        null, $cm),
+    'thresholdwarning' => $thresholdwarning,
+    'edit' => $edit), 'post', '', array('id' => 'mformforum'));
 
 $draftitemid = file_get_submitted_draft_itemid('attachments');
-file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_hsuforum', 'attachment', empty($post->id)?null:$post->id, mod_hsuforum_post_form::attachment_options($forum));
+$postid = empty($post->id) ? null : $post->id;
+$attachoptions = mod_hsuforum_post_form::attachment_options($forum);
+file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_hsuforum', 'attachment', $postid, $attachoptions);
 
-//load data into form NOW!
+// Load data into form NOW!
 
-if ($USER->id != $post->userid) {   // Not the original author, so add a message to the end
+if ($USER->id != $post->userid) {   // Not the original author, so add a message to the end.
     $data = new stdClass();
     $data->date = userdate($post->modified);
     if ($post->messageformat == FORMAT_HTML) {
         $data->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$USER->id.'&course='.$post->course.'">'.
-                       fullname($USER).'</a>';
+            fullname($USER).'</a>';
         $post->message .= '<p class="edited">('.get_string('editedby', 'hsuforum', $data).')</p>';
     } else {
         $data->name = fullname($USER);
@@ -572,56 +582,50 @@ if (hsuforum_is_subscribed($USER->id, $forum->id) || $USER->autosubscribe) {
 }
 
 $postid = empty($post->id) ? null : $post->id;
-$draftid_editor = file_get_submitted_draft_itemid('message');
-$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_hsuforum', 'post', $postid, mod_hsuforum_post_form::editor_options($modcontext, $postid), $post->message);
+$draftideditor = file_get_submitted_draft_itemid('message');
+$editoropts = mod_hsuforum_post_form::editor_options($modcontext, $postid);
+$currenttext = file_prepare_draft_area($draftideditor, $modcontext->id, 'mod_hsuforum', 'post', $postid, $editoropts, $post->message);
 if (!empty($messagecontent) && $edit === 0) {
     $currenttext = $messagecontent;
 }
 if (!empty($subjectcontent) && $edit === 0) {
     $post->subject = $subjectcontent;
 }
-$mform_post->set_data(array(        'attachments'=>$draftitemid,
-                                    'subject'=>$post->subject,
-                                    'message'=>array(
-                                        'text'=>$currenttext,
-                                        'format'=>empty($post->messageformat) ? editors_get_preferred_format() : $post->messageformat,
-                                        'itemid'=>$draftid_editor
-                                    ),
-                                    'subscribe'=>$subscribe?1:0,
-                                    'mailnow'=>!empty($post->mailnow),
-                                    'userid'=>$post->userid,
-                                    'parent'=>$post->parent,
-                                    'reveal'=>$post->reveal,
-                                    'privatereply'=>$post->privatereply,
-                                    'discussion'=>$post->discussion,
-                                    'course'=>$course->id) +
-                                    $page_params +
+$mformpost->set_data(
+    array(
+        'attachments'=>$draftitemid,
+        'subject'=>$post->subject,
+        'message'=>array(
+            'text'=>$currenttext,
+            'format'=>empty($post->messageformat) ? editors_get_preferred_format() : $post->messageformat,
+            'itemid'=>$draftid_editor
+        ),
+        'subscribe'=>$subscribe?1:0,
+        'mailnow'=>!empty($post->mailnow),
+        'userid'=>$post->userid,
+        'parent'=>$post->parent,
+        'reveal'=>$post->reveal,
+        'privatereply'=>$post->privatereply,
+        'discussion'=>$post->discussion,
+        'course'=>$course->id
+    ) +
 
-                            (isset($post->format)?array(
-                                    'format'=>$post->format):
-                                array())+
+    $page_params +
 
-                            (isset($discussion->timestart)?array(
-                                    'timestart'=>$discussion->timestart):
-                                array())+
+    (isset($post->format) ? array('format'=>$post->format) : array()) +
 
-                            (isset($discussion->timeend)?array(
-                                    'timeend'=>$discussion->timeend):
-                                array())+
+    (isset($discussion->timestart) ? array('timestart'=>$discussion->timestart) : array()) +
 
-                            (isset($discussion->pinned) ? array(
-                                     'pinned' => $discussion->pinned) :
-                                array()) +
+    (isset($discussion->timeend) ? array('timeend'=>$discussion->timeend) : array()) +
 
-                            (isset($post->groupid)?array(
-                                    'groupid'=>$post->groupid):
-                                array())+
+    (isset($discussion->pinned) ? array('pinned' => $discussion->pinned) : array()) +
 
-                            (isset($discussion->id)?
-                                    array('discussion'=>$discussion->id):
-                                    array()));
+    (isset($post->groupid) ? array('groupid'=>$post->groupid) : array()) +
 
-if ($fromform = $mform_post->get_data()) {
+    (isset($discussion->id) ? array('discussion'=>$discussion->id) : array())
+);
+
+if ($fromform = $mformpost->get_data()) {
 
     if (empty($SESSION->fromurl)) {
         $errordestination = "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id";
@@ -635,25 +639,25 @@ if ($fromform = $mform_post->get_data()) {
     // WARNING: the $fromform->message array has been overwritten, do not use it anymore!
     $fromform->messagetrust  = trusttext_trusted($modcontext);
 
-    if ($fromform->edit) {           // Updating a post
+    if ($fromform->edit) {           // Updating a post.
         unset($fromform->groupid);
         $fromform->id = $fromform->edit;
         $message = '';
 
-        //fix for bug #4314
+        // Fix for bug #4314.
         if (!$realpost = $DB->get_record('hsuforum_posts', array('id' => $fromform->id))) {
             $realpost = new stdClass();
             $realpost->userid = -1;
         }
 
 
-        // if user has edit any post capability
+        // If user has edit any post capability
         // or has either startnewdiscussion or reply capability and is editting own post
         // then he can proceed
-        // MDL-7066
+        // MDL-7066.
         if ( !(($realpost->userid == $USER->id && (has_capability('mod/hsuforum:replypost', $modcontext)
-                            || has_capability('mod/hsuforum:startdiscussion', $modcontext))) ||
-                            has_capability('mod/hsuforum:editanypost', $modcontext)) ) {
+                    || has_capability('mod/hsuforum:startdiscussion', $modcontext))) ||
+            has_capability('mod/hsuforum:editanypost', $modcontext)) ) {
             print_error('cannotupdatepost', 'hsuforum');
         }
 
@@ -671,7 +675,7 @@ if ($fromform = $mform_post->get_data()) {
                 print_error('cannotupdatepost', 'hsuforum');
             }
 
-            $DB->set_field('hsuforum_discussions' ,'groupid' , $fromform->groupinfo, array('firstpost' => $fromform->id));
+            $DB->set_field('hsuforum_discussions', 'groupid', $fromform->groupinfo, array('firstpost' => $fromform->id));
         }
         // When editing first post/discussion.
         if (!$fromform->parent) {
@@ -683,15 +687,15 @@ if ($fromform = $mform_post->get_data()) {
                 unset($fromform->pinned);
             }
         }
-        $updatepost = $fromform; //realpost
+        $updatepost = $fromform; // Realpost.
         $updatepost->forum = $forum->id;
-        if (!hsuforum_update_post($updatepost, $mform_post, $message)) {
+        if (!hsuforum_update_post($updatepost, $mformpost)) {
             print_error("couldnotupdate", "hsuforum", $errordestination);
         }
 
-        // MDL-11818
-        if (($forum->type == 'single') && ($updatepost->parent == '0')){ // updating first post of single discussion type -> updating forum intro
-            $forum->intro = $updatepost->message;
+        // MDL-11818.
+        if (($forum->type == 'single') && ($updatepost->parent == '0')) {
+            // Updating first post of single discussion type -> updating forum intro.
             $forum->timemodified = time();
             $DB->update_record("hsuforum", $forum);
         }
@@ -739,11 +743,11 @@ if ($fromform = $mform_post->get_data()) {
         $event->trigger();
 
         redirect(
-                hsuforum_go_back_to($discussionurl),
-                $message . $subscribemessage,
-                null,
-                \core\output\notification::NOTIFY_SUCCESS
-            );
+            hsuforum_go_back_to($discussionurl),
+            $message . $subscribemessage,
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
 
     } else if ($fromform->discussion) { // Adding a new post to an existing discussion
         // Before we add this we must check that the user will not exceed the blocking threshold.
@@ -752,8 +756,8 @@ if ($fromform = $mform_post->get_data()) {
         unset($fromform->groupid);
         $message = '';
         $addpost = $fromform;
-        $addpost->forum=$forum->id;
-        if ($fromform->id = hsuforum_add_new_post($addpost, $mform_post, $message)) {
+        $addpost->forum = $forum->id;
+        if ($fromform->id = hsuforum_add_new_post($addpost, $mformpost, $message)) {
             $fromform->deleted = 0;
             $subscribemessage = hsuforum_post_subscription($fromform, $forum);
 
@@ -787,19 +791,19 @@ if ($fromform = $mform_post->get_data()) {
             $event->add_record_snapshot('hsuforum_discussions', $discussion);
             $event->trigger();
 
-            // Update completion state
-            $completion=new completion_info($course);
-            if($completion->is_enabled($cm) &&
+            // Update completion state.
+            $completion = new completion_info($course);
+            if ($completion->is_enabled($cm) &&
                 ($forum->completionreplies || $forum->completionposts)) {
-                $completion->update_state($cm,COMPLETION_COMPLETE);
+                $completion->update_state($cm, COMPLETION_COMPLETE);
             }
 
             redirect(
-                    hsuforum_go_back_to($discussionurl),
-                    $message . $subscribemessage,
-                    null,
-                    \core\output\notification::NOTIFY_SUCCESS
-                );
+                hsuforum_go_back_to($discussionurl),
+                $message . $subscribemessage,
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
 
         } else {
             print_error("couldnotadd", "hsuforum", $errordestination);
@@ -873,7 +877,7 @@ if ($fromform = $mform_post->get_data()) {
 
             $discussion->groupid = $group;
             $message = '';
-            if ($discussion->id = hsuforum_add_discussion($discussion, $mform_post, $message)) {
+            if ($discussion->id = hsuforum_add_discussion($discussion, $mformpost, $message)) {
 
                 $params = array(
                     'context' => $modcontext,
@@ -902,17 +906,17 @@ if ($fromform = $mform_post->get_data()) {
         // Update completion status.
         $completion = new completion_info($course);
         if ($completion->is_enabled($cm) &&
-                ($forum->completiondiscussions || $forum->completionposts)) {
+            ($forum->completiondiscussions || $forum->completionposts)) {
             $completion->update_state($cm, COMPLETION_COMPLETE);
         }
 
         // Redirect back to the discussion.
         redirect(
-                hsuforum_go_back_to($redirectto->out()),
-                $message . $subscribemessage,
-                null,
-                \core\output\notification::NOTIFY_SUCCESS
-            );
+            hsuforum_go_back_to($redirectto->out()),
+            $message . $subscribemessage,
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
     }
 }
 
@@ -922,7 +926,7 @@ if ($fromform = $mform_post->get_data()) {
 // variable will be loaded with all the particulars,
 // so bring up the form.
 
-// $course, $forum are defined.  $discussion is for edit and reply only.
+// Vars $course, $forum are defined. $discussion is for edit and reply only.
 
 if ($post->discussion) {
     if (! $toppost = $DB->get_record("hsuforum_posts", array("discussion" => $post->discussion, "parent" => 0))) {
@@ -931,6 +935,8 @@ if ($post->discussion) {
 } else {
     $toppost = new stdClass();
     $toppost->subject = get_string("addanewtopic", "hsuforum");
+    $toppost->subject = ($forum->type == "news") ? get_string("addanewtopic", "hsuforum") :
+        get_string("addanewdiscussion", "hsuforum");
 }
 
 if (empty($post->edit)) {
@@ -953,7 +959,7 @@ if ($forum->type == 'single') {
     $strdiscussionname = $discussion->name.':';
 }
 
-$forcefocus = empty($reply) ? NULL : 'message';
+$forcefocus = empty($reply) ? null : 'message';
 
 if (!empty($discussion->id)) {
     $PAGE->navbar->add(format_string($toppost->subject, true), "discuss.php?d=$discussion->id");
@@ -974,7 +980,7 @@ $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($forum->name), 2);
 
-// checkup
+// Checkup.
 if (!empty($parent) && !hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
     print_error('cannotreply', 'hsuforum');
 }
@@ -986,10 +992,10 @@ if (empty($parent) && empty($edit) && !hsuforum_user_can_post_discussion($forum,
 }
 
 if ($forum->type == 'qanda'
-            && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext)
-            && !empty($discussion->id)
-            && !hsuforum_user_has_posted($forum->id, $discussion->id, $USER->id)) {
-    echo $OUTPUT->notification(get_string('qandanotify','hsuforum'));
+    && !has_capability('mod/hsuforum:viewqandawithoutposting', $modcontext)
+    && !empty($discussion->id)
+    && !hsuforum_user_has_posted($forum->id, $discussion->id, $USER->id)) {
+    echo $OUTPUT->notification(get_string('qandanotify', 'hsuforum'));
 }
 
 // If there is a warning message and we are not editing a post we need to handle the warning.
@@ -1032,8 +1038,8 @@ if (!empty($formheading)) {
 $data = new StdClass();
 if (isset($postid)) {
     $data->tags = core_tag_tag::get_item_tags_array('mod_hsuforum', 'hsuforum_posts', $postid);
-    $mform_post->set_data($data);
+    $mformpost->set_data($data);
 }
 
-$mform_post->display();
+$mformpost->display();
 echo $OUTPUT->footer();
