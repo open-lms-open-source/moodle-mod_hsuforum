@@ -25,6 +25,7 @@
  */
 
 $string['activityoverview'] = 'There are new forum posts';
+$string['addanewdiscussion'] = 'Add a new discussion topic';
 $string['addanewtopic'] = 'Add a new discussion';
 $string['advancedsearch'] = 'Advanced search';
 $string['allforums'] = 'All forums';

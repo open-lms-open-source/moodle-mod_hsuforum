@@ -142,7 +142,7 @@ class subscriptions {
      * @return bool
      */
     public static function is_forcesubscribed($forum) {
-        return ($forum->forcesubscribe == FORUM_FORCESUBSCRIBE);
+        return ($forum->forcesubscribe == HSUFORUM_FORCESUBSCRIBE);
     }
 
     /**

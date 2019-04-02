@@ -147,7 +147,7 @@ class provider implements
         $contextlist = new \core_privacy\local\request\contextlist();
 
         $params = [
-            'modname'       => 'forum',
+            'modname'       => 'hsuforum',
             'contextlevel'  => CONTEXT_MODULE,
             'userid'        => $userid,
         ];
@@ -203,7 +203,7 @@ class provider implements
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
                   JOIN {hsuforum} f ON f.id = cm.instance
-                  JOIN {hsuforum_discussion_subs} dsub ON dsub.forum = f.id
+                  JOIN {hsuforum_subscriptions_disc} dsub ON dsub.discussion = f.id
                  WHERE dsub.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
@@ -261,7 +261,7 @@ class provider implements
 
         $params = [
             'instanceid' => $context->instanceid,
-            'modulename' => 'forum',
+            'modulename' => 'hsuforum',
         ];
 
         // Discussion authors.

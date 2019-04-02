@@ -536,10 +536,10 @@ $mformpost = new mod_hsuforum_post_form('post.php', array('course' => $course,
     'modcontext' => $modcontext,
     'forum' => $forum,
     'post' => $post,
-    'subscribe' => \mod_hsuforum\subscriptions::is_subscribed($USER->id, $forum,
+    'subscribe' => mod_hsuforum\subscriptions::is_subscribed($USER->id, $forum,
         null, $cm),
     'thresholdwarning' => $thresholdwarning,
-    'edit' => $edit), 'post', '', array('id' => 'mformforum'));
+    'edit' => $edit), 'post', '', array('id' => 'mformhsuforum'));
 
 $draftitemid = file_get_submitted_draft_itemid('attachments');
 $postid = empty($post->id) ? null : $post->id;
@@ -598,7 +598,7 @@ $mformpost->set_data(
         'message'=>array(
             'text'=>$currenttext,
             'format'=>empty($post->messageformat) ? editors_get_preferred_format() : $post->messageformat,
-            'itemid'=>$draftid_editor
+            'itemid'=>$draftideditor
         ),
         'subscribe'=>$subscribe?1:0,
         'mailnow'=>!empty($post->mailnow),
@@ -610,7 +610,7 @@ $mformpost->set_data(
         'course'=>$course->id
     ) +
 
-    $page_params +
+    $pageparams +
 
     (isset($post->format) ? array('format'=>$post->format) : array()) +
 

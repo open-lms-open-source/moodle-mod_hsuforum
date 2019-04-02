@@ -4351,7 +4351,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
  * @param \mod_hsuforum\upload_file $uploader
  * @return bool
  */
-function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_file $uploader = null) {
+function hsuforum_update_post($newpost, $mform, &$message = null, \mod_hsuforum\upload_file $uploader = null) {
     global $USER, $CFG, $DB;
 
     $post       = $DB->get_record('hsuforum_posts', array('id' => $newpost->id));
@@ -4380,16 +4380,6 @@ function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_
     }
     $post->modified = time();
 
-    // Last post modified tracking.
-    $discussion->timemodified = $post->modified;
-    $discussion->usermodified = $USER->id;
-    $DB->update_record('hsuforum_posts', $post);
-
-    if (empty($post->privatereply)) {
-        $discussion->timemodified = $post->modified; // last modified tracking
-        $discussion->usermodified = $post->userid; // last modified tracking
-    }
-
     if (!$post->parent) {   // Post is a discussion starter - update discussion title and times too
         $discussion->name      = $post->subject;
         $discussion->timestart = $post->timestart;
@@ -4407,7 +4397,8 @@ function hsuforum_update_post($newpost, $mform, &$message, \mod_hsuforum\upload_
 
     $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
-    $DB->set_field('hsuforum_posts', 'message', $post->message, array('id'=>$post->id));
+    $DB->update_record('hsuforum_posts', $post);
+    // Note: Discussion modified time/user are intentionally not updated, to enable them to track the latest new post.
     $DB->update_record('hsuforum_discussions', $discussion);
 
     hsuforum_add_attachment($post, $forum, $cm, $mform, $message, $uploader);
@@ -5693,7 +5684,11 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     } else if (!$canstart && $groupmode and !has_capability('moodle/site:accessallgroups', $context)) {
         // inform users why they can not post new discussion
         if (!$currentgroup) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'), 'error hsuforum-cannot-post');
+            if (!has_capability('mod/hsuforum:canposttomygroups', $context)) {
+                echo $OUTPUT->notification(get_string('cannotadddiscussiongroup', 'hsuforum'));
+            } else {
+                echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'hsuforum'));
+            }
         } else if (!groups_is_member($currentgroup)) {
             echo $OUTPUT->notification(get_string('cannotadddiscussion', 'hsuforum'), 'error hsuforum-cannot-post');
         }

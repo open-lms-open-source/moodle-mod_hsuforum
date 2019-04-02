@@ -194,7 +194,7 @@ class mod_hsuforum_output_email_testcase extends advanced_testcase {
     }
 
     public function test_anonymous_author() {
-        global $OUTPUT, $DB;
+        global $OUTPUT, $DB, $PAGE;
         $this->resetAfterTest(true);
 
         // Create the fixture (including an anonymous forum).
@@ -222,7 +222,8 @@ class mod_hsuforum_output_email_testcase extends advanced_testcase {
         $anonprofileurl = new moodle_url('/user/view.php', ['id' => $anonuser->id, 'course' => $course->id]);
         $anonprofilepic = $OUTPUT->user_picture($anonuser, ['courseid' => $course->id, 'link' => false]);
 
-        $this->assertEquals($anonprofileurl->out(false), $postemail->get_authorlink());
-        $this->assertEquals($anonprofilepic, $postemail->get_author_picture());
+        $renderer = $PAGE->get_renderer('mod_hsuforum');
+        $this->assertEquals($anonprofileurl->out(false), $postemail->get_authorlink($renderer));
+        $this->assertEquals($anonprofilepic, $postemail->get_author_picture($renderer));
     }
 }
