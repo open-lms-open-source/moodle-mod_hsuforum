@@ -26,7 +26,6 @@
  */
 
     use mod_hsuforum\local;
-    use mod_hsuforum\renderables\discussion_dateform;
     use mod_hsuforum\renderables\advanced_editor;
 
     require_once('../../config.php');
@@ -224,8 +223,6 @@
     $PAGE->set_title("$course->shortname: $discussion->name");
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-
-    echo $renderer->render(new discussion_dateform($modcontext, $discussion));
 
     if ($forum->type != 'single') {
          echo "<h2><a href='$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id'>&#171; ".format_string($forum->name)."</a></h2>";
