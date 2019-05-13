@@ -124,7 +124,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function render_discussionsview($forum) {
-        global $CFG, $DB, $PAGE, $SESSION;
+        global $CFG, $DB, $PAGE, $SESSION, $USER;
 
         ob_start(); // YAK! todo, fix this rubbish.
 
@@ -198,11 +198,49 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         // Don't allow non logged in users, or guest to try to manage subscriptions.
         if (isloggedin() && !isguestuser()) {
-            $url = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
+            $forumobject = $DB->get_record("hsuforum", ["id" => $PAGE->cm->instance]);
+
+            // Url's for different options in the discussion.
+            $manageforumsubscriptionsurl = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
+            $exporturl = new \moodle_url('/mod/hsuforum/route.php', ['contextid' => $context->id, 'action' => 'export']);
+            $viewpostersurl = new \moodle_url('/mod/hsuforum/route.php', ['contextid' => $context->id, 'action' => 'viewposters']);
+            $subscribeforumurl = new \moodle_url('/mod/hsuforum/subscribe.php', ['id' => $forum->id, 'sesskey' => sesskey()]);
+
+            // Strings for the Url's.
             $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
-            $output .= '<div class="text-right"><hr>';
-            $output .= \html_writer::link($url, $manageforumsubscriptions, array('class' => 'btn btn-link'));
-            $output .= '</div>';
+            $exportdiscussions = get_string('export', 'mod_hsuforum');
+            $viewposters = get_string('viewposters', 'mod_hsuforum');
+
+            if (!hsuforum_is_subscribed($USER->id, $forumobject)) {
+                $subscribe = get_string('subscribe', 'hsuforum');
+            } else {
+                $subscribe = get_string('unsubscribe', 'hsuforum');
+            }
+
+            // We need to verify that these outputs only appears for Snap, Boost will only display the manage forum subscriptions link.
+            if (get_config('core', 'theme') == 'snap') {
+                // Outputs for the Url's inside divs to have a correct position inside the page.
+                $output .= '<div class="text-right"><hr>';
+                $output .= '<div class="managesubscriptions-url">';
+                $output .= \html_writer::link($manageforumsubscriptionsurl, $manageforumsubscriptions, ['class' => 'btn btn-link']);
+                $output .= '</div>';
+                $output .= '<div class="exportdiscussions-url">';
+                $output .= \html_writer::link($exporturl, $exportdiscussions, ['class' => 'btn btn-link']);
+                $output .= '</div>';
+                $output .= '<div class="viewposters-url">';
+                $output .= \html_writer::link($viewpostersurl, $viewposters, ['class' => 'btn btn-link']);
+                $output .= '</div>';
+                $output .= '<div class="subscribeforum-url">';
+                $output .= \html_writer::link($subscribeforumurl, $subscribe, ['class' => 'btn btn-link']);
+                $output .= '</div>';
+                $output .= '</div>';
+            } else {
+                $output .= '<div class="text-right"><hr>';
+                $output .= '<div class="managesubscriptions-url">';
+                $output .= \html_writer::link($manageforumsubscriptionsurl, $manageforumsubscriptions, ['class' => 'btn btn-link']);
+                $output .= '</div>';
+                $output .= '</div>';
+            }
         }
 
         $output = ob_get_contents().$output;
