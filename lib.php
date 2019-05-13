@@ -8107,18 +8107,10 @@ function hsuforum_get_cm_forum($cm) {
  * @author Rafael Becerra
  *
  * @param $string
- * @return object
+ * @return int
  */
 function hsuforum_word_count($string) {
-    $string = preg_replace('/<\s*\/?[a-z0-9]+(\s*[a-z\-0-9]+)*(\s*[a-z\-0-9]+\="[^"]*")*\s*\/?>/ims', ' ', $string);
-    $string = html_entity_decode($string);
-    $novalidchars = ['<', '>', '=', '!', '&lt;', '|', '@', '#', '$',
-        '%', '^', '&', '*', '(', ')', '-', '+', '=', '.', '{', '}',
-        '[', ']', '~', ';', ':', '"', '\\', '/', ',', '?', '¿', 'nbsp'];
-    foreach ($novalidchars as $char) {
-        $string = str_replace($char, ' ', $string);
-    }
-    return count(preg_split('/\w\b/u', $string)) - 1;
+    return count_words(html_to_text(clean_text(htmlspecialchars(clean_text($string)))));
 }
 
 /**
