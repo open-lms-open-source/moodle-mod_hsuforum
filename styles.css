@@ -227,7 +227,7 @@
     font-style:oblique;
     -webkit-transition: opacity .3s;
     transition: opacity .3s;
-    opacity:0.3;
+    opacity:0.85;
 }
 .hsuforum-post-target:target .hsuforum-post-title,
 .hsuforum-post:hover .hsuforum-post-title {
