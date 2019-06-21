@@ -199,6 +199,7 @@ $string['existingsubscribers'] = 'Existing subscribers';
 $string['exportdiscussion'] = 'Export whole discussion to portfolio';
 $string['forcessubscribe'] = 'This forum forces everyone to be subscribed';
 $string['forum'] = 'Forum';
+$string['gradingmethodpreview'] = 'Grading criteria';
 $string['hsuforum:addinstance'] = 'Add a new forum';
 $string['hsuforum:allowforcesubscribe'] = 'Allow force subscribe';
 $string['forumauthorhidden'] = 'Author (hidden)';

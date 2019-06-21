@@ -30,6 +30,8 @@ use mod_hsuforum\renderables\advanced_editor;
 
 require_once(__DIR__.'/lib/discussion/subscribe.php');
 require_once($CFG->dirroot.'/lib/formslib.php');
+require_once($CFG->dirroot . '/grade/grading/lib.php');
+
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
@@ -224,6 +226,33 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 $output .= \html_writer::link($manageforumsubscriptionsurl, $manageforumsubscriptions, ['class' => 'btn btn-link']);
                 $output .= '</div>';
                 $output .= '</div>';
+            }
+        }
+
+        if (!empty($CFG->mod_hsuforum_grading_interface)) {
+            $gradingmanager = get_grading_manager($context, 'mod_hsuforum', 'posts');
+            $gradingcontrollerpreview = '';
+            if ($gradingmethod = $gradingmanager->get_active_method()) {
+                $controller = $gradingmanager->get_controller($gradingmethod);
+                if ($controller->is_form_defined()) {
+                    $gradingcontrollerpreview = $controller->render_preview($PAGE);
+                    if ($gradingcontrollerpreview) {
+                        $output .= '<div class="text-right">';
+                        $output .= \html_writer::link('#hsuforum_gradingcriteria', get_string('gradingmethodpreview', 'hsuforum'),
+                            ['class' => 'btn btn-link text-right', 'data-toggle' => 'collapse', 'role' => 'button', 'aria-expanded' => 'false',
+                                'aria-controls' => 'hsuforum_gradingcriteria']);
+                        $output .= '</div>';
+                        $output .= '<div class="row">
+                                    <div class="col">
+                                    <div class="collapse multi-collapse" id="hsuforum_gradingcriteria">
+                                      <div class="card card-body">
+                                      '. $gradingcontrollerpreview .'
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>';
+                    }
+                }
             }
         }
 

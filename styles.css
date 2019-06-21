@@ -926,3 +926,7 @@ the use of id^="" */
     display: inline-block;
     mix-blend-mode: difference;
 }
+
+#page-mod-hsuforum-view #hsuforum_gradingcriteria {
+    margin-top: 0.5em;
+}
