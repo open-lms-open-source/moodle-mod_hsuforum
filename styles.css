@@ -930,3 +930,7 @@ the use of id^="" */
 #page-mod-hsuforum-view #hsuforum_gradingcriteria {
     margin-top: 0.5em;
 }
+
+#page-mod-hsuforum-view #hsuforum_gradingcriteria .criteria {
+    height: inherit;
+}
