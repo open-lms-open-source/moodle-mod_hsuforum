@@ -25,7 +25,6 @@ namespace mod_hsuforum\privacy;
 use \core_privacy\local\request\userlist;
 use \core_privacy\local\request\approved_contextlist;
 use \core_privacy\local\request\approved_userlist;
-use \core_privacy\local\request\deletion_criteria;
 use \core_privacy\local\request\writer;
 use \core_privacy\local\request\helper as request_helper;
 use \core_privacy\local\metadata\collection;
@@ -52,7 +51,6 @@ class provider implements
     // This plugin has some sitewide user preferences to export.
     \core_privacy\local\request\user_preference_provider {
 
-    use \core_privacy\local\legacy_polyfill;
     use subcontext_info;
 
     /**
@@ -61,7 +59,7 @@ class provider implements
      * @param   collection     $collection The initialised collection to add items to.
      * @return  collection     A listing of user data stored through this system.
      */
-    public static function _get_metadata(collection $items) : collection {
+    public static function get_metadata(collection $items) : collection {
         // The 'forum' table does not store any specific user data.
         $items->add_database_table('hsuforum_digests', [
             'forum' => 'privacy:metadata:hsuforum_digests:hsuforum',
@@ -143,7 +141,7 @@ class provider implements
      * @param   int $userid   The user to search.
      * @return  contextlist   $contextlist  The contextlist containing the list of contexts used in this plugin.
      */
-    public static function _get_contexts_for_userid(int $userid) : \core_privacy\local\request\contextlist {
+    public static function get_contexts_for_userid(int $userid) : \core_privacy\local\request\contextlist {
         $contextlist = new \core_privacy\local\request\contextlist();
 
         $params = [
@@ -335,7 +333,7 @@ class provider implements
      *
      * @param  int $userid The userid of the user whose data is to be exported.
      */
-    public static function _export_user_preferences(int $userid) {
+    public static function export_user_preferences(int $userid) {
         $user = \core_user::get_user($userid);
 
         switch ($user->maildigest) {
@@ -394,7 +392,7 @@ class provider implements
      *
      * @param   approved_contextlist $contextlist The approved contexts to export information for.
      */
-    public static function _export_user_data(approved_contextlist $contextlist) {
+    public static function export_user_data(approved_contextlist $contextlist) {
         global $DB;
         if (empty($contextlist)) {
             return;
@@ -947,7 +945,7 @@ class provider implements
      * @param \context|context $context $context  The specific context to delete data for.
      * @throws \coding_exception
      */
-    public static function _delete_data_for_all_users_in_context($context) {
+    public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;
         // Check that this is a context_module.
         if (!$context instanceof \context_module) {
@@ -1003,7 +1001,7 @@ class provider implements
      *
      * @param   approved_contextlist $contextlist The approved contexts and user information to delete information for.
      */
-    public static function _delete_data_for_user(approved_contextlist $contextlist) {
+    public static function delete_data_for_user(approved_contextlist $contextlist) {
         global $DB;
         $user = $contextlist->get_user();
         $userid = $user->id;
