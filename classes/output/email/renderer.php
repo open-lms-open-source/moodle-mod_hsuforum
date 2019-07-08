@@ -26,6 +26,9 @@ namespace mod_hsuforum\output\email;
 
 defined('MOODLE_INTERNAL') || die();
 
+// To ensure class is picked up during unit tests.
+require_once($CFG->dirroot . '/mod/hsuforum/renderer.php');
+
 /**
  * Forum post renderable.
  *
