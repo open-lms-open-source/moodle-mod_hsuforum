@@ -30,6 +30,7 @@
 
     require_once('../../config.php');
     require_once(__DIR__.'/lib/discussion/sort.php');
+    require_once($CFG->dirroot . '/grade/grading/lib.php');
 
     // Get the discussion id, and deal with broken requests by browsers...
     // that don't understand the AJAX links. I'm looking at you IE.
@@ -335,22 +336,88 @@
         echo "</div>";
     }
     if ($forum->type == 'single') {
+        $context = \context_module::instance($cm->id);
+        $forumobject = $DB->get_record("hsuforum", ["id" => $PAGE->cm->instance]);
         echo hsuforum_search_form($course, $forum->id);
-
         // Don't allow non logged in users, or guest to try to manage subscriptions.
         if (isloggedin() && !isguestuser()) {
-            echo \html_writer::link(
-                new \moodle_url(
-                    '/mod/hsuforum/index.php',
-                    array (
-                        'id' => $course->id
-                    )
-                ),
-                get_string('manageforumsubscriptions', 'mod_hsuforum'),
-                array (
-                    'class' => 'managesubslink'
-                )
-            );
+            if (get_config('core', 'theme') == 'snap') {
+
+                echo \html_writer::div(html_writer::link(
+                    new \moodle_url(
+                        '/mod/hsuforum/index.php',
+                        ['id' => $course->id]
+                    ),
+                    get_string('manageforumsubscriptions', 'mod_hsuforum'),
+                    ['class' => 'managesubslink']
+                ));
+
+                echo \html_writer::div(html_writer::link(
+                    new \moodle_url(
+                        '/mod/hsuforum/route.php',
+                        ['contextid' => $context->id, 'action' => 'export']
+                    ),
+                    get_string('export', 'mod_hsuforum'),
+                    ['class' => 'exportdiscussionslink']
+                ));
+
+                echo \html_writer::div(html_writer::link(
+                    new \moodle_url(
+                        '/mod/hsuforum/route.php',
+                        ['contextid' => $context->id, 'action' => 'viewposters']
+                    ),
+                    get_string('viewposters', 'mod_hsuforum'),
+                    ['class' => 'viewposterslink']
+                ));
+
+                if (!hsuforum_is_subscribed($USER->id, $forumobject)) {
+                    $subscribe = get_string('subscribe', 'hsuforum');
+                } else {
+                    $subscribe = get_string('unsubscribe', 'hsuforum');
+                }
+
+                echo \html_writer::div(html_writer::link(
+                    new \moodle_url(
+                        '/mod/hsuforum/subscribe.php',
+                        ['id' => $forum->id, 'sesskey' => sesskey()]
+                    ),
+                    $subscribe,
+                    ['class' => 'subscribeforumlink']
+                ));
+            }
+
+            if (!empty($CFG->mod_hsuforum_grading_interface)) {
+                $gradingmanager = get_grading_manager($context, 'mod_hsuforum', 'posts');
+                $gradingcontrollerpreview = '';
+                if ($gradingmethod = $gradingmanager->get_active_method()) {
+                    $controller = $gradingmanager->get_controller($gradingmethod);
+                    if ($controller->is_form_defined()) {
+                        $gradingcontrollerpreview = $controller->render_preview($PAGE);
+                        if ($gradingcontrollerpreview) {
+
+                            echo \html_writer::div(html_writer::link(
+                                '#hsuforum_gradingcriteria',
+                                get_string('gradingmethodpreview', 'hsuforum'),
+                                ['class' => 'hsuforum_gradingcriteria',
+                                'data-toggle' => 'collapse',
+                                'role' => 'button',
+                                'aria-expanded' => 'false',
+                                'aria-controls' => 'hsuforum_gradingcriteria']
+                            ));
+
+                            echo \html_writer::div(
+                                html_writer::div(
+                                    html_writer::div(
+                                        html_writer::div(
+                                            $gradingcontrollerpreview, 'card card-body'
+                                        ), 'collapse multi-collapse', ['id' => 'hsuforum_gradingcriteria']
+                                    ), 'col'
+                                ), 'row'
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 
