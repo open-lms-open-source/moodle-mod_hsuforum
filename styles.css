@@ -823,8 +823,12 @@ FUN WITH FORMS
     clear: both;
 }
 
-.path-mod-hsuforum .discussioncontrols .managesubslink {
-    float: left;
+.path-mod-hsuforum .discussioncontrols .controlscontainer {
+    text-align: left;
+}
+
+.path-mod-hsuforum .discussioncontrols .controlscontainer div {
+    padding-bottom: 1em;
 }
 
 .path-mod-hsuforum #id_displayperiod {
