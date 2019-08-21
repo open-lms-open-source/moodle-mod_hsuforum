@@ -1733,7 +1733,7 @@ HTML;
         }
         return <<<HTML
 <div class="hsuforum-reply-wrapper$t->thresholdblocked">
-    <form method="post" role="region" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
+    <form method="post" role="form" aria-label="$t->legend" class="hsuforum-form $t->class" action="$actionurl" autocomplete="off">
         <fieldset>
             <legend>$t->legend</legend>
             $t->thresholdwarning
