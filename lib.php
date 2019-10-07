@@ -1745,7 +1745,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
 
     if($out) {
         $out = "<div class='hsuforum-recent clearfix'>
-        <h3 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h3>".$out."</div>";
+        <h4 class='hsuforum-recent-heading'>".get_string('newforumposts', 'hsuforum')."</h4>".$out."</div>";
     }
     return $out;
 }
@@ -1764,7 +1764,7 @@ function hsuforum_media_object($url, $picture, $username, $time, $subject) {
         $out .= "<a href='$url'>";
         $out .= $picture;
         $out .= "<div class=\"snap-media-body\">";
-        $out .= "<h3>".format_string($username)."</h3>";
+        $out .= "<h5>".format_string($username)."</h5>";
         $out .= "<span class=snap-media-meta>$time</span>";
         $out .= "<p>".format_string($subject)."</p></div>";
         $out .= "</a></div>";

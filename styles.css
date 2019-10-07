@@ -743,18 +743,19 @@ FUN WITH FORMS
     text-overflow: ellipsis;
 }
 
-.modtype_hsuforum .snap-media-body  h3,
-.modtype_hsuforum .snap-media-body  h3 small,
-.block_recent_activity .snap-media-body  h3,
-.block_recent_activity .snap-media-body  h3 small {
+.modtype_hsuforum .snap-media-body  h5,
+.modtype_hsuforum .snap-media-body  h5 small,
+.block_recent_activity .snap-media-body  h5,
+.block_recent_activity .snap-media-body  h5 small,
+#snap-course-footer-recent-activity .hsuforum-recent h5 {
     color: inherit;
     font-size: 1em;
     line-height:1;
     margin: 0;
 }
 
-.modtype_hsuforum .snap-media-body  h3 small,
-.block_recent_activity .snap-media-body  h3 small {
+.modtype_hsuforum .snap-media-body  h5 small,
+.block_recent_activity .snap-media-body  h5 small {
         opacity: 0.75;
 }
 
@@ -937,4 +938,12 @@ the use of id^="" */
 
 #page-mod-hsuforum-view #hsuforum_gradingcriteria .criteria {
     height: inherit;
+}
+
+.section li.snap-activity.modtype_hsuforum .snap-asset-content .snap-asset-meta .hsuforum-recent .snap-media-object .snap-media-body h5 {
+    font-size: 1em;
+}
+
+#snap-course-footer-recent-activity .hsuforum-recent h5 {
+    font-size: 1em;
 }
