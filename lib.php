@@ -3029,13 +3029,13 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
               FROM {hsuforum_discussions} d
                    JOIN {hsuforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
-        LEFT OUTER JOIN (SELECT p.discussion, COUNT(p.id) AS replies
+        LEFT OUTER JOIN (SELECT d.id AS discussion, COUNT(p.id) AS replies
                            FROM {hsuforum_posts} p
                            JOIN {hsuforum_discussions} d ON p.discussion = d.id
                           WHERE p.parent > 0
                             AND d.forum = ?
                             AND (p.privatereply = 0 OR p.privatereply = ? OR p.userid = ?)
-                          GROUP BY p.discussion) extra ON d.id = extra.discussion
+                          GROUP BY d.id) extra ON d.id = extra.discussion
               LEFT JOIN (SELECT p.discussion, p.id postid, p.userid, p.modified
                            FROM {hsuforum_discussions} d
                       LEFT JOIN {hsuforum_posts} p ON d.usermodified = p.userid AND d.id = p.discussion AND p.modified = d.timemodified

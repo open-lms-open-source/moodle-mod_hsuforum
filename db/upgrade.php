@@ -330,6 +330,19 @@ function xmldb_hsuforum_upgrade($oldversion) {
     // Automatically generated Moodle v3.6.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2018120301) {
+        // Adding index to improve discussions retrieval performance.
+        $table = new xmldb_table('hsuforum_discussions');
+        $index = new xmldb_index('hsudisc_forpontimid_ix', XMLDB_INDEX_NOTUNIQUE,
+            ['forum', 'pinned', 'timemodified', 'id',]);
+        // Conditionally launch add index modulename.
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+        // Open Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2018120301, 'hsuforum');
+    }
+
     return true;
 }
 
