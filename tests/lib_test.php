@@ -30,6 +30,8 @@ global $CFG;
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/locallib.php');
 require_once($CFG->dirroot . '/rating/lib.php');
+require_once($CFG->dirroot . '/mod/hsuforum/mod_form.php');
+require_once($CFG->dirroot . '/course/modlib.php');
 
 class mod_hsuforum_lib_testcase extends advanced_testcase {
 
@@ -3567,7 +3569,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
      */
 
     public function test_hsuforum_word_count() {
-        $this -> resetAfterTest();
+        $this->resetAfterTest();
 
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
@@ -3598,5 +3600,30 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals(3, $wordcount4);
         $this->assertEquals(3, $wordcount5);
         $this->assertEquals(3, $wordcount6);
+    }
+
+    /**
+     * Test $_hideifs array does not have an scale restriction.
+     */
+
+    public function test_hsuforum_scale_dependency_form() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $course = get_course(1);
+        list($module, $context, $cw, $cm, $data) = prepare_new_moduleinfo_data($course, 'hsuforum', 0);
+        $data->return = 0;
+        $data->sr = 0;
+        $data->add = 'hsuforum';
+        $mform = new mod_hsuforum_mod_form($data, 0, null, $course);
+        $reflection = new ReflectionClass($mform);
+        $property = $reflection->getProperty('_form');
+        $property->setAccessible(true);
+        $form = $property->getValue($mform);
+        $reflection2 = new ReflectionClass($form);
+        $hideifs = $reflection2->getProperty('_hideifs');
+        $hideifs->setAccessible(true);
+        $value = $hideifs->getValue($form);
+        // Dependency should not exist.
+        $this->assertFalse(array_search('scale', $value['assessed']['eq'][0]));
     }
 }
