@@ -3607,6 +3607,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
      */
 
     public function test_hsuforum_scale_dependency_form() {
+        $this->markTestSkipped('Skipped since the 3.8.1 merge, the scale property is no longer present');
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = get_course(1);
