@@ -321,7 +321,7 @@ class behat_mod_hsuforum extends behat_base {
                 return true;
             },
             $iframename,
-            self::EXTENDED_TIMEOUT
+            behat_base::get_extended_timeout()
         );
     }
 }
