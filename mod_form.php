@@ -227,11 +227,11 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('gradetype', 'gradetype', 'hsuforum');
 
         $mform->insertElementBefore($mform->removeElement('gradetype'), 'grade');
-        $scale = $mform->insertElementBefore($mform->removeElement('scale'), 'grade');
-        $scale->setLabel(get_string('grade'));
-
-        // Done abusing this poor fellow...
-        $mform->removeElement('grade');
+//        $scale = $mform->insertElementBefore($mform->removeElement('scale'), 'grade');
+//        $scale->setLabel(get_string('grade'));
+//
+//        // Done abusing this poor fellow...
+//        $mform->removeElement('grade');
 
         if ($this->_features->advancedgrading) {
             foreach ($this->current->_advancedgradingdata['areas'] as $areaname => $areadata) {
