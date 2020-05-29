@@ -3607,7 +3607,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
      */
 
     public function test_hsuforum_scale_dependency_form() {
-        $this->markTestSkipped('Skipped since the 3.8 grade API changes, the scale property was removed. To be fixed in INT-15881');
         $this->resetAfterTest();
         $this->setAdminUser();
         $course = get_course(1);
