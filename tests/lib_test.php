@@ -3626,4 +3626,16 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Dependency should not exist.
         $this->assertFalse(array_search('scale', $value['assessed']['eq'][0]));
     }
+
+    public function test_create_instance_with_advanced_grading () {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        global $CFG;
+
+        $CFG->mod_hsuforum_grading_interface = true;
+        $course = $this->getDataGenerator()->create_course();
+        // This will fail if the gradeitems class doesn't exists or is not properly setup.
+        $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id,
+            'completionreplies' => 5, 'completiondiscussions' => 2));
+    }
 }
