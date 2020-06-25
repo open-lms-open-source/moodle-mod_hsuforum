@@ -416,13 +416,9 @@ Y.extend(FORM, Y.Base,
         setDateFields: function(startuts, enduts) {
             if (startuts == 0) {
                 this.resetDateField('start');
-            } else {
-                this.setDateField('start', true, startuts);
             }
             if (enduts == 0) {
                 this.resetDateField('end');
-            } else {
-                this.setDateField('end', true, enduts);
             }
         },
 

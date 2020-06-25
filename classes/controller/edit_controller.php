@@ -223,6 +223,11 @@ class edit_controller extends controller_abstract {
                 $parent     = $DB->get_record('hsuforum_posts', array('id' => $post->parent), '*', MUST_EXIST);
                 $privatereply = $parent->userid;
             }
+
+            // Check if discussion has a set timestart and timeend.
+            $timestart = $timestart === 0 ? $discussion->timestart : 0;
+            $timeend = $timeend === 0 ? $discussion->timeend : 0;
+
             return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,  array(
                 'subject'       => $subject,
                 'name'          => $subject,
