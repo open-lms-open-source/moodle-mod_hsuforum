@@ -7522,7 +7522,9 @@ function hsuforum_cm_info_view(cm_info $cm) {
     $out = '';
 
     if (empty($config->hiderecentposts) && $forum->showrecent) {
-        $out .= hsuforum_recent_activity($cm->get_course(), true, 0, $forum->id, false);
+        $context = context_module::instance($cm->id);
+        $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
+        $out .= hsuforum_recent_activity($cm->get_course(), $viewfullnames, 0, $forum->id, false);
     }
 
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
