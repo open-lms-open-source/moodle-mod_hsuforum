@@ -35,13 +35,11 @@ define(['jquery'],
                 // Add event handler to include space key as user's input to bookmark and substantive.
                 var hsuforumThreadFlags = $('a.hsuforum-toggle-bookmark, a.hsuforum-toggle-substantive');
 
-                hsuforumThreadFlags.each(function(){
-                    hsuforumThreadFlags.off('keypress').on('keypress', function(e) {
-                        e.preventDefault();
-                        if (e.keyCode === 32) {
-                            e.target.click();
-                        }
-                    });
+                hsuforumThreadFlags.off('keypress').on('keypress', function(e) {
+                    e.preventDefault();
+                    if (e.keyCode === 32) {
+                        e.target.click();
+                    }
                 });
             }
         }
