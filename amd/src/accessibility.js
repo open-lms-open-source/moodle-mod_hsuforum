@@ -28,20 +28,18 @@ define(['jquery'],
         return {
             init: function() {
                 // Change pin button class on click to aria-pressed = "true".
+
                 $('.pinbutton.btn.btn-default').click(function() {
                     $(this).attr('aria-pressed', 'true');
                 });
 
                 // Add event handler to include space key as user's input to bookmark and substantive.
                 var hsuforumThreadFlags = $('a.hsuforum-toggle-bookmark, a.hsuforum-toggle-substantive');
-
-                hsuforumThreadFlags.each(function(){
-                    hsuforumThreadFlags.off('keypress').on('keypress', function(e) {
-                        e.preventDefault();
-                        if (e.keyCode === 32) {
-                            e.target.click();
-                        }
-                    });
+                hsuforumThreadFlags.off('keypress').on('keypress', function(e) {
+                    e.preventDefault();
+                    if (e.keyCode === 32) {
+                        e.target.click();
+                    }
                 });
             }
         }
