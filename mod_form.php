@@ -238,7 +238,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $mform->disabledIf('advancedgradingmethod_'.$areaname, 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
             }
         }
-        $mform->disabledIf('gradepass', 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
+        $mform->disabledIf('gradepass_hsuforum', 'gradetype', 'neq', HSUFORUM_GRADETYPE_MANUAL);
 
         $reflection = new ReflectionClass($mform);
         $property = $reflection->getProperty('_hideifs');
@@ -252,7 +252,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                 $property->setValue($mform, $dependencies);
             }
         }
-        $mform->disabledIf('gradecat', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
+        $mform->disabledIf('gradecat_hsuforum', 'gradetype', 'eq', HSUFORUM_GRADETYPE_NONE);
 //-------------------------------------------------------------------------------
 // buttons
         $this->add_action_buttons();
@@ -338,24 +338,24 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             }
 
             if ($this->_features->gradecat) {
-                $mform->addElement('select', 'gradecat',
+                $mform->addElement('select', 'gradecat_hsuforum',
                     get_string('gradecategoryonmodform', 'grades'),
                     grade_get_categories_menu($COURSE->id, $this->_outcomesused));
-                $mform->addHelpButton('gradecat', 'gradecategoryonmodform', 'grades');
+                $mform->addHelpButton('gradecat_hsuforum', 'gradecategoryonmodform', 'grades');
                 if (!$this->_features->rating) {
-                    $mform->hideIf('gradecat', 'grade[modgrade_type]', 'eq', 'none');
+                    $mform->hideIf('gradecat_hsuforum', 'grade[modgrade_type]', 'eq', 'none');
                 }
             }
 
             // Grade to pass.
-            $mform->addElement('text', 'gradepass', get_string('gradepass', 'grades'));
-            $mform->addHelpButton('gradepass', 'gradepass', 'grades');
-            $mform->setDefault('gradepass', '');
-            $mform->setType('gradepass', PARAM_RAW);
+            $mform->addElement('text', 'gradepass_hsuforum', get_string('gradepass', 'grades'));
+            $mform->addHelpButton('gradepass_hsuforum', 'gradepass', 'grades');
+            $mform->setDefault('gradepass_hsuforum', '');
+            $mform->setType('gradepass_hsuforum', PARAM_RAW);
             if (!$this->_features->rating) {
-                $mform->hideIf('gradepass', 'grade[modgrade_type]', 'eq', 'none');
+                $mform->hideIf('gradepass_hsuforum', 'grade[modgrade_type]', 'eq', 'none');
             } else {
-                $mform->hideIf('gradepass', 'assessed', 'eq', '0');
+                $mform->hideIf('gradepass_hsuforum', 'assessed', 'eq', '0');
             }
         }
     }
