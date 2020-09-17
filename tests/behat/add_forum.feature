@@ -68,8 +68,8 @@ Feature: Add Open Forum activities and discussions
     And I follow "Edit settings"
     And I click on "#page-mod-hsuforum-mod #id_modstandardratings a[aria-controls='id_modstandardratings']" "css_element"
     And I set the field with xpath "//body[@id='page-mod-hsuforum-mod']//fieldset[@id='id_modstandardratings']//select[@id='id_assessed']" to "Average of ratings"
-    And the "disabled" attribute of "#page-mod-hsuforum-mod #id_modstandardgrade > div.fcontainer.clearfix > div:nth-child(3) div[data-fieldtype='select'] select[name='gradecat_hsuforum']" "css_element" should contain "disabled"
+    And the "disabled" attribute of "#page-mod-hsuforum-mod #id_modstandardgrade > div.fcontainer.clearfix > div:nth-child(3) div[data-fieldtype='select'] select[name='gradecat']" "css_element" should contain "disabled"
     And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgrade']" "css_element"
     And I set the field with xpath "//body[@id='page-mod-hsuforum-mod']//fieldset[@id='id_modstandardgrade']//select[@id='id_gradetype']" to "Manual"
     # This final step is only to verify that the user can select something after the Manual option is chosen for grade type.
-    And I set the field with xpath "//body[@id='page-mod-hsuforum-mod']//fieldset[@id='id_modstandardgrade']//select[@id='id_gradecat_hsuforum']" to "Uncategorised"
+    And I set the field with xpath "//body[@id='page-mod-hsuforum-mod']//fieldset[@id='id_modstandardgrade']//select[@id='id_gradecat']" to "Uncategorised"
