@@ -1,8 +1,27 @@
+# This file is part of Moodle - http://moodle.org/
+#
+# Moodle is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Moodle is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+#
+# Tests for course resource and activity editing features.
+#
+# @package    mod_hsuforum
+# @copyright  Copyright (c) 2017 Open LMS (http://www.openlms.net)
+# @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+
 @mod @mod_hsuforum @core_tag
-Feature: Edited Open Forum posts handle tags correctly
-  In order to get forum posts properly labelled
-  As a user
-  I need to introduce the tags while editing
+Feature: Open forum posts and new discussions handle tags correctly, in order to get forum posts or discussions labelled.
+  As a user I need to introduce the tags while creating, editing, or replying.
 
   Background:
     Given the following "users" exist:
@@ -25,6 +44,13 @@ Feature: Edited Open Forum posts handle tags correctly
       | Subject | Teacher post subject |
       | Message | Teacher post message |
     And I log out
+    Given I log in as "admin"
+    And I navigate to "Appearance > Manage tags" in site administration
+    And I follow "Default collection"
+    And I follow "Add standard tags"
+    And I set the field "Enter comma-separated list of new tags" to "OT1, OT2, OT3"
+    And I press "Continue"
+    And I log out
 
   @javascript
   Scenario: Forum post edition of custom tags works as expected
@@ -41,13 +67,6 @@ Feature: Edited Open Forum posts handle tags correctly
 
   @javascript
   Scenario: Forum post edition of standard tags works as expected
-    Given I log in as "admin"
-    And I navigate to "Appearance > Manage tags" in site administration
-    And I follow "Default collection"
-    And I follow "Add standard tags"
-    And I set the field "Enter comma-separated list of new tags" to "OT1, OT2, OT3"
-    And I press "Continue"
-    And I log out
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test forum"
@@ -70,3 +89,22 @@ Feature: Edited Open Forum posts handle tags correctly
     And I should see "OT1" in the ".form-autocomplete-selection" "css_element"
     And I should see "OT3" in the ".form-autocomplete-selection" "css_element"
     And I should not see "OT2" in the ".form-autocomplete-selection" "css_element"
+
+  @javascript
+  Scenario: Tags are displayed in a discussion that was just created.
+    Given I log in as "teacher1"
+    And I am on "Course 1" course homepage
+    And I follow "Test forum"
+    And I click on "Add a new discussion" "button"
+    And I follow "Use advanced editor and additional options"
+    And I expand all fieldsets
+    And I click on ".form-autocomplete-downarrow" "css_element"
+    And I should see "OT1" in the ".form-autocomplete-suggestions" "css_element"
+    And I should see "OT2" in the ".form-autocomplete-suggestions" "css_element"
+    And I should see "OT3" in the ".form-autocomplete-suggestions" "css_element"
+    And I set the field "Subject" to "Subject test"
+    And I set the field "Message" to "Message test"
+    And I set the field "Tags" to "OT1"
+    And I press "Post to forum"
+    And I follow "Subject test"
+    And I should see "OT1"

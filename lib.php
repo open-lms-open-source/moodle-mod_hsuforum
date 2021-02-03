@@ -4466,12 +4466,17 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     }
     $post->id = $DB->insert_record("hsuforum_posts", $post);
 
+
     // TODO: Fix the calling code so that there always is a $cm when this function is called
     if (!empty($cm->id) && !empty($discussion->itemid)) {   // In "single simple discussions" this may not exist yet
         $context = context_module::instance($cm->id);
         $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_hsuforum', 'post', $post->id,
                 mod_hsuforum_post_form::editor_options($context, null), $post->message);
         $DB->set_field('hsuforum_posts', 'message', $text, array('id'=>$post->id));
+
+        if (isset($discussion->tags)) {
+            core_tag_tag::set_item_tags('mod_hsuforum', 'hsuforum_posts', $post->id, $context, $discussion->tags);
+        }
     }
 
     // Now do the main entry for the discussion, linking to this first post
