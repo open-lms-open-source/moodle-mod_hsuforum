@@ -31,7 +31,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
     protected $helper;
 
-    public function setUp() {
+    public function setUp(): void {
 
         global $CFG;
         require_once($CFG->dirroot . '/mod/hsuforum/lib.php');

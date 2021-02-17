@@ -54,7 +54,7 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
     /**
      * Test setUp.
      */
-    public function setUp() {
+    public function setUp(): void {
         $this->resetAfterTest(true);
     }
 

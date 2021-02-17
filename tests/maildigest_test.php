@@ -47,7 +47,7 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
      * Set up message and mail sinks, and set up other requirements for the
      * cron to be tested here.
      */
-    public function setUp() {
+    public function setUp(): void {
         global $CFG;
 
         $this->helper = new stdClass();

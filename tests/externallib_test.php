@@ -35,7 +35,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
     /**
      * Tests set up
      */
-    protected function setUp() {
+    protected function setUp():void {
         global $CFG;
 
         require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
