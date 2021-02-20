@@ -90,7 +90,7 @@ class mod_hsuforum_maildigest_testcase extends advanced_testcase {
     /**
      * Clear the message sinks set up in this test.
      */
-    public function tearDown() {
+    public function tearDown(): void {
         $this->helper->messagesink->clear();
         $this->helper->messagesink->close();
 

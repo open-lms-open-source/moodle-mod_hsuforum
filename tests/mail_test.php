@@ -63,7 +63,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         $this->helper = $helper;
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         $this->helper->messagesink->clear();
         $this->helper->messagesink->close();
 
