@@ -15,8 +15,8 @@
  * along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package   mod_hsuforum
- * @author    Rafael Becerra rafael.becerrarodriguez@blackboard.com
- * @copyright Copyright (c) 2019 Blackboard Inc. (http://www.blackboard.com)
+ * @author    Rafael Becerra rafael.becerrarodriguez@openlms.net
+ * @copyright Copyright (c) 2019 Open LMS (https://www.openlms.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -27,7 +27,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
  *
  * @package    mod_hsuforum
  * @category   phpunit
- * @copyright  Copyright (c) 2018 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright  Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_hsuforum_user_autosubscription_testcase extends advanced_testcase {

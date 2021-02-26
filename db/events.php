@@ -21,7 +21,7 @@
  * @category event
  * @copyright 2010 Petr Skoda  {@link http://skodak.org}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright Copyright (c) 2012 Blackboard Inc. (http://www.blackboard.com)
+ * @copyright Copyright (c) 2012 Open LMS (https://www.openlms.net)
  * @author Mark Nielsen
  */
 
