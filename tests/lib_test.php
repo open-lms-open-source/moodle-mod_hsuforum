@@ -3594,9 +3594,9 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $wordcount4 = hsuforum_word_count('one\two > three');
         $wordcount5 = hsuforum_word_count('one @ two/three');
         $wordcount6 = hsuforum_word_count('one*two < three');
-        $this->assertEquals(3, $wordcount);
-        $this->assertEquals(3, $wordcount2);
-        $this->assertEquals(2, $wordcount3);// "<three" will not be rendered as it is asumed it is an html entity.
+        $this->assertEquals(5, $wordcount);
+        $this->assertEquals(5, $wordcount2);
+        $this->assertEquals(1, $wordcount3);// "<three" will not be rendered as it is asumed it is an html entity.
         $this->assertEquals(3, $wordcount4);
         $this->assertEquals(3, $wordcount5);
         $this->assertEquals(3, $wordcount6);
