@@ -711,11 +711,6 @@ FUN WITH FORMS
     width: 310px;
 }
 
-.modtype_hsuforum .snap-media-object > a,
-.block_recent_activity .snap-media-object > a {
-    text-decoration: none;
-}
-
 .modtype_hsuforum .snap-media-object > a > img,
 .modtype_hsuforum .snap-media-object > img,
 .block_recent_activity .snap-media-object > a > img,
