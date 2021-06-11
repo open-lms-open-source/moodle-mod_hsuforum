@@ -343,6 +343,17 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018120301, 'hsuforum');
     }
 
+    if ($oldversion < 2021061100) {
+        // Set correct default value for showrecent column.
+        $table = new xmldb_table('hsuforum');
+        $field = new xmldb_field('showrecent', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'displaywordcount');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->change_field_default($table, $field);
+        }
+        // Open Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2021061100, 'hsuforum');
+    }
+
     return true;
 }
 
