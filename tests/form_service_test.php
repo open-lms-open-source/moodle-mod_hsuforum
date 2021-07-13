@@ -119,7 +119,7 @@ class mod_hsuforum_form_service_testcase extends advanced_testcase {
 
         // Check post message has correct saved values.
         foreach ($imagefiles as $filename) {
-            $this->assertContains('@@PLUGINFILE@@/'.$filename, $post->message);
+            $this->assertStringContainsString('@@PLUGINFILE@@/'.$filename, $post->message);
         }
 
         // Check post message has correct rendered for viewing values.
@@ -128,7 +128,7 @@ class mod_hsuforum_form_service_testcase extends advanced_testcase {
         foreach ($imagefiles as $filename) {
             $urlbase = $CFG->wwwroot.'/pluginfile.php';
             $url = $urlbase.'/'.$modcontext->id.'/mod_hsuforum/post/'.$post->id.'/'.$filename;
-            $this->assertContains($url, $message);
+            $this->assertStringContainsString($url, $message);
         }
     }
 }

@@ -2131,7 +2131,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertArrayHasKey('hsuforum', $results[$course1->id]);
 
         // Make sure the viewer isn't seeing the private unread item.
-        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
+        $this->assertStringContainsString(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
 
         // Check back as the author, they should see one unread for the private reply.
         $this->setUser($author->id);
@@ -2140,7 +2140,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         hsuforum_print_overview($courses, $results);
         $this->assertDebuggingCalledCount(2);
 
-        $this->assertContains(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
+        $this->assertStringContainsString(get_string('overviewnumunread', 'hsuforum', 1), $results[$course1->id]['hsuforum']);
     }
 
     public function test_print_overview_groups() {

@@ -50,7 +50,11 @@ class gradeitems_test extends advanced_testcase
         $mappings = component_gradeitems::get_itemname_mapping_for_component('mod_hsuforum');
         $this->assertIsArray($mappings);
         $this->assertCount(1, $mappings);
-        $this->assertArraySubset([0 => 'posts'], $mappings);
+        $expected = [0 => 'posts'];
+        foreach ($expected as $key => $value) {
+            $this->assertArrayHasKey($key, $mappings);
+            $this->assertSame($value, $mappings[$key]);
+        }
     }
 
     /**

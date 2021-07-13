@@ -205,7 +205,7 @@ class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provide
         $exportedcomments = $writer->get_data(['Comments']);
         $this->assertNotEmpty($expecteddata);
         // The comment should be in the exported data.
-        $this->assertContains('This is a test', $exportedcomments->comments[0]->content);
+        $this->assertStringContainsString('This is a test', $exportedcomments->comments[0]->content);
 
         // Delete the data now.
         // Only the post by the user under test will be removed.
