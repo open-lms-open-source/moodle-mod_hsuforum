@@ -233,7 +233,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
         $mform->insertElementBefore($mform->removeElement('gradetype'), 'grade');
         $scale = $mform->insertElementBefore($mform->removeElement('scale'), 'grade');
-        $scale->setLabel(get_string('grade'));
+        $scale->setLabel(get_string('gradenoun'));
 
         // Done abusing this poor fellow...
         $mform->removeElement('grade');
@@ -537,7 +537,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         if ($this->_features->hasgrades) {
 
             if ($this->_features->gradecat) {
-                $mform->addElement('header', 'modstandardgrade', get_string('grade'));
+                $mform->addElement('header', 'modstandardgrade', get_string('gradenoun'));
             }
 
             //if supports grades and grades aren't being handled via ratings
@@ -554,7 +554,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                     $gradeoptions['hasgrades'] = $gradeitem->has_grades();
                 }
             }
-            $mform->addElement('modgrade', 'grade', get_string('grade'), $gradeoptions);
+            $mform->addElement('modgrade', 'grade', get_string('gradenoun'), $gradeoptions);
             $mform->addHelpButton('grade', 'modgrade', 'grades');
             $mform->setDefault('grade', $CFG->gradepointdefault);
 

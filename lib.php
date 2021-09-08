@@ -1311,18 +1311,18 @@ function hsuforum_user_outline($course, $user, $mod, $forum) {
         $result->time = $count->lastpost;
         if ($grade) {
             if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
-                $result->info .= ', ' . get_string('grade') . ': ' . $grade->str_long_grade;
+                $result->info .= ', ' . get_string('gradenoun') . ': ' . $grade->str_long_grade;
             } else {
-                $result->info = get_string('grade') . ': ' . get_string('hidden', 'grades');
+                $result->info = get_string('gradenoun') . ': ' . get_string('hidden', 'grades');
             }
         }
         return $result;
     } else if ($grade) {
         $result = new stdClass();
         if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
-            $result->info = get_string('grade') . ': ' . $grade->str_long_grade;
+            $result->info = get_string('gradenoun') . ': ' . $grade->str_long_grade;
         } else {
-            $result->info = get_string('grade') . ': ' . get_string('hidden', 'grades');
+            $result->info = get_string('gradenoun') . ': ' . get_string('hidden', 'grades');
         }
 
         //datesubmitted == time created. dategraded == time modified or time overridden
@@ -1356,12 +1356,12 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
     if (!empty($grades->items[0]->grades)) {
         $grade = reset($grades->items[0]->grades);
         if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
-            echo $OUTPUT->container(get_string('grade').': '.$grade->str_long_grade);
+            echo $OUTPUT->container(get_string('gradenoun').': '.$grade->str_long_grade);
             if ($grade->str_feedback) {
                 echo $OUTPUT->container(get_string('feedback').': '.$grade->str_feedback);
             }
         } else {
-            echo $OUTPUT->container(get_string('grade') . ': ' . get_string('hidden', 'grades'));
+            echo $OUTPUT->container(get_string('gradenoun') . ': ' . get_string('hidden', 'grades'));
         }
     }
 
