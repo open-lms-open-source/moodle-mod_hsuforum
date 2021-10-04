@@ -334,7 +334,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
     public function test_forum_view() {
         global $CFG;
-        $this->markTestSkipped('hsuforum_get_completion_state have been deprecated, to be reviewed in INT-17404.');
         $CFG->enablecompletion = 1;
         $this->resetAfterTest();
 
@@ -1377,7 +1376,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
     public function test_hsuforum_view() {
         global $CFG;
-        $this->markTestSkipped('hsuforum_get_completion_state have been deprecated, to be reviewed in INT-17404.');
 
         $CFG->enablecompletion = 1;
         $this->resetAfterTest();
@@ -3293,7 +3291,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
     public function test_forum_core_calendar_provide_event_action_already_completed() {
         global $CFG;
-        $this->markTestSkipped('hsuforum_get_completion_state have been deprecated, to be reviewed in INT-17404.');
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -3328,7 +3325,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
 
     public function test_forum_core_calendar_provide_event_action_already_completed_for_user() {
         global $CFG;
-        $this->markTestSkipped('hsuforum_get_completion_state have been deprecated, to be reviewed in INT-17404.');
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -3528,7 +3524,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
     public function test_hsuforum_recent_activity_query() {
         global $DB;
         $this->resetAfterTest();
-        $this->markTestSkipped('user_picture::fields() is deprecated, to be reviewed in INT-17404.');
 
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();

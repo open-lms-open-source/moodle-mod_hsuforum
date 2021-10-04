@@ -47,7 +47,6 @@ class mod_hsuforum_rsslib_testcase extends advanced_testcase {
      */
     public function test_forum_rss_feed_discussions_sql_respect_deleted() {
         global $DB;
-        $this->markTestSkipped('user_picture::fields() is deprecated, to be reviewed in INT-17404.');
 
         $this->resetAfterTest();
 

@@ -510,7 +510,7 @@ class mod_hsuforum_external extends external_api {
                     $discussion->usermodifiedfullname = null;
                     $discussion->usermodifiedpictureurl = null;
                 } else {
-                    $picturefields = explode(',', user_picture::fields());
+                    $picturefields = \core_user\fields::get_picture_fields();
 
                     // Load user objects from the results of the query.
                     $user = new stdclass();

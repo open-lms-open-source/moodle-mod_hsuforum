@@ -134,7 +134,8 @@ class export_form extends \moodleform {
     public function get_discussion_users() {
         global $USER, $DB;
 
-        $fields = get_all_user_name_fields(true, 'u');
+        $userfieldsapi = \core_user\fields::for_name();
+        $fields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
 
         return $DB->get_recordset_sql("
             SELECT DISTINCT d.id discussionid, u.id, $fields

@@ -42,7 +42,8 @@ class hsuforum_lib_table_posters extends table_sql {
             get_string('substantive', 'hsuforum'))
         );
 
-        $fields = user_picture::fields('u', null, 'id');
+        $userfieldsapi = \core_user\fields::for_userpic();
+        $fields = $userfieldsapi->get_sql('u', false, '', 'id', false)->selects;
         $params = array('forumid' => $PAGE->activityrecord->id);
 
         if (!has_capability('mod/hsuforum:viewposters', $PAGE->context)) {

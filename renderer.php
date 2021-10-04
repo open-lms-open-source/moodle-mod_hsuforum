@@ -370,7 +370,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->replyavatars = array();
         if ($data->replies > 0) {
             // Get actual replies
-            $fields = user_picture::fields('u');
+            $userfieldsapi = \core_user\fields::for_userpic();
+            $fields = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
             $sql = "SELECT $fields, hp.max
                     FROM {user} u
                     JOIN (
@@ -894,7 +895,7 @@ HTML;
             $output .= $this->output->heading(get_string("invalidmodule", "error"));
         } else {
             $cm = $modinfo->instances['hsuforum'][$forum->id];
-            $canviewemail = in_array('email', get_extra_user_fields(context_module::instance($cm->id)));
+            $canviewemail = in_array('email', \core_user\fields::get_identity_fields(context_module::instance($cm->id), false));
             $strparams = new stdclass();
             $strparams->name = format_string($forum->name);
             $strparams->count = count($users);

@@ -1582,7 +1582,9 @@ function hsuforum_recent_activity_query($course, $timestart, $forumid = null, $o
         $limitnum = 6;
     }
     $orderquery = $orderasc ? 'ASC' : 'DESC';
-    $allnamefields = user_picture::fields('u', null, 'duserid');
+
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $allnamefields = $userfieldsapi->get_sql('u', false, '', 'duserid', false)->selects;
     $sql = "SELECT p.*, f.anonymous as forumanonymous, f.type AS forumtype,
                    d.forum, d.groupid, d.timestart, d.timeend, $allnamefields
               FROM {hsuforum_posts} p
@@ -1947,7 +1949,8 @@ function hsuforum_scale_used_anywhere($scaleid) {
 function hsuforum_get_post_full($postid) {
     global $CFG, $DB;
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     return $DB->get_record_sql("SELECT p.*, d.forum, $allnames, u.email, u.picture, u.imagealt, r.lastread AS postread
                              FROM {hsuforum_posts} p
                                   JOIN {hsuforum_discussions} d ON p.discussion = d.id
@@ -1978,7 +1981,8 @@ function hsuforum_get_all_discussion_posts($discussionid, $conditions = array())
     $tr_join = "LEFT JOIN {hsuforum_read} fr ON (fr.postid = p.id AND fr.userid = ?)";
     $params[] = $USER->id;
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     $params[] = $discussionid;
     $params[] = $USER->id;
     $params[] = $USER->id;
@@ -2287,7 +2291,8 @@ function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnu
                    FROM $fromsql
                   WHERE $selectsql";
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     $searchsql = "SELECT p.*,
                          d.forum,
                          $allnames,
@@ -2476,8 +2481,8 @@ function hsuforum_get_user_posts($forumid, $userid, context_module $context = nu
             $params[] = $now;
         }
     }
-
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     return $DB->get_records_sql("SELECT p.*, d.forum, $allnames, u.email, u.picture, u.imagealt, r.lastread AS postread
                               FROM {hsuforum} f
                                    JOIN {hsuforum_discussions} d ON d.forum = f.id
@@ -2936,11 +2941,13 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
         $postdata = "p.*";
     }
 
+    $userfieldsapi = \core_user\fields::for_name();
+
     if (empty($userlastmodified)) {  // We don't need to know this
         $umfields = "";
         $umtable  = "";
     } else {
-        $umfields = ', up.reveal AS umreveal, ' . get_all_user_name_fields(true, 'um', null, 'um') . ', um.email AS umemail, um.picture AS umpicture,
+        $umfields = $userfieldsapi->get_sql('um', false, 'um')->selects . ', um.email AS umemail, um.picture AS umpicture,
                         um.imagealt AS umimagealt';
         $umtable  = " LEFT JOIN {user} um ON (d.usermodified = um.id)
                       LEFT OUTER JOIN {hsuforum_posts} up ON lastpost.postid = up.id";
@@ -2956,7 +2963,7 @@ LEFT OUTER JOIN {hsuforum_read} r ON (r.postid = p.id AND r.userid = ?)
     if (is_string($forumselect) and !empty($forumselect)) {
         $selectsql = $forumselect;
     } else {
-        $allnames  = get_all_user_name_fields(true, 'u');
+        $allnames  = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
         $selectsql = "$postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.pinned, d.assessed,
                            d.firstpost, extra.replies, lastpost.postid lastpostid,$trackselect$subscribeselect
                            $allnames, u.email, u.picture, u.imagealt $umfields";
@@ -3362,7 +3369,8 @@ function hsuforum_get_potential_subscribers($forumcontext, $groupid, $fields, $s
 function hsuforum_subscribed_users($course, $forum, $groupid=0, $context = null, $fields = null) {
     global $CFG, $DB;
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     if (empty($fields)) {
         $fields ="u.id,
                   u.username,
@@ -5914,7 +5922,8 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
         $groupselect = "";
     }
 
-    $allnames = get_all_user_name_fields(true, 'u');
+    $userfieldsapi = \core_user\fields::for_name();
+    $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
     if (!$posts = $DB->get_records_sql("SELECT p.*, f.anonymous AS forumanonymous, f.type AS forumtype, d.forum, d.groupid,
                                               d.timestart, d.timeend, d.pinned, d.userid AS duserid,
                                               $allnames, u.email, u.picture, u.imagealt, u.email
@@ -5986,7 +5995,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
 
         $tmpactivity->user = new stdClass();
         $additionalfields = array('id' => 'userid', 'picture', 'imagealt', 'email');
-        $additionalfields = explode(',', user_picture::fields());
+        $additionalfields = \core_user\fields::get_picture_fields();
         $tmpactivity->user = username_load_fields_from_object($tmpactivity->user, $post, null, $additionalfields);
         $tmpactivity->user->id = $post->userid;
 
@@ -7851,7 +7860,8 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
     // Prepare SQL to both count and search.
     // We alias user.id to useridx because we hsuforum_posts already has a userid field and not aliasing this would break
     // oracle and mssql.
-    $userfields = user_picture::fields('u', null, 'useridx');
+    $userfieldsapi = \core_user\fields::for_userpic();
+    $userfields = $userfieldsapi->get_sql('u', false, '', 'useridx', false)->selects;
     $countsql = 'SELECT COUNT(*) ';
     $selectsql = 'SELECT p.*, d.forum, d.name AS discussionname, '.$userfields.' ';
     $wheresql = implode(" OR ", $forumsearchwhere);
@@ -7904,7 +7914,7 @@ function hsuforum_extract_postuser($post, $forum, context_module $context) {
     $postuser     = new stdClass();
     $postuser->id = $post->userid;
     $fields = array_merge(
-        get_all_user_name_fields(),
+        \core_user\fields::for_name()->get_required_fields(),
         array('imagealt', 'picture', 'email')
     );
     foreach ($fields as $field) {
@@ -7999,7 +8009,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
         $anonymous->imagealt = $anonymous->fullname;
 
         // Prevent accidental reveal of user.
-        foreach(get_all_user_name_fields() as $field) {
+        foreach(\core_user\fields::for_name()->get_required_fields() as $field) {
             if (!property_exists($anonymous, $field)) {
                 $anonymous->$field = '';
             }

@@ -37,7 +37,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
      */
     protected function setUp():void {
         global $CFG;
-        $this->markTestSkipped('user_picture::fields() is deprecated please contact the maintainer');
         require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
         require_once($CFG->dirroot . '/mod/hsuforum/externallib.php');
     }
