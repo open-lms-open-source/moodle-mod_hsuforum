@@ -20,10 +20,14 @@ Feature: The Open Forum search allows users to perform advanced searches for for
       | student1 | C1 | student |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
-      | Forum name | Announcements |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
+    And the following "activity" exists:
+      | activity          | hsuforum                |
+      | name              | Announcements           |
+      | course            | C1                      |
+      | type              | general                 |
+      | intro             | Test forum description  |
+      | section           | 1                       |
+    And I am on the "Announcements" Activity page
     And I add a new topic to "Announcements" Open Forum with:
       | Subject | My subject |
       | Message | My message |

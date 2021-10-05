@@ -16,19 +16,17 @@ Feature: In Open Forums a user can control their default discussion subscription
       | user | course | role |
       | student1 | C1 | student |
       | student2 | C1 | student |
-    And I log in as "admin"
-    And I am on "Course 1" course homepage with editing mode on
+    And the following "activities" exist:
+      | activity   | name                   | intro                  | course | idnumber | type    | section |
+      | hsuforum      | Test forum name        | Test forum description | C1     | forump1  | general | 1       |
+    And I am on the "Test forum name" "hsuforum activity editing" page logged in as admin
+    And I set the following fields to these values:
+      | Subscription mode | Optional subscription |
+    And I press "Save and return to course"
+    And I log out
 
   Scenario: Creating a new discussion in an optional forum follows user preferences
-    Given I add a "Open Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
-      | Subscription mode | Optional subscription |
-    And I log out
-    And I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Test forum name"
+    Given I am on the "Test forum name" "hsuforum activity" page logged in as student1
     When I press "Add a new discussion"
     Then the "subscribe" select box should contain "Send me notifications of new posts in this forum"
     And I log out
@@ -39,11 +37,7 @@ Feature: In Open Forums a user can control their default discussion subscription
     Then the "subscribe" select box should contain "I don't want to be notified of new posts in this forum"
 
   Scenario: Replying to an existing discussion in an optional Open Forum follows user preferences
-    Given I add a "Open Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
-      | Subscription mode | Optional subscription |
+    Given I am on the "Test forum name" "hsuforum activity" page logged in as admin
     And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Test post subject |
       | Message | Test post message |
@@ -63,11 +57,10 @@ Feature: In Open Forums a user can control their default discussion subscription
     Then the "subscribe" select box should contain "I don't want to be notified of new posts in this forum"
 
   Scenario: Creating a new discussion in an automatic forum follows forum subscription
-    Given I add a "Open Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+    Given I am on the "Test forum name" "hsuforum activity editing" page logged in as admin
+    And I set the following fields to these values:
       | Subscription mode | Auto subscription |
+    And I press "Save and return to course"
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
@@ -82,11 +75,10 @@ Feature: In Open Forums a user can control their default discussion subscription
     Then the "subscribe" select box should contain "Send me notifications of new posts in this forum"
 
   Scenario: Replying to an existing discussion in an automatic forum follows forum subscription
-    Given I add a "Open Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+    Given I am on the "Test forum name" "hsuforum activity editing" page logged in as admin
+    And I set the following fields to these values:
       | Subscription mode | Optional subscription |
+    And I press "Save and return to course"
     And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Test post subject |
       | Message | Test post message |
@@ -106,11 +98,10 @@ Feature: In Open Forums a user can control their default discussion subscription
     Then the "subscribe" select box should contain "I don't want to be notified of new posts in this forum"
 
   Scenario: Replying to an existing discussion in an automatic forum which has been unsubscribed from follows user preferences
-    Given I add a "Open Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+    Given I am on the "Test forum name" "hsuforum activity editing" page logged in as admin
+    And I set the following fields to these values:
       | Subscription mode | Auto subscription |
+    And I press "Save and return to course"
     And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Test post subject |
       | Message | Test post message |

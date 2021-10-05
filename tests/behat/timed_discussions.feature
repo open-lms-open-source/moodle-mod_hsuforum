@@ -18,9 +18,13 @@ Feature: In Open Forums users can choose to set start and end time for display o
     And the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Description | Test forum description |
+    And the following "activity" exists:
+      | activity          | hsuforum                |
+      | name              | Test forum name         |
+      | course            | C1                      |
+      | intro             | Test forum description  |
+      | section           | 1                       |
+    And I am on the "Test forum name" Activity page
     And I add a new discussion to "Test forum name" Open Forum with:
       | Subject | Discussion 1 |
       | Message | Discussion contents 1, first message |
