@@ -189,7 +189,7 @@ var ROUTER = Y.Base.create('hsuforumRouter', Y.Router, [], {
          */
         routes: {
             value: [
-                { path: '/view.php', callbacks: ['hideForms'] },
+                { path: '/view.php' },
                 { path: '/discuss.php', callbacks: ['hideForms', 'discussion'] },
                 { path: '/post.php', callbacks: ['hideForms', 'post'] }
             ]
