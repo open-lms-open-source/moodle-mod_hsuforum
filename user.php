@@ -146,7 +146,7 @@ if (empty($result->posts)) {
     if ($isspecificcourse) {
         $pageheading = format_string($course->fullname, true, array('context' => $coursecontext));
     } else {
-        $pageheading = get_string('pluginname', 'mod_hsuforum');
+        $pageheading = 'Open Forum';
     }
 
     // Next we need to set up the loading of the navigation and choose a message
