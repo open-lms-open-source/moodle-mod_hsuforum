@@ -50,14 +50,14 @@ class mod_hsuforum_restore_date_testcase extends restore_date_testcase {
         // Forum Discussions/posts/ratings.
         $timestamp = 996699;
         $diff = $this->get_diff();
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $USER->id;
         $record->forum = $forum->id;
         $record->timestart = $record->timeend = $record->timemodified = $timestamp;
         $discussion = $gg->create_discussion($record);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->discussion = $discussion->id;
         $record->parent = $discussion->firstpost;
         $record->userid = $USER->id;
@@ -68,14 +68,14 @@ class mod_hsuforum_restore_date_testcase extends restore_date_testcase {
         $DB->set_field('hsuforum_discussions', 'timemodified', $timestamp);
 
         // Ratings.
-        $ratingoptions = new stdClass;
-        $ratingoptions->context = context_module::instance($forum->cmid);
+        $ratingoptions = new \stdClass;
+        $ratingoptions->context = \context_module::instance($forum->cmid);
         $ratingoptions->ratingarea = 'post';
         $ratingoptions->component = 'mod_hsuforum';
         $ratingoptions->itemid  = $post->id;
         $ratingoptions->scaleid = 2;
         $ratingoptions->userid  = $USER->id;
-        $rating = new rating($ratingoptions);
+        $rating = new \rating($ratingoptions);
         $rating->update_rating(2);
         $rating = $DB->get_record('rating', ['itemid' => $post->id]);
 
@@ -103,7 +103,7 @@ class mod_hsuforum_restore_date_testcase extends restore_date_testcase {
         }
 
         // Rating test.
-        $newrating = $DB->get_record('rating', ['contextid' => context_module::instance($newcm->id)->id]);
+        $newrating = $DB->get_record('rating', ['contextid' => \context_module::instance($newcm->id)->id]);
         $this->assertEquals($rating->timecreated, $newrating->timecreated);
         $this->assertEquals($rating->timemodified, $newrating->timemodified);
     }
