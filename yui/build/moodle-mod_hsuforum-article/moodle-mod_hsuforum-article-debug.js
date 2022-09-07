@@ -660,11 +660,12 @@ Y.extend(FORM, Y.Base,
         attachFormWarnings: function() {
             Y.all(SELECTORS.ALL_FORMS).each(function(formNode) {
                 if (!formNode.hasClass('form-checker-added')) {
-                    var checker = M.core_formchangechecker.init({ formid: formNode.generateID() });
+                    var ChangeChecker = require('core_form/changechecker');
+                    var checker = ChangeChecker.watchFormById(formNode.generateID());
                     formNode.addClass('form-checker-added');
 
                     // On edit of content editable, trigger form change checker.
-                    formNode.one(SELECTORS.EDITABLE_MESSAGE).on('keypress', M.core_formchangechecker.set_form_changed, checker);
+                    formNode.one(SELECTORS.EDITABLE_MESSAGE).on('keypress', ChangeChecker.markAllFormsAsDirty, checker);
                 }
             });
         },
