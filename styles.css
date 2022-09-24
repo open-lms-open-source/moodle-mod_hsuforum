@@ -396,7 +396,7 @@ ACTIONS
 .hsuforum-toggle-subscribe[aria-pressed="false"] .svg-icon,
 .hsuforum-toggle-substantive[aria-pressed="false"] .svg-icon,
 .hsuforum-toggle-bookmark[aria-pressed="false"] .svg-icon {
-     fill: #ddd;
+     fill: #6c757d;
 }
 
 .hsuforum-toggle-subscribe[aria-pressed="true"] .svg-icon {
