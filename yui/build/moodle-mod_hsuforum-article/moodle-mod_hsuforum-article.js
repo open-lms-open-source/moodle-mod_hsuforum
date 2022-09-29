@@ -577,7 +577,8 @@ Y.extend(FORM, Y.Base,
             wrapperNode.one(SELECTORS.INPUT_REPLY).setAttribute('value', parentNode.getData('postid'));
 
             var advNode = wrapperNode.one(SELECTORS.FORM_ADVANCED);
-            advNode.setAttribute('href', advNode.getAttribute('href').replace(/reply=\d+/, 'reply=' + parentNode.getData('postid')));
+            advNode.setAttribute('href', advNode.getAttribute('href')
+                .replace(/reply=\d+/, 'reply=' + parentNode.getData('postid')));
             var message = wrapperNode.one('div[id^=editor-target-container-]');
             advNode.on("click", function (e) {
                 advNode.setAttribute('href', advNode.getAttribute('href') + '&msgcontent=' +
@@ -601,7 +602,7 @@ Y.extend(FORM, Y.Base,
          */
         _copyMessage: function(node) {
             var message = node.one(SELECTORS.EDITABLE_MESSAGE).get('innerHTML');
-            if (node.one('.editor_atto') != null) {
+            if (node.one('.editor_atto') !== null) {
                 message = node.one(SELECTORS.EDITABLE_MESSAGE_ATTO).get('innerHTML');
             }
 
@@ -635,7 +636,8 @@ Y.extend(FORM, Y.Base,
             }
 
             this.get('io').submitForm(wrapperNode.one('form'), function(data) {
-                // TODO - yuiformsubmit won't work here as the data will already have been sent at this point. The form is the data, the data variable is what comes back
+                // TODO - yuiformsubmit won't work here as the data will already have been sent at this point.
+                // The form is the data, the data variable is what comes back.
                 data.yuiformsubmit = 1; // So we can detect and class this as an AJAX post later!
                 if (data.errors === true) {
                     wrapperNode.one(SELECTORS.VALIDATION_ERRORS).setHTML(data.html).addClass('notifyproblem');
@@ -1303,7 +1305,6 @@ M.mod_hsuforum.dispatchClick = function(el) {
         "core_rating",
         "querystring",
         "moodle-mod_hsuforum-io",
-        "moodle-mod_hsuforum-livelog",
-        "moodle-core-formchangechecker"
+        "moodle-mod_hsuforum-livelog"
     ]
 });
