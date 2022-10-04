@@ -8,8 +8,7 @@
             "core_rating",
             "querystring",
             "moodle-mod_hsuforum-io",
-            "moodle-mod_hsuforum-livelog",
-            "moodle-core-formchangechecker"
+            "moodle-mod_hsuforum-livelog"
         ]
     }
 }
