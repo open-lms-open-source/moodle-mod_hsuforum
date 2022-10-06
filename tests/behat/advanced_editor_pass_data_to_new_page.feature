@@ -24,7 +24,7 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I log out
 
   @javascript
-  Scenario: User can continue writting after clicking "Use advanced editor"
+  Scenario: User can continue writing after clicking "Use advanced editor"
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Test forum name"
@@ -38,9 +38,8 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I wait until the page is ready
     And I should not see "Add your discussion"
     And I should see "Your new discussion topic"
-    And the following fields match these values:
-      | Subject | Test discussion 1 to be cancelled |
-      | Message | Test discussion 1 to be cancelled description|
+    And I set the field with xpath "//*[@id='id_subject']" to "Test discussion 1 to be cancelled"
+    And I set the field with xpath "//*[@id='id_messageeditable']" to "Test discussion 1 to be cancelled description"
     And I press "Post to forum"
     Then I log out
     And I log in as "student1"
@@ -54,9 +53,8 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I follow "Use advanced editor and additional options"
     And I wait until the page is ready
     And I should see "Your reply"
-    And the following fields match these values:
-      | Subject | Test reply subject |
-      | Message | Test reply message|
+    And I set the field with xpath "//*[@id='id_subject']" to "Test reply subject"
+    And I set the field with xpath "//*[@id='id_messageeditable']" to "Test reply message"
     And I press "Post to forum"
     And I log out
     And I log in as "teacher1"
@@ -70,5 +68,4 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I click on ".hsuforum-post.depth0 .hsuforum-use-advanced" "css_element"
     And I wait until the page is ready
     And I should see "Your reply"
-    And the following fields match these values:
-      | Message | This is a reply|
+    And I set the field with xpath "//*[@id='id_messageeditable']" to "This is a reply"

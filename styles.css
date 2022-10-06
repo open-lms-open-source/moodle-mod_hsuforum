@@ -483,6 +483,7 @@ FUN WITH FORMS
 
 .hsuforum-validation-errors.notifyproblem {
     text-align: left;
+    margin-bottom: 1em;
 }
 .path-mod-hsuforum .discussioncontrols {
     text-align: center;
@@ -891,6 +892,8 @@ FUN WITH FORMS
 the use of id^="" */
 #page-mod-hsuforum-view .editor_atto div[id^="editor-target-container"],
 #page-mod-hsuforum-discuss .editor_atto div[id^="editor-target-container"],
+#page-mod-hsuforum-view div[id^="editor-target-container"] textarea,
+#page-mod-hsuforum-discuss div[id^="editor-target-container"] textarea,
 #page-mod-hsuforum-view  iframe[id^="editor-target-container"],
 #page-mod-hsuforum-discuss iframe[id^="editor-target-container"] {
     min-height: 8em !important;
@@ -933,4 +936,53 @@ the use of id^="" */
 
 #snap-course-footer-recent-activity .hsuforum-recent h5 {
     font-size: 1em;
+}
+
+#discussionsview .text-right li {
+    list-style-type: none;
+}
+
+/**
+  Floating label for post a new discussion.
+*/
+#page-mod-hsuforum-view .floating-label {
+    position: relative;
+}
+
+#page-mod-hsuforum-view .floating-label input,
+#page-mod-hsuforum-view .floating-label textarea {
+    margin-bottom: 15px;
+    padding: 0.8em 0.65em 0.5em;
+}
+
+/** Turn the label blue on focus */
+#page-mod-hsuforum-view .floating-label input:focus + label,
+#page-mod-hsuforum-view .floating-label textarea:focus + label {
+    color: #6c757d;
+    opacity: 1 !important;
+}
+
+/** Float the label on focus and when text is entered */
+#page-mod-hsuforum-view .floating-label input:focus + label,
+#page-mod-hsuforum-view .floating-label textarea:focus + label,
+#page-mod-hsuforum-view .floating-label.using-placeholder-shown input:not(:placeholder-shown) + label,
+#page-mod-hsuforum-view .floating-label.using-placeholder-shown textarea:not(:placeholder-shown) + label,
+#page-mod-hsuforum-view .floating-label.using-valid input:valid + label,
+#page-mod-hsuforum-view .floating-label.using-valid textarea:valid + label {
+    left: 12px;
+    top: -10px;
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 1;
+    background-color: white;
+}
+
+/** By default, make the label look like a placeholder */
+#page-mod-hsuforum-view .floating-label label {
+    position: absolute;
+    left: 15px;
+    top: 8px;
+    opacity: .8;
+    pointer-events: none;
+    transition: all .2s ease-in-out;
 }

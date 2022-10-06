@@ -200,26 +200,26 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             // We need to verify that these outputs only appears for Snap, Boost will only display the manage forum subscriptions link.
             if (get_config('core', 'theme') == 'snap') {
                 // Outputs for the Url's inside divs to have a correct position inside the page.
-                $output .= '<div class="text-right"><hr>';
-                $output .= '<div class="managesubscriptions-url">';
+                $output .= '<ul class="text-right"><hr>';
+                $output .= '<li class="managesubscriptions-url">';
                 $output .= \html_writer::link($manageforumsubscriptionsurl, $manageforumsubscriptions, ['class' => 'btn btn-link']);
-                $output .= '</div>';
-                $output .= '<div class="exportdiscussions-url">';
+                $output .= '</li>';
+                $output .= '<li class="exportdiscussions-url">';
                 $output .= \html_writer::link($exporturl, $exportdiscussions, ['class' => 'btn btn-link']);
-                $output .= '</div>';
-                $output .= '<div class="viewposters-url">';
+                $output .= '</li>';
+                $output .= '<li class="viewposters-url">';
                 $output .= \html_writer::link($viewpostersurl, $viewposters, ['class' => 'btn btn-link']);
-                $output .= '</div>';
-                $output .= '<div class="subscribeforum-url">';
+                $output .= '</li>';
+                $output .= '<li class="subscribeforum-url">';
                 $output .= \html_writer::link($subscribeforumurl, $subscribe, ['class' => 'btn btn-link']);
-                $output .= '</div>';
-                $output .= '</div>';
+                $output .= '</li>';
+                $output .= '</ul>';
             } else {
-                $output .= '<div class="text-right"><hr>';
-                $output .= '<div class="managesubscriptions-url">';
+                $output .= '<ul class="text-right"><hr>';
+                $output .= '<li class="managesubscriptions-url">';
                 $output .= \html_writer::link($manageforumsubscriptionsurl, $manageforumsubscriptions, ['class' => 'btn btn-link']);
-                $output .= '</div>';
-                $output .= '</div>';
+                $output .= '</li>';
+                $output .= '</ul>';
             }
         }
 
@@ -619,6 +619,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
+        $arialabeldiscussion = get_string('discussionforum', 'hsuforum', $d->subject);
 
         $threadheader = <<<HTML
         <div class="hsuforum-thread-header">
@@ -633,7 +634,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 HTML;
 
         return <<<HTML
-<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article"
+<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article" aria-label="$arialabeldiscussion"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
     <header id="h{$d->postid}" class="clearfix $unreadclass">
         <div class="hsuforum-thread-author">
@@ -1707,8 +1708,7 @@ HTML;
         }
         if ($canattach) {
             $files .= <<<HTML
-                <label class="editor-attachments">
-                    <span class="accesshide">$t->attachmentlabel</span>
+                <label class="editor-attachments">                   
                     <input type="file" name="attachment[]" multiple="multiple" />
                 </label>
 HTML;
@@ -1738,13 +1738,18 @@ HTML;
             </div>
             <div class="hsuforum-post-body">
             <input type="hidden" id="hsuforum-post-type" value="$postype">
-                <label>
-                    <span class="accesshide">$t->subjectlabel</span>
-                    <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
-                </label>
+                <div class="floating-label using-placeholder-shown">
+                    <input type="text" placeholder=" " name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
+                    <label for="subject">$t->subjectplaceholder</label>
+                </div>
                 <div id="editor-info"></div>
                 <textarea name="message" class="hidden"></textarea>
-                <div id="editor-target-container-$timestamp" data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
+                <div class="floating-label using-placeholder-shown" id="editor-target-container-$timestamp" aria-label="$messagelabel" contenteditable="false">
+                    <textarea class="hsuforum-textarea" type="text" placeholder=" " name="message" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true">$t->message</textarea>
+                    <label for="message">$t->messageplaceholder</label>
+                </div>
+                
+
 
                 $files
                 <div class="advancedoptions">
@@ -1753,7 +1758,7 @@ HTML;
                 $hidden
 
                     <button type="submit" class="btn btn-primary">$t->submitlabel</button>
-                    <a href="#" class="hsuforum-cancel disable-router btn btn-link">$t->cancellabel</a>
+                    <a href="#" class="hsuforum-cancel disable-router btn btn-link btn-secondary" role="button">$t->cancellabel</a>
                     <a href="$advancedurl" class="hsuforum-use-advanced disable-router btn btn-link">$t->advancedlabel</a>
 
             </div>
