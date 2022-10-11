@@ -1726,7 +1726,7 @@ function hsuforum_get_user_formatted_rating_grade($forum, $userid) {
             'iteminstance' => $forum->id,
             'itemnumber'   => 0,
         ));
-        return grade_format_gradevalue($grades[$userid]->rawgrade, $gradeitem);
+        return grade_format_gradevalue(unformat_float($grades[$userid]->rawgrade), $gradeitem);
     }
     return false;
 }
