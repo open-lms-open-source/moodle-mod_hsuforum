@@ -986,3 +986,8 @@ the use of id^="" */
     pointer-events: none;
     transition: all .2s ease-in-out;
 }
+
+/** Give some space at the top of the notification after adding a discussion. **/
+#page-mod-hsuforum-view .hsuforum-notification {
+    margin-top: 0.5em;
+}
