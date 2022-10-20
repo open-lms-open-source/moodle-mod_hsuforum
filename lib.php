@@ -7083,30 +7083,42 @@ function hsuforum_get_extra_capabilities() {
  * @param navigation_node $forumnode The node to add module settings to
  */
 function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $forumnode) {
-    global $USER, $PAGE, $CFG, $DB;
+    global $USER, $CFG, $DB;
 
     $config = get_config('hsuforum');
 
-    $forumobject = $DB->get_record("hsuforum", array("id" => $PAGE->cm->instance));
-    if (empty($PAGE->cm->context)) {
-        $PAGE->cm->context = context_module::instance($PAGE->cm->instance);
+    $forumobject = $DB->get_record("hsuforum", array("id" => $settingsnav->get_page()->cm->instance));
+    if (empty($settingsnav->get_page()->cm->context)) {
+        $settingsnav->get_page()->cm->context = context_module::instance($$settingsnav->get_page()->cm->instance);
     }
 
     // for some actions you need to be enrolled, beiing admin is not enough sometimes here
-    $enrolled = is_enrolled($PAGE->cm->context, $USER, '', false);
-    $activeenrolled = is_enrolled($PAGE->cm->context, $USER, '', true);
+    $enrolled = is_enrolled($settingsnav->get_page()->cm->context, $USER, '', false);
+    $activeenrolled = is_enrolled($settingsnav->get_page()->cm->context, $USER, '', true);
 
-    $canmanage  = has_capability('mod/hsuforum:managesubscriptions', $PAGE->cm->context);
+    $canmanage  = has_capability('mod/hsuforum:managesubscriptions', $settingsnav->get_page()->cm->context);
     $subscriptionmode = hsuforum_get_forcesubscribed($forumobject);
     $cansubscribe = ($activeenrolled && $subscriptionmode != HSUFORUM_FORCESUBSCRIBE && ($subscriptionmode != HSUFORUM_DISALLOWSUBSCRIBE || $canmanage));
 
     $discussionid = optional_param('d', 0, PARAM_INT);
-    $viewingdiscussion = ($PAGE->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
+    $viewingdiscussion = ($settingsnav->get_page()->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) and $discussionid);
 
-    if (!is_guest($PAGE->cm->context)) {
-        $forumnode->add(get_string('export', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'export')), navigation_node::TYPE_SETTING, null, null, new pix_icon('i/export', get_string('export', 'hsuforum')));
+    if (!is_guest($settingsnav->get_page()->cm->context)) {
+        $forumnode->add(
+            get_string('export', 'hsuforum'),
+            new moodle_url('/mod/hsuforum/route.php', array('contextid' => $settingsnav->get_page()->cm->context->id, 'action' => 'export')),
+            navigation_node::TYPE_SETTING,
+            null,
+            null,
+            new pix_icon('i/export', get_string('export', 'hsuforum')));
     }
-    $forumnode->add(get_string('viewposters', 'hsuforum'), new moodle_url('/mod/hsuforum/route.php', array('contextid' => $PAGE->cm->context->id, 'action' => 'viewposters')), navigation_node::TYPE_SETTING, null, null, new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
+    $forumnode->add(
+        get_string('viewposters', 'hsuforum'),
+        new moodle_url('/mod/hsuforum/route.php', array('contextid' => $settingsnav->get_page()->cm->context->id, 'action' => 'viewposters')),
+        navigation_node::TYPE_SETTING,
+        null,
+        null,
+        new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
 
     if ($canmanage) {
         $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
@@ -7170,15 +7182,15 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
 
     if ($viewingdiscussion) {
         require_once(__DIR__.'/lib/discussion/subscribe.php');
-        $subscribe = new hsuforum_lib_discussion_subscribe($forumobject, $PAGE->cm->context);
+        $subscribe = new hsuforum_lib_discussion_subscribe($forumobject, $settingsnav->get_page()->cm->context);
 
         if ($subscribe->can_subscribe()) {
             $subscribeurl = new moodle_url('/mod/hsuforum/route.php', array(
-                'contextid'    => $PAGE->cm->context->id,
+                'contextid'    => $settingsnav->get_page()->cm->context->id,
                 'action'       => 'subscribedisc',
                 'discussionid' => $discussionid,
                 'sesskey'      => sesskey(),
-                'returnurl'    => $PAGE->url,
+                'returnurl'    => $settingsnav->get_page()->url,
             ));
 
             if ($subscribe->is_subscribed($discussionid)) {
@@ -7191,7 +7203,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     }
 
 
-    if (has_capability('mod/hsuforum:viewsubscribers', $PAGE->cm->context)){
+    if (has_capability('mod/hsuforum:viewsubscribers', $settingsnav->get_page()->cm->context)){
         $url = new moodle_url('/mod/hsuforum/subscribers.php', array('id'=>$forumobject->id));
         $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
 
@@ -7200,7 +7212,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
                 && !hsuforum_is_forcesubscribed($forumobject)
                 && $discussionid) {
             $url = new moodle_url('/mod/hsuforum/route.php', array(
-                'contextid'    => $PAGE->cm->context->id,
+                'contextid'    => $settingsnav->get_page()->cm->context->id,
                 'action'       => 'discsubscribers',
                 'discussionid' => $discussionid,
             ));
@@ -7208,13 +7220,13 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         }
     }
 
-    if (!isloggedin() && $PAGE->course->id == SITEID) {
+    if (!isloggedin() && $settingsnav->get_page()->course->id == SITEID) {
         $userid = guest_user()->id;
     } else {
         $userid = $USER->id;
     }
 
-    $hascourseaccess = ($PAGE->course->id == SITEID) || can_access_course($PAGE->course, $userid);
+    $hascourseaccess = ($settingsnav->get_page()->course->id == SITEID) || can_access_course($settingsnav->get_page()->course, $userid);
     $enablerssfeeds = !empty($config->enablerssfeeds) && !empty($config->enablerssfeeds);
 
     if ($enablerssfeeds && $forumobject->rsstype && $forumobject->rssarticles && $hascourseaccess) {
@@ -7229,7 +7241,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
             $string = get_string('rsssubscriberssposts','hsuforum');
         }
 
-        $url = new moodle_url(rss_get_url($PAGE->cm->context->id, $userid, "mod_hsuforum", $forumobject->id));
+        $url = new moodle_url(rss_get_url($settingsnav->get_page()->cm->context->id, $userid, "mod_hsuforum", $forumobject->id));
         $forumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('i/rss', ''));
     }
 }
