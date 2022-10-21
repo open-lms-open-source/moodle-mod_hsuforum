@@ -1904,7 +1904,7 @@ HTML;
                 'd' => $discussion->id,
                 'sesskey' => sesskey(),
             ]);
-            $commands['pin'] = $this->render_ax_button($pinurl, $pintext, 'post', $pinlink, $discussion->id);
+            $commands['pin'] = $this->render_ax_button($pinurl, $pintext, $pinlink, $discussion->id, 'post');
         }
 
         return $commands;
@@ -1914,12 +1914,12 @@ HTML;
      * Render ax button for pin/unpin.
      * @param moodle_url $url
      * @param string $content
-     * @param string $method
      * @param int $pinlink
      * @param int $discussion
+     * @param string $method
      * @return string
      */
-    public function render_ax_button(moodle_url $url, $content, $method = 'post', $pinlink, $discussion) {
+    public function render_ax_button(moodle_url $url, $content, $pinlink, $discussion, $method = 'post') {
         global $PAGE;
 
         $PAGE->requires->js_call_amd('mod_hsuforum/accessibility', 'init', array());
