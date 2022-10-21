@@ -657,15 +657,16 @@ Y.extend(FORM, Y.Base,
          * @method attachFormWarnings
          */
         attachFormWarnings: function() {
-            Y.all(SELECTORS.ALL_FORMS).each(function(formNode) {
-                if (!formNode.hasClass('form-checker-added')) {
-                    var ChangeChecker = require('core_form/changechecker');
-                    var checker = ChangeChecker.watchFormById(formNode.generateID());
-                    formNode.addClass('form-checker-added');
+            require(['core_form/changechecker'], function(ChangeChecker) {
+                Y.all(SELECTORS.ALL_FORMS).each(function(formNode) {
+                    if (!formNode.hasClass('form-checker-added')) {
+                        var checker = ChangeChecker.watchFormById(formNode.generateID());
+                        formNode.addClass('form-checker-added');
 
-                    // On edit of content editable, trigger form change checker.
-                    formNode.one(SELECTORS.EDITABLE_MESSAGE).on('keypress', ChangeChecker.markAllFormsAsDirty, checker);
-                }
+                        // On edit of content editable, trigger form change checker.
+                        formNode.one(SELECTORS.EDITABLE_MESSAGE).on('keypress', ChangeChecker.markAllFormsAsDirty, checker);
+                    }
+                });
             });
         },
 
