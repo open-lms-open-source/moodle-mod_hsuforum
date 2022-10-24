@@ -991,3 +991,29 @@ the use of id^="" */
 #page-mod-hsuforum-view .hsuforum-notification {
     margin-top: 0.5em;
 }
+
+body:not(.theme_snap) li.modtype_hsuforum .activity-item .d-flex {
+    /** We need to override the flex display of core. **/
+    display: block !important;
+    flex-direction: unset !important;
+}
+
+body:not(.theme_snap) li.modtype_hsuforum .afterlink {
+    margin-top: 2em;
+}
+
+body:not(.theme_snap) li.modtype_hsuforum .afterlink .hsuforum-recent {
+    margin-left: 47px;
+}
+
+body:not(.theme_snap) li.modtype_hsuforum .afterlink .hsuforum-recent .snap-media-object {
+    width: 50%;
+    float: left;
+}
+
+div.hsuforum-thread-header > div.hsuforum-thread-meta > div.hsuforum-thread-participants > span,
+div.hsuforum-post-body > .hsuforum-post-byline > span {
+    width: 2rem;
+    height: 2rem;
+    font-size: inherit;
+}
