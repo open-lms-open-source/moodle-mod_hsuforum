@@ -33,7 +33,7 @@ Feature: New Open discussions and discussions with recently added replies are di
   Scenario: Replying to a forum post or editing it puts the discussion to the front
     Given I log in as "student1"
     And I am on "Course 1" course homepage
-    And I follow "Course general forum"
+    And I am on the "Course general forum" "hsuforum activity" page
     #
     # Add three posts into the forum.
     #
@@ -60,14 +60,14 @@ Feature: New Open discussions and discussions with recently added replies are di
     #
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Course general forum"
+    And I am on the "Course general forum" "hsuforum activity" page
     And I follow "Forum post 1"
     And I follow "Use advanced editor and additional options"
     And I set the field with xpath "//*[@id='id_messageeditable']" to "Reply to the first post"
     And I press "Post to forum"
     And I wait to be redirected
     And I am on "Course 1" course homepage
-    And I follow "Course general forum"
+    And I am on the "Course general forum" "hsuforum activity" page
     #
     # Make sure the order of the forum posts is as expected, with most recent new participation first (ie excluding edits).
     #

@@ -63,13 +63,13 @@ Feature: Add Open Forum activities and discussions
       | Forum name  | Test forum name                |
       | Forum type  | Standard forum for general use |
       | Description | Test forum description         |
-    And I follow "Test forum name"
-    And I click on "#region-main-settings-menu .dropdown-toggle>.icon" "css_element"
-    And I follow "Edit settings"
-    And I click on "#page-mod-hsuforum-mod #id_modstandardratings a[aria-controls='id_modstandardratings']" "css_element"
-    And I set the field with xpath "//body[@id='page-mod-hsuforum-mod']//fieldset[@id='id_modstandardratings']//select[@id='id_assessed']" to "Average of ratings"
+    And I am on the "Test forum name" "hsuforum activity" page
+    And I navigate to "Settings" in current page administration
+    And I set the following fields to these values:
+      | Aggregate type | Average of ratings |
     And the "disabled" attribute of "select[name='gradecat']" "css_element" should be set
-    And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgrade']" "css_element"
-    And I set the field with xpath "//body[@id='page-mod-hsuforum-mod']//fieldset[@id='id_modstandardgrade']//select[@id='id_gradetype']" to "Manual"
+    And I set the following fields to these values:
+      | Grade Type | Manual |
     # This final step is only to verify that the user can select something after the Manual option is chosen for grade type.
-    And I set the field with xpath "//body[@id='page-mod-hsuforum-mod']//fieldset[@id='id_modstandardgrade']//select[@id='id_gradecat']" to "Uncategorised"
+    And I set the following fields to these values:
+      | Grade category | Uncategorised |

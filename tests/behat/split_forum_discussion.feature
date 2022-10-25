@@ -36,13 +36,13 @@ Feature: Open Forum discussions can be split
   Scenario: Split a forum discussion
     Given I log in as "teacher1"
     And I am on "Science 101" course homepage
-    And I follow "Study discussions"
+    And I am on the "Study discussions" "hsuforum activity" page
     And I follow "Photosynethis discussion"
     When I follow "Split"
     And  I set the following fields to these values:
         | Discussion name | Mass number in periodic table |
     And I press "Split"
     Then I should see "Mass number in periodic table"
-    And I follow "Study discussions"
+    And I am on the "Study discussions" "hsuforum activity" page
     And I should see "Photosynethis" in the "article[data-author='Teacher 1'] .hsuforum-thread-title" "css_element"
     And I should see "Mass number in periodic table" in the "article[data-author='Student 1'] .hsuforum-thread-title" "css_element"

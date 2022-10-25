@@ -34,7 +34,7 @@ Feature: Users can rate other users forum posts
     And I log out
     And I log in as "teacher1"
     When I am on "Course 1" course homepage
-    And I follow "Test forum name"
+    And I am on the "Test forum name" "hsuforum activity" page
     And I follow "Student post subject"
     And I select "1" from the "rating" singleselect
     Then I should see "1 (1)"

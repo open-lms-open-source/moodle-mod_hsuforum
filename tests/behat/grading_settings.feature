@@ -43,30 +43,28 @@ Feature: While creating a new activity, the grade settings should remain in the 
       | Forum name  | Test forum name                |
       | Forum type  | Standard forum for general use |
       | Description | Test forum description         |
-    And I follow "Test forum name"
-    And I click on "#region-main-settings-menu .dropdown-toggle > .icon" "css_element"
-    And I follow "Edit settings"
-    And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgrade']" "css_element"
-    And I set the field with xpath "//fieldset[@id='id_modstandardgrade']//select[@id='id_gradetype']" to "Manual"
+    And I am on the "Test forum name" "hsuforum activity" page
+    And I navigate to "Settings" in current page administration
+    And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgradecontainer']" "css_element"
+    And I set the following fields to these values:
+      | Grade Type | Manual |
     # Save information into gradecat and gradepass to see if these values are being saved correctly.
     And I set the field with xpath "//fieldset[@id='id_modstandardgrade']//select[@id='id_gradecat']" to "Grade category 1"
     And I set the field with xpath "//fieldset[@id='id_modstandardgrade']//input[@id='id_gradepass']" to "20"
     # We need to click again grades menu to not interfere with the next validation.
-    And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgrade']" "css_element"
+    And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgradecontainer']" "css_element"
     # Check that gradepass and gradecat doesn't exists in the ratings menu.
-    And I click on "#page-mod-hsuforum-mod #id_modstandardratings a[aria-controls='id_modstandardratings']" "css_element"
+    And I click on "#page-mod-hsuforum-mod #id_modstandardratings a[aria-controls='id_modstandardratingscontainer']" "css_element"
     And I should not see "Grade to pass"
     And I should not see "Grade category"
     And I press "Save and return to course"
-    And I follow "Test forum name"
-    And I click on "#region-main-settings-menu .dropdown-toggle>.icon" "css_element"
-    And I follow "Edit settings"
-    And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgrade']" "css_element"
+    And I am on the "Test forum name" "hsuforum activity" page
+    And I navigate to "Settings" in current page administration
+    And I click on "#page-mod-hsuforum-mod #id_modstandardgrade a[aria-controls='id_modstandardgradecontainer']" "css_element"
     And I should see "Grade category 1"
     And the "value" attribute of "//fieldset[@id='id_modstandardgrade']//input[@id='id_gradepass']" "xpath_element" should contain "20.00"
     And I press "Save and return to course"
-    And I click on ".action-menu-trigger .dropdown-toggle > .icon" "css_element"
-    And I follow "Gradebook setup"
+    And I navigate to "Setup > Gradebook setup" in the course gradebook
     # Test forum name Open forum, should exist as a Grade category 1 which is the Grade category chosen before.
     And I should see "Grade category 1"
     And I should see "Test forum name"

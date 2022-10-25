@@ -69,7 +69,7 @@ Feature: Open forum posts and new discussions handle tags correctly, in order to
   Scenario: Forum post edition of standard tags works as expected
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Test forum"
+    And I am on the "Test forum name" "hsuforum activity" page
     And I click on "Add a new discussion" "button"
     And I follow "Use advanced editor and additional options"
     And I expand all fieldsets
@@ -94,7 +94,7 @@ Feature: Open forum posts and new discussions handle tags correctly, in order to
   Scenario: Tags are displayed in a discussion that was just created.
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Test forum"
+    And I am on the "Test forum name" "hsuforum activity" page
     And I click on "Add a new discussion" "button"
     And I follow "Use advanced editor and additional options"
     And I expand all fieldsets

@@ -36,7 +36,7 @@ Feature: Teachers can edit or delete any Open Forum post
     Given I log out
     And I log in as "teacher1"
     When I am on "Course 1" course homepage
-    And I follow "Test forum name"
+    And I am on the "Test forum name" "hsuforum activity" page
     And I follow "Teacher post subject"
     And I follow link "Delete" ignoring js onclick
     And I press "Continue"
@@ -49,7 +49,7 @@ Feature: Teachers can edit or delete any Open Forum post
     Given I log out
     And I log in as "teacher1"
     When I am on "Course 1" course homepage
-    And I follow "Test forum name"
+    And I am on the "Test forum name" "hsuforum activity" page
     And I follow "Teacher post subject"
     And I click on "Edit" "link" in the "//li[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-post ')][contains(., 'Student post subject')]" "xpath_element"
     And I follow "Use advanced editor and additional options"
@@ -62,6 +62,7 @@ Feature: Teachers can edit or delete any Open Forum post
 
   @javascript
   Scenario: A student can't edit or delete another user's posts
+    And I am on the "Test forum name" "hsuforum activity" page
     When I follow "Teacher post subject"
     Then I should not see "Edit" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread-tools ')]" "xpath_element"
     And I should not see "Delete" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread-tools ')]" "xpath_element"
