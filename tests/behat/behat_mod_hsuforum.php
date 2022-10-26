@@ -72,7 +72,7 @@ class behat_mod_hsuforum extends behat_base {
      */
     public function i_reply_post_from_forum_with($postsubject, $forumname, TableNode $table) {
         // Navigate to forum.
-        $this->execute('behat_general::click_link', $this->escape($forumname));
+        $this->execute('behat_navigation::i_am_on_page_instance', [$this->escape($forumname), 'hsuforum activity']);
         $this->execute('behat_general::click_link', $this->escape($postsubject));
         $this->execute('behat_general::click_link', get_string('reply', 'hsuforum'));
         if ($this->running_javascript()) {
@@ -100,7 +100,7 @@ class behat_mod_hsuforum extends behat_base {
     protected function add_new_discussion($forumname, TableNode $table, $buttonstr) {
 
         // Navigate to forum.
-        $this->execute('behat_general::click_link', $this->escape($forumname));
+        $this->execute('behat_navigation::i_am_on_page_instance', [$this->escape($forumname), 'hsuforum activity']);
         $this->execute('behat_forms::press_button', $buttonstr);
 
         if ($this->running_javascript()) {

@@ -30,7 +30,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
-    And I follow "Forced Forum 1"
+    And I am on the "Forced Forum 1" "hsuforum activity" page
     And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Student 1"
     And I should see "Teacher Teacher"
@@ -45,7 +45,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
       | Availability      | Show on course page |
-    And I follow "Forced Forum 2"
+    And I am on the "Forced Forum 2" "hsuforum activity" page
     And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Teacher Teacher"
     And I should see "Student 1"
@@ -61,7 +61,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
       | Availability      | Hide from students |
-    And I follow "Forced Forum 2"
+    And I am on the "Forced Forum 2" "hsuforum activity" page
     And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Teacher Teacher"
     And I should not see "Student 1"
@@ -75,7 +75,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Auto subscription |
-    And I follow "Forced Forum 1"
+    And I am on the "Forced Forum 1" "hsuforum activity" page
     And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Student 1"
     And I should see "Teacher Teacher"

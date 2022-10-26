@@ -33,7 +33,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
   Scenario: Replying to a blog post or editing it does not affect its display order
     Given I log in as "student1"
     And I am on "Course 1" course homepage
-    And I follow "Course blog forum"
+    And I am on the "Course blog forum" "hsuforum activity" page
     #
     # Add three posts into the blog.
     #
@@ -60,7 +60,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     #
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Course blog forum"
+    And I am on the "Course blog forum" "hsuforum activity" page
     And I follow "Blog post 1"
     And I follow "Reply"
     And I follow "Use advanced editor and additional options"
@@ -68,7 +68,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     And I press "Post to forum"
     And I wait to be redirected
     And I am on "Course 1" course homepage
-    And I follow "Course blog forum"
+    And I am on the "Course blog forum" "hsuforum activity" page
     #
     # Make sure the order of the blog posts is still reverse chronological.
     #

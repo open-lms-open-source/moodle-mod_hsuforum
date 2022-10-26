@@ -33,7 +33,7 @@ Feature: In Open Forums users can change start and end date and the changes rema
   Scenario: Teacher should see the start and end date after editing post
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Test forum name"
+    And I am on the "Test forum name" "hsuforum activity" page
     And I follow "Discussion 1"
     And I click on "//div[contains(@class, 'hsuforum-thread-tools')]//a[contains(text(), 'Edit')]" "xpath_element"
     And I click on "//form[contains(@class, 'hsuforum-discussion')]//button[contains(@type, 'submit')]" "xpath_element"

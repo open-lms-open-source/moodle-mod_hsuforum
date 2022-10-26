@@ -62,6 +62,6 @@ Feature: Recent forum posts summary
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
-    Then "//div[contains(@class, 'activityinstance')]//h5[contains(text(), 'Student 1')]" "xpath_element" should exist
+    Then "//div[contains(@class, 'hsuforum-recent')]//h5[contains(text(), 'Student 1')]" "xpath_element" should exist
     And I click on "//div[contains(@class, 'hsuforum-recent')]//a" "xpath_element"
     Then "//div[contains(@class, 'hsuforum-thread-author')]//a[contains(text(), 'Student 1')]" "xpath_element" should exist
