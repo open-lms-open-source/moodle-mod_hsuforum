@@ -1017,3 +1017,27 @@ div.hsuforum-post-body > .hsuforum-post-byline > span {
     height: 2rem;
     font-size: inherit;
 }
+
+.hsuforum-thread-body .hsuforum-thread-replies ol.hsuforum-thread-replies-list li.hsuforum-post div.hsuforum-post-wrapper
+div.hsuforum-post-body h6.hsuforum-post-byline span.hsuforum-unreadcount {
+    width: 5em;
+    margin-top: 0px;
+}
+
+.hsuforum-thread-body .hsuforum-thread-replies ol.hsuforum-thread-replies-list li.hsuforum-post div.hsuforum-post-wrapper
+div.hsuforum-post-body h6.hsuforum-post-byline a.hsuforum-parent-post-link {
+    margin-top: 5px;
+}
+
+div.hsuforum-recent div.snap-media-object a span.userinitials {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5em;
+    float: left;
+}
+
+.hsuforum-thread-body .hsuforum-thread-replies ol.hsuforum-thread-replies-list li.hsuforum-post div.hsuforum-post-wrapper
+div.hsuforum-reply-wrapper form fieldset div.hsuforum-post-figure span.userinitials {
+    width: 75px;
+    height: 75px;
+}
