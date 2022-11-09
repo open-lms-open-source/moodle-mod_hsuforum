@@ -579,10 +579,10 @@ Y.extend(FORM, Y.Base,
 
             var advNode = wrapperNode.one(SELECTORS.FORM_ADVANCED);
             advNode.setAttribute('href', advNode.getAttribute('href').replace(/reply=\d+/, 'reply=' + parentNode.getData('postid')));
-            var message = wrapperNode.one('div[id^=editor-target-container-]');
+            var message = wrapperNode.one('div[id^=editor-target-container-] textarea');
             advNode.on("click", function (e) {
                 advNode.setAttribute('href', advNode.getAttribute('href') + '&msgcontent=' +
-                    message.get('textContent'));
+                    message.get('value'));
             });
 
             if (parentNode.hasAttribute('data-ispost')) {
@@ -754,12 +754,12 @@ Y.extend(FORM, Y.Base,
         },
 
         sendInProgressData:function (e) {
-            var message = Y.one('div[id^=editor-target-container-]');
+            var message = Y.one('div[id^=editor-target-container-] textarea');
             var subject = Y.one('input[name=subject]');
             var link = e.target.getAttribute('href');
             if (!link.includes('post.php?edit')) {
                 e.target.setAttribute('href', e.target.getAttribute('href') + '&msgcontent=' +
-                    message.get('textContent') + '&subcontent=' + subject.get('value'));
+                    message.get('value') + '&subcontent=' + subject.get('value'));
             }
         },
         /**
@@ -957,11 +957,11 @@ Y.extend(FORM, Y.Base,
                 Y.log('Timed post disabled');
             }
             var advNode = Y.one(SELECTORS.FORM_ADVANCED);
-            var message = Y.one('div[id^=editor-target-container-]');
+            var message = Y.one('div[id^=editor-target-container-] textarea');
             var subject = Y.one('input[name=subject]');
             advNode.on("click", function (e) {
                 advNode.setAttribute('href', advNode.getAttribute('href') + '&msgcontent=' +
-                    message.get('textContent') + '&subcontent=' + subject.get('value'));
+                    message.get('value') + '&subcontent=' + subject.get('value'));
             });
 
         },
