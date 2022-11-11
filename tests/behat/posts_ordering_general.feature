@@ -63,7 +63,7 @@ Feature: New Open discussions and discussions with recently added replies are di
     And I am on the "Course general forum" "hsuforum activity" page
     And I follow "Forum post 1"
     And I follow "Use advanced editor and additional options"
-    And I set the field with xpath "//*[@id='id_messageeditable']" to "Reply to the first post"
+    And I set the field with xpath "//*[@id='id_message']" to "Reply to the first post"
     And I press "Post to forum"
     And I wait to be redirected
     And I am on "Course 1" course homepage
