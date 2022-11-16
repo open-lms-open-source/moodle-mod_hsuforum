@@ -51,7 +51,8 @@ Feature: New Open discussions and discussions with recently added replies are di
     #
     And I follow "Forum post 2"
     And I click on "Edit" "link" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][contains(., 'Forum post 2')]" "xpath_element"
-    And I set the field with xpath "//*[@id='region-main']/div/div[1]/article/div[1]/form/fieldset/div[3]/div[1]/input" to "Edited forum post 2"
+    And I set the following fields to these values:
+      | Subject | Edited forum post 2     |
     And I press "Submit"
     And I wait to be redirected
     And I log out
@@ -63,7 +64,8 @@ Feature: New Open discussions and discussions with recently added replies are di
     And I follow "Course general forum"
     And I follow "Forum post 1"
     And I follow "Use advanced editor and additional options"
-    And I set the field with xpath "//*[@id='id_message']" to "Reply to the first post"
+    And I set the following fields to these values:
+      | Message | Reply to the first post |
     And I press "Post to forum"
     And I wait to be redirected
     And I am on "Course 1" course homepage
