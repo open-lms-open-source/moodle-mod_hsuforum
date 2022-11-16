@@ -114,9 +114,6 @@ class edit_controller extends controller_abstract {
             if (!empty($privatereply)) {
                 $privatereply = $parent->userid;
             }
-            // Convert text to HTML format.
-            $message = format_text($message, FORMAT_MOODLE, ['filter' => false]);
-
             $data = array(
                 'privatereply'  => $privatereply,
                 'message'       => $message,
