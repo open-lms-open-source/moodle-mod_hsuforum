@@ -1738,17 +1738,13 @@ HTML;
             </div>
             <div class="hsuforum-post-body">
             <input type="hidden" id="hsuforum-post-type" value="$postype">
-                <div class="floating-label using-placeholder-shown">
-                    <input type="text" placeholder=" " name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
-                    <label for="subject">$t->subjectplaceholder</label>
-                </div>
+                <label>
+                    <span class="accesshide">$t->subjectlabel</span>
+                    <input type="text" placeholder="$t->subjectplaceholder" name="subject" class="form-control" $subjectrequired spellcheck="true" value="$subject" maxlength="255" />
+                </label>
                 <div id="editor-info"></div>
                 <textarea name="message" class="hidden"></textarea>
-                <div class="floating-label using-placeholder-shown" id="editor-target-container-$timestamp" aria-label="$messagelabel" contenteditable="false">
-                    <textarea class="hsuforum-textarea" type="text" placeholder=" " name="message" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true">$t->message</textarea>
-                    <label for="message">$t->messageplaceholder</label>
-                </div>
-                
+                <div id="editor-target-container-$timestamp" data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
 
 
                 $files

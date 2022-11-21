@@ -51,7 +51,8 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     #
     And I follow "Blog post 2"
     And I click on "Edit" "link" in the "//article[contains(concat(' ', normalize-space(@class), ' '), ' hsuforum-thread ')][contains(., 'Blog post 2')]" "xpath_element"
-    And I set the field with xpath "//*[@id='region-main']/div/div[1]/article/div[1]/form/fieldset/div[3]/div[1]/input" to "Edited blog post 2"
+    And I set the following fields to these values:
+      | Subject | Edited blog post 2      |
     And I press "Submit"
     And I wait to be redirected
     And I log out
