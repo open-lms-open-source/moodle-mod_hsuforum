@@ -1200,6 +1200,8 @@ HTML;
     public function discussion_sorting($cm, hsuforum_lib_discussion_sort $sort) {
 
         $url = new moodle_url('/mod/hsuforum/view.php');
+        $sortbysronlytextstring = get_string('sortdiscussionsbysronlytext', 'hsuforum');
+        $sortbysronlytext = '<span class="sr-only">'.$sortbysronlytextstring.'</span>';
 
         $sortselect = html_writer::select($sort->get_key_options_menu(), 'dsortkey', $sort->get_key(), false, array('class' => ''));
         $sortform = "<form method='get' action='$url' class='hsuforum-discussion-sort'>
@@ -1207,6 +1209,7 @@ HTML;
                     <input type='hidden' name='id' value='{$cm->id}'>
                     <label for='dsortkey' class='accesshide'>".get_string('orderdiscussionsby', 'hsuforum')."</label>
                     $sortselect
+                    $sortbysronlytext
                     <input type='submit' class='btn btn-secondary' value='".get_string('sortdiscussionsby', 'hsuforum')."'>
                     </form>";
 

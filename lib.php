@@ -5672,8 +5672,6 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     $groupselect = groups_print_activity_menu($cm, $urlmenu, true);
 
     $sortselect = '';
-    $sortbysronlytextstring = get_string('sortdiscussionsbysronlytext', 'hsuforum');
-    $sortbysronlytext = '<a class="sr-only" href="#"><span>'.$sortbysronlytextstring.'</span></a>';
     if ($discussions && $forum->type != 'single' && $numdiscussions > 1) {
         require_once(__DIR__.'/lib/discussion/sort.php');
         $dsort = hsuforum_lib_discussion_sort::get_from_session($forum, $context);
@@ -5686,7 +5684,6 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     if ($groupselect || $sortselect && $forum->type != 'blog') {
         echo "<div id='hsuforum-filter-options'>";
         echo $groupselect;
-        echo $sortbysronlytext;
         echo $sortselect;
         echo "</div>";
     }
