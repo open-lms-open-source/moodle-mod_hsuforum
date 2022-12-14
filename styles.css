@@ -992,14 +992,14 @@ the use of id^="" */
     margin-top: 0.5em;
 }
 
-body:not(.theme_snap) li.modtype_hsuforum .activity-item .d-flex {
-    /** We need to override the flex display of core. **/
+body:not(.theme_snap) li.modtype_hsuforum .activity-item .activity-basis > div {
     display: block !important;
     flex-direction: unset !important;
 }
 
 body:not(.theme_snap) li.modtype_hsuforum .afterlink {
     margin-top: 2em;
+    margin-bottom: 1em;
 }
 
 body:not(.theme_snap) li.modtype_hsuforum .afterlink .hsuforum-recent {
