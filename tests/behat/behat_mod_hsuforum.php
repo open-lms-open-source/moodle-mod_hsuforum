@@ -138,6 +138,25 @@ class behat_mod_hsuforum extends behat_base {
     }
 
     /**
+     * Set regular field (not moodle form field) to a specific value.
+     *
+     * @Given /^I set editable div with break line "([^"]*)" "([^"]*)" to "([^"]*)"$/
+     * @param string $ellocator
+     * @param string $selectortype
+     * @param string $value
+     * @throws \Behat\Mink\Exception\ElementException
+     */
+    public function i_set_editable_div_with_line_break($ellocator, $selectortype, $value) {
+        // Getting Mink selector and locator.
+        list($selector, $locator) = $this->transform_selector($selectortype, $ellocator);
+
+        // Will throw an ElementNotFoundException if it does not exist.
+        $div = $this->find($selector, $locator);
+        $value = str_replace('\n', behat_keys::ENTER, $value);
+        $div->setValue($value);
+    }
+
+    /**
      * Sets the specified value to the field.
      *
      * @Given /^I set the date field "(?P<field_string>(?:[^"]|\\")*)" to "(?P<field_value_string>(?:[^"]|\\")*)"$/

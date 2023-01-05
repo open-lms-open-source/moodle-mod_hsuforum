@@ -62,10 +62,12 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I follow "Test forum name"
     And I follow "Test discussion 1 to be cancelled"
     And I wait until the page is ready
+    And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 to be cancelled description"
     And I click on ".hsuforum-post.depth0 .hsuforum-reply-link" "css_element"
     Then I should see "Reply to Student 1"
-    And I set editable div ".hsuforum-post.depth0 .hsuforum-textarea" "css_element" to "This is a reply"
+    And I set editable div with break line ".hsuforum-post.depth0 .hsuforum-textarea" "css_element" to "This is a reply \n This is a new line"
     And I click on ".hsuforum-post.depth0 .hsuforum-use-advanced" "css_element"
     And I wait until the page is ready
+    And ".text_to_html br" "css_element" should exist
     And I should see "Your reply"
     And I set the field with xpath "//*[@id='id_messageeditable']" to "This is a reply"

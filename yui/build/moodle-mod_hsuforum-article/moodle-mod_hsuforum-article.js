@@ -755,9 +755,10 @@ Y.extend(FORM, Y.Base,
             var message = Y.one('div[id^=editor-target-container-]');
             var subject = Y.one('input[name=subject]');
             var link = e.target.getAttribute('href');
+            var strmessage = encodeURIComponent(message.get('innerText'));
             if (!link.includes('post.php?edit')) {
                 e.target.setAttribute('href', e.target.getAttribute('href') + '&msgcontent=' +
-                    message.get('textContent') + '&subcontent=' + subject.get('value'));
+                    strmessage + '&subcontent=' + subject.get('value'));
             }
         },
         /**

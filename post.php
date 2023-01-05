@@ -39,6 +39,9 @@ $groupid = optional_param('groupid', null, PARAM_INT);
 $messagecontent = optional_param('msgcontent', '', PARAM_TEXT);
 $subjectcontent = optional_param('subcontent', '', PARAM_TEXT);
 
+$prefilledpost = optional_param('post', '', PARAM_TEXT);
+$prefilledpostformat = optional_param('postformat', FORMAT_MOODLE, PARAM_INT);
+
 $PAGE->set_url('/mod/hsuforum/post.php', array(
     'reply' => $reply,
     'forum' => $forum,
@@ -219,6 +222,14 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
         print_error("activityiscurrentlyhidden");
     }
 
+    $preferredformat = editors_get_preferred_format();
+    // Only if there are prefilled contents coming.
+    if (!empty($messagecontent)) {
+        // If the prefilled post is not HTML and the preferred format is HTML, convert to it.
+        if ($prefilledpostformat != FORMAT_HTML and $preferredformat == FORMAT_HTML) {
+            $messagecontent = format_text($messagecontent, $prefilledpostformat, ['context' => $modcontext]);
+        }
+    }
     // Load up the $post variable.
 
     $post = new stdClass();
@@ -231,6 +242,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     $post->subject     = $parent->subject;
     $post->userid      = $USER->id;
     $post->message     = '';
+    $post->messageformat  = '';
 
     $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
 
