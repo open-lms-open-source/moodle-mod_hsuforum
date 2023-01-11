@@ -8807,6 +8807,25 @@ function hsuforum_check_updates_since(cm_info $cm, $from, $filter = array()) {
 }
 
 /**
+ * Update the post format to the preferred format.
+ * @param $messagecontent
+ * @param $prefilledpostformat
+ * @param $modcontext
+ * @return mixed|string
+ */
+function hsuforum_change_format($messagecontent, $prefilledpostformat, $modcontext) {
+    $preferredformat = editors_get_preferred_format();
+    // Only if there are prefilled contents coming.
+    if (!empty($messagecontent)) {
+        // If the prefilled post is not HTML and the preferred format is HTML, convert to it.
+        if ($prefilledpostformat != FORMAT_HTML and $preferredformat == FORMAT_HTML) {
+            $messagecontent = format_text($messagecontent, $prefilledpostformat, ['context' => $modcontext]);
+        }
+    }
+    return $messagecontent;
+}
+
+/**
  * Check if the user can create attachments in a forum.
  * @param  stdClass $forum   forum object
  * @param  stdClass $context context object

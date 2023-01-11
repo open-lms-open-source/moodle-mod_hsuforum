@@ -117,6 +117,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     // Retrieve the contexts.
     $modcontext    = context_module::instance($cm->id);
     $coursecontext = context_course::instance($course->id);
+    $PAGE->set_cm($cm, $course, $forum);
 
     if (! hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm)) {
         if (!isguestuser()) {
@@ -139,6 +140,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
 
     $SESSION->fromurl = get_local_referer(false);
 
+    $messagecontent = hsuforum_change_format($messagecontent, $prefilledpostformat, $modcontext);
     // Load up the $post variable.
 
     $post = new stdClass();
@@ -222,14 +224,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
         print_error("activityiscurrentlyhidden");
     }
 
-    $preferredformat = editors_get_preferred_format();
-    // Only if there are prefilled contents coming.
-    if (!empty($messagecontent)) {
-        // If the prefilled post is not HTML and the preferred format is HTML, convert to it.
-        if ($prefilledpostformat != FORMAT_HTML and $preferredformat == FORMAT_HTML) {
-            $messagecontent = format_text($messagecontent, $prefilledpostformat, ['context' => $modcontext]);
-        }
-    }
+    $messagecontent = hsuforum_change_format($messagecontent, $prefilledpostformat, $modcontext);
     // Load up the $post variable.
 
     $post = new stdClass();
