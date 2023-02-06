@@ -338,6 +338,7 @@
     if ($forum->type == 'single') {
         $context = \context_module::instance($cm->id);
         $forumobject = $DB->get_record("hsuforum", ["id" => $PAGE->cm->instance]);
+        echo "<style>#page-mod-hsuforum-discuss .activity-description { display: none; }</style>";
         echo hsuforum_search_form($course, $forum->id);
         // Don't allow non logged in users, or guest to try to manage subscriptions.
         if (isloggedin() && !isguestuser()) {
