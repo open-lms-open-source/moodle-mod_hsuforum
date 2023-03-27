@@ -60,7 +60,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
       | Subscription mode | Forced subscription |
-      | Availability      | Hide from students |
+      | Availability      | Hide on course page |
     And I am on the "Forced Forum 2" "hsuforum activity" page
     And I navigate to "Show/edit forum subscribers" in current page administration
     Then I should see "Teacher Teacher"
