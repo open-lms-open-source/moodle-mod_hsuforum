@@ -217,9 +217,6 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('warnafter', 'warnafter', 'hsuforum');
         $mform->disabledIf('warnafter', 'blockperiod', 'eq', 0);
 
-        $coursecontext = context_course::instance($COURSE->id);
-        plagiarism_get_form_elements_module($mform, $coursecontext, 'mod_hsuforum');
-
 //-------------------------------------------------------------------------------
 
         $this->standard_grading_coursemodule_elements();
