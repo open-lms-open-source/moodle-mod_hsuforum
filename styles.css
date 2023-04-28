@@ -1011,6 +1011,23 @@ body:not(.theme_snap) li.modtype_hsuforum .afterlink .hsuforum-recent .snap-medi
     float: left;
 }
 
+@media (max-width: 575.98px) {
+    body:not(.theme_snap) li.modtype_hsuforum .afterlink .hsuforum-recent .snap-media-object {
+        width: 100%;
+        float: left;
+    }
+    body:not(.theme_snap) li.modtype_hsuforum .afterlink .hsuforum-recent {
+        margin-left: 0px;
+        width: 100%;
+    }
+    .activity.modtype_hsuforum .snap-media-body, .block_recent_activity .snap-media-body {
+        width: auto;
+    }
+    .hsuforum.modtype_hsuforum .snap-media-object {
+        width: auto;
+    }
+}
+
 body:not(.theme_snap) li.modtype_hsuforum .activity-item .activity-basis .activity-info {
     padding-top: 1rem;
     padding-left: 0;
