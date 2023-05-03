@@ -1917,7 +1917,7 @@ HTML;
      * @param int $discussion
      * @return string
      */
-    public function render_ax_button(moodle_url $url, $content, $method = 'post', $pinlink = 0, $discussion = 0) {
+    public function render_ax_button(moodle_url $url, $content, $method, $pinlink, $discussion) {
         global $PAGE;
 
         $PAGE->requires->js_call_amd('mod_hsuforum/accessibility', 'init', array());
