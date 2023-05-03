@@ -2157,7 +2157,7 @@ function hsuforum_get_readable_forums($userid, $courseid=0, $excludeanonymous = 
  * @return array|bool Array of posts found or false
  */
 function hsuforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=50,
-                            &$totalcount, $extrasql='') {
+                            &$totalcount = 0, $extrasql='') {
     global $CFG, $DB, $USER;
     require_once($CFG->libdir.'/searchlib.php');
 
