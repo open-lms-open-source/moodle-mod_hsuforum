@@ -161,7 +161,7 @@ $searchform = hsuforum_search_form($course, $forumid, $search);
 
 $PAGE->navbar->add($strsearch, new moodle_url('/mod/hsuforum/search.php', array('id'=>$course->id)));
 $PAGE->navbar->add($strsearchresults);
-if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
+if (!$posts = hsuforum_search_posts($searchterms, $totalcount, $course->id, $page*$perpage, $perpage)) {
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
