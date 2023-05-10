@@ -401,7 +401,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals($context, $event->get_context());
         $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
             $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -1444,7 +1443,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals($context, $event->get_context());
         $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
             $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
