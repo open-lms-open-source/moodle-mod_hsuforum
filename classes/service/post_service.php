@@ -132,7 +132,7 @@ class post_service {
      * @param array $options These override default post values, EG: set the post message with this
      * @return json_response
      */
-    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $deletefiles = array(), array $options) {
+    public function handle_update_post($course, $cm, $forum, $context, $discussion, $post, array $options, array $deletefiles = array()) {
 
         $this->require_can_edit_post($forum, $context, $discussion, $post);
 
