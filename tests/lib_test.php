@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/rating/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/mod_form.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 
-class mod_hsuforum_lib_testcase extends advanced_testcase {
+class lib_test extends advanced_testcase {
 
     public function test_hsuforum_trigger_content_uploaded_event() {
         $this->resetAfterTest();
@@ -81,7 +81,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $expected->userid = $user->id;
         $expected->content = $fakepost->message;
         $expected->pathnamehashes = array($fi->get_pathnamehash());
-        $this->assertEventLegacyData($expected, $event);
         $this->assertEventContextNotUsed($event);
     }
 
