@@ -30,7 +30,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
  * @copyright  Copyright (c) 2018 Open LMS (https://www.openlms.net)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_user_autosubscription_testcase extends advanced_testcase {
+class user_autosubscription_test extends advanced_testcase {
     public function test_hsuforum_optional_subscription() {
         global $DB;
 
