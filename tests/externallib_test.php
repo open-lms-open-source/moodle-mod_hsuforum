@@ -46,6 +46,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test get forums
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forums_by_courses() {
         global $USER, $CFG, $DB;
@@ -174,6 +176,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test get forum posts
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussion_posts() {
         global $CFG, $PAGE;
@@ -402,6 +406,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test get forum posts (qanda forum)
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussion_posts_qanda() {
         global $CFG, $DB;
@@ -468,6 +474,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test get forum discussions paginated
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussions_paginated() {
         global $USER, $DB, $PAGE;
@@ -616,6 +624,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test get forum discussions paginated (qanda forums)
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussions_paginated_qanda() {
 
@@ -660,6 +670,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test add_discussion_post
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion_post() {
         global $CFG;
@@ -793,8 +805,10 @@ class externallib_test extends externallib_advanced_testcase {
 
     }
 
-    /*
+    /**
      * Test add_discussion. A basic test since all the API functions are already covered by unit tests.
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion() {
         global $CFG, $USER;
@@ -908,8 +922,10 @@ class externallib_test extends externallib_advanced_testcase {
         $this->assertTrue($postfound);
     }
 
-    /*
+    /**
      * Test add_discussion without capability to upload attachments.
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion_without_attachment_capability() {
         global $DB;
@@ -963,6 +979,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test adding discussions in a course with gorups
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion_in_course_with_groups() {
         global $CFG;
@@ -1062,8 +1080,10 @@ class externallib_test extends externallib_advanced_testcase {
 
     }
 
-    /*
+    /**
      * Test can_add_discussion. A basic test since all the API functions are already covered by unit tests.
+     *
+     * @runInSeparateProcess
      */
     public function test_can_add_discussion() {
         global $DB;
@@ -1110,6 +1130,8 @@ class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Test get forum posts discussions including rating information.
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussion_rating_information() {
         global $DB, $CFG;

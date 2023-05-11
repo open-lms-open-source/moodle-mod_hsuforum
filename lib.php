@@ -4406,9 +4406,13 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     $post->mailnow       = $discussion->mailnow;
     $post->reveal        = $discussion->reveal;
 
+<<<<<<< HEAD
     if (!is_null($mform) &&
         (is_object($mform) || is_string($mform)) &&
         method_exists($mform, 'get_data')) {
+=======
+    if (!is_null($mform) && method_exists((object) $mform, 'get_data')) {
+>>>>>>> a9cd037 (running external tests as separate processes)
         $data = $mform->get_data();
         if (!empty($data->reveal)) {
             $post->reveal = 1;

@@ -99,7 +99,7 @@ class events_test extends advanced_testcase {
         $this->assertCount(1, $events);
         $event = reset($events);
 
-         // Checking that the event contains the expected values.
+        // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\course_searched', $event);
         $this->assertEquals($coursectx, $event->get_context());
         $expected = array($course->id, 'hsuforum', 'search', "search.php?id={$course->id}&amp;search={$searchterm}", $searchterm);
