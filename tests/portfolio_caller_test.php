@@ -23,6 +23,13 @@
  * @author     Brendan Cox <brendan.cox@totaralearning.com>
  */
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use context_module;
+use hsuforum_portfolio_caller;
+use mod_hsuforum_generator;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**

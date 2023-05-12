@@ -24,6 +24,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use core_date;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
