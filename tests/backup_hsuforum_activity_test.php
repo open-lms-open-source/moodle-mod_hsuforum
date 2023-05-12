@@ -22,6 +22,10 @@
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use backup_hsuforum_activity_task;
 
 defined('MOODLE_INTERNAL') || die();
 

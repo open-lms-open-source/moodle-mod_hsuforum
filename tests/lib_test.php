@@ -22,9 +22,26 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_hsuforum;
 
+use advanced_testcase;
+use calendar_event;
+use cm_info;
+use coding_exception;
+use completion_info;
+use context_course;
+use context_module;
+use core_tag_index_builder;
+use core_tag_tag;
 use mod_hsuforum\service;
+use mod_hsuforum_mod_form;
+use rating;
+use rating_exception;
+use ReflectionClass;
+use ReflectionObject;
+use stdClass;
+
+defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
@@ -32,6 +49,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/locallib.php');
 require_once($CFG->dirroot . '/rating/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/mod_form.php');
 require_once($CFG->dirroot . '/course/modlib.php');
+require_once($CFG->dirroot . '/lib/accesslib.php');
 
 class lib_test extends advanced_testcase {
 

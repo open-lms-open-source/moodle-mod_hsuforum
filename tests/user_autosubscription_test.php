@@ -14,10 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use mod_hsuforum\service\post_service;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 
-use mod_hsuforum\service\post_service;
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 
 

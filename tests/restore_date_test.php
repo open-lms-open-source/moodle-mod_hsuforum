@@ -22,6 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use context_module;
+use rating;
+use \restore_date_testcase;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
