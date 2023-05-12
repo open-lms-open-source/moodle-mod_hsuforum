@@ -22,6 +22,13 @@
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+namespace mod_hsuforum\event;
+
+use advanced_testcase;
+use coding_exception;
+use context_course;
+use context_module;
+use context_system;
 
 defined('MOODLE_INTERNAL') || die();
 

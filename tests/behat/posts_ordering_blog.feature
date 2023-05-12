@@ -1,4 +1,4 @@
-@mod @mod_hsuforum @workbench
+@mod @mod_hsuforum
 Feature: In Open Forums, blog posts are always displayed in reverse chronological order
   In order to use forum as a blog
   As a user

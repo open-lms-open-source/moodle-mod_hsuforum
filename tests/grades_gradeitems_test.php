@@ -25,7 +25,7 @@
 
 declare(strict_types = 1);
 
-namespace tests\mod_hsuforum\grades;
+namespace mod_hsuforum;
 
 use advanced_testcase;
 use core_grades\component_gradeitems;

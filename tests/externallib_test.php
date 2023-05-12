@@ -23,6 +23,19 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use context_module;
+use context_system;
+use context_user;
+use external_api;
+use externallib_advanced_testcase;
+use mod_hsuforum_external;
+use moodle_exception;
+use moodle_url;
+use stdClass;
+use user_picture;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;

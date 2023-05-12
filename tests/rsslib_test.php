@@ -28,9 +28,6 @@ global $CFG;
 require_once(__DIR__ . '/helper.php');
 require_once("{$CFG->dirroot}/mod/hsuforum/rsslib.php");
 
-
-
-
 /**
  * Tests for the forum implementation of the RSS component.
  *

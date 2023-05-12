@@ -620,6 +620,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
+        $arialabeldiscussion = get_string('discussionforum', 'hsuforum', $d->subject);
+
         $threadcontent = '';
         if (!$hidethreadcontent) {
             $threadcontent = '<div class="hsuforum-thread-content" tabindex="0">' . $d->message . '</div>';
