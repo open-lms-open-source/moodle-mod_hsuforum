@@ -196,11 +196,11 @@ class post_service {
             if (((time() - $post->created) > $CFG->maxeditingtime) and
                 !has_capability('mod/hsuforum:editanypost', $context)
             ) {
-                print_error('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
+                throw new \moodle_exception('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
             }
         }
         if (($post->userid <> $USER->id) && !has_capability('mod/hsuforum:editanypost', $context)) {
-            print_error('cannoteditposts', 'hsuforum');
+            throw new \moodle_exception('cannoteditposts', 'hsuforum');
         }
     }
 

@@ -61,7 +61,7 @@ $context = context_module::instance($cm->id);
 if ($user) {
     require_sesskey();
     if (!has_capability('mod/hsuforum:managesubscriptions', $context)) {
-        print_error('nopermissiontosubscribe', 'hsuforum');
+        throw new \moodle_exception('nopermissiontosubscribe', 'hsuforum');
     }
     $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
 } else {
@@ -75,7 +75,7 @@ if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
 }
 if ($groupmode && !hsuforum_is_subscribed($user->id, $forum) && !has_capability('moodle/site:accessallgroups', $context)) {
     if (!groups_get_all_groups($course->id, $USER->id)) {
-        print_error('cannotsubscribe', 'hsuforum');
+        throw new \moodle_exception('cannotsubscribe', 'hsuforum');
     }
 }
 
@@ -151,7 +151,7 @@ if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $cont
                 );
             break;
         default:
-            print_error(get_string('invalidforcesubscribe', 'hsuforum'));
+            throw new \moodle_exception(get_string('invalidforcesubscribe', 'hsuforum'));
     }
 }
 
@@ -187,16 +187,16 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
             \core\output\notification::NOTIFY_SUCCESS
         );
     } else {
-        print_error('cannotunsubscribe', 'hsuforum', get_local_referer(false));
+        throw new \moodle_exception('cannotunsubscribe', 'hsuforum', get_local_referer(false));
     }
 
 } else {  // subscribe
     if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE &&
                 !has_capability('mod/hsuforum:managesubscriptions', $context)) {
-        print_error('disallowsubscribe', 'hsuforum', get_local_referer(false));
+        throw new \moodle_exception('disallowsubscribe', 'hsuforum', get_local_referer(false));
     }
     if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
-        print_error('noviewdiscussionspermission', 'hsuforum', get_local_referer(false));
+        throw new \moodle_exception('noviewdiscussionspermission', 'hsuforum', get_local_referer(false));
     }
     if (is_null($sesskey)) {    // we came here via link in email
         $PAGE->set_title($course->shortname);

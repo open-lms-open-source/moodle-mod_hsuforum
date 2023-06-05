@@ -55,7 +55,7 @@ class export_controller extends controller_abstract {
         require_capability('mod/hsuforum:viewdiscussion', $PAGE->context);
 
         if (is_guest($PAGE->context)) {
-            print_error('noguest');
+            throw new \moodle_exception('noguest');
         }
     }
 

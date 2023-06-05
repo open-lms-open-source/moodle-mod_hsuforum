@@ -51,7 +51,7 @@ require_login($course, false, $cm);
 
 $context = context_module::instance($cm->id);
 if (!has_capability('mod/hsuforum:viewsubscribers', $context)) {
-    print_error('nopermissiontosubscribe', 'hsuforum');
+    throw new \moodle_exception('nopermissiontosubscribe', 'hsuforum');
 }
 
 unset($SESSION->fromdiscussion);
@@ -76,20 +76,20 @@ if (data_submitted()) {
     $unsubscribe = (bool)optional_param('unsubscribe', false, PARAM_RAW);
     /** It has to be one or the other, not both or neither */
     if (!($subscribe xor $unsubscribe)) {
-        print_error('invalidaction');
+        throw new \moodle_exception('invalidaction');
     }
     if ($subscribe) {
         $users = $subscriberselector->get_selected_users();
         foreach ($users as $user) {
             if (!hsuforum_subscribe($user->id, $id)) {
-                print_error('cannotaddsubscriber', 'hsuforum', '', $user->id);
+                throw new \moodle_exception('cannotaddsubscriber', 'hsuforum', '', $user->id);
             }
         }
     } else if ($unsubscribe) {
         $users = $existingselector->get_selected_users();
         foreach ($users as $user) {
             if (!hsuforum_unsubscribe($user->id, $id)) {
-                print_error('cannotremovesubscriber', 'hsuforum', '', $user->id);
+                throw new \moodle_exception('cannotremovesubscriber', 'hsuforum', '', $user->id);
             }
         }
     }

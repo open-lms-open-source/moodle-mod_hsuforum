@@ -117,7 +117,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $modinfo = get_fast_modinfo($forum->course);
         $forums = $modinfo->get_instances_of('hsuforum');
         if (!isset($forums[$forum->id])) {
-            print_error('invalidcoursemodule');
+            throw new \moodle_exception('invalidcoursemodule');
         }
         $cm = $forums[$forum->id];
 
@@ -128,18 +128,18 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 
         if ($id) {
             if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-                print_error('coursemisconf');
+                throw new \moodle_exception('coursemisconf');
             }
         } else if ($f) {
             if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
-                print_error('coursemisconf');
+                throw new \moodle_exception('coursemisconf');
             }
 
             // move require_course_login here to use forced language for course
             // fix for MDL-6926
             require_course_login($course, true, $cm);
         } else {
-            print_error('missingparameter');
+            throw new \moodle_exception('missingparameter');
         }
 
         $context = \context_module::instance($cm->id);

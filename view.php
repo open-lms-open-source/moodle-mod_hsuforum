@@ -36,13 +36,13 @@
     $params = array();
 
     if (!$f && !$id) {
-        print_error('missingparameter');
+        throw new \moodle_exception('missingparameter');
     } else if ($f) {
         $forum = $DB->get_record('hsuforum', array('id' => $f));
         $params['f'] = $forum->id;
     } else {
         if (!$cm = get_coursemodule_from_id('hsuforum', $id)){
-            print_error('missingparameter');
+            throw new \moodle_exception('missingparameter');
         }
         $forum = $DB->get_record('hsuforum', array('id' => $cm->instance));
         $params['id'] = $cm->id;
@@ -59,7 +59,7 @@
     $course = $DB->get_record('course', array('id' => $forum->course));
 
     if (empty($cm) && !$cm = get_coursemodule_from_instance("hsuforum", $forum->id, $course->id)) {
-        print_error('missingparameter');
+        throw new \moodle_exception('missingparameter');
     }
 
     $discussion = false;
@@ -69,7 +69,7 @@
         $discussion = array_pop($discussions);
 
         if (empty($discussion)) {
-            print_error('cannotfindfirstpost', 'hsuforum');
+            throw new \moodle_exception('cannotfindfirstpost', 'hsuforum');
         }
 
         redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));

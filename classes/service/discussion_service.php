@@ -269,14 +269,14 @@ class discussion_service {
                         || $discussion->timestart <= time())
                     && ($discussion->timeend == 0 || $discussion->timeend > time())))
             ) {
-                print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+                throw new \moodle_exception('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
             }
         }
         if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
-            print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new \moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
-            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new \moodle_exception('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
         $posts        = hsuforum_get_all_discussion_posts($discussion->id);

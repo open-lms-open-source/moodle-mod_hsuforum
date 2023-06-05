@@ -62,7 +62,7 @@ class posts_controller extends controller_abstract {
         switch ($action) {
             case 'discsubscribers':
                 if (!has_capability('mod/hsuforum:viewsubscribers', $PAGE->context)) {
-                    print_error('nopermissiontosubscribe', 'hsuforum');
+                    throw new \moodle_exception('nopermissiontosubscribe', 'hsuforum');
                 }
                 break;
             default:
@@ -88,7 +88,7 @@ class posts_controller extends controller_abstract {
         $cm      = $PAGE->cm;
 
         if (!$post = hsuforum_get_post_full($postid)) {
-            print_error("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new \moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
 
@@ -96,11 +96,11 @@ class posts_controller extends controller_abstract {
             if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
                 || $discussion->timestart <= time())
                 && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
-                print_error('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+                throw new \moodle_exception('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
             }
         }
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
-            print_error('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new \moodle_exception('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         hsuforum_tp_add_read_record($USER->id, $post->id);
         return new json_response(array('postid' => $postid, 'discussionid' => $discussion->id));
@@ -170,7 +170,7 @@ class posts_controller extends controller_abstract {
             $unsubscribe = (bool)optional_param('unsubscribe', false, PARAM_RAW);
             /** It has to be one or the other, not both or neither */
             if (!($subscribe xor $unsubscribe)) {
-                print_error('invalidaction');
+                throw new \moodle_exception('invalidaction');
             }
             if ($subscribe) {
                 $users = $subscriberselector->get_selected_users();
