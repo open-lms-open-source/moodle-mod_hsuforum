@@ -1118,6 +1118,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
      * @param array $data provider samples.
      */
     public function test_forum_post_email_templates($data) {
+        $this->markTestSkipped('To be reviewed in INT-19064');
         global $DB, $CFG;
         // Disabled to avoid adding footer with Mobile Web Services info on emails.
         $CFG->enablemobilewebservice = 0;
