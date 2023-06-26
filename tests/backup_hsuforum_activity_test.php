@@ -40,7 +40,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/backup/moodle2/backup_hsuforum_activ
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_backup_hsuforum_activity_task_testcase extends advanced_testcase {
+class backup_hsuforum_activity_task_test extends advanced_testcase {
 
     /**
      * Test the encoding of forum content links.
