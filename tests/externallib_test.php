@@ -30,7 +30,10 @@ global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 
-class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
+/**
+ * @runTestsInSeparateProcesses
+ */
+class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Tests set up
