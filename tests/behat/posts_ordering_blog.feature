@@ -1,4 +1,4 @@
-@mod @mod_hsuforum
+@mod @mod_hsuforum @workbench
 Feature: In Open Forums, blog posts are always displayed in reverse chronological order
   In order to use forum as a blog
   As a user
@@ -9,6 +9,10 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
       | username  | firstname | lastname  | email                 |
       | teacher1  | Teacher   | 1         | teacher1@example.com  |
       | student1  | Student   | 1         | student1@example.com  |
+    And the following "user preferences" exist:
+      | user   | preference   | value    |
+      | teacher1  | htmleditor   | atto |
+      | student1  | htmleditor   | atto |
     And the following "courses" exist:
       | fullname  | shortname | category  |
       | Course 1  | C1        | 0         |

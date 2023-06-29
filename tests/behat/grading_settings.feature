@@ -68,5 +68,5 @@ Feature: While creating a new activity, the grade settings should remain in the 
     # Test forum name Open forum, should exist as a Grade category 1 which is the Grade category chosen before.
     And I should see "Grade category 1"
     And I should see "Test forum name"
-    And "//h4[contains(text(), 'Grade category 1')]" "xpath_element" should exist
+    And "//div[contains(text(), 'Grade category 1')]" "xpath_element" should exist
     And "//a[contains(text(), 'Test forum name')]" "xpath_element" should exist
