@@ -620,6 +620,8 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
         }
 
+        $arialabeldiscussion = get_string('discussionforum', 'hsuforum', $d->subject);
+
         $threadcontent = '';
         if (!$hidethreadcontent) {
             $threadcontent = '<div class="hsuforum-thread-content" tabindex="0">' . $d->message . '</div>';
@@ -639,7 +641,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
 HTML;
 
         return <<<HTML
-<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article" aria-label=""
+<article id="p{$d->postid}" class="hsuforum-thread hsuforum-post-target clearfix" role="article" aria-label="$arialabeldiscussion"
     data-discussionid="$d->id" data-postid="$d->postid" data-author="$author" data-isdiscussion="true" $attrs>
     <header id="h{$d->postid}" class="clearfix $unreadclass">
         <div class="hsuforum-thread-author">
