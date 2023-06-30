@@ -48,8 +48,6 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I should see "Your new discussion topic"
     And I set the field with xpath "//*[@id='id_subject']" to "Test discussion 1 to be cancelled again"
     And I set the field with xpath "//*[@id='id_messageeditable']" to "Test discussion 1 to be cancelled description again"
-#    And I set the field with xpath "//*[@class='mce-content-body']" to "Test discussion 1 to be cancelled description again"
-#    And I set editable div ".mce-content-body" "css_element" to "Test discussion 1 to be cancelled description"
     And I press "Post to forum"
     Then I log out
     And I log in as "student1"
