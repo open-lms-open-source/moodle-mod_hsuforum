@@ -577,6 +577,16 @@ if (!empty($parent)) {
         $formheading = get_string('yournewquestion', 'hsuforum');
     } else {
         $formheading = get_string('yournewtopic', 'hsuforum');
+        // Hide duplicated hsuforum description when creating a new discussion topic, see INT-18928.
+        $hidehtml = '';
+        $hidehtml .= html_writer::start_tag('style', array('type' => 'text/css')) . "\n";
+        $hidehtml .= '
+        #page-mod-hsuforum-post .activity-description,
+        #page-mod-hsuforum-post [role="main"] h2 {
+            display: none;
+        };';
+        $hidehtml .= html_writer::end_tag('style') . "\n";
+        echo $hidehtml;
     }
 }
 
