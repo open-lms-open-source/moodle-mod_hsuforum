@@ -736,6 +736,7 @@ $string['inreplyto'] = 'in reply to';
 $string['inprivatereplyto'] = 'in private reply to';
 $string['options'] = 'Options';
 $string['articledateformat'] = '%l:%M%P %b %e, %Y';
+$string['userdateformat'] = '%l:%M%P %b %e, %Y';
 $string['postdeleted'] = 'Post deleted';
 $string['postcreated'] = 'Post created';
 $string['cannnotdeletesinglediscussion'] = 'Sorry, but you are not allowed to delete that discussion!';
