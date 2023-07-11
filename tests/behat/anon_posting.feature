@@ -35,7 +35,7 @@ Feature: Students can post anonymously or not if they choose
       | Subject | Anon post subject |
       | Message | Anon post body    |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Anon post subject"
     And I should see "Anon post body"
     And I should not see "Anonymous User"
@@ -58,7 +58,7 @@ Feature: Students can post anonymously or not if they choose
       | Message                      | Non-anon post body    |
       | Reveal yourself in this post | 1                     |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Non-anon post subject"
     And I should see "Non-anon post body"
     And I should see "Non anonymously"
@@ -82,7 +82,7 @@ Feature: Students can post anonymously or not if they choose
       | Message                      | Edited post body    |
       | Reveal yourself in this post | 1                   |
     And I press "Save changes"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Edited post subject"
     And I should see "Edited post body"
     And I should see "Non anonymously"

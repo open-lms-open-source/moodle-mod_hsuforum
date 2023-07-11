@@ -32,7 +32,7 @@ Feature: Students can edit or delete their Open Forum posts within a set time li
       | Subject | Edited post subject |
       | Message | Edited post body |
     And I press "Save changes"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Edited post subject"
     And I should see "Edited post body"
 

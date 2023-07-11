@@ -56,7 +56,7 @@ Feature: Teachers can edit or delete any Open Forum post
     And I set the following fields to these values:
       | Subject | Edited student subject |
     And I press "Save changes"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Edited student subject"
     And I should see "Edited by Teacher 1 - original submission"
 

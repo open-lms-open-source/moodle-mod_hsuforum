@@ -62,7 +62,7 @@ Background:
     And I set the following fields to these values:
       | Message | Answer to discussion |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I should not see "Discussion 2"
     And I should see "Discussion 3"
     And I follow "Discussion 3"

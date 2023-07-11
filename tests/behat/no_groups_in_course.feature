@@ -29,7 +29,7 @@ Feature: Posting to Open Forums in a course with no groups behaves correctly
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I should see "Teacher -> All participants"
 
   Scenario: Teachers can post in forum with separate groups
@@ -42,7 +42,7 @@ Feature: Posting to Open Forums in a course with no groups behaves correctly
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I should see "Teacher -> All participants"
 
   Scenario: Teachers can post in forum with visible groups
@@ -55,7 +55,7 @@ Feature: Posting to Open Forums in a course with no groups behaves correctly
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I should see "Teacher -> All participants"
 
   Scenario: Students can post in standard forum
@@ -68,7 +68,7 @@ Feature: Posting to Open Forums in a course with no groups behaves correctly
       | Subject | Student -> All participants |
       | Message | Student -> All participants |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I should see "Student -> All participants"
 
   @javascript

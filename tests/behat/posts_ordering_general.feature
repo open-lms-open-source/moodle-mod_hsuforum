@@ -54,7 +54,7 @@ Feature: New Open discussions and discussions with recently added replies are di
     And I set the following fields to these values:
       | Subject | Edited forum post 2     |
     And I press "Submit"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I log out
     #
     # Reply to another forum post.
@@ -67,7 +67,7 @@ Feature: New Open discussions and discussions with recently added replies are di
     And I set the following fields to these values:
       | Message | Reply to the first post |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I am on "Course 1" course homepage
     And I am on the "Course general forum" "hsuforum activity" page
     #

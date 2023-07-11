@@ -88,7 +88,7 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
       # Change the group in the post form.
       | Group   | Group B               |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     # We should be redirected to the group that we selected when posting.
     # TODO: the following line fails due to a redirect bug
     #And the field "Separate groups" matches value "Group B"
@@ -149,7 +149,7 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
       | Message | Teacher 1 -> Group C  |
       | Group   | Group C               |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     # We should be redirected to the group that we selected when posting.
     # TODO: the following line fails due to a redirect bug
     #And the field "Separate groups" matches value "Group C"
@@ -236,7 +236,7 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
       | Message                   | Teacher 1 -> Post to all  |
       | Post a copy to all groups | 1                       |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     # Posting to all groups means that we should be redirected to the page we started from.
     And the field "Separate groups" matches value "All participants"
     And I select "Group A" from the "Separate groups" singleselect
@@ -267,7 +267,7 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
       | Subject | Student -> A |
       | Message | Student -> A |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I should see "Group A" in the "article[data-author='Student 1'] .hsuforum-thread-byline" "css_element"
     And I should not see "Group B" in the "article[data-author='Student 1'] .hsuforum-thread-byline" "css_element"
 
@@ -287,7 +287,7 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
       | Message | Student -> B  |
       | Group   | Group B       |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     # We should be redirected to the group that we selected when posting.
     # TODO: the following line fails due to a redirect bug
     #And the field "Separate groups" matches value "Group B"
@@ -310,7 +310,7 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
       | Message | Student -> A  |
       | Group   | Group A       |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     # We should be redirected to the group that we selected when posting.
     # TODO: the following line fails due to a redirect bug
     #And the field "Separate groups" matches value "Group A"

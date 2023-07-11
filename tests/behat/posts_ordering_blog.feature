@@ -54,7 +54,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     And I set the following fields to these values:
       | Subject | Edited blog post 2      |
     And I press "Submit"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I log out
     #
     # Reply to another blog post.
@@ -67,7 +67,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     And I follow "Use advanced editor and additional options"
     And I set the field with xpath "//*[@id='id_messageeditable']" to "Reply to the first post"
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     And I am on "Course 1" course homepage
     And I am on the "Course blog forum" "hsuforum activity" page
     #

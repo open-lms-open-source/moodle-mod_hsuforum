@@ -110,7 +110,7 @@ class behat_mod_hsuforum extends behat_base {
         // Fill form and post.
         $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $table);
         $this->execute('behat_forms::press_button', get_string('posttoforum', 'hsuforum'));
-        $this->execute('behat_general::i_wait_to_be_redirected');
+        $this->execute('behat_mod_hsuforum::i_wait_to_be_redirected_to_open_forum');
     }
 
     /**
@@ -343,4 +343,57 @@ class behat_mod_hsuforum extends behat_base {
             behat_base::get_extended_timeout()
         );
     }
+
+    /**
+     * Follows the page redirection. Use this step after any action that shows a message and waits for a redirection.
+     * Based on i_wait_to_be_redirected from behat_general.
+     *
+     * @Given /^I wait to be redirected to open forum$/
+     */
+    public function i_wait_to_be_redirected_to_open_forum () {
+
+        // Xpath and processes based on core_renderer::redirect_message(), core_renderer::$metarefreshtag and
+        // moodle_page::$periodicrefreshdelay possible values.
+        if (!$metarefresh = $this->getSession()->getPage()->find('xpath', "//head/descendant::meta[@http-equiv='refresh']")) {
+            // We don't fail the scenario if no redirection with message is found to avoid race condition false failures.
+            return true;
+        }
+
+        // Wrapped in try & catch in case the redirection has already been executed.
+        try {
+            $content = $metarefresh->getAttribute('content');
+        } catch (NoSuchElementException $e) {
+            return true;
+        } catch (StaleElementReferenceException $e) {
+            return true;
+        }
+
+        // Getting the refresh time and the url if present.
+        if (strstr($content, 'url') != false) {
+
+            list($waittime, $url) = explode(';', $content);
+
+            // Cleaning the URL value.
+            $url = trim(substr($url, strpos($url, 'http')));
+
+        } else {
+            // Just wait then.
+            $waittime = $content;
+        }
+
+
+        // Wait until the URL change is executed.
+        if ($this->running_javascript()) {
+            $this->getSession()->wait($waittime * 1000);
+
+        } else if (!empty($url)) {
+            // We redirect directly as we can not wait for an automatic redirection.
+            $this->getSession()->getDriver()->getClient()->request('GET', $url);
+
+        } else {
+            // Reload the page if no URL was provided.
+            $this->getSession()->getDriver()->reload();
+        }
+    }
+
 }
