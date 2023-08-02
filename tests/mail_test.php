@@ -993,8 +993,8 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                     'contents' => array(
                         '~{$a',
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
-                        'Attachments example.txt:\n' .
-                            $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
+                        'Attachments example.txt:\r\n' .
+                            $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\r\n',
                         'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1'
                     ),
                 ),
@@ -1052,12 +1052,12 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
         $newcase['expectations'][0]['contents'] = array(
             '~{$a',
             '~&(amp|lt|gt|quot|\#039);(?!course)',
-            'Attachments example.txt:\n' .
-            $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\n',
+            'Attachments example.txt:\r\n' .
+            $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\r\n',
             'Text and image', 'Moodle Forum',
-            'Welcome to Moodle, *\n.*'
+            'Welcome to Moodle, *\r\n.*'
                 .$CFG->wwwroot.'/pluginfile.php/\d+/mod_hsuforum/post/\d+/'
-                .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png *\n.*!',
+                .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png *\r\n.*!',
             'Love Moodle', '1\d1');
         $textcases['Text mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = array('data' => $newcase);
 
@@ -1118,7 +1118,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
      * @param array $data provider samples.
      */
     public function test_forum_post_email_templates($data) {
-        $this->markTestSkipped('To be reviewed in INT-19113');
+        $this->markTestSkipped('This test only passes on PHP 8.1. Please unskip once we are fully on PHP 8.1 or greater');
         global $DB, $CFG;
         // Disabled to avoid adding footer with Mobile Web Services info on emails.
         $CFG->enablemobilewebservice = 0;
