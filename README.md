@@ -20,6 +20,16 @@ Extract the contents of the plugin into _/wwwroot/mod_ then visit `admin/upgrade
 
 For more information about the configuration and usage, please see http://docs.moodle.org/dev/Advanced_Forum
 
+## Flag
+
+### the  `hsuforum_digestmailtime`  flag.
+### the  `hsuforum_allowforcedreadtracking`  flag.
+### the  `hsuforum_enabletimedposts`  flag.
+### the  `hsuforum_digestmailtimelast`  flag.
+### the  `mod_hsuforum_grading_interface`  flag.
+### the  `hsuforum_replytouser`  flag.
+### the  `hsuforum_subscription`  flag.
+
 ## License
 Copyright (c) 2021 Open LMS (https://www.openlms.net)
 
