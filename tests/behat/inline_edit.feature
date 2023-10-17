@@ -69,4 +69,3 @@ Feature: Teachers and students can add discussions inline
       | subject            | message                       |
       | Test discussion 1  | Test discussion 1 description |
     And I should see "Your post was successfully added."
-

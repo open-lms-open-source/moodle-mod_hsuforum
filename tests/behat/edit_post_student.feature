@@ -23,7 +23,7 @@ Feature: Students can edit or delete their Open Forum posts within a set time li
       | Subject | Forum post subject |
       | Message | This is the body |
 
- @javascript
+  @javascript
   Scenario: Edit forum post
     Given I follow "Forum post subject"
     And I follow "Edit"

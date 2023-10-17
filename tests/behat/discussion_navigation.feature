@@ -4,7 +4,7 @@ Feature: A user can navigate to previous and next discussions in Open Forums
   As a user
   I need to click on the previous discussion link
 
-Background:
+  Background:
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | 1        | teacher1@example.com |
@@ -73,7 +73,7 @@ Background:
     And I should see "Discussion 3"
 
   @javascript
-    Scenario: A user can navigate between discussions with visible groups
+  Scenario: A user can navigate between discussions with visible groups
     Given the following "activities" exist:
       | activity | name            | intro           | course | idnumber | groupmode |
       | hsuforum | Test forum name | intro  text     | C1     | hsuforum | 2         |
