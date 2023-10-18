@@ -569,27 +569,6 @@ if ($USER->id != $post->userid) {   // Not the original author, so add a message
     unset($data);
 }
 
-$formheading = '';
-if (!empty($parent)) {
-    $formheading = get_string("yourreply", "hsuforum");
-} else {
-    if ($forum->type == 'qanda') {
-        $formheading = get_string('yournewquestion', 'hsuforum');
-    } else {
-        $formheading = get_string('yournewtopic', 'hsuforum');
-        // Hide duplicated hsuforum description when creating a new discussion topic, see INT-18928.
-        $hidehtml = '';
-        $hidehtml .= html_writer::start_tag('style', array('type' => 'text/css')) . "\n";
-        $hidehtml .= '
-        #page-mod-hsuforum-post .activity-description,
-        #page-mod-hsuforum-post [role="main"] h2 {
-            display: none;
-        };';
-        $hidehtml .= html_writer::end_tag('style') . "\n";
-        echo $hidehtml;
-    }
-}
-
 if (hsuforum_is_subscribed($USER->id, $forum->id) || $USER->autosubscribe) {
     $subscribe = true;
 } else if (hsuforum_user_has_posted($forum->id, 0, $USER->id)) {
@@ -1049,6 +1028,27 @@ if (!empty($parent)) {
 if (!empty($CFG->enableplagiarism)) {
     require_once($CFG->libdir.'/plagiarismlib.php');
     echo plagiarism_print_disclosure($cm->id);
+}
+
+$formheading = '';
+if (!empty($parent)) {
+    $formheading = get_string("yourreply", "hsuforum");
+} else {
+    if ($forum->type == 'qanda') {
+        $formheading = get_string('yournewquestion', 'hsuforum');
+    } else {
+        $formheading = get_string('yournewtopic', 'hsuforum');
+        // Hide duplicated hsuforum description when creating a new discussion topic, see INT-18928.
+        $hidehtml = '';
+        $hidehtml .= html_writer::start_tag('style', array('type' => 'text/css')) . "\n";
+        $hidehtml .= '
+        #page-mod-hsuforum-post .activity-description,
+        #page-mod-hsuforum-post [role="main"] h2 {
+            display: none;
+        };';
+        $hidehtml .= html_writer::end_tag('style') . "\n";
+        echo $hidehtml;
+    }
 }
 
 if (!empty($formheading)) {
