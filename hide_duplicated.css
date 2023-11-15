@@ -1,0 +1,4 @@
+#page-mod-hsuforum-post .activity-description,
+#page-mod-hsuforum-post [role="main"] h2 {
+    display: none;
+}
