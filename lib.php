@@ -609,7 +609,7 @@ function hsuforum_cron() {
             $userto->markposts     = array();
 
             // Set this so that the capabilities are cached, and environment matches receiving user.
-            cron_setup_user($userto);
+            \core\cron::setup_user($userto);
 
             // Reset the caches.
             foreach ($coursemodules as $forumid => $unused) {
@@ -673,7 +673,7 @@ function hsuforum_cron() {
                 // Note: If we want to check that userto and userfrom are not the same person this is probably the spot to do it.
 
                 // Setup global $COURSE properly - needed for roles and languages.
-                cron_setup_user($userto, $course);
+                \core\cron::setup_user($userto, $course);
 
                 // Fill caches.
                 if (!isset($userto->viewfullnames[$forum->id])) {
@@ -887,7 +887,7 @@ function hsuforum_cron() {
     unset($mailcount);
     unset($errorcount);
 
-    cron_setup_user();
+    \core\cron::setup_user();
 
     $sitetimezone = core_date::get_server_timezone();
 
@@ -976,7 +976,7 @@ function hsuforum_cron() {
 
                 core_php_time_limit::raise(120); // terminate if processing of any account takes longer than 2 minutes
 
-                cron_setup_user();
+                \core\cron::setup_user();
 
                 mtrace(get_string('processingdigest', 'hsuforum', $userid), '... ');
 
@@ -997,7 +997,7 @@ function hsuforum_cron() {
 
                 // Override the language and timezone of the "current" user, so that
                 // mail is customised for the receiver.
-                cron_setup_user($userto);
+                \core\cron::setup_user($userto);
 
                 $postsubject = get_string('digestmailsubject', 'hsuforum', format_string($site->shortname, true));
 
@@ -1021,7 +1021,7 @@ function hsuforum_cron() {
                     $cm         = $coursemodules[$forum->id];
 
                     //override language
-                    cron_setup_user($userto, $course);
+                    \core\cron::setup_user($userto, $course);
 
                     // Fill caches
                     if (!isset($userto->viewfullnames[$forum->id])) {
@@ -1200,7 +1200,7 @@ function hsuforum_cron() {
         $config->digestmailtimelast = $timenow;
     }
 
-    cron_setup_user();
+    \core\cron::setup_user();
 
     if (!empty($usermailcount)) {
         mtrace(get_string('digestsentusers', 'hsuforum', $usermailcount));
