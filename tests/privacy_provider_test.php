@@ -22,13 +22,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use \core_privacy\tests\provider_testcase;
+use helper_hsuforums;
+use \mod_hsuforum\privacy\provider;
+use rating_manager;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
 require_once(__DIR__ . '/helper.php');
 require_once($CFG->dirroot . '/rating/lib.php');
-use \mod_hsuforum\privacy\provider;
+
 
 /**
  * Tests for the hsuforum implementation of the Privacy Provider API.
@@ -36,7 +44,7 @@ use \mod_hsuforum\privacy\provider;
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_privacy_provider_testcase extends \core_privacy\tests\provider_testcase {
+class privacy_provider_test extends provider_testcase {
 
     // Include the privacy helper trait.
     use \mod_hsuforum\privacy\subcontext_info;

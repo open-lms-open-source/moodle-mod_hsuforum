@@ -23,11 +23,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use context_course;
+use context_module;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-class mod_hsuforum_mail_testcase extends advanced_testcase {
+class mail_test extends advanced_testcase {
 
     protected $helper;
 
@@ -290,7 +297,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
         // And next event should be the 'notification_sent' one.
         $event = $events[1];
-        
+
         $this->assertInstanceOf('\core\event\notification_sent', $event);
         $this->assertEquals($author->id, $event->userid);
         $this->assertEquals($recipient->id, $event->relateduserid);

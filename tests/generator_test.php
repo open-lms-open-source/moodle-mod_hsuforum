@@ -23,6 +23,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use context_module;
+use core_tag_tag;
+use mod_hsuforum_generator;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 
@@ -34,7 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2012 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_generator_testcase extends advanced_testcase {
+class generator_test extends advanced_testcase {
     public function test_generator() {
         global $DB;
 

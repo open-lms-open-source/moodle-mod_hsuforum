@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
- 
+
 /**
  * Testing form service prepare draft area
  *
@@ -21,13 +21,22 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use context_module;
+use context_user;
+use mod_hsuforum_generator;
+use moodle_url;
+use repository;
+
 class testable_form_service extends \mod_hsuforum\service\form_service {
     public function protected_file_prepare_draft_area(&$draftitemid, $contextid, $component, $filearea, $itemid, array $options=null, $text=null) {
         return $this->file_prepare_draft_area($draftitemid, $contextid, $component, $filearea, $itemid, $options, $text);
     }
 }
 
-class mod_hsuforum_form_service_testcase extends advanced_testcase {
+class form_service_test extends advanced_testcase {
     public function test_prepare_draft_area() {
         global $DB, $CFG, $USER;
 

@@ -22,6 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use mod_hsuforum\output\hsuforum_post_email;
+use moodle_url;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -30,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_output_email_testcase extends advanced_testcase {
+class output_email_test extends advanced_testcase {
     /**
      * Data provider for the postdate function tests.
      */
@@ -178,7 +184,7 @@ class mod_hsuforum_output_email_testcase extends advanced_testcase {
         $DB->update_record('hsuforum_posts', $post);
 
         // Create the renderable.
-        $renderable = new mod_hsuforum\output\hsuforum_post_email(
+        $renderable = new hsuforum_post_email(
                 $course,
                 $cm,
                 $forum,
@@ -216,7 +222,7 @@ class mod_hsuforum_output_email_testcase extends advanced_testcase {
         $post = $DB->get_record('hsuforum_posts', ['discussion' => $discussion->id, 'userid' => $user->id]);
 
         $anonuser = hsuforum_anonymize_user($user, $forum, $post);
-        $postemail = new \mod_hsuforum\output\hsuforum_post_email($course, $cm, $forum, $discussion, $post, $anonuser,
+        $postemail = new hsuforum_post_email($course, $cm, $forum, $discussion, $post, $anonuser,
                 get_admin(), true);
 
         $anonprofileurl = new moodle_url('/user/view.php', ['id' => $anonuser->id, 'course' => $course->id]);

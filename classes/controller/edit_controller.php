@@ -228,7 +228,7 @@ class edit_controller extends controller_abstract {
             $timestart = $timestart === 0 ? $discussion->timestart : 0;
             $timeend = $timeend === 0 ? $discussion->timeend : 0;
 
-            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post, $files,  array(
+            return $this->postservice->handle_update_post($course, $cm, $forum, $context, $discussion, $post,  array(
                 'subject'       => $subject,
                 'name'          => $subject,
                 'groupid'       => $groupid,
@@ -239,7 +239,7 @@ class edit_controller extends controller_abstract {
                 'privatereply'  => $privatereply,
                 'timestart'     => $timestart,
                 'timeend'       => $timeend
-            ));
+            ), $files);
         } catch (\Exception $e) {
             return new json_response($e);
         }
