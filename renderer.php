@@ -341,7 +341,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         if (!property_exists($discussion, 'unread') or empty($discussion->unread)) {
             $discussion->unread = '-';
         }
-        $format = get_string('articledateformat', 'hsuforum');
+        $format = get_string('userdateformat', 'hsuforum');
 
         $groups = groups_get_all_groups($course->id, 0, $cm->groupingid);
         $group = '';
@@ -492,7 +492,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $data->fullname       = $postuser->fullname;
         $data->subject        = property_exists($post, 'breadcrumb') ? $post->breadcrumb : $this->raw_post_subject($post);
         $data->message        = $this->post_message($post, $cm, $search);
-        $data->created        = userdate($post->created, get_string('articledateformat', 'hsuforum'));
+        $data->created        = userdate($post->created, get_string('userdateformat', 'hsuforum'));
         $data->rawcreated     = $post->created;
         $data->privatereply   = $post->privatereply;
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();

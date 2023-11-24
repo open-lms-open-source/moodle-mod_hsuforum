@@ -70,7 +70,7 @@ class export_controller extends controller_abstract {
         $mform = new export_form($this->new_url(), (object) array(
             'cm'    => $cm,
             'forum' => $PAGE->activityrecord,
-        ));
+        ), 'post', '', array('onreset' => ''));
 
         if ($mform->is_cancelled()) {
             redirect(new \moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id)));

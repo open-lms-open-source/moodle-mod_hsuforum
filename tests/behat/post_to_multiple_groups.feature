@@ -62,7 +62,6 @@ Feature: In Open Forums a user with access to multiple groups should be able to 
       | hsuforum   | Visible group forum    | Test forum name   | C1     | forum        | 2         |          |
       | hsuforum   | Groupings forum        | Test forum name   | C2     | forum        | 1         | G1       |
 
-
   @javascript
   Scenario: Teacher is able to post a copy of a message to all groups in a separate group forum via ajax
     Given I log in as "teacher1"
@@ -109,7 +108,7 @@ Feature: In Open Forums a user with access to multiple groups should be able to 
     And I am on "Course 1" course homepage
     And I follow "Separate group forum"
     And I should see "Discussion 1"
-    
+
   @javascript
   Scenario: Teacher is able to post a copy of a message to all groups in a visible group forum via ajax
     Given I log in as "teacher1"

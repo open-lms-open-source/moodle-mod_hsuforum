@@ -228,7 +228,7 @@ class hsuforum_lib_discussion_sort implements Serializable {
      * @return string the string representation of the object or &null;
      */
     public function serialize() {
-        return serialize(array('key' => $this->get_key(), 'direction' => $this->get_direction()));
+        return serialize($this->__serialize());
     }
 
     /**
@@ -242,11 +242,24 @@ class hsuforum_lib_discussion_sort implements Serializable {
      * @return void
      */
     public function unserialize($serialized) {
-        $sortinfo = unserialize($serialized);
+        $serialized = unserialize($serialized);
+        $this->__unserialize($serialized);
+    }
 
+    /**
+     * @return array
+     */
+    public function __serialize() {
+        return array('key' => $this->get_key(), 'direction' => $this->get_direction());
+    }
+
+    /**
+     * @return void
+     */
+    public function __unserialize($serialized) {
         try {
-            $this->set_key($sortinfo['key'])
-                 ->set_direction($sortinfo['direction']);
+            $this->set_key($serialized['key'])
+                ->set_direction($serialized['direction']);
         } catch (Exception $e) {
             // Ignore...
         }

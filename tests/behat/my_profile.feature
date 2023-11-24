@@ -4,7 +4,7 @@ Feature: A user can see a link to their Open Forum posts in their profile
   As a user
   I need to click on the link in the profile page
 
-Background:
+  Background:
     Given the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher1 | Teacher   | 1        | teacher1@example.com |
@@ -46,4 +46,3 @@ Background:
     Then I should see "Discussion 1"
     And I should see "Discussion 2"
     And I should see "Discussion 3"
-

@@ -25,7 +25,7 @@ Feature: Students can post anonymously or not if they choose
       | Subject | Forum post subject |
       | Message | This is the body   |
 
- @javascript
+  @javascript
   Scenario: Add forum post anonymously
     Given I follow "Forum post subject"
     And I follow "Reply"
@@ -35,7 +35,7 @@ Feature: Students can post anonymously or not if they choose
       | Subject | Anon post subject |
       | Message | Anon post body    |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Anon post subject"
     And I should see "Anon post body"
     And I should not see "Anonymous User"
@@ -47,7 +47,7 @@ Feature: Students can post anonymously or not if they choose
     And I should see "Anon post body"
     And I should see "Anonymous User"
 
- @javascript
+  @javascript
   Scenario: Add forum post non-anonymously
     Given I follow "Forum post subject"
     And I follow "Reply"
@@ -58,7 +58,7 @@ Feature: Students can post anonymously or not if they choose
       | Message                      | Non-anon post body    |
       | Reveal yourself in this post | 1                     |
     And I press "Post to forum"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Non-anon post subject"
     And I should see "Non-anon post body"
     And I should see "Non anonymously"
@@ -70,7 +70,7 @@ Feature: Students can post anonymously or not if they choose
     And I should see "Non-anon post body"
     And I should see "Student 1"
 
- @javascript
+  @javascript
   Scenario: Edit forum post from anon to non-anon
     Given I follow "Forum post subject"
     And I should not see "Non anonymously"
@@ -82,8 +82,7 @@ Feature: Students can post anonymously or not if they choose
       | Message                      | Edited post body    |
       | Reveal yourself in this post | 1                   |
     And I press "Save changes"
-    And I wait to be redirected
+    And I wait to be redirected to open forum
     Then I should see "Edited post subject"
     And I should see "Edited post body"
     And I should see "Non anonymously"
-
