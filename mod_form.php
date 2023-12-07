@@ -395,7 +395,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
             $trackingdefault = COMPLETION_TRACKING_NONE;
             // If system and activity default is on, set it.
-            if ($CFG->completiondefault && $this->_features->defaultcompletion) {
+            if (isset($CFG->completiondefault) && $CFG->completiondefault && $this->_features->defaultcompletion) {
                 $hasrules = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_HAS_RULES, true);
                 $tracksviews = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, true);
                 if ($hasrules || $tracksviews) {
