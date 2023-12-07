@@ -22,6 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use context_module;
+use rating;
+use \restore_date_testcase;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -35,7 +42,7 @@ require_once($CFG->dirroot . '/rating/lib.php');
  * @copyright  2017 onwards Ankit Agarwal <ankit.agrr@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_restore_date_testcase extends restore_date_testcase {
+class restore_date_test extends restore_date_testcase {
 
     /**
      * Test restore dates.

@@ -24,11 +24,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use advanced_testcase;
+use core_date;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-class mod_hsuforum_maildigest_testcase extends advanced_testcase {
+class maildigest_test extends advanced_testcase {
 
     /**
      * Keep track of the message and mail sinks that we set up for each

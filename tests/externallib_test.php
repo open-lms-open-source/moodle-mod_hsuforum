@@ -23,6 +23,19 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
+use context_module;
+use context_system;
+use context_user;
+use external_api;
+use externallib_advanced_testcase;
+use mod_hsuforum_external;
+use moodle_exception;
+use moodle_url;
+use stdClass;
+use user_picture;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -30,7 +43,10 @@ global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 
-class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
+/**
+ * @runTestsInSeparateProcesses
+ */
+class externallib_test extends externallib_advanced_testcase {
 
     /**
      * Tests set up
@@ -43,6 +59,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test get forums
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forums_by_courses() {
         global $USER, $CFG, $DB;
@@ -171,6 +189,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test get forum posts
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussion_posts() {
         global $CFG, $PAGE;
@@ -399,6 +419,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test get forum posts (qanda forum)
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussion_posts_qanda() {
         global $CFG, $DB;
@@ -465,6 +487,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test get forum discussions paginated
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussions_paginated() {
         global $USER, $DB, $PAGE;
@@ -613,6 +637,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test get forum discussions paginated (qanda forums)
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussions_paginated_qanda() {
 
@@ -657,6 +683,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test add_discussion_post
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion_post() {
         global $CFG;
@@ -790,8 +818,10 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     }
 
-    /*
+    /**
      * Test add_discussion. A basic test since all the API functions are already covered by unit tests.
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion() {
         global $CFG, $USER;
@@ -905,8 +935,10 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $this->assertTrue($postfound);
     }
 
-    /*
+    /**
      * Test add_discussion without capability to upload attachments.
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion_without_attachment_capability() {
         global $DB;
@@ -960,6 +992,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test adding discussions in a course with gorups
+     *
+     * @runInSeparateProcess
      */
     public function test_add_discussion_in_course_with_groups() {
         global $CFG;
@@ -1059,8 +1093,10 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     }
 
-    /*
+    /**
      * Test can_add_discussion. A basic test since all the API functions are already covered by unit tests.
+     *
+     * @runInSeparateProcess
      */
     public function test_can_add_discussion() {
         global $DB;
@@ -1107,6 +1143,8 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Test get forum posts discussions including rating information.
+     *
+     * @runInSeparateProcess
      */
     public function test_mod_hsuforum_get_forum_discussion_rating_information() {
         global $DB, $CFG;

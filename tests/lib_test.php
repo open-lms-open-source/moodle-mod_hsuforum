@@ -22,9 +22,26 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace mod_hsuforum;
 
+use advanced_testcase;
+use calendar_event;
+use cm_info;
+use coding_exception;
+use completion_info;
+use context_course;
+use context_module;
+use core_tag_index_builder;
+use core_tag_tag;
 use mod_hsuforum\service;
+use mod_hsuforum_mod_form;
+use rating;
+use rating_exception;
+use ReflectionClass;
+use ReflectionObject;
+use stdClass;
+
+defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
@@ -32,8 +49,9 @@ require_once($CFG->dirroot . '/mod/hsuforum/locallib.php');
 require_once($CFG->dirroot . '/rating/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/mod_form.php');
 require_once($CFG->dirroot . '/course/modlib.php');
+require_once($CFG->dirroot . '/lib/accesslib.php');
 
-class mod_hsuforum_lib_testcase extends advanced_testcase {
+class lib_test extends advanced_testcase {
 
     public function test_hsuforum_trigger_content_uploaded_event() {
         $this->resetAfterTest();
@@ -81,7 +99,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $expected->userid = $user->id;
         $expected->content = $fakepost->message;
         $expected->pathnamehashes = array($fi->get_pathnamehash());
-        $this->assertEventLegacyData($expected, $event);
         $this->assertEventContextNotUsed($event);
     }
 
@@ -401,7 +418,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals($context, $event->get_context());
         $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
             $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -1444,7 +1460,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals($context, $event->get_context());
         $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
             $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());

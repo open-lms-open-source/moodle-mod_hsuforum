@@ -6,6 +6,10 @@ Feature: Users see their typed information in the advanced editor view when clic
       | username | firstname | lastname | email |
       | student1 | Student | 1 | student1@example.com |
       | teacher1 | Teacher | 1 | teacher1@example.com |
+    And the following "user preferences" exist:
+      | user   | preference   | value    |
+      | teacher1  | htmleditor   | atto |
+      | student1  | htmleditor   | atto |
     And the following "courses" exist:
       | fullname | shortname | category |
       | Course 1 | C1 | 0 |
@@ -27,7 +31,11 @@ Feature: Users see their typed information in the advanced editor view when clic
   Scenario: User can continue writing after clicking "Use advanced editor"
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Test forum name"
+    And I change window size to "large"
+    # This does no longer work with Moodle 4.2
+    # And I follow "Test forum name"
+    # But this works:
+    And I click on ".aalink:contains('Test forum name')" "css_element"
     And I wait until the page is ready
     And I press "Add a new discussion"
     And I should see "Add your discussion"
@@ -38,8 +46,8 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I wait until the page is ready
     And I should not see "Add your discussion"
     And I should see "Your new discussion topic"
-    And I set the field with xpath "//*[@id='id_subject']" to "Test discussion 1 to be cancelled"
-    And I set the field with xpath "//*[@id='id_messageeditable']" to "Test discussion 1 to be cancelled description"
+    And I set the field with xpath "//*[@id='id_subject']" to "Test discussion 1 to be cancelled again"
+    And I set the field with xpath "//*[@id='id_messageeditable']" to "Test discussion 1 to be cancelled description again"
     And I press "Post to forum"
     Then I log out
     And I log in as "student1"
@@ -59,7 +67,8 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I log out
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Test forum name"
+#    And I follow "Test forum name"
+    And I click on ".aalink:contains('Test forum name')" "css_element"
     And I follow "Test discussion 1 to be cancelled"
     And I wait until the page is ready
     And I set editable div ".hsuforum-textarea" "css_element" to "Test discussion 1 to be cancelled description"

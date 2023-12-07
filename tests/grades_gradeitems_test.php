@@ -25,7 +25,7 @@
 
 declare(strict_types = 1);
 
-namespace tests\mod_hsuforum\grades;
+namespace mod_hsuforum;
 
 use advanced_testcase;
 use core_grades\component_gradeitems;
@@ -39,7 +39,7 @@ use coding_exception;
  * @copyright 2020 Open LMS
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class gradeitems_test extends advanced_testcase
+class grades_gradeitems_test extends advanced_testcase
 {
 
     /**

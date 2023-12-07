@@ -395,7 +395,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
             $trackingdefault = COMPLETION_TRACKING_NONE;
             // If system and activity default is on, set it.
-            if ($CFG->completiondefault && $this->_features->defaultcompletion) {
+            if (isset($CFG->completiondefault) && $CFG->completiondefault && $this->_features->defaultcompletion) {
                 $hasrules = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_HAS_RULES, true);
                 $tracksviews = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, true);
                 if ($hasrules || $tracksviews) {
@@ -414,7 +414,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // Automatic completion once you view it
             $gotcompletionoptions = false;
             if (plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, false)) {
-                $mform->addElement('checkbox', 'completionview', get_string('completionview', 'completion'),
+                $mform->addElement('checkbox', 'completionview', get_string('completionview', 'mod_hsuforum'),
                     get_string('completionview_desc', 'completion'));
                 $mform->hideIf('completionview', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
                 // Check by default if automatic completion tracking is set.
@@ -441,7 +441,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                         get_string('completionusegrade_desc', 'completion')
                     );
                     $mform->hideIf('completionusegrade', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
-                    $mform->addHelpButton('completionusegrade', 'completionusegrade', 'completion');
+                    $mform->addHelpButton('completionusegrade', 'completionusegrade', 'mod_hsuforum');
 
                     // The disabledIf logic differs between ratings and other grade items due to different field types.
                     if ($this->_features->rating) {
@@ -742,30 +742,45 @@ class mod_hsuforum_mod_form extends moodleform_mod {
      * @return array Array of string IDs of added items, empty array if none
      */
     public function add_completion_rules() {
+        global $CFG;
+
         $mform =& $this->_form;
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled', '', get_string('completionposts','hsuforum'));
-        $group[] =& $mform->createElement('text', 'completionposts', '', array('size'=>3));
-        $mform->setType('completionposts',PARAM_INT);
-        $mform->addGroup($group, 'completionpostsgroup', get_string('completionpostsgroup','hsuforum'), array(' '), false);
-        $mform->disabledIf('completionposts','completionpostsenabled','notchecked');
+        // Changes for Moodle 4.3 - MDL-78516.
+        if ($CFG->branch < 403) {
+            $suffix = '';
+        } else {
+            $suffix = $this->get_suffix();
+        }
 
         $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completiondiscussionsenabled', '', get_string('completiondiscussions','hsuforum'));
-        $group[] =& $mform->createElement('text', 'completiondiscussions', '', array('size'=>3));
-        $mform->setType('completiondiscussions',PARAM_INT);
-        $mform->addGroup($group, 'completiondiscussionsgroup', get_string('completiondiscussionsgroup','hsuforum'), array(' '), false);
-        $mform->disabledIf('completiondiscussions','completiondiscussionsenabled','notchecked');
+        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled' . $suffix, '',
+            get_string('completionposts','hsuforum'));
+        $group[] =& $mform->createElement('text', 'completionposts' . $suffix, '', array('size'=>3));
+        $mform->setType('completionposts' . $suffix,PARAM_INT);
+        $mform->addGroup($group, 'completionpostsgroup' . $suffix,
+            get_string('completionpostsgroup','hsuforum'), array(' '), false);
+        $mform->disabledIf('completionposts' . $suffix,'completionpostsenabled' . $suffix,'notchecked');
 
         $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionrepliesenabled', '', get_string('completionreplies','hsuforum'));
-        $group[] =& $mform->createElement('text', 'completionreplies', '', array('size'=>3));
-        $mform->setType('completionreplies',PARAM_INT);
-        $mform->addGroup($group, 'completionrepliesgroup', get_string('completionrepliesgroup','hsuforum'), array(' '), false);
-        $mform->disabledIf('completionreplies','completionrepliesenabled','notchecked');
+        $group[] =& $mform->createElement('checkbox', 'completiondiscussionsenabled' . $suffix, '',
+            get_string('completiondiscussions','hsuforum'));
+        $group[] =& $mform->createElement('text', 'completiondiscussions' . $suffix, '', array('size'=>3));
+        $mform->setType('completiondiscussions' . $suffix,PARAM_INT);
+        $mform->addGroup($group, 'completiondiscussionsgroup' . $suffix,
+            get_string('completiondiscussionsgroup','hsuforum'), array(' '), false);
+        $mform->disabledIf('completiondiscussions' . $suffix,'completiondiscussionsenabled' . $suffix,'notchecked');
 
-        return array('completiondiscussionsgroup','completionrepliesgroup','completionpostsgroup');
+        $group=array();
+        $group[] =& $mform->createElement('checkbox', 'completionrepliesenabled' . $suffix, '',
+            get_string('completionreplies','hsuforum'));
+        $group[] =& $mform->createElement('text', 'completionreplies' . $suffix, '', array('size'=>3));
+        $mform->setType('completionreplies' . $suffix,PARAM_INT);
+        $mform->addGroup($group, 'completionrepliesgroup' . $suffix,
+            get_string('completionrepliesgroup','hsuforum'), array(' '), false);
+        $mform->disabledIf('completionreplies' . $suffix,'completionrepliesenabled' . $suffix,'notchecked');
+
+        return ['completiondiscussionsgroup' . $suffix, 'completionrepliesgroup' . $suffix, 'completionpostsgroup' . $suffix];
     }
 
     function completion_rule_enabled($data) {

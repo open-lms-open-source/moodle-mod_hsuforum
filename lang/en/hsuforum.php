@@ -755,3 +755,9 @@ $string['confighiderecentposts'] = 'Set to yes to stop the display of recent for
 $string['forumsubjectdeleted'] = 'This forum post has been removed';
 $string['forumbodydeleted'] = 'The content of this forum post has been removed and can no longer be accessed.';
 $string['gradeitem:posts'] = 'Posts';
+
+// Replacements for deprecated core completion strings of Moodle 4.3+.
+$string['completionview'] = 'Require view';
+$string['completionusegrade'] = 'Require grade';
+$string['completionusegrade_desc'] = 'Receive a grade';
+$string['completionusegrade_help'] = 'If enabled, the activity is considered complete when a student receives a grade. If a pass grade for the activity is set, then pass and fail icons are displayed in the activity completion report.';

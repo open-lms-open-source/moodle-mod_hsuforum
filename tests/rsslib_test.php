@@ -28,16 +28,13 @@ global $CFG;
 require_once(__DIR__ . '/helper.php');
 require_once("{$CFG->dirroot}/mod/hsuforum/rsslib.php");
 
-
-
-
 /**
  * Tests for the forum implementation of the RSS component.
  *
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_rsslib_testcase extends advanced_testcase {
+class rsslib_test extends advanced_testcase {
     // Include the mod_hsuforum test helpers.
     // This includes functions to create forums, users, discussions, and posts.
     use helper_hsuforums;
