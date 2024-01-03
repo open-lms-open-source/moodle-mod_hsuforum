@@ -759,7 +759,7 @@ HTML;
                 $byline = get_string('postbyxinreplytox', 'hsuforum', array(
                         'parent' => $p->parentuserpic.$parent,
                         'author' => $byuser,
-                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>"
+                        'parentpost' => "<a title='".get_string('parentofthispost', 'hsuforum')."' class='hsuforum-parent-post-link disable-router' href='$p->parenturl'><span class='accesshide'>".get_string('parentofthispost', 'hsuforum')."</span>↑</a>",
                 ));
             }
             if (!empty($p->privatereply)) {
@@ -768,7 +768,7 @@ HTML;
                 } else {
                     $byline = get_string('postbyxinprivatereplytox', 'hsuforum', array(
                             'author' => $byuser,
-                            'parent' => $p->parentuserpic.$parent
+                            'parent' => $p->parentuserpic.$parent,
                         ));
                 }
             }
@@ -1006,9 +1006,9 @@ HTML;
                 array('toggled:bookmark', 'hsuforum'),
                 array('toggled:subscribe', 'hsuforum'),
                 array('toggled:substantive', 'hsuforum'),
-                array('addareply', 'hsuforum')
+                array('addareply', 'hsuforum'),
 
-            )
+            ),
         );
     }
 
@@ -1067,7 +1067,7 @@ HTML;
                 'returnurl' => $returnurl,
                 'postid'    => $post->id,
                 'flag'      => $flag,
-                'sesskey'   => sesskey()
+                'sesskey'   => sesskey(),
             ));
 
             // Create appropriate area described by.
@@ -1395,7 +1395,7 @@ HTML;
             $counts = array(
                 get_string('totalpostsanddiscussions', 'hsuforum', ($discussioncount+$postcount)),
                 get_string('totaldiscussions', 'hsuforum', $discussioncount),
-                get_string('totalreplies', 'hsuforum', $postcount)
+                get_string('totalreplies', 'hsuforum', $postcount),
             );
 
             if (!empty($config->showsubstantive)) {

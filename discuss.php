@@ -79,7 +79,7 @@
 
         $params = array(
             'context' => $modcontext,
-            'objectid' => $forum->id
+            'objectid' => $forum->id,
         );
         $event = \mod_hsuforum\event\course_module_viewed::create($params);
         $event->add_record_snapshot('course_modules', $cm);
@@ -142,7 +142,7 @@
                 'other'    => array(
                     'fromforumid' => $forum->id,
                     'toforumid'   => $forumto->id,
-                )
+                ),
             );
             $event  = \mod_hsuforum\event\discussion_moved::create($params);
             $event->add_record_snapshot('hsuforum_discussions', $discussion);

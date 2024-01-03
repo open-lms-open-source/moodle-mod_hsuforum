@@ -144,7 +144,7 @@ class post extends \core_search\base_mod {
     public function get_search_fileareas() {
         $fileareas = array(
             'attachment',
-            'post'
+            'post',
         );
 
         return $fileareas;
@@ -315,7 +315,7 @@ class post extends \core_search\base_mod {
     protected function get_contexts_to_reindex_extra_sql() {
         return [
             'JOIN {hsuforum_discussions} fd ON fd.course = cm.course AND fd.forum = cm.instance',
-            'MAX(fd.timemodified) DESC'
+            'MAX(fd.timemodified) DESC',
         ];
     }
 

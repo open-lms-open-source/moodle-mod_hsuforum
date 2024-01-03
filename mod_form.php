@@ -119,7 +119,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             10 => 10,
             20 => 20,
             50 => 50,
-            100 => 100
+            100 => 100,
         );
         $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'hsuforum'), $choices);
         $mform->addHelpButton('maxattachments', 'maxattachments', 'hsuforum');

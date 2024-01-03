@@ -79,13 +79,13 @@ class mod_hsuforum_form_service_testcase extends advanced_testcase {
             'filearea' => 'draft',
             'itemid' => $draftid,
             'filepath' => '/',
-            'filename' => ''
+            'filename' => '',
         );
 
         // Create some files.
         $imagefiles = array(
             'testgif_small.gif',
-            'testgif2_small.gif'
+            'testgif2_small.gif',
         );
 
         // Add files to draft area and make sure they exist!

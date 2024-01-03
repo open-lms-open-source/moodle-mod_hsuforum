@@ -98,7 +98,7 @@ class provider implements
             'userid' => 'privacy:metadata:hsuforum_queue:userid',
             'discussionid' => 'privacy:metadata:hsuforum_queue:discussionid',
             'postid' => 'privacy:metadata:hsuforum_queue:postid',
-            'timemodified' => 'privacy:metadata:hsuforum_queue:timemodified'
+            'timemodified' => 'privacy:metadata:hsuforum_queue:timemodified',
         ], 'privacy:metadata:hsuforum_queue');
 
         // The 'hsuforum_read' table stores data about which forum posts have been read by each user.
@@ -561,7 +561,7 @@ class provider implements
                 'pinned' => transform::yesno((bool)$discussion->pinned),
                 'timemodified' => transform::datetime($discussion->timemodified),
                 'usermodified' => transform::datetime($discussion->usermodified),
-                'creator_was_you' => transform::yesno($discussion->userid == $userid)
+                'creator_was_you' => transform::yesno($discussion->userid == $userid),
             ];
 
             $discussionarea = static::get_discussion_area($discussion);

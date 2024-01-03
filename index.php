@@ -55,7 +55,7 @@ $coursecontext = context_course::instance($course->id);
 unset($SESSION->fromdiscussion);
 
 $params = array(
-    'context' => context_course::instance($course->id)
+    'context' => context_course::instance($course->id),
 );
 $event = \mod_hsuforum\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);

@@ -374,7 +374,7 @@ class post_service {
                 'discussionid' => $discussion->id,
                 'forumid'      => $forum->id,
                 'forumtype'    => $forum->type,
-            )
+            ),
         );
         $event = post_created::create($params);
         $event->add_record_snapshot('hsuforum_posts', $post);
@@ -400,7 +400,7 @@ class post_service {
                 'discussionid' => $discussion->id,
                 'forumid'      => $forum->id,
                 'forumtype'    => $forum->type,
-            )
+            ),
         );
 
         if ($post->userid !== $USER->id) {
