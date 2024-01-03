@@ -215,7 +215,7 @@ class form_service {
             'groupid' => ($discussion->groupid == -1) ? 0 : $discussion->groupid,
             'itemid'  => $itemid,
             'timestart' => $discussion->timestart,
-            'timeend' => $discussion->timeend
+            'timeend' => $discussion->timeend,
         ));
     }
 }

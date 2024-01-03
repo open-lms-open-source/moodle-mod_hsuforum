@@ -253,7 +253,7 @@ class reply_handler extends \core\message\inbound\handler {
                 'discussionid'  => $discussion->id,
                 'forumid'       => $forum->id,
                 'forumtype'     => $forum->type,
-            )
+            ),
         );
         $event = \mod_hsuforum\event\post_created::create($params);
         $event->add_record_snapshot('hsuforum_posts', $addpost);

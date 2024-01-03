@@ -230,7 +230,7 @@ if (empty($result->posts)) {
         $userheading = array(
                 'heading' => fullname($user),
                 'user' => $user,
-                'usercontext' => $usercontext
+                'usercontext' => $usercontext,
             );
         echo $OUTPUT->context_header($userheading, 2);
     }
@@ -387,7 +387,7 @@ if ($isspecificcourse) {
     $userheading = array(
         'heading' => fullname($user),
         'user' => $user,
-        'usercontext' => $usercontext
+        'usercontext' => $usercontext,
     );
     echo $OUTPUT->context_header($userheading, 2);
 } else {

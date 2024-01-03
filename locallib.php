@@ -163,7 +163,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
         $navlinks[] = array(
             'name' => format_string($this->discussion->name),
             'link' => $CFG->wwwroot . '/mod/hsuforum/discuss.php?d=' . $this->discussion->id,
-            'type' => 'title'
+            'type' => 'title',
         );
         return array($navlinks, $this->cm);
     }
@@ -652,19 +652,19 @@ function mod_hsuforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx = 
                 $cm = $modinfo->get_cm($taggeditem->cmid);
                 $forum = (object)['id'     => $taggeditem->forum,
                                   'course' => $taggeditem->courseid,
-                                  'type'   => $taggeditem->type
+                                  'type'   => $taggeditem->type,
                 ];
                 $discussion = (object)['id'        => $taggeditem->discussion,
                                        'timestart' => $taggeditem->timestart,
                                        'timeend'   => $taggeditem->timeend,
                                        'groupid'   => $taggeditem->groupid,
-                                       'firstpost' => $taggeditem->firstpost
+                                       'firstpost' => $taggeditem->firstpost,
                 ];
                 $post = (object)['id' => $taggeditem->id,
                                        'parent' => $taggeditem->parent,
                                        'userid'   => $taggeditem->userid,
                                        'groupid'   => $taggeditem->groupid,
-                                       'privatereply'   => 0
+                                       'privatereply'   => 0,
                 ];
 
                 $accessible = hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm);

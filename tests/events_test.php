@@ -354,7 +354,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
 
         $params = array(
             'context' => $context,
-            'other' => array('toforumid' => $toforum->id)
+            'other' => array('toforumid' => $toforum->id),
         );
 
         $this->expectException(coding_exception::class);
@@ -373,7 +373,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
 
         $params = array(
             'context' => $context,
-            'other' => array('fromforumid' => $fromforum->id)
+            'other' => array('fromforumid' => $fromforum->id),
         );
 
         $this->expectException(coding_exception::class);
@@ -400,7 +400,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_system::instance(),
             'objectid' => $discussion->id,
-            'other' => array('fromforumid' => $fromforum->id, 'toforumid' => $toforum->id)
+            'other' => array('fromforumid' => $fromforum->id, 'toforumid' => $toforum->id),
         );
 
         $this->expectException(coding_exception::class);
@@ -430,7 +430,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => $context,
             'objectid' => $discussion->id,
-            'other' => array('fromforumid' => $fromforum->id, 'toforumid' => $toforum->id)
+            'other' => array('fromforumid' => $fromforum->id, 'toforumid' => $toforum->id),
         );
 
         $event = \mod_hsuforum\event\discussion_moved::create($params);
@@ -1130,7 +1130,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
 
         $params = array(
             'context' => context_module::instance($forum->cmid),
-            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type, 'discussionid' => $discussion->id)
+            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type, 'discussionid' => $discussion->id),
         );
 
         \mod_hsuforum\event\post_created::create($params);
@@ -1160,7 +1160,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1192,7 +1192,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1224,7 +1224,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id),
         );
 
         $this->expectException(coding_exception::class);
@@ -1256,7 +1256,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_system::instance(),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1291,7 +1291,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $event = \mod_hsuforum\event\post_created::create($params);
@@ -1344,7 +1344,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $event = \mod_hsuforum\event\post_created::create($params);
@@ -1387,7 +1387,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
 
         $params = array(
             'context' => context_module::instance($forum->cmid),
-            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type, 'discussionid' => $discussion->id)
+            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type, 'discussionid' => $discussion->id),
         );
 
         \mod_hsuforum\event\post_deleted::create($params);
@@ -1417,7 +1417,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1449,7 +1449,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1481,7 +1481,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id),
         );
 
         $this->expectException(coding_exception::class);
@@ -1513,7 +1513,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_system::instance(),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1624,7 +1624,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $event = \mod_hsuforum\event\post_deleted::create($params);
@@ -1672,7 +1672,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1704,7 +1704,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1736,7 +1736,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_module::instance($forum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id),
         );
 
         $this->expectException(coding_exception::class);
@@ -1768,7 +1768,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => context_system::instance(),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $this->expectException(coding_exception::class);
@@ -1803,7 +1803,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $event = \mod_hsuforum\event\post_updated::create($params);
@@ -1856,7 +1856,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         $params = array(
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type)
+            'other' => array('discussionid' => $discussion->id, 'forumid' => $forum->id, 'forumtype' => $forum->type),
         );
 
         $event = \mod_hsuforum\event\post_updated::create($params);
@@ -1902,7 +1902,7 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // them just in case there are APIs changes in future.
         $user = $this->getDataGenerator()->create_user(array(
             'maildigest' => 1,
-            'trackforums' => 1
+            'trackforums' => 1,
         ));
 
         $manplugin = enrol_get_plugin('manual');

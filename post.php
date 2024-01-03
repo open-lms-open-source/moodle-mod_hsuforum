@@ -444,7 +444,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
             'objectid' => $discussion->id,
             'other' => array(
                 'forumid' => $forum->id,
-            )
+            ),
         );
         $event = \mod_hsuforum\event\discussion_updated::create($params);
         $event->trigger();
@@ -454,7 +454,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
             'objectid' => $newid,
             'other' => array(
                 'forumid' => $forum->id,
-            )
+            ),
         );
         $event = \mod_hsuforum\event\discussion_created::create($params);
         $event->trigger();
@@ -466,7 +466,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
                 'discussionid' => $newid,
                 'forumid' => $forum->id,
                 'forumtype' => $forum->type,
-            )
+            ),
         );
         $event = \mod_hsuforum\event\post_updated::create($params);
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
@@ -615,7 +615,7 @@ $mformpost->set_data(
         'message'=>array(
             'text'=>$currenttext,
             'format'=>empty($post->messageformat) ? editors_get_preferred_format() : $post->messageformat,
-            'itemid'=>$draftideditor
+            'itemid'=>$draftideditor,
         ),
         'subscribe'=>$subscribe?1:0,
         'mailnow'=>!empty($post->mailnow),
@@ -624,7 +624,7 @@ $mformpost->set_data(
         'reveal'=>$post->reveal,
         'privatereply'=>$post->privatereply,
         'discussion'=>$post->discussion,
-        'course'=>$course->id
+        'course'=>$course->id,
     ) +
 
     $pageparams +
@@ -751,7 +751,7 @@ if ($fromform = $mformpost->get_data()) {
                 'discussionid' => $discussion->id,
                 'forumid' => $forum->id,
                 'forumtype' => $forum->type,
-            )
+            ),
         );
 
         if ($realpost->userid !== $USER->id) {
@@ -804,7 +804,7 @@ if ($fromform = $mformpost->get_data()) {
                     'discussionid' => $discussion->id,
                     'forumid' => $forum->id,
                     'forumtype' => $forum->type,
-                )
+                ),
             );
             $event = \mod_hsuforum\event\post_created::create($params);
             $event->add_record_snapshot('hsuforum_posts', $post);
@@ -904,7 +904,7 @@ if ($fromform = $mformpost->get_data()) {
                     'objectid' => $discussion->id,
                     'other' => array(
                         'forumid' => $forum->id,
-                    )
+                    ),
                 );
                 $event = \mod_hsuforum\event\discussion_created::create($params);
                 $event->add_record_snapshot('hsuforum_discussions', $discussion);

@@ -66,7 +66,7 @@ if ($ADMIN->fulltree) {
         10 => 10,
         20 => 20,
         50 => 50,
-        100 => 100
+        100 => 100,
     );
     $settings->add(new admin_setting_configselect('hsuforum/maxattachments', get_string('maxattachments', 'hsuforum'),
                        get_string('configmaxattachments', 'hsuforum'), 9, $options));
@@ -107,7 +107,7 @@ if ($ADMIN->fulltree) {
         $options = array(
             0 => get_string('none'),
             1 => get_string('discussions', 'hsuforum'),
-            2 => get_string('posts', 'hsuforum')
+            2 => get_string('posts', 'hsuforum'),
         );
         $settings->add(new admin_setting_configselect('hsuforum_rsstype', get_string('rsstypedefault', 'hsuforum'),
                 get_string('configrsstypedefault', 'hsuforum'), 0, $options));
@@ -125,7 +125,7 @@ if ($ADMIN->fulltree) {
             25 => '25',
             30 => '30',
             40 => '40',
-            50 => '50'
+            50 => '50',
         );
         $settings->add(new admin_setting_configselect('hsuforum_rssarticles', get_string('rssarticles', 'hsuforum'),
                 get_string('configrssarticlesdefault', 'hsuforum'), 0, $options));

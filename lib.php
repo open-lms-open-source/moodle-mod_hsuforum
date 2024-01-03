@@ -3567,7 +3567,7 @@ function hsuforum_print_post_start($post, $return = false) {
         $attributes = [
             'id' => 'p'.$post->id,
             'tabindex' => -1,
-            'class' => 'relativelink'
+            'class' => 'relativelink',
         ];
         $output .= html_writer::start_tag('article', $attributes);
     }
@@ -3616,7 +3616,7 @@ function hsuforum_rating_permissions($contextid, $component, $ratingarea) {
         'view'    => has_capability('mod/hsuforum:viewrating', $context),
         'viewany' => has_capability('mod/hsuforum:viewanyrating', $context),
         'viewall' => has_capability('mod/hsuforum:viewallratings', $context),
-        'rate'    => has_capability('mod/hsuforum:rate', $context)
+        'rate'    => has_capability('mod/hsuforum:rate', $context),
     );
 }
 
@@ -4503,7 +4503,7 @@ function hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $dis
             'context' => $modcontext,
             'other' => array(
                 'forumid' => $forum->id,
-            )
+            ),
         );
 
         $event = \mod_hsuforum\event\discussion_deleted::create($params);
@@ -4532,7 +4532,7 @@ function hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $dis
             'discussionid' => $discussion->id,
             'forumid' => $forum->id,
             'forumtype' => $forum->type,
-        )
+        ),
     );
 
     if ($post->userid !== $USER->id) {
@@ -4669,7 +4669,7 @@ function hsuforum_delete_post($post, $children, $course, $cm, $forum, $skipcompl
                 'discussionid' => $post->discussion,
                 'forumid' => $forum->id,
                 'forumtype' => $forum->type,
-            )
+            ),
         );
         $post->deleted = 1;
         if ($post->userid !== $USER->id) {
@@ -4703,7 +4703,7 @@ function hsuforum_trigger_content_uploaded_event($post, $cm, $name) {
             'pathnamehashes' => array_keys($files),
             'discussionid' => $post->discussion,
             'triggeredfrom' => $name,
-        )
+        ),
     );
     $event = \mod_hsuforum\event\assessable_uploaded::create($params);
     $event->trigger();
@@ -5032,7 +5032,7 @@ function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $can
         'unsubscribed' => get_string('subscribe', 'hsuforum'),
         'cantaccessgroup' => get_string('no'),
         'forcesubscribed' => get_string('everyoneissubscribed', 'hsuforum'),
-        'cantsubscribe' => get_string('disallowsubscribe','hsuforum')
+        'cantsubscribe' => get_string('disallowsubscribe','hsuforum'),
     );
     $messages = $messages + $defaultmessages;
 
@@ -6002,7 +6002,7 @@ function hsuforum_get_recent_mod_activity(&$activities, &$index, $timestart, $co
         $tmpactivity->user = hsuforum_anonymize_user($tmpactivity->user, (object) array(
             'id'        => $post->forum,
             'course'    => $courseid,
-            'anonymous' => $post->forumanonymous
+            'anonymous' => $post->forumanonymous,
         ), $post);
 
         $activities[$index++] = $tmpactivity;
@@ -6039,7 +6039,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
         'border' => '0',
         'cellpadding' => '3',
         'cellspacing' => '0',
-        'class' => 'forum-recent'
+        'class' => 'forum-recent',
     ];
     $output = html_writer::start_tag('table', $tableoptions);
     $output .= html_writer::start_tag('tr');
@@ -6541,7 +6541,7 @@ function hsuforum_delete_read_records_for_forum($forumid) {
  */
 function hsuforum_delete_read_records_for_discussion($discussionid) {
     global $DB;
-    return $DB->delete_records('hsuforum_read', array('discussionid' => $discussionid));
+    return $DB->delete_records('hsuforum_read', array('discussionid' => $discussionid, ));
 }
 
 /**
@@ -7060,7 +7060,7 @@ function hsuforum_get_grading_types(){
     return array(
         HSUFORUM_GRADETYPE_NONE   => get_string('gradetypenone', 'hsuforum'),
         HSUFORUM_GRADETYPE_MANUAL => get_string('gradetypemanual', 'hsuforum'),
-        HSUFORUM_GRADETYPE_RATING => get_string('gradetyperating', 'hsuforum')
+        HSUFORUM_GRADETYPE_RATING => get_string('gradetyperating', 'hsuforum'),
     );
 }
 
@@ -7513,7 +7513,7 @@ function hsuforum_page_type_list($pagetype, $parentcontext, $currentcontext) {
     $hsuforum_pagetype = array(
         'mod-hsuforum-*'=>get_string('page-mod-hsuforum-x', 'hsuforum'),
         'mod-hsuforum-view'=>get_string('page-mod-hsuforum-view', 'hsuforum'),
-        'mod-hsuforum-discuss'=>get_string('page-mod-hsuforum-discuss', 'hsuforum')
+        'mod-hsuforum-discuss'=>get_string('page-mod-hsuforum-discuss', 'hsuforum'),
     );
     return $hsuforum_pagetype;
 }
@@ -8015,7 +8015,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
             'email' => $CFG->noreplyaddress,
             'imagealt' => '',
             'profilelink' => new moodle_url('/user/view.php', array('id'=>$guest->id, 'course'=>$forum->course)),
-            'anonymous' => true
+            'anonymous' => true,
         );
         $anonymous->fullname = fullname($anonymous, true);
         $anonymous->imagealt = $anonymous->fullname;
@@ -8514,7 +8514,7 @@ function hsuforum_str_empty($str) {
         'param',
         'source',
         'track',
-        'wbr'
+        'wbr',
     );
     foreach ($voidtags as $check) {
         if (stripos($str, $check) !== false) {
@@ -8573,7 +8573,7 @@ function hsuforum_view($forum, $course, $cm, $context) {
 
     $params = array(
         'context' => $context,
-        'objectid' => $forum->id
+        'objectid' => $forum->id,
     );
 
     $event = \mod_hsuforum\event\course_module_viewed::create($params);
@@ -8619,7 +8619,7 @@ function hsuforum_discussion_pin($modcontext, $forum, $discussion) {
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
-        'other' => array('forumid' => $forum->id)
+        'other' => array('forumid' => $forum->id),
     );
 
     $event = \mod_hsuforum\event\discussion_pinned::create($params);
@@ -8643,7 +8643,7 @@ function hsuforum_discussion_unpin($modcontext, $forum, $discussion) {
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
-        'other' => array('forumid' => $forum->id)
+        'other' => array('forumid' => $forum->id),
     );
 
     $event = \mod_hsuforum\event\discussion_unpinned::create($params);

@@ -52,7 +52,7 @@ class mod_hsuforum_post_form extends moodleform {
             'maxbytes' => $maxbytes,
             'maxfiles' => $forum->maxattachments,
             'accepted_types' => '*',
-            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK
+            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK,
         );
     }
 
@@ -72,7 +72,7 @@ class mod_hsuforum_post_form extends moodleform {
             'maxbytes' => $maxbytes,
             'trusttext'=> true,
             'return_types'=> FILE_INTERNAL | FILE_EXTERNAL,
-            'subdirs' => file_area_contains_subdirs($context, 'mod_hsuforum', 'post', $postid)
+            'subdirs' => file_area_contains_subdirs($context, 'mod_hsuforum', 'post', $postid),
         );
     }
 
