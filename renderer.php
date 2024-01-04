@@ -156,7 +156,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $completion->set_module_viewed($cm);
 
         /// Some capability checks.
-        if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
+        if (empty($cm->visible) && !has_capability('moodle/course:viewhiddenactivities', $context)) {
             notice(get_string("activityiscurrentlyhidden"));
         }
 
@@ -1317,7 +1317,7 @@ HTML;
         $forum = hsuforum_get_cm_forum($cm);
 
         $showonlypreferencebutton = '';
-        if (!empty($showonlypreference) and !empty($showonlypreference->button) and !$forum->anonymous) {
+        if (!empty($showonlypreference) && !empty($showonlypreference->button) && !$forum->anonymous) {
             $showonlypreferencebutton = $showonlypreference->button;
         }
 
@@ -1326,10 +1326,10 @@ HTML;
         $flaglib   = new hsuforum_lib_flag();
         if ($posts = hsuforum_get_user_posts($forum->id, $userid, context_module::instance($cm->id))) {
             $discussions = hsuforum_get_user_involved_discussions($forum->id, $userid);
-            if (!empty($showonlypreference) and !empty($showonlypreference->preference)) {
+            if (!empty($showonlypreference) && !empty($showonlypreference->preference)) {
                 foreach ($discussions as $discussion) {
 
-                    if ($discussion->userid == $userid and array_key_exists($discussion->firstpost, $posts)) {
+                    if ($discussion->userid == $userid && array_key_exists($discussion->firstpost, $posts)) {
                         $discussionpost = $posts[$discussion->firstpost];
 
                         $discussioncount++;
@@ -1347,7 +1347,7 @@ HTML;
                         $output .= html_writer::start_tag('div', array('class' => 'indent'));
                     }
                     foreach ($posts as $post) {
-                        if ($post->discussion == $discussion->id and !empty($post->parent)) {
+                        if ($post->discussion == $discussion->id && !empty($post->parent)) {
                             $postcount++;
                             if ($flaglib->is_flagged($post->flags, 'substantive')) {
                                 $flagcount++;
@@ -1815,7 +1815,7 @@ HTML;
         global $CFG, $USER, $OUTPUT;
 
         $discussionlink = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
-        $ownpost        = (isloggedin() and $post->userid == $USER->id);
+        $ownpost        = (isloggedin() && $post->userid == $USER->id);
         $commands       = array();
 
         if (!property_exists($post, 'privatereply')) {
@@ -1824,7 +1824,7 @@ HTML;
 
         $forum = hsuforum_get_cm_forum($cm);
 
-        if ($canreply and empty($post->privatereply)) {
+        if ($canreply && empty($post->privatereply)) {
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = html_writer::link(

@@ -48,7 +48,7 @@ $PAGE->set_heading($COURSE->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strunsubscribeall);
 
-if (data_submitted() and $confirm and confirm_sesskey()) {
+if (data_submitted() && $confirm && confirm_sesskey()) {
     $forums = hsuforum_get_optional_subscribed_forums();
 
     foreach($forums as $forum) {

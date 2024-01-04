@@ -556,8 +556,8 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $mform->setDefault('grade', $CFG->gradepointdefault);
 
             if ($this->_features->advancedgrading
-                and !empty($this->current->_advancedgradingdata['methods'])
-                and !empty($this->current->_advancedgradingdata['areas'])) {
+                && !empty($this->current->_advancedgradingdata['methods'])
+                && !empty($this->current->_advancedgradingdata['areas'])) {
 
                 if (count($this->current->_advancedgradingdata['areas']) == 1) {
                     // if there is just one gradable area (most cases), display just the selector
@@ -805,7 +805,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         if (!empty($data['completionusegrade'])) {
             // This is the same logic as in hsuforum_grade_item_update() for determining that the gradetype is GRADE_TYPE_NONE
             // If GRADE_TYPE_NONE, then we cannot have this completion criteria because there may be no grade item!
-            if ($data['gradetype'] == HSUFORUM_GRADETYPE_NONE or ($data['gradetype'] == HSUFORUM_GRADETYPE_RATING and !$data['assessed']) or $data['scale'] == 0) {
+            if ($data['gradetype'] == HSUFORUM_GRADETYPE_NONE or ($data['gradetype'] == HSUFORUM_GRADETYPE_RATING && !$data['assessed']) or $data['scale'] == 0) {
                 $errors['completionusegrade'] = get_string('completionusegradeerror', 'hsuforum');
             }
         }
