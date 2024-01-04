@@ -193,7 +193,7 @@ class post_service {
         global $CFG, $USER;
 
         if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
-            if (((time() - $post->created) > $CFG->maxeditingtime) and
+            if (((time() - $post->created) > $CFG->maxeditingtime) &&
                 !has_capability('mod/hsuforum:editanypost', $context)
             ) {
                 throw new \moodle_exception('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
