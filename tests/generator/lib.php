@@ -347,7 +347,7 @@ class mod_hsuforum_generator extends testing_module_generator {
         $record = (array)$record + array(
             'forum' => $instance->id,
             'userid' => $USER->id,
-            'course' => $instance->course
+            'course' => $instance->course,
         );
         if (empty($record['discussion']) && empty($record['parent'])) {
             // Create discussion.

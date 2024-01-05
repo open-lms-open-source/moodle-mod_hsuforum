@@ -58,34 +58,34 @@ class custom_completion_test extends advanced_testcase {
     public function get_state_provider(): array {
         return [
             'Undefined rule' => [
-                'somenonexistentrule', 0, COMPLETION_TRACKING_NONE, 0, 0, 0, null, coding_exception::class
+                'somenonexistentrule', 0, COMPLETION_TRACKING_NONE, 0, 0, 0, null, coding_exception::class,
             ],
             'Completion discussions rule not available'  => [
-                'completiondiscussions', 0,  COMPLETION_TRACKING_NONE, 0, 0, 0, null, moodle_exception::class
+                'completiondiscussions', 0,  COMPLETION_TRACKING_NONE, 0, 0, 0, null, moodle_exception::class,
             ],
             'Completion discussions rule available, user has not created discussion' => [
-                'completiondiscussions', 0, COMPLETION_TRACKING_AUTOMATIC, 5, 0, 0, COMPLETION_INCOMPLETE, null
+                'completiondiscussions', 0, COMPLETION_TRACKING_AUTOMATIC, 5, 0, 0, COMPLETION_INCOMPLETE, null,
             ],
             'Rule available, user has created discussions' => [
-                'completiondiscussions', 5, COMPLETION_TRACKING_AUTOMATIC, 5, 0, 0, COMPLETION_COMPLETE, null
+                'completiondiscussions', 5, COMPLETION_TRACKING_AUTOMATIC, 5, 0, 0, COMPLETION_COMPLETE, null,
             ],
             'Completion replies rule not available' => [
-                'completionreplies', 0, COMPLETION_TRACKING_NONE, 0, 0, 0, null, moodle_exception::class
+                'completionreplies', 0, COMPLETION_TRACKING_NONE, 0, 0, 0, null, moodle_exception::class,
             ],
             'Rule available, user has not replied' => [
-                'completionreplies', 0, COMPLETION_TRACKING_AUTOMATIC, 0, 5, 0, COMPLETION_INCOMPLETE, null
+                'completionreplies', 0, COMPLETION_TRACKING_AUTOMATIC, 0, 5, 0, COMPLETION_INCOMPLETE, null,
             ],
             'Rule available, user has created replied' => [
-                'completionreplies', 5, COMPLETION_TRACKING_AUTOMATIC, 0, 5, 0, COMPLETION_COMPLETE, null
+                'completionreplies', 5, COMPLETION_TRACKING_AUTOMATIC, 0, 5, 0, COMPLETION_COMPLETE, null,
             ],
             'Completion posts rule not available' => [
-                'completionposts', 0, COMPLETION_TRACKING_NONE, 0, 0, 0, null, moodle_exception::class
+                'completionposts', 0, COMPLETION_TRACKING_NONE, 0, 0, 0, null, moodle_exception::class,
             ],
             'Rule available, user has not posted' => [
-                'completionposts', 0, COMPLETION_TRACKING_AUTOMATIC, 0, 0, 5, COMPLETION_INCOMPLETE, null
+                'completionposts', 0, COMPLETION_TRACKING_AUTOMATIC, 0, 0, 5, COMPLETION_INCOMPLETE, null,
             ],
             'Rule available, user has posted' => [
-                'completionposts', 5, COMPLETION_TRACKING_AUTOMATIC, 0, 0, 5, COMPLETION_COMPLETE, null
+                'completionposts', 5, COMPLETION_TRACKING_AUTOMATIC, 0, 0, 5, COMPLETION_COMPLETE, null,
             ],
         ];
     }
@@ -122,7 +122,7 @@ class custom_completion_test extends advanced_testcase {
             'completion' => $available,
             'completiondiscussions' => $discussions,
             'completionreplies' => $replies,
-            'completionposts' => $posts
+            'completionposts' => $posts,
         ];
         $hsuforum = $this->getDataGenerator()->create_module('hsuforum', $params);
 
@@ -217,22 +217,22 @@ class custom_completion_test extends advanced_testcase {
     public function get_available_custom_rules_provider(): array {
         return [
             'Completion discussions available' => [
-                COMPLETION_ENABLED, ['completiondiscussions']
+                COMPLETION_ENABLED, ['completiondiscussions'],
             ],
             'Completion discussions not available' => [
-                COMPLETION_DISABLED, []
+                COMPLETION_DISABLED, [],
             ],
             'Completion replies available' => [
-                COMPLETION_ENABLED, ['completionreplies']
+                COMPLETION_ENABLED, ['completionreplies'],
             ],
             'Completion replies not available' => [
-                COMPLETION_DISABLED, []
+                COMPLETION_DISABLED, [],
             ],
             'Completion posts available' => [
-                COMPLETION_ENABLED, ['completionposts']
+                COMPLETION_ENABLED, ['completionposts'],
             ],
             'Completion posts not available' => [
-                COMPLETION_DISABLED, []
+                COMPLETION_DISABLED, [],
             ],
         ];
     }
@@ -246,12 +246,12 @@ class custom_completion_test extends advanced_testcase {
      */
     public function test_get_available_custom_rules(int $status, array $expected) {
         $customdataval = [
-            'customcompletionrules' => []
+            'customcompletionrules' => [],
         ];
         if ($status == COMPLETION_ENABLED) {
             $rule = $expected[0];
             $customdataval = [
-                'customcompletionrules' => [$rule => $status]
+                'customcompletionrules' => [$rule => $status],
             ];
         }
 

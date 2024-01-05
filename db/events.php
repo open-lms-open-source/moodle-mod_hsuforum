@@ -35,7 +35,7 @@ $observers = array(
 
     array(
         'eventname' => '\core\event\role_assigned',
-        'callback' => 'mod_hsuforum_observer::role_assigned'
+        'callback' => 'mod_hsuforum_observer::role_assigned',
     ),
 
     array(

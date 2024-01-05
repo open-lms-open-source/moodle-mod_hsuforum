@@ -39,7 +39,7 @@ class hsuforum_userselector_discussion_potential extends hsuforum_userselector_d
     public function find_users($search) {
         return array(
             get_string("potentialsubscribers", 'hsuforum') =>
-            $this->get_repo()->get_unsubscribed_users($this->forum, $this->discussion, $this->context, $this->currentgroup, $this->required_fields_sql('u'), $this->search_sql($search, 'u'))
+            $this->get_repo()->get_unsubscribed_users($this->forum, $this->discussion, $this->context, $this->currentgroup, $this->required_fields_sql('u'), $this->search_sql($search, 'u')),
         );
     }
 }

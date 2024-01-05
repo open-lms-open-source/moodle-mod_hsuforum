@@ -54,7 +54,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             'filearea' => 'attachment',
             'itemid' => $fakepost->id,
             'filepath' => '/',
-            'filename' => 'myassignmnent.pdf'
+            'filename' => 'myassignmnent.pdf',
         );
         $fi = $fs->create_file_from_string($dummy, 'Content of ' . $dummy->filename);
 
@@ -2733,7 +2733,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             'filearea'  => 'attachment',
             'itemid'    => $post->id,
             'filepath'  => '/',
-            'filename'  => 'testgif_small.gif'
+            'filename'  => 'testgif_small.gif',
         );
 
         $file = (array) $fs->create_file_from_pathname($filerecord, $path);
@@ -2744,7 +2744,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             'attachment' => array(
                 'name' => $filerecord['filename'],
                 'tmp_name' => $path,
-                'error' => 0
+                'error' => 0,
         ));
 
         // Get Context
@@ -2764,7 +2764,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Define the expected exception with its error message
         $params = array(
             'file' => '\'' . $filerecord['filename'] . '\'',
-            'size' => '10B'
+            'size' => '10B',
         );
         $errormessage = get_string('maxbytesfile', 'error', $params);
         $this->expectException('file_exception');
@@ -2888,7 +2888,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
                 'discussion'        => [
                     'timecreated'   => - WEEKSECS,
                     'timestart'     => - DAYSECS,
-                    'timeend'       => + DAYSECS
+                    'timeend'       => + DAYSECS,
                 ],
                 'timedposts'        => true,
                 'postcount'         => 1,
@@ -2907,7 +2907,7 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             'Timed discussion; Single post; Posted 1 week ago; timeend not reached' => [
                 'discussion'        => [
                     'timecreated'   => - WEEKSECS,
-                    'timeend'       => + DAYSECS
+                    'timeend'       => + DAYSECS,
                 ],
                 'timedposts'        => true,
                 'postcount'         => 0,
@@ -3028,37 +3028,37 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             'Unlocked: lockdiscussionafter is unset' => [
                 (object) [],
                 (object) [],
-                false
+                false,
             ],
             'Unlocked: lockdiscussionafter is false' => [
                 (object) ['lockdiscussionafter' => false],
                 (object) [],
-                false
+                false,
             ],
             'Unlocked: lockdiscussionafter is null' => [
                 (object) ['lockdiscussionafter' => null],
                 (object) [],
-                false
+                false,
             ],
             'Unlocked: lockdiscussionafter is set; forum is of type single; post is recent' => [
                 (object) ['lockdiscussionafter' => DAYSECS, 'type' => 'single'],
                 (object) ['timemodified' => time()],
-                false
+                false,
             ],
             'Unlocked: lockdiscussionafter is set; forum is of type single; post is old' => [
                 (object) ['lockdiscussionafter' => MINSECS, 'type' => 'single'],
                 (object) ['timemodified' => time() - DAYSECS],
-                false
+                false,
             ],
             'Unlocked: lockdiscussionafter is set; forum is of type eachuser; post is recent' => [
                 (object) ['lockdiscussionafter' => DAYSECS, 'type' => 'eachuser'],
                 (object) ['timemodified' => time()],
-                false
+                false,
             ],
             'Locked: lockdiscussionafter is set; forum is of type eachuser; post is old' => [
                 (object) ['lockdiscussionafter' => MINSECS, 'type' => 'eachuser'],
                 (object) ['timemodified' => time() - DAYSECS],
-                true
+                true,
             ],
         ];
     }
@@ -3487,14 +3487,14 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
             'completion' => 2,
             'completiondiscussions' => 3,
             'completionreplies' => 3,
-            'completionposts' => 3
+            'completionposts' => 3,
         ]);
         $forum2 = $this->getDataGenerator()->create_module('hsuforum', [
             'course' => $course->id,
             'completion' => 2,
             'completiondiscussions' => 0,
             'completionreplies' => 0,
-            'completionposts' => 0
+            'completionposts' => 0,
         ]);
         $cm1 = cm_info::create(get_coursemodule_from_instance('hsuforum', $forum1->id));
         $cm2 = cm_info::create(get_coursemodule_from_instance('hsuforum', $forum2->id));
@@ -3506,14 +3506,14 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $moddefaults->customdata = ['customcompletionrules' => [
             'completiondiscussions' => 3,
             'completionreplies' => 3,
-            'completionposts' => 3
+            'completionposts' => 3,
         ]];
         $moddefaults->completion = 2;
 
         $activeruledescriptions = [
             get_string('completiondiscussionsdesc', 'hsuforum', 3),
             get_string('completionrepliesdesc', 'hsuforum', 3),
-            get_string('completionpostsdesc', 'hsuforum', 3)
+            get_string('completionpostsdesc', 'hsuforum', 3),
         ];
         $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions($cm1), $activeruledescriptions);
         $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions($cm2), []);

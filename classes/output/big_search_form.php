@@ -73,7 +73,7 @@ class big_search_form implements renderable, templatable {
         $this->forumoptions = array_map(function($option) use ($forumoptions) {
             return [
                 'value' => $option,
-                'name' => $forumoptions[$option]
+                'name' => $forumoptions[$option],
             ];
         }, array_keys($forumoptions));
     }
@@ -200,7 +200,7 @@ class big_search_form implements renderable, templatable {
         foreach ($tags as $tag) {
             $data->tagoptions[] = ['value'    => $tag->rawname,
                                    'text'     => $tag->fieldname,
-                                   'selected' => in_array($tag->rawname, $this->tags)
+                                   'selected' => in_array($tag->rawname, $this->tags),
             ];
         }
 

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -275,7 +274,7 @@ class restore_hsuforum_activity_structure_step extends restore_activity_structur
             $sd->reveal = 0;
             $sdid = hsuforum_add_discussion($sd, null, null, $this->task->get_userid());
             // Mark the post as mailed
-            $DB->set_field ('hsuforum_posts','mailed', '1', array('discussion' => $sdid));
+            $DB->set_field ('hsuforum_posts','mailed', '1', array('discussion' => $sdid,));
             // Copy all the files from mod_foum/intro to mod_hsuforum/post
             $fs = get_file_storage();
             $files = $fs->get_area_files($this->task->get_contextid(), 'mod_hsuforum', 'intro');

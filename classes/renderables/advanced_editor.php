@@ -110,7 +110,7 @@ class advanced_editor implements \renderable {
             'editor' => $editor,
             'options' => $options,
             'fpoptions' => $fpoptions,
-            'draftitemid' => $draftitemid
+            'draftitemid' => $draftitemid,
         ];
     }
 }

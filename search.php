@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -124,7 +123,7 @@ require_course_login($course);
 
 $params = array(
     'context' => $PAGE->context,
-    'other' => array('searchterm' => $search)
+    'other' => array('searchterm' => $search),
 );
 
 $event = \mod_hsuforum\event\course_searched::create($params);
@@ -211,7 +210,7 @@ $params = [
     'notwords'  => $notwords,
     'dateto'    => $dateto,
     'datefrom'  => $datefrom,
-    'showform'  => 1
+    'showform'  => 1,
 ];
 $url    = new moodle_url("/mod/hsuforum/search.php", $params);
 foreach ($tags as $tag) {

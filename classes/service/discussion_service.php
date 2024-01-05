@@ -242,7 +242,7 @@ class discussion_service {
             'objectid' => $discussion->id,
             'other'    => array(
                 'forumid' => $forum->id,
-            )
+            ),
         );
         $event = discussion_created::create($params);
         $event->add_record_snapshot('hsuforum_discussions', $discussion);

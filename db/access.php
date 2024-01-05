@@ -35,9 +35,9 @@ $capabilities = array(
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
+            'manager' => CAP_ALLOW,
         ),
-        'clonepermissionsfrom' => 'moodle/course:manageactivities'
+        'clonepermissionsfrom' => 'moodle/course:manageactivities',
     ),
 
     'mod/hsuforum:viewdiscussion' => array(
@@ -50,8 +50,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewhiddentimedposts' => array(
@@ -61,8 +61,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:startdiscussion' => array(
@@ -75,8 +75,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:replypost' => array(
@@ -89,8 +89,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:addnews' => array(
@@ -102,8 +102,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:replynews' => array(
@@ -115,8 +115,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewrating' => array(
@@ -127,8 +127,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewanyrating' => array(
@@ -139,8 +139,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewallratings' => array(
@@ -151,9 +151,9 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
+            'manager' => CAP_ALLOW,
         ),
-        'clonepermissionsfrom' =>  'mod/hsuforum:viewanyrating'
+        'clonepermissionsfrom' =>  'mod/hsuforum:viewanyrating',
     ),
 
     'mod/hsuforum:rate' => array(
@@ -163,8 +163,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:createattachment' => array(
@@ -177,8 +177,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:deleteownpost' => array(
@@ -189,8 +189,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:deleteanypost' => array(
@@ -200,8 +200,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:splitdiscussions' => array(
@@ -211,8 +211,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:movediscussions' => array(
@@ -222,8 +222,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:pindiscussions' => array(
@@ -233,8 +233,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:editanypost' => array(
@@ -246,8 +246,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:revealpost' => array(
@@ -258,8 +258,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewqandawithoutposting' => array(
@@ -269,8 +269,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewsubscribers' => array(
@@ -280,8 +280,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:managesubscriptions' => array(
@@ -293,8 +293,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:postwithoutthrottling' => array(
@@ -306,8 +306,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:exportdiscussion' => array(
@@ -319,8 +319,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
     'mod/hsuforum:exportpost' => array(
 
@@ -331,8 +331,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
     'mod/hsuforum:exportownpost' => array(
 
@@ -345,7 +345,7 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
             'student' => CAP_ALLOW,
-        )
+        ),
     ),
     'mod/hsuforum:addquestion' => array(
 
@@ -356,8 +356,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewposters' => array(
@@ -371,8 +371,8 @@ $capabilities = array(
             'student' => CAP_PREVENT,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:viewflags'=> array(
@@ -384,8 +384,8 @@ $capabilities = array(
             'student' => CAP_PREVENT,
             'teacher' => CAP_PREVENT,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 
     'mod/hsuforum:allowprivate' => array(
@@ -396,8 +396,8 @@ $capabilities = array(
             'manager'        => CAP_ALLOW,
             'coursecreator'  => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'teacher'        => CAP_ALLOW
-        )
+            'teacher'        => CAP_ALLOW,
+        ),
     ),
     'mod/hsuforum:allowforcesubscribe' => array(
 
@@ -407,8 +407,8 @@ $capabilities = array(
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'frontpage' => CAP_ALLOW
-        )
+            'frontpage' => CAP_ALLOW,
+        ),
     ),
     'mod/hsuforum:canposttomygroups' => array(
 
@@ -417,8 +417,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
     'mod/hsuforum:canoverridediscussionlock' => array(
         'captype' => 'write',
@@ -426,8 +426,8 @@ $capabilities = array(
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ),
     ),
 );
 

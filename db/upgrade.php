@@ -55,7 +55,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
         $replacements = array(
             11 => 20,
             12 => 50,
-            13 => 100
+            13 => 100,
         );
 
         // Run the replacements.
@@ -164,7 +164,7 @@ function xmldb_hsuforum_upgrade($oldversion) {
             'showsubstantive',
             'trackingtype',
             'trackreadposts',
-            'usermarksread'
+            'usermarksread',
         );
 
         // Migrate legacy configs to plugin configs.

@@ -119,7 +119,7 @@ class edit_controller extends controller_abstract {
                 'message'       => $message,
                 'messageformat' => $messageformat,
                 'reveal'        => $reveal,
-                'mailnow'       => $mailnow
+                'mailnow'       => $mailnow,
             );
             if (!empty($subject)) {
                 $data['subject'] = $subject;
@@ -175,7 +175,7 @@ class edit_controller extends controller_abstract {
                 'reveal'        => $reveal,
                 'timestart'     => $timestart,
                 'timeend'       => $timeend,
-                'mailnow'       => $mailnow
+                'mailnow'       => $mailnow,
             );
             return $this->discussionservice->handle_add_discussion($course, $cm, $forum, $context, $options, $posttomygroups);
         } catch (\Exception $e) {
@@ -238,7 +238,7 @@ class edit_controller extends controller_abstract {
                 'reveal'        => $reveal,
                 'privatereply'  => $privatereply,
                 'timestart'     => $timestart,
-                'timeend'       => $timeend
+                'timeend'       => $timeend,
             ));
         } catch (\Exception $e) {
             return new json_response($e);
@@ -281,7 +281,7 @@ class edit_controller extends controller_abstract {
                 'isdiscussion' => true,
                 'timestart'    => $discussion->timestart,
                 'timeend'      => $discussion->timeend,
-                'offset'       => $offset
+                'offset'       => $offset,
             ]);
         }
     }
