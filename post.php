@@ -578,15 +578,19 @@ if (!empty($parent)) {
     } else {
         $formheading = get_string('yournewtopic', 'hsuforum');
         // Hide duplicated hsuforum description when creating a new discussion topic, see INT-18928.
-        $hidehtml = '';
-        $hidehtml .= html_writer::start_tag('style', array('type' => 'text/css')) . "\n";
-        $hidehtml .= '
-        #page-mod-hsuforum-post .activity-description,
-        #page-mod-hsuforum-post [role="main"] h2 {
-            display: none;
-        };';
-        $hidehtml .= html_writer::end_tag('style') . "\n";
-        echo $hidehtml;
+
+        // This breaks the page as it renders before the DOCTYPE.
+        // Switched to an external stylesheet.
+//        $hidehtml = '';
+//        $hidehtml .= html_writer::start_tag('style', array('type' => 'text/css')) . "\n";
+//        $hidehtml .= '
+//        #page-mod-hsuforum-post .activity-description,
+//        #page-mod-hsuforum-post [role="main"] h2 {
+//            display: none;
+//        };';
+//        $hidehtml .= html_writer::end_tag('style') . "\n";
+//        echo $hidehtml;
+        $PAGE->requires->css(new moodle_url('/mod/hsuforum/hide_duplicated.css'));
     }
 }
 
