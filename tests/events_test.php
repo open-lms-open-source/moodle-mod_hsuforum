@@ -102,8 +102,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
          // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\course_searched', $event);
         $this->assertEquals($coursectx, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'search', "search.php?id={$course->id}&amp;search={$searchterm}", $searchterm);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -181,8 +179,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Check that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\discussion_created', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'add discussion', "discuss.php?d={$discussion->id}", $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -336,8 +332,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\discussion_deleted', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'delete discussion', "view.php?id={$forum->cmid}", $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -445,9 +439,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\discussion_moved', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'move discussion', "discuss.php?d={$discussion->id}",
-            $discussion->id, $toforum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -514,9 +505,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\discussion_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
-            $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -566,8 +554,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\course_module_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'view forum', "view.php?f={$forum->id}", $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -666,8 +652,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\subscription_created', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'subscribe', "view.php?f={$forum->id}", $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/subscribers.php', array('id' => $forum->id));
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -766,8 +750,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\subscription_deleted', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'unsubscribe', "view.php?f={$forum->id}", $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/subscribers.php', array('id' => $forum->id));
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -857,8 +839,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\readtracking_enabled', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'start tracking', "view.php?f={$forum->id}", $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -948,8 +928,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\readtracking_disabled', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'stop tracking', "view.php?f={$forum->id}", $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -1020,8 +998,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\subscribers_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'view subscribers', "subscribers.php?id={$forum->id}", $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -1105,9 +1081,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\user_report_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'user report',
-            "user.php?id={$user->id}&amp;mode=discussions&amp;course={$course->id}", $user->id);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -1306,9 +1279,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\post_created', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'add post', "discuss.php?d={$discussion->id}#p{$post->id}",
-            $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
         $url->set_anchor('p'.$event->objectid);
         $this->assertEquals($url, $event->get_url());
@@ -1359,9 +1329,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\post_created', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'add post', "view.php?f={$forum->id}#p{$post->id}",
-            $forum->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
         $url->set_anchor('p'.$event->objectid);
         $this->assertEquals($url, $event->get_url());
@@ -1567,8 +1534,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Check that the events contain the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\post_deleted', $event);
         $this->assertEquals(context_module::instance($forum->cmid), $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'delete post', "discuss.php?d={$discussion->id}", $lastpost->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -1588,8 +1553,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
             // Check that the event contains the expected values.
             $this->assertInstanceOf('\mod_hsuforum\event\post_deleted', $event);
             $this->assertEquals(context_module::instance($forum->cmid), $event->get_context());
-            $expected = array($course->id, 'hsuforum', 'delete post', "discuss.php?d={$discussion->id}", $post->id, $forum->cmid);
-            $this->assertEventLegacyLogData($expected, $event);
             $url = new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
             $this->assertEquals($url, $event->get_url());
             $this->assertEventContextNotUsed($event);
@@ -1639,8 +1602,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\post_deleted', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'delete post', "view.php?f={$forum->id}", $post->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -1818,9 +1779,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\post_updated', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'update post', "discuss.php?d={$discussion->id}#p{$post->id}",
-            $post->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
         $url->set_anchor('p'.$event->objectid);
         $this->assertEquals($url, $event->get_url());
@@ -1871,9 +1829,6 @@ class mod_hsuforum_events_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\post_updated', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'update post', "view.php?f={$forum->id}#p{$post->id}",
-            $post->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $forum->id));
         $url->set_anchor('p'.$post->id);
         $this->assertEquals($url, $event->get_url());

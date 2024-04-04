@@ -72,16 +72,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         $this->assertEquals($fakepost->discussion, $event->other['discussionid']);
         $this->assertCount(1, $event->other['pathnamehashes']);
         $this->assertEquals($fi->get_pathnamehash(), $event->other['pathnamehashes'][0]);
-        $expected = new stdClass();
-        $expected->modulename = 'hsuforum';
-        $expected->name = 'some triggered from value';
-        $expected->cmid = $forum->cmid;
-        $expected->itemid = $fakepost->id;
-        $expected->courseid = $course->id;
-        $expected->userid = $user->id;
-        $expected->content = $fakepost->message;
-        $expected->pathnamehashes = array($fi->get_pathnamehash());
-        $this->assertEventLegacyData($expected, $event);
         $this->assertEventContextNotUsed($event);
     }
 
@@ -399,9 +389,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\discussion_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
-            $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
@@ -1442,9 +1429,6 @@ class mod_hsuforum_lib_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_hsuforum\event\discussion_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'hsuforum', 'view discussion', "discuss.php?d={$discussion->id}",
-            $discussion->id, $forum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
