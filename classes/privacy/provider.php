@@ -435,7 +435,7 @@ class provider implements
         $subscriptions = $DB->get_records_sql_menu($sql, $params);
 
         // Tracked forums.
-        $sql = "SELECT 
+        $sql = "SELECT
                     c.id AS contextid,
                     pref.userid AS tracked
                   FROM {context} c
@@ -519,7 +519,7 @@ class provider implements
                        gg.rawgrademax AS grademax,
                        gg.timemodified AS gradetimemodified,
                        gg.rawgrade AS grade,
-                       gg.feedback AS gradefeedback, 
+                       gg.feedback AS gradefeedback,
                        g.name AS groupname,
                        subs.discussion AS subscribedto
                   FROM {hsuforum} f
@@ -529,7 +529,7 @@ class provider implements
              LEFT JOIN {grade_items} gi ON gi.iteminstance = f.id AND gi.itemmodule = 'hsuforum'
              LEFT JOIN {grade_grades} gg ON gg.itemid = gi.id AND gg.userid = d.userid
              LEFT JOIN {hsuforum_posts} p ON p.discussion = d.id
-                 WHERE f.id ${hsuforuminsql}
+                 WHERE f.id {$hsuforuminsql}
                    AND (
                         d.userid    = :discussionuserid OR
                         p.userid    = :postuserid OR
@@ -627,7 +627,7 @@ class provider implements
                   JOIN {hsuforum_posts} p ON p.discussion = d.id
              LEFT JOIN {hsuforum_read} fr ON fr.postid = p.id AND fr.userid = :readuserid
             {$ratingsql->join}
-                 WHERE f.id ${hsuforuminsql} AND
+                 WHERE f.id {$hsuforuminsql} AND
                 (
                     p.userid = :postuserid OR
                     fr.userid IS NOT NULL OR
