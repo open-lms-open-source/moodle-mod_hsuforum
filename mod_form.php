@@ -712,27 +712,35 @@ class mod_hsuforum_mod_form extends moodleform_mod {
     function data_preprocessing(&$default_values) {
         parent::data_preprocessing($default_values);
 
+        $suffix = $this->get_suffix();
+        $completiondiscussionsenabledel = 'completiondiscussionsenabled' . $suffix;
+        $completiondiscussionsel = 'completiondiscussions' . $suffix;
+        $completionrepliesenabledel = 'completionrepliesenabled' . $suffix;
+        $completionrepliesel = 'completionreplies' . $suffix;
+        $completionpostsel = 'completionposts' . $suffix;
+        $completionpostsenabledel = 'completionpostsenabled' . $suffix;
+
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
-        $default_values['completiondiscussionsenabled']=
-            !empty($default_values['completiondiscussions']) ? 1 : 0;
-        if (empty($default_values['completiondiscussions'])) {
-            $default_values['completiondiscussions']=1;
+        $default_values[$completiondiscussionsenabledel]=
+            !empty($default_values[$completiondiscussionsel]) ? 1 : 0;
+        if (empty($default_values[$completiondiscussionsel])) {
+            $default_values[$completiondiscussionsel]=1;
         }
-        $default_values['completionrepliesenabled']=
-            !empty($default_values['completionreplies']) ? 1 : 0;
-        if (empty($default_values['completionreplies'])) {
-            $default_values['completionreplies']=1;
+        $default_values[$completionrepliesenabledel]=
+            !empty($default_values[$completionrepliesel]) ? 1 : 0;
+        if (empty($default_values[$completionrepliesel])) {
+            $default_values[$completionrepliesel]=1;
         }
         // Tick by default if Add mode or if completion posts settings is set to 1 or more.
-        if (empty($this->_instance) || !empty($default_values['completionposts'])) {
-            $default_values['completionpostsenabled'] = 1;
+        if (empty($this->_instance) || !empty($default_values[$completionpostsel])) {
+            $default_values[$completionpostsenabledel] = 1;
         } else {
-            $default_values['completionpostsenabled'] = 0;
+            $default_values[$completionpostsenabledel] = 0;
         }
-        if (empty($default_values['completionposts'])) {
-            $default_values['completionposts']=1;
+        if (empty($default_values[$completionpostsel])) {
+            $default_values[$completionpostsel]=1;
         }
     }
 
@@ -744,34 +752,46 @@ class mod_hsuforum_mod_form extends moodleform_mod {
     public function add_completion_rules() {
         $mform =& $this->_form;
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled', '', get_string('completionposts','hsuforum'));
-        $group[] =& $mform->createElement('text', 'completionposts', '', array('size'=>3));
-        $mform->setType('completionposts',PARAM_INT);
-        $mform->addGroup($group, 'completionpostsgroup', get_string('completionpostsgroup','hsuforum'), array(' '), false);
-        $mform->disabledIf('completionposts','completionpostsenabled','notchecked');
+        $suffix = $this->get_suffix();
 
         $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completiondiscussionsenabled', '', get_string('completiondiscussions','hsuforum'));
-        $group[] =& $mform->createElement('text', 'completiondiscussions', '', array('size'=>3));
-        $mform->setType('completiondiscussions',PARAM_INT);
-        $mform->addGroup($group, 'completiondiscussionsgroup', get_string('completiondiscussionsgroup','hsuforum'), array(' '), false);
-        $mform->disabledIf('completiondiscussions','completiondiscussionsenabled','notchecked');
+        $completionpostsenabledel = 'completionpostsenabled' . $suffix;
+        $group[] =& $mform->createElement('checkbox', $completionpostsenabledel, '', get_string('completionposts','hsuforum'));
+        $completionpostsel = 'completionposts' . $suffix;
+        $group[] =& $mform->createElement('text', $completionpostsel, '', array('size'=>3));
+        $mform->setType($completionpostsel,PARAM_INT);
+        $completionpostsgroupel = 'completionpostsgroup' . $suffix;
+        $mform->addGroup($group, $completionpostsgroupel, get_string('completionpostsgroup','hsuforum'), array(' '), false);
+        $mform->disabledIf($completionpostsel,$completionpostsenabledel,'notchecked');
 
         $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionrepliesenabled', '', get_string('completionreplies','hsuforum'));
-        $group[] =& $mform->createElement('text', 'completionreplies', '', array('size'=>3));
-        $mform->setType('completionreplies',PARAM_INT);
-        $mform->addGroup($group, 'completionrepliesgroup', get_string('completionrepliesgroup','hsuforum'), array(' '), false);
-        $mform->disabledIf('completionreplies','completionrepliesenabled','notchecked');
+        $completiondiscussionsenabledel = 'completiondiscussionsenabled' . $suffix;
+        $group[] =& $mform->createElement('checkbox', $completiondiscussionsenabledel, '', get_string('completiondiscussions','hsuforum'));
+        $completiondiscussionsel = 'completiondiscussions' . $suffix;
+        $group[] =& $mform->createElement('text', $completiondiscussionsel, '', array('size'=>3));
+        $mform->setType($completiondiscussionsel,PARAM_INT);
+        $completiondiscussionsgroupel = 'completiondiscussionsgroup' . $suffix;
+        $mform->addGroup($group, $completiondiscussionsgroupel, get_string('completiondiscussionsgroup','hsuforum'), array(' '), false);
+        $mform->disabledIf($completiondiscussionsel,$completiondiscussionsenabledel,'notchecked');
 
-        return array('completiondiscussionsgroup','completionrepliesgroup','completionpostsgroup');
+        $group=array();
+        $completionrepliesenabledel = 'completionrepliesenabled' . $suffix;
+        $group[] =& $mform->createElement('checkbox', $completionrepliesenabledel, '', get_string('completionreplies','hsuforum'));
+        $completionrepliesel = 'completionreplies' . $suffix;
+        $group[] =& $mform->createElement('text', $completionrepliesel, '', array('size'=>3));
+        $mform->setType($completionrepliesel,PARAM_INT);
+        $completionrepliesgroupel = 'completionrepliesgroup' . $suffix;
+        $mform->addGroup($group, $completionrepliesgroupel, get_string('completionrepliesgroup','hsuforum'), array(' '), false);
+        $mform->disabledIf($completionrepliesel,$completionrepliesenabledel,'notchecked');
+
+        return array($completiondiscussionsgroupel,$completionrepliesgroupel, $completionpostsgroupel);
     }
 
     function completion_rule_enabled($data) {
-        return (!empty($data['completiondiscussionsenabled']) && $data['completiondiscussions']!=0) ||
-            (!empty($data['completionrepliesenabled']) && $data['completionreplies']!=0) ||
-            (!empty($data['completionpostsenabled']) && $data['completionposts']!=0);
+        $suffix = $this->get_suffix();
+        return (!empty($data['completiondiscussionsenabled' . $suffix]) && $data['completiondiscussions' . $suffix]!=0) ||
+            (!empty($data['completionrepliesenabled' . $suffix]) && $data['completionreplies' . $suffix]!=0) ||
+            (!empty($data['completionpostsenabled' . $suffix]) && $data['completionposts' . $suffix]!=0);
     }
 
     /**
@@ -786,15 +806,17 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         parent::data_postprocessing($data);
         // Turn off completion settings if the checkboxes aren't ticked
         if (!empty($data->completionunlocked)) {
-            $autocompletion = !empty($data->completion) && $data->completion==COMPLETION_TRACKING_AUTOMATIC;
-            if (empty($data->completiondiscussionsenabled) || !$autocompletion) {
-                $data->completiondiscussions = 0;
+            $suffix = $this->get_suffix();
+            $completion = $data->{'completion' . $suffix};
+            $autocompletion = !empty($completion) && $completion==COMPLETION_TRACKING_AUTOMATIC;
+            if (empty($data->{'completiondiscussionsenabled' . $suffix}) || !$autocompletion) {
+                $data->{'completiondiscussions' . $suffix} = 0;
             }
-            if (empty($data->completionrepliesenabled) || !$autocompletion) {
-                $data->completionreplies = 0;
+            if (empty($data->{'completionrepliesenabled' . $suffix}) || !$autocompletion) {
+                $data->{'completionreplies' . $suffix} = 0;
             }
-            if (empty($data->completionpostsenabled) || !$autocompletion) {
-                $data->completionposts = 0;
+            if (empty($data->{'completionpostsenabled' . $suffix}) || !$autocompletion) {
+                $data->{'completionposts' . $suffix} = 0;
             }
         }
     }
@@ -810,7 +832,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             }
         }
         if (($data['gradetype'] == HSUFORUM_GRADETYPE_MANUAL || $data['gradetype'] == HSUFORUM_GRADETYPE_RATING)
-                && $data['scale'] == 0) {
+            && $data['scale'] == 0) {
             $errors['scale'] = get_string('modgradeerrorbadpoint', 'grades', get_config('core', 'gradepointmax'));
         }
         return $errors;
