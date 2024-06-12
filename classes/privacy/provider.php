@@ -529,7 +529,7 @@ class provider implements
              LEFT JOIN {grade_items} gi ON gi.iteminstance = f.id AND gi.itemmodule = 'hsuforum'
              LEFT JOIN {grade_grades} gg ON gg.itemid = gi.id AND gg.userid = d.userid
              LEFT JOIN {hsuforum_posts} p ON p.discussion = d.id
-                 WHERE f.id ${hsuforuminsql}
+                 WHERE f.id {$hsuforuminsql}
                    AND (
                         d.userid    = :discussionuserid OR
                         p.userid    = :postuserid OR
@@ -627,7 +627,7 @@ class provider implements
                   JOIN {hsuforum_posts} p ON p.discussion = d.id
              LEFT JOIN {hsuforum_read} fr ON fr.postid = p.id AND fr.userid = :readuserid
             {$ratingsql->join}
-                 WHERE f.id ${hsuforuminsql} AND
+                 WHERE f.id {$hsuforuminsql} AND
                 (
                     p.userid = :postuserid OR
                     fr.userid IS NOT NULL OR
