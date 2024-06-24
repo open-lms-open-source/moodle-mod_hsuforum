@@ -37,7 +37,7 @@ Feature: Open forum posts and new discussions handle tags correctly, in order to
       | student1 | C1 | student |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
     And I add a new discussion to "Test forum name" Open Forum with:
@@ -47,7 +47,7 @@ Feature: Open forum posts and new discussions handle tags correctly, in order to
     Given I log in as "admin"
     And I navigate to "Appearance > Manage tags" in site administration
     And I follow "Default collection"
-    And I follow "Add standard tags"
+    And I press "Add standard tags"
     And I set the field "Enter comma-separated list of new tags" to "OT1, OT2, OT3"
     And I press "Continue"
     And I log out

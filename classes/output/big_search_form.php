@@ -53,6 +53,8 @@ class big_search_form implements renderable, templatable {
     public $user;
     public $words;
     public $tags;
+
+    public $forumid;
     /** @var string The URL of the search form. */
     public $actionurl;
 
