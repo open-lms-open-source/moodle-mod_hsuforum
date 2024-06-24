@@ -570,6 +570,7 @@ if ($USER->id != $post->userid) {   // Not the original author, so add a message
 }
 
 $formheading = '';
+$hidehtml = '';
 if (!empty($parent)) {
     $formheading = get_string("yourreply", "hsuforum");
 } else {
@@ -578,7 +579,6 @@ if (!empty($parent)) {
     } else {
         $formheading = get_string('yournewtopic', 'hsuforum');
         // Hide duplicated hsuforum description when creating a new discussion topic, see INT-18928.
-        $hidehtml = '';
         $hidehtml .= html_writer::start_tag('style', array('type' => 'text/css')) . "\n";
         $hidehtml .= '
         #page-mod-hsuforum-post .activity-description,
@@ -586,7 +586,6 @@ if (!empty($parent)) {
             display: none;
         };';
         $hidehtml .= html_writer::end_tag('style') . "\n";
-        echo $hidehtml;
     }
 }
 
@@ -998,6 +997,7 @@ $PAGE->set_heading($course->fullname);
 $renderer = $PAGE->get_renderer('mod_hsuforum');
 $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 echo $OUTPUT->header();
+echo $hidehtml;
 echo $OUTPUT->heading(format_string($forum->name), 2);
 
 // Checkup.
