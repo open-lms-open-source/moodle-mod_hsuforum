@@ -83,18 +83,6 @@ class course_searched extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/hsuforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/hsuforum/'));
-
-        return array($this->courseid, 'hsuforum', 'search', $logurl, $this->other['searchterm']);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception
