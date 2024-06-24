@@ -377,6 +377,13 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // So it uses a long name that will not conflict.
             $mform->addElement('textarea', 'availabilityconditionsjson',
                 get_string('accessrestrictions', 'availability'));
+            // Availability loading indicator.
+            $loadingcontainer = $OUTPUT->container(
+                $OUTPUT->render_from_template('core/loading', []),
+                'd-flex justify-content-center py-5 icon-size-5',
+                'availabilityconditions-loading'
+            );
+            $mform->addElement('html', $loadingcontainer);
             // The _cm variable may not be a proper cm_info, so get one from modinfo.
             if ($this->_cm) {
                 $modinfo = get_fast_modinfo($COURSE);
@@ -401,6 +408,16 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $mform->setType('completionunlocked', PARAM_INT);
 
             $trackingdefault = COMPLETION_TRACKING_NONE;
+            // If system and activity default is on, set it.
+            if (!empty($CFG->completiondefault) && $this->_features->defaultcompletion) {
+                $hasrules = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_HAS_RULES, true);
+                $tracksviews = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, true);
+                if ($hasrules || $tracksviews) {
+                    $trackingdefault = COMPLETION_TRACKING_AUTOMATIC;
+                } else {
+                    $trackingdefault = COMPLETION_TRACKING_MANUAL;
+                }
+            }
 
             $mform->addElement('select', 'completion', get_string('completion', 'completion'),
                 array(COMPLETION_TRACKING_NONE=>get_string('completion_none', 'completion'),
@@ -434,7 +451,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                     $mform->addElement(
                         'checkbox',
                         'completionusegrade',
-                        get_string('completionusegrade', 'completion'),
+                        '',
                         get_string('completionusegrade_desc', 'completion')
                     );
                     $mform->hideIf('completionusegrade', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);

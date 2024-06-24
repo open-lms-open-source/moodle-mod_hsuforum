@@ -16,13 +16,15 @@ Feature: Users see their typed information in the advanced editor view when clic
     And the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
     And I log in as "admin"
-    And I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    And I am on "Course 1" course homepage with editing mode on
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |
     And I log out
 
   @javascript @_switch_iframe
+  @editor_tiny
   Scenario: User can continue writing after clicking "Use advanced editor"
     When I log in as "teacher1"
     And I am on "Course 1" course homepage
@@ -38,7 +40,7 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I should not see "Add your discussion"
     And I should see "Your new discussion topic"
     And I set the field with xpath "//*[@id='id_subject']" to "Test discussion 1 to be cancelled"
-    And I set the field "Message" to "Test discussion 1 to be cancelled description"
+    And I set the field with xpath "//*[@id='id_message']" to "Test discussion 1 to be cancelled description"
     And I press "Post to forum"
     Then I log out
     And I log in as "student1"
@@ -53,7 +55,7 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I wait until the page is ready
     And I should see "Your reply"
     And I set the field with xpath "//*[@id='id_subject']" to "Test reply subject"
-    And I set the field "Message" to "Test reply message"
+    And I set the field with xpath "//*[@id='id_message']" to "Test reply message"
     And I press "Post to forum"
     And I log out
     And I log in as "teacher1"
@@ -67,8 +69,8 @@ Feature: Users see their typed information in the advanced editor view when clic
     And I set editable div with break line ".hsuforum-post.depth0 .hsuforum-textarea" "css_element" to "This is a reply \n This is a new line"
     And I click on ".hsuforum-post.depth0 .hsuforum-use-advanced" "css_element"
     And I wait until the page is ready
-    And I switch to "tox-edit-area__iframe" class iframe
+    And I switch to the "Message" TinyMCE editor iframe
     And ".text_to_html br" "css_element" should exist
     And I switch to the main frame
     And I should see "Your reply"
-    And I set the field "Message" to "This is a reply"
+    And I set the field with xpath "//*[@id='id_message']" to "This is a reply"

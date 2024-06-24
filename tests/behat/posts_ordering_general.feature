@@ -17,7 +17,8 @@ Feature: New Open discussions and discussions with recently added replies are di
       | teacher1  | C1        | editingteacher  |
       | student1  | C1        | student         |
     And I log in as "teacher1"
-    And I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    And I am on "Course 1" course homepage with editing mode on
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name  | Course general forum                |
       | Description | Single discussion forum description |
       | Forum type  | Standard forum for general use      |

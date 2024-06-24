@@ -997,6 +997,7 @@ $PAGE->set_heading($course->fullname);
 $renderer = $PAGE->get_renderer('mod_hsuforum');
 $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 echo $OUTPUT->header();
+echo $hidehtml;
 echo $OUTPUT->heading(format_string($forum->name), 2);
 
 // Checkup.

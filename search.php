@@ -311,8 +311,7 @@ foreach ($posts as $post) {
                             $post->id
                         ),
                         $post->messageformat,
-                        $options,
-                        $course->id),
+                        $options),
                     0, '<fgw9sdpq4>', '</fgw9sdpq4>');
 
     foreach ($searchterms as $searchterm) {

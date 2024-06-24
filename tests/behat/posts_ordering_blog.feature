@@ -17,7 +17,8 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
       | teacher1  | C1        | editingteacher  |
       | student1  | C1        | student         |
     And I log in as "teacher1"
-    And I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    And I am on "Course 1" course homepage with editing mode on
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name  | Course blog forum                               |
       | Description | Single discussion forum description             |
       | Forum type  | Standard forum displayed in a blog-like format  |
@@ -64,7 +65,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     And I follow "Blog post 1"
     And I follow "Reply"
     And I follow "Use advanced editor and additional options"
-    And I set the field "Message" to "Reply to the first post"
+    And I set the field with xpath "//*[@id='id_message']" to "Reply to the first post"
     And I press "Post to forum"
     And I wait to be redirected to open forum
     And I am on "Course 1" course homepage

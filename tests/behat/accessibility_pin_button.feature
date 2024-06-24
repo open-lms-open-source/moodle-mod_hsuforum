@@ -35,7 +35,8 @@ Feature: When creating a new discussion the unpin option should exist as a butto
       | user | course | role |
       | teacher1 | C1 | editingteacher |
     And I log in as "teacher1"
-    And I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    And I am on "Course 1" course homepage with editing mode on
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Forum type | Standard forum for general use |
       | Description | Test forum description |

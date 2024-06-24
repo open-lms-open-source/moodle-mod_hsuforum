@@ -21,10 +21,11 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
       | student2 | C1 | student |
       | student3 | C1 | student |
     And I log in as "teacher"
+    And I am on "Course 1" course homepage with editing mode on
 
   @javascript
   Scenario: A forced forum lists all subscribers
-    When I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    When I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -38,7 +39,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
 
   @javascript
   Scenario: A forced forum does not allow to edit the subscribers
-    When I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    When I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name        | Forced Forum 2 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -54,7 +55,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
 
   @javascript
   Scenario: A forced and hidden forum lists only teachers
-    When I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    When I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name        | Forced Forum 2 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
@@ -69,7 +70,7 @@ Feature: In Open Forums as a teacher I need to see an accurate list of subscribe
 
   @javascript
   Scenario: An automatic forum lists all subscribers
-    When I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
+    When I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
       | Forum type        | Standard forum for general use |
       | Description       | Test forum description |
