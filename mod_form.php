@@ -276,7 +276,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
      * Adds all the standard elements to a form to edit the settings for an activity module for Hsuforum.
      */
     protected function standard_hsuforum_coursemodule_elements() {
-        global $COURSE, $CFG, $DB;
+        global $COURSE, $CFG, $DB, $OUTPUT;
         $mform =& $this->_form;
 
         if (!empty($CFG->core_outcome_enable)) {
@@ -360,6 +360,14 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                     html_writer::tag('button', get_string('restrictbygroup', 'availability'),
                         array('id' => 'restrictbygroup', 'disabled' => 'disabled', 'class' => 'btn btn-secondary')));
             }
+
+            // Availability loading indicator. See MDL-78607.
+            $loadingcontainer = $OUTPUT->container(
+                $OUTPUT->render_from_template('core/loading', []),
+                'd-flex justify-content-center py-5 icon-size-5',
+                'availabilityconditions-loading'
+            );
+            $mform->addElement('html', $loadingcontainer);
 
             // Availability field. This is just a textarea; the user interface
             // interaction is all implemented in JavaScript.

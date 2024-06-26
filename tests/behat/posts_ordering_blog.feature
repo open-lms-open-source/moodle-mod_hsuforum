@@ -65,7 +65,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
     And I follow "Blog post 1"
     And I follow "Reply"
     And I follow "Use advanced editor and additional options"
-    And I set the field with xpath "//*[@id='id_messageeditable']" to "Reply to the first post"
+    And I set the field "Message" to "Reply to the first post"
     And I press "Post to forum"
     And I wait to be redirected to open forum
     And I am on "Course 1" course homepage
