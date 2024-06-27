@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -171,7 +170,7 @@ class mod_hsuforum_external extends external_api {
         return new external_function_parameters (
             array(
                 'discussionid' => new external_value(PARAM_INT, 'discussion ID', VALUE_REQUIRED),
-            )
+            ),
         );
     }
 
@@ -192,7 +191,7 @@ class mod_hsuforum_external extends external_api {
         // Validate the parameter.
         $params = self::validate_parameters(
             self::get_forum_discussion_posts_parameters(),
-            array('discussionid' => $discussionid)
+            array('discussionid' => $discussionid, )
         );
 
         // Compact/extract functions are not recommended.
@@ -341,12 +340,12 @@ class mod_hsuforum_external extends external_api {
                                 'postread' => new external_value(PARAM_BOOL, 'The post was read'),
                                 'userfullname' => new external_value(PARAM_TEXT, 'Post author full name'),
                                 'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.', VALUE_OPTIONAL),
-                                'deleted' => new external_value(PARAM_BOOL, 'This post has been removed.')
+                                'deleted' => new external_value(PARAM_BOOL, 'This post has been removed.'),
                             ), 'post'
                         )
                     ),
                 'ratinginfo' => \core_rating\external\util::external_ratings_structure(),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             )
         );
     }
@@ -397,7 +396,7 @@ class mod_hsuforum_external extends external_api {
                 'sortby' => $sortby,
                 'sortdirection' => $sortdirection,
                 'page' => $page,
-                'perpage' => $perpage
+                'perpage' => $perpage,
             )
         );
 
@@ -593,7 +592,7 @@ class mod_hsuforum_external extends external_api {
                             ), 'post'
                         )
                     ),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             )
         );
     }
@@ -606,7 +605,7 @@ class mod_hsuforum_external extends external_api {
     public static function view_forum_parameters() {
         return new external_function_parameters(
             array(
-                'forumid' => new external_value(PARAM_INT, 'forum instance id')
+                'forumid' => new external_value(PARAM_INT, 'forum instance id'),
             )
         );
     }
@@ -625,7 +624,7 @@ class mod_hsuforum_external extends external_api {
 
         $params = self::validate_parameters(self::view_forum_parameters(),
                                             array(
-                                                'forumid' => $forumid
+                                                'forumid' => $forumid,
                                             ));
         $warnings = array();
         $discussions = array();
@@ -658,7 +657,7 @@ class mod_hsuforum_external extends external_api {
         return new external_single_structure(
             array(
                 'status' => new external_value(PARAM_BOOL, 'status: true if success'),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             )
         );
     }
@@ -672,8 +671,8 @@ class mod_hsuforum_external extends external_api {
     public static function view_forum_discussion_parameters() {
         return new external_function_parameters(
             array(
-                'discussionid' => new external_value(PARAM_INT, 'discussion id')
-            )
+                'discussionid' => new external_value(PARAM_INT, 'discussion id', ),
+            ),
         );
     }
 
@@ -691,7 +690,7 @@ class mod_hsuforum_external extends external_api {
 
         $params = self::validate_parameters(self::view_forum_discussion_parameters(),
                                             array(
-                                                'discussionid' => $discussionid
+                                                'discussionid' => $discussionid,
                                             ));
         $warnings = array();
 
@@ -726,7 +725,7 @@ class mod_hsuforum_external extends external_api {
         return new external_single_structure(
             array(
                 'status' => new external_value(PARAM_BOOL, 'status: true if success'),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             )
         );
     }
@@ -755,9 +754,9 @@ class mod_hsuforum_external extends external_api {
                             '),
                             'value' => new external_value(PARAM_RAW, 'the value of the option,
                                                             this param is validated in the external function.'
-                        )
+                                        ),
                     )
-                ), 'Options', VALUE_DEFAULT, array())
+                ), 'Options', VALUE_DEFAULT, array()),
             )
         );
     }
@@ -782,7 +781,7 @@ class mod_hsuforum_external extends external_api {
                 'postid' => $postid,
                 'subject' => $subject,
                 'message' => $message,
-                'options' => $options
+                'options' => $options,
             )
         );
         $warnings = array();
@@ -806,7 +805,7 @@ class mod_hsuforum_external extends external_api {
         $options = array(
             'discussionsubscribe' => true,
             'inlineattachmentsid' => 0,
-            'attachmentsid' => null
+            'attachmentsid' => null,
         );
         foreach ($params['options'] as $option) {
             $name = trim($option['name']);
@@ -865,7 +864,7 @@ class mod_hsuforum_external extends external_api {
                     'discussionid' => $discussion->id,
                     'forumid' => $forum->id,
                     'forumtype' => $forum->type,
-                )
+                ),
             );
             $event = \mod_hsuforum\event\post_created::create($params);
             $event->add_record_snapshot('hsuforum_posts', $post);
@@ -902,7 +901,7 @@ class mod_hsuforum_external extends external_api {
         return new external_single_structure(
             array(
                 'postid' => new external_value(PARAM_INT, 'new post id'),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             )
         );
     }
@@ -932,9 +931,9 @@ class mod_hsuforum_external extends external_api {
                             '),
                             'value' => new external_value(PARAM_RAW, 'The value of the option,
                                                             This param is validated in the external function.'
-                        )
+                                        ),
                     )
-                ), 'Options', VALUE_DEFAULT, array())
+                ), 'Options', VALUE_DEFAULT, array()),
             )
         );
     }
@@ -961,7 +960,7 @@ class mod_hsuforum_external extends external_api {
                                                 'subject' => $subject,
                                                 'message' => $message,
                                                 'groupid' => $groupid,
-                                                'options' => $options
+                                                'options' => $options,
                                             ));
 
         $warnings = array();
@@ -978,7 +977,7 @@ class mod_hsuforum_external extends external_api {
             'discussionsubscribe' => true,
             'discussionpinned' => false,
             'inlineattachmentsid' => 0,
-            'attachmentsid' => null
+            'attachmentsid' => null,
         );
         foreach ($params['options'] as $option) {
             $name = trim($option['name']);
@@ -1061,7 +1060,7 @@ class mod_hsuforum_external extends external_api {
                 'objectid' => $discussion->id,
                 'other' => array(
                     'forumid' => $forum->id,
-                )
+                ),
             );
             $event = \mod_hsuforum\event\discussion_created::create($params);
             $event->add_record_snapshot('hsuforum_discussions', $discussion);
@@ -1095,9 +1094,9 @@ class mod_hsuforum_external extends external_api {
     public static function add_discussion_returns() {
         return new external_single_structure(
             array(
-                'discussionid' => new external_value(PARAM_INT, 'New Discussion ID'),
-                'warnings' => new external_warnings()
-            )
+                'discussionid' => new external_value(PARAM_INT, 'New Discussion ID', ),
+                'warnings' => new external_warnings(),
+            ),
         );
     }
 
@@ -1112,7 +1111,7 @@ class mod_hsuforum_external extends external_api {
             array(
                 'forumid' => new external_value(PARAM_INT, 'Forum instance ID'),
                 'groupid' => new external_value(PARAM_INT, 'The group to check, default to active group.
-                                                Use -1 to check if the user can post in all the groups.', VALUE_DEFAULT, null)
+                                                Use -1 to check if the user can post in all the groups.', VALUE_DEFAULT, null),
             )
         );
     }
@@ -1168,7 +1167,7 @@ class mod_hsuforum_external extends external_api {
                     VALUE_OPTIONAL),
                 'cancreateattachment' => new external_value(PARAM_BOOL, 'True if the user can add attachments, false otherwise.',
                     VALUE_OPTIONAL),
-                'warnings' => new external_warnings()
+                'warnings' => new external_warnings(),
             )
         );
     }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -55,7 +54,7 @@ $coursecontext = context_course::instance($course->id);
 unset($SESSION->fromdiscussion);
 
 $params = array(
-    'context' => context_course::instance($course->id)
+    'context' => context_course::instance($course->id),
 );
 $event = \mod_hsuforum\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
@@ -173,7 +172,7 @@ foreach ($modinfo->get_instances_of('hsuforum') as $forumid => $cm) {
 }
 
 /// Do course wide subscribe/unsubscribe
-if (!is_null($subscribe) and !isguestuser()) {
+if (!is_null($subscribe) && !isguestuser()) {
     foreach ($modinfo->get_instances_of('hsuforum') as $forumid=>$cm) {
         $forum = $forums[$forumid];
         $modcontext = context_module::instance($cm->id);
@@ -249,7 +248,7 @@ if ($generalforums) {
 
         // If this forum has RSS activated, calculate it.
         if ($show_rss) {
-            if ($forum->rsstype and $forum->rssarticles) {
+            if ($forum->rsstype && $forum->rssarticles) {
                 //Calculate the tooltip text
                 if ($forum->rsstype == 1) {
                     $tooltiptext = get_string('rsssubscriberssdiscussions', 'hsuforum');
@@ -360,7 +359,7 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
 
             //If this forum has RSS activated, calculate it
             if ($show_rss) {
-                if ($forum->rsstype and $forum->rssarticles) {
+                if ($forum->rsstype && $forum->rssarticles) {
                     //Calculate the tolltip text
                     if ($forum->rsstype == 1) {
                         $tooltiptext = get_string('rsssubscriberssdiscussions', 'hsuforum');

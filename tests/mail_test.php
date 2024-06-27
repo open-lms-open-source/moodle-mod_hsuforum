@@ -980,7 +980,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                             'attachments' => array(
                                 array(
                                     'filename' => 'example.txt',
-                                    'filecontents' => 'Basic information about the course'
+                                    'filecontents' => 'Basic information about the course',
                                 ),
                             ),
                         ),
@@ -995,7 +995,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
                         'Attachments example.txt:\r\n' .
                             $CFG->wwwroot.'/pluginfile.php/\d*/mod_hsuforum/attachment/\d*/example.txt\r\n',
-                        'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1'
+                        'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1',
                     ),
                 ),
             ),
@@ -1173,7 +1173,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
                             'filearea'  => 'attachment',
                             'itemid'    => $post->id,
                             'filepath'  => '/',
-                            'filename'  => $attachment['filename']
+                            'filename'  => $attachment['filename'],
                         );
                         $fs->create_file_from_string($filerecord, $attachment['filecontents']);
                     }
@@ -1224,7 +1224,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
             $this->assertNotEmpty($foundexpectation, 'Expectation not found for the mail');
 
             // If we have found the expectation and have contents to match, let's do it.
-            if (isset($foundexpectation) and isset($foundexpectation['contents'])) {
+            if (isset($foundexpectation) && isset($foundexpectation['contents'])) {
                 $mail->body = quoted_printable_decode($mail->body);
                 if (!is_array($foundexpectation['contents'])) { // Accept both string and array.
                     $foundexpectation['contents'] = array($foundexpectation['contents']);

@@ -88,14 +88,14 @@ class form_service {
             $draftitemid = file_get_unused_draft_itemid();
         }
         $file_record = array('contextid'=>$usercontext->id, 'component'=>'user', 'filearea'=>'draft', 'itemid'=>$draftitemid);
-        if (!is_null($itemid) and $files = $fs->get_area_files($contextid, $component, $filearea, $itemid)) {
+        if (!is_null($itemid) && $files = $fs->get_area_files($contextid, $component, $filearea, $itemid)) {
             foreach ($files as $file) {
-                if ($file->is_directory() and $file->get_filepath() === '/') {
+                if ($file->is_directory() && $file->get_filepath() === '/') {
                     // we need a way to mark the age of each draft area,
                     // by not copying the root dir we force it to be created automatically with current timestamp
                     continue;
                 }
-                if (!$options['subdirs'] and ($file->is_directory() or $file->get_filepath() !== '/')) {
+                if (!$options['subdirs'] && ($file->is_directory() or $file->get_filepath() !== '/')) {
                     continue;
                 }
 
@@ -215,7 +215,7 @@ class form_service {
             'groupid' => ($discussion->groupid == -1) ? 0 : $discussion->groupid,
             'itemid'  => $itemid,
             'timestart' => $discussion->timestart,
-            'timeend' => $discussion->timeend
+            'timeend' => $discussion->timeend,
         ));
     }
 }

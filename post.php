@@ -59,7 +59,7 @@ $sitecontext = context_system::instance();
 
 if (!isloggedin() or isguestuser()) {
 
-    if (!isloggedin() and !get_local_referer()) {
+    if (!isloggedin() && !get_local_referer()) {
         // No referer+not logged in - probably coming in via email  See MDL-9052.
         require_login();
     }
@@ -134,7 +134,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
         throw new \moodle_exception('nopostforum', 'hsuforum');
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
+    if (!$cm->visible && !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         throw new \moodle_exception("activityiscurrentlyhidden");
     }
 
@@ -210,7 +210,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     } else {
         $groupmode = $course->groupmode;
     }
-    if ($groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
+    if ($groupmode == SEPARATEGROUPS && !has_capability('moodle/site:accessallgroups', $modcontext)) {
         if ($discussion->groupid == -1) {
             throw new \moodle_exception('nopostforum', 'hsuforum');
         } else {
@@ -220,7 +220,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
         }
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
+    if (!$cm->visible && !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         throw new \moodle_exception("activityiscurrentlyhidden");
     }
 
@@ -279,12 +279,12 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
     $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
 
     if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
-        if (((time() - $post->created) > $CFG->maxeditingtime) and
+        if (((time() - $post->created) > $CFG->maxeditingtime) &&
             !has_capability('mod/hsuforum:editanypost', $modcontext)) {
             throw new \moodle_exception('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
         }
     }
-    if (($post->userid <> $USER->id) and
+    if (($post->userid <> $USER->id) &&
         !has_capability('mod/hsuforum:editanypost', $modcontext)) {
         throw new \moodle_exception('cannoteditposts', 'hsuforum');
     }
@@ -444,7 +444,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
             'objectid' => $discussion->id,
             'other' => array(
                 'forumid' => $forum->id,
-            )
+            ),
         );
         $event = \mod_hsuforum\event\discussion_updated::create($params);
         $event->trigger();
@@ -454,7 +454,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
             'objectid' => $newid,
             'other' => array(
                 'forumid' => $forum->id,
-            )
+            ),
         );
         $event = \mod_hsuforum\event\discussion_created::create($params);
         $event->trigger();
@@ -466,7 +466,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
                 'discussionid' => $newid,
                 'forumid' => $forum->id,
                 'forumtype' => $forum->type,
-            )
+            ),
         );
         $event = \mod_hsuforum\event\post_updated::create($params);
         $event->add_record_snapshot('hsuforum_discussions', $discussion);
@@ -615,7 +615,7 @@ $mformpost->set_data(
         'message'=>array(
             'text'=>$currenttext,
             'format'=>empty($post->messageformat) ? editors_get_preferred_format() : $post->messageformat,
-            'itemid'=>$draftideditor
+            'itemid'=>$draftideditor,
         ),
         'subscribe'=>$subscribe?1:0,
         'mailnow'=>!empty($post->mailnow),
@@ -624,7 +624,7 @@ $mformpost->set_data(
         'reveal'=>$post->reveal,
         'privatereply'=>$post->privatereply,
         'discussion'=>$post->discussion,
-        'course'=>$course->id
+        'course'=>$course->id,
     ) +
 
     $pageparams +
@@ -751,7 +751,7 @@ if ($fromform = $mformpost->get_data()) {
                 'discussionid' => $discussion->id,
                 'forumid' => $forum->id,
                 'forumtype' => $forum->type,
-            )
+            ),
         );
 
         if ($realpost->userid !== $USER->id) {
@@ -804,7 +804,7 @@ if ($fromform = $mformpost->get_data()) {
                     'discussionid' => $discussion->id,
                     'forumid' => $forum->id,
                     'forumtype' => $forum->type,
-                )
+                ),
             );
             $event = \mod_hsuforum\event\post_created::create($params);
             $event->add_record_snapshot('hsuforum_posts', $post);
@@ -904,7 +904,7 @@ if ($fromform = $mformpost->get_data()) {
                     'objectid' => $discussion->id,
                     'other' => array(
                         'forumid' => $forum->id,
-                    )
+                    ),
                 );
                 $event = \mod_hsuforum\event\discussion_created::create($params);
                 $event->add_record_snapshot('hsuforum_discussions', $discussion);

@@ -53,7 +53,7 @@ class mod_hsuforum_portfolio_caller_testcase extends advanced_testcase {
                 'course'     => $course->id,
                 'forum'      => $forum->id,
                 'userid'     => $user->id,
-                'attachment' => 1
+                'attachment' => 1,
             )
         );
 
@@ -64,13 +64,13 @@ class mod_hsuforum_portfolio_caller_testcase extends advanced_testcase {
             'filearea'  => 'attachment',
             'itemid'    => $discussion->firstpost,
             'filepath'  => '/',
-            'filename'  => 'myassignmnent.pdf'
+            'filename'  => 'myassignmnent.pdf',
         );
         $firstpostfile = $fs->create_file_from_string($dummy, 'Content of '.$dummy->filename);
 
         $caller = new hsuforum_portfolio_caller(array(
             'postid'     => $discussion->firstpost,
-            'attachment' => $firstpostfile->get_id()
+            'attachment' => $firstpostfile->get_id(),
         ));
 
         $caller->load_data();
@@ -98,7 +98,7 @@ class mod_hsuforum_portfolio_caller_testcase extends advanced_testcase {
                 'course'     => $course->id,
                 'forum'      => $forum->id,
                 'userid'     => $user->id,
-                'attachment' => 1
+                'attachment' => 1,
             )
         );
 
@@ -109,7 +109,7 @@ class mod_hsuforum_portfolio_caller_testcase extends advanced_testcase {
             'filearea'  => 'attachment',
             'itemid'    => $discussion->firstpost,
             'filepath'  => '/',
-            'filename'  => 'myassignmnent.pdf'
+            'filename'  => 'myassignmnent.pdf',
         );
         $firstpostfile = $fs->create_file_from_string($dummyone, 'Content of '.$dummyone->filename);
 
@@ -118,7 +118,7 @@ class mod_hsuforum_portfolio_caller_testcase extends advanced_testcase {
             array(
                 'discussion' => $discussion->id,
                 'userid'     => $user->id,
-                'attachment' => 1
+                'attachment' => 1,
             )
         );
         $dummytwo       = (object) array(
@@ -127,13 +127,13 @@ class mod_hsuforum_portfolio_caller_testcase extends advanced_testcase {
             'filearea'  => 'attachment',
             'itemid'    => $secondpost->id,
             'filepath'  => '/',
-            'filename'  => 'myotherthing.pdf'
+            'filename'  => 'myotherthing.pdf',
         );
         $secondpostfile = $fs->create_file_from_string($dummytwo, 'Content of '.$dummytwo->filename);
 
         $caller = new hsuforum_portfolio_caller(array(
             'postid'     => $discussion->firstpost,
-            'attachment' => $secondpostfile->get_id()
+            'attachment' => $secondpostfile->get_id(),
         ));
 
         $this->expectExceptionMessage('Sorry, the requested file could not be found');

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -81,7 +80,7 @@ if ($groupmode && !hsuforum_is_subscribed($user->id, $forum) && !has_capability(
 
 require_login($course, false, $cm);
 
-if (is_null($mode) and !is_enrolled($context, $USER, '', true)) {   // Guests and visitors can't subscribe - only enrolled
+if (is_null($mode) && !is_enrolled($context, $USER, '', true)) {   // Guests and visitors can't subscribe - only enrolled
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     if (isguestuser()) {
@@ -105,7 +104,7 @@ $returnto = optional_param('backtoindex',0,PARAM_INT)
     ? "index.php?id=".$course->id
     : "view.php?f=$id";
 
-if (!is_null($mode) and has_capability('mod/hsuforum:managesubscriptions', $context)) {
+if (!is_null($mode) && has_capability('mod/hsuforum:managesubscriptions', $context)) {
     require_sesskey();
     switch ($mode) {
         case HSUFORUM_CHOOSESUBSCRIBE : // 0

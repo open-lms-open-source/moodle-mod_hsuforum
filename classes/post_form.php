@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -52,7 +51,7 @@ class mod_hsuforum_post_form extends moodleform {
             'maxbytes' => $maxbytes,
             'maxfiles' => $forum->maxattachments,
             'accepted_types' => '*',
-            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK
+            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK,
         );
     }
 
@@ -72,7 +71,7 @@ class mod_hsuforum_post_form extends moodleform {
             'maxbytes' => $maxbytes,
             'trusttext'=> true,
             'return_types'=> FILE_INTERNAL | FILE_EXTERNAL,
-            'subdirs' => file_area_contains_subdirs($context, 'mod_hsuforum', 'post', $postid)
+            'subdirs' => file_area_contains_subdirs($context, 'mod_hsuforum', 'post', $postid),
         );
     }
 
@@ -149,7 +148,7 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addHelpButton('pinned', 'discussionpinned', 'hsuforum');
         }
 
-        if (!empty($forum->anonymous) and $post->userid == $USER->id and has_capability('mod/hsuforum:revealpost', $modcontext)) {
+        if (!empty($forum->anonymous) && $post->userid == $USER->id && has_capability('mod/hsuforum:revealpost', $modcontext)) {
             $mform->addElement('advcheckbox', 'reveal', get_string('reveal', 'hsuforum'));
             $mform->addHelpButton('reveal', 'reveal', 'hsuforum');
         }
@@ -158,7 +157,7 @@ class mod_hsuforum_post_form extends moodleform {
             $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'hsuforum'));
         }
 
-        if (!empty($forum->allowprivatereplies) and !empty($post->parent) and has_capability('mod/hsuforum:allowprivate', $modcontext)) {
+        if (!empty($forum->allowprivatereplies) && !empty($post->parent) && has_capability('mod/hsuforum:allowprivate', $modcontext)) {
             if ($post->userid != $USER->id) {
                 $mform->addElement('hidden', 'privatereply', 0);
                 $mform->setType('privatereply', PARAM_INT);

@@ -79,7 +79,7 @@
 
         $params = array(
             'context' => $modcontext,
-            'objectid' => $forum->id
+            'objectid' => $forum->id,
         );
         $event = \mod_hsuforum\event\course_module_viewed::create($params);
         $event->add_record_snapshot('course_modules', $cm);
@@ -98,7 +98,7 @@
     }
 
 /// move discussion if requested
-    if ($move > 0 and confirm_sesskey()) {
+    if ($move > 0 && confirm_sesskey()) {
         $return = $CFG->wwwroot.'/mod/hsuforum/discuss.php?d='.$discussion->id;
 
         require_capability('mod/hsuforum:movediscussions', $modcontext);
@@ -142,7 +142,7 @@
                 'other'    => array(
                     'fromforumid' => $forum->id,
                     'toforumid'   => $forumto->id,
-                )
+                ),
             );
             $event  = \mod_hsuforum\event\discussion_moved::create($params);
             $event->add_record_snapshot('hsuforum_discussions', $discussion);
@@ -236,11 +236,11 @@
 /// Also, if we know they should be able to reply, then explicitly set $canreply for performance reasons
 
     $canreply = hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
-    if (!$canreply and $forum->type !== 'news') {
+    if (!$canreply && $forum->type !== 'news') {
         if (isguestuser() or !isloggedin()) {
             $canreply = true;
         }
-        if (!is_enrolled($modcontext) and !is_viewing($modcontext)) {
+        if (!is_enrolled($modcontext) && !is_viewing($modcontext)) {
             // allow guests and not-logged-in to see the link - they are prompted to log in after clicking the link
             // normal users with temporary guest access see this link too, they are asked to enrol instead
             $canreply = enrol_selfenrol_available($course->id);
@@ -249,7 +249,7 @@
 
 
     // Print Notice of Warning if Moving this Discussion
-    if ($move > 0 and confirm_sesskey()) {
+    if ($move > 0 && confirm_sesskey()) {
         echo $OUTPUT->confirm(
             get_string('anonymouswarning', 'hsuforum'),
             new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id, 'move' => $move, 'warned' => 1)),
@@ -274,7 +274,7 @@
         echo $OUTPUT->notification(get_string('qandanotify', 'hsuforum'));
     }
 
-    if ($move == -1 and confirm_sesskey()) {
+    if ($move == -1 && confirm_sesskey()) {
         echo $OUTPUT->notification(get_string('discussionmoved', 'hsuforum', format_string($forum->name,true)), 'success');
     }
 
@@ -319,7 +319,7 @@
                 }
                 $forumidcompare = $forumcm->instance != $forum->id;
                 $forumtypecheck = $forumcheck[$forumcm->instance]->type !== 'single';
-                if ($forumidcompare and $forumtypecheck) {
+                if ($forumidcompare && $forumtypecheck) {
                     $url = "/mod/hsuforum/discuss.php?d=$discussion->id&move=$forumcm->instance&sesskey=".sesskey();
                     $forummenu[$section][$sectionname][$url] = format_string($forumcm->name);
                 }
