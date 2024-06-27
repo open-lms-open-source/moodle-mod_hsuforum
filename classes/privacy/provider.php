@@ -435,7 +435,7 @@ class provider implements
         $subscriptions = $DB->get_records_sql_menu($sql, $params);
 
         // Tracked forums.
-        $sql = "SELECT 
+        $sql = "SELECT
                     c.id AS contextid,
                     pref.userid AS tracked
                   FROM {context} c
@@ -519,7 +519,7 @@ class provider implements
                        gg.rawgrademax AS grademax,
                        gg.timemodified AS gradetimemodified,
                        gg.rawgrade AS grade,
-                       gg.feedback AS gradefeedback, 
+                       gg.feedback AS gradefeedback,
                        g.name AS groupname,
                        subs.discussion AS subscribedto
                   FROM {hsuforum} f
