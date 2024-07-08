@@ -40,13 +40,13 @@ Feature: In Open Forums, posting to groups in a separate group discussion when r
       | G2       | G2G1    |
     And I log in as "admin"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name  | Multiple groups forum             |
       | Forum type  | Standard forum for general use    |
       | Description | Standard forum description        |
       | Group mode  | Separate groups                   |
       | Grouping    | G1                                |
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name  | Single groups forum               |
       | Forum type  | Standard forum for general use    |
       | Description | Standard forum description        |

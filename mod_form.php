@@ -276,7 +276,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
      * Adds all the standard elements to a form to edit the settings for an activity module for Hsuforum.
      */
     protected function standard_hsuforum_coursemodule_elements() {
-        global $COURSE, $CFG, $DB;
+        global $COURSE, $CFG, $DB, $OUTPUT;
         $mform =& $this->_form;
 
         if (!empty($CFG->core_outcome_enable)) {
@@ -370,6 +370,13 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // So it uses a long name that will not conflict.
             $mform->addElement('textarea', 'availabilityconditionsjson',
                 get_string('accessrestrictions', 'availability'));
+            // Availability loading indicator.
+            $loadingcontainer = $OUTPUT->container(
+                $OUTPUT->render_from_template('core/loading', []),
+                'd-flex justify-content-center py-5 icon-size-5',
+                'availabilityconditions-loading'
+            );
+            $mform->addElement('html', $loadingcontainer);
             // The _cm variable may not be a proper cm_info, so get one from modinfo.
             if ($this->_cm) {
                 $modinfo = get_fast_modinfo($COURSE);
@@ -395,7 +402,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
             $trackingdefault = COMPLETION_TRACKING_NONE;
             // If system and activity default is on, set it.
-            if ($CFG->completiondefault && $this->_features->defaultcompletion) {
+            if (!empty($CFG->completiondefault) && $this->_features->defaultcompletion) {
                 $hasrules = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_HAS_RULES, true);
                 $tracksviews = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, true);
                 if ($hasrules || $tracksviews) {
@@ -414,7 +421,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // Automatic completion once you view it
             $gotcompletionoptions = false;
             if (plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, false)) {
-                $mform->addElement('checkbox', 'completionview', get_string('completionview', 'completion'),
+                $mform->addElement('checkbox', 'completionview', '',
                     get_string('completionview_desc', 'completion'));
                 $mform->hideIf('completionview', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
                 // Check by default if automatic completion tracking is set.
@@ -437,11 +444,10 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                     $mform->addElement(
                         'checkbox',
                         'completionusegrade',
-                        get_string('completionusegrade', 'completion'),
+                        '',
                         get_string('completionusegrade_desc', 'completion')
                     );
                     $mform->hideIf('completionusegrade', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
-                    $mform->addHelpButton('completionusegrade', 'completionusegrade', 'completion');
 
                     // The disabledIf logic differs between ratings and other grade items due to different field types.
                     if ($this->_features->rating) {
@@ -675,11 +681,11 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addElement('checkbox', 'ratingtime', get_string('ratingtime', 'rating'));
         $mform->hideIf('ratingtime', $assessedfieldname, 'eq', 0);
 
-        $mform->addElement('date_time_selector', 'assesstimestart', get_string('from'));
+        $mform->addElement('date_time_selector', 'assesstimestart', get_string('fromdate'));
         $mform->hideIf('assesstimestart', $assessedfieldname, 'eq', 0);
         $mform->hideIf('assesstimestart', 'ratingtime');
 
-        $mform->addElement('date_time_selector', 'assesstimefinish', get_string('to'));
+        $mform->addElement('date_time_selector', 'assesstimefinish', get_string('todate'));
         $mform->hideIf('assesstimefinish', $assessedfieldname, 'eq', 0);
         $mform->hideIf('assesstimefinish', 'ratingtime');
     }
