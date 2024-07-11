@@ -290,7 +290,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
 
         // And next event should be the 'notification_sent' one.
         $event = $events[1];
-        
+
         $this->assertInstanceOf('\core\event\notification_sent', $event);
         $this->assertEquals($author->id, $event->userid);
         $this->assertEquals($recipient->id, $event->relateduserid);
@@ -1118,7 +1118,7 @@ class mod_hsuforum_mail_testcase extends advanced_testcase {
      * @param array $data provider samples.
      */
     public function test_forum_post_email_templates($data) {
-        $this->markTestSkipped('This test only passes on PHP 8.1. Please unskip once we are fully on PHP 8.1 or greater');
+
         global $DB, $CFG;
         // Disabled to avoid adding footer with Mobile Web Services info on emails.
         $CFG->enablemobilewebservice = 0;
