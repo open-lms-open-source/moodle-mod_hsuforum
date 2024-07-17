@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -118,7 +119,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             10 => 10,
             20 => 20,
             50 => 50,
-            100 => 100,
+            100 => 100
         );
         $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'hsuforum'), $choices);
         $mform->addHelpButton('maxattachments', 'maxattachments', 'hsuforum');
@@ -377,13 +378,6 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // So it uses a long name that will not conflict.
             $mform->addElement('textarea', 'availabilityconditionsjson',
                 get_string('accessrestrictions', 'availability'));
-            // Availability loading indicator.
-            $loadingcontainer = $OUTPUT->container(
-                $OUTPUT->render_from_template('core/loading', []),
-                'd-flex justify-content-center py-5 icon-size-5',
-                'availabilityconditions-loading'
-            );
-            $mform->addElement('html', $loadingcontainer);
             // The _cm variable may not be a proper cm_info, so get one from modinfo.
             if ($this->_cm) {
                 $modinfo = get_fast_modinfo($COURSE);
@@ -409,7 +403,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
             $trackingdefault = COMPLETION_TRACKING_NONE;
             // If system and activity default is on, set it.
-            if (!empty($CFG->completiondefault) && $this->_features->defaultcompletion) {
+            if ($CFG->completiondefault && $this->_features->defaultcompletion) {
                 $hasrules = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_HAS_RULES, true);
                 $tracksviews = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, true);
                 if ($hasrules || $tracksviews) {
@@ -428,7 +422,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // Automatic completion once you view it
             $gotcompletionoptions = false;
             if (plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, false)) {
-                $mform->addElement('checkbox', 'completionview', get_string('completionview', 'hsuforum'),
+                $mform->addElement('checkbox', 'completionview', get_string('completionview', 'completion'),
                     get_string('completionview_desc', 'completion'));
                 $mform->hideIf('completionview', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
                 // Check by default if automatic completion tracking is set.
@@ -451,11 +445,11 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                     $mform->addElement(
                         'checkbox',
                         'completionusegrade',
-                        '',
+                        get_string('completionusegrade', 'completion'),
                         get_string('completionusegrade_desc', 'completion')
                     );
                     $mform->hideIf('completionusegrade', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
-                    $mform->addHelpButton('completionusegrade', 'completionusegrade', 'hsuforum');
+                    $mform->addHelpButton('completionusegrade', 'completionusegrade', 'completion');
 
                     // The disabledIf logic differs between ratings and other grade items due to different field types.
                     if ($this->_features->rating) {
@@ -570,8 +564,8 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             $mform->setDefault('grade', $CFG->gradepointdefault);
 
             if ($this->_features->advancedgrading
-                && !empty($this->current->_advancedgradingdata['methods'])
-                && !empty($this->current->_advancedgradingdata['areas'])) {
+                and !empty($this->current->_advancedgradingdata['methods'])
+                and !empty($this->current->_advancedgradingdata['areas'])) {
 
                 if (count($this->current->_advancedgradingdata['areas']) == 1) {
                     // if there is just one gradable area (most cases), display just the selector
@@ -689,11 +683,11 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         $mform->addElement('checkbox', 'ratingtime', get_string('ratingtime', 'rating'));
         $mform->hideIf('ratingtime', $assessedfieldname, 'eq', 0);
 
-        $mform->addElement('date_time_selector', 'assesstimestart', get_string('fromdate'));
+        $mform->addElement('date_time_selector', 'assesstimestart', get_string('from', 'mod_hsuforum'));
         $mform->hideIf('assesstimestart', $assessedfieldname, 'eq', 0);
         $mform->hideIf('assesstimestart', 'ratingtime');
 
-        $mform->addElement('date_time_selector', 'assesstimefinish', get_string('todate'));
+        $mform->addElement('date_time_selector', 'assesstimefinish', get_string('to', 'mod_hsuforum'));
         $mform->hideIf('assesstimefinish', $assessedfieldname, 'eq', 0);
         $mform->hideIf('assesstimefinish', 'ratingtime');
     }
@@ -841,7 +835,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
         if (!empty($data['completionusegrade'])) {
             // This is the same logic as in hsuforum_grade_item_update() for determining that the gradetype is GRADE_TYPE_NONE
             // If GRADE_TYPE_NONE, then we cannot have this completion criteria because there may be no grade item!
-            if ($data['gradetype'] == HSUFORUM_GRADETYPE_NONE or ($data['gradetype'] == HSUFORUM_GRADETYPE_RATING && !$data['assessed']) or $data['scale'] == 0) {
+            if ($data['gradetype'] == HSUFORUM_GRADETYPE_NONE or ($data['gradetype'] == HSUFORUM_GRADETYPE_RATING and !$data['assessed']) or $data['scale'] == 0) {
                 $errors['completionusegrade'] = get_string('completionusegradeerror', 'hsuforum');
             }
         }
