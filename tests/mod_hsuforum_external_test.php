@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 /**
  * @runTestsInSeparateProcesses
  */
-class mod_hsuforum_external_test extends externallib_advanced_testcase {
+class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Tests set up
@@ -297,8 +297,8 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
                     'timemodified' => $timepost,
                     'mimetype' => 'image/jpeg',
                     'isexternalfile' => false,
-                    'icon' => 'f/image'
-                ),
+                    'icon' => "f/image",
+                )
             ),
             'totalscore' => $discussion1reply1->totalscore,
             'mailnow' => $discussion1reply1->mailnow,
@@ -307,7 +307,7 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
             'postread' => false,
             'userfullname' => fullname($user2),
             'userpictureurl' => '',
-            'deleted' => false,
+            'deleted' => false
         );
         $expectedposts['posts'][] = array(
             'id' => $discussion1reply2->id,
@@ -330,7 +330,7 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
             'postread' => false,
             'userfullname' => fullname($user3),
             'userpictureurl' => '',
-            'deleted' => false,
+            'deleted' => false
         );
 
         // Test a discussion with two additional posts (total 3 posts).
@@ -346,7 +346,6 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
         $userpicture = new user_picture($user2);
         $userpicture->size = 1; // Size f1.
         $expectedposts['posts'][1]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
-
         // Unset the initial discussion post.
         array_shift($posts['posts']);
         $this->assertEquals($expectedposts, $posts);
@@ -580,7 +579,7 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
         $discussions = external_api::clean_returnvalue(mod_hsuforum_external::get_forum_discussions_paginated_returns(), $discussions);
         $expectedreturn = array(
             'discussions' => array($expecteddiscussions),
-            'warnings' => array(),
+            'warnings' => array()
         );
 
         // Wait the theme to be loaded (the external_api call does that) to generate the user profiles.
