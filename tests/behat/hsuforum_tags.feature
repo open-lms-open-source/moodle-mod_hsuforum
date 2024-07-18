@@ -47,7 +47,7 @@ Feature: Open forum posts and new discussions handle tags correctly, in order to
     Given I log in as "admin"
     And I navigate to "Appearance > Manage tags" in site administration
     And I follow "Default collection"
-    And I press "Add standard tags"
+    And I click on "Add standard tags" "button"
     And I set the field "Enter comma-separated list of new tags" to "OT1, OT2, OT3"
     And I press "Continue"
     And I log out
