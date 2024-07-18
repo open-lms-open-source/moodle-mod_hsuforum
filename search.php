@@ -301,6 +301,8 @@ foreach ($posts as $post) {
     $options = new stdClass();
     $options->trusted = $post->messagetrust;
     $modcontext = context_module::instance($cm->id);
+    $coursecontext = context_course::instance($course->id);
+    $options->context = $coursecontext;
     $post->message = highlight($strippedsearch,
                     format_text(
                         file_rewrite_pluginfile_urls(
