@@ -40,6 +40,7 @@ class hsuforum_portfolio_caller extends portfolio_module_caller_base {
     private $discussion;
     private $posts;
     private $keyedfiles; // just using multifiles isn't enough if we're exporting a full thread
+    private $modcontext;
 
     /**
      * @return array
