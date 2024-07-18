@@ -18,7 +18,7 @@ Feature: In Open Forums, blog posts are always displayed in reverse chronologica
       | student1  | C1        | student         |
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add a "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name  | Course blog forum                               |
       | Description | Single discussion forum description             |
       | Forum type  | Standard forum displayed in a blog-like format  |

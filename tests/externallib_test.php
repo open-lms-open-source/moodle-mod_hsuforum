@@ -297,6 +297,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
                     'timemodified' => $timepost,
                     'mimetype' => 'image/jpeg',
                     'isexternalfile' => false,
+                    'icon' => "f/image",
                 )
             ),
             'totalscore' => $discussion1reply1->totalscore,
@@ -345,7 +346,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
         $userpicture = new user_picture($user2);
         $userpicture->size = 1; // Size f1.
         $expectedposts['posts'][1]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
-
         // Unset the initial discussion post.
         array_shift($posts['posts']);
         $this->assertEquals($expectedposts, $posts);
