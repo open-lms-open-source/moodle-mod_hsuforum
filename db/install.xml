@@ -178,7 +178,6 @@
         <INDEX NAME="userid-forumid" UNIQUE="false" FIELDS="userid, forumid"/>
         <INDEX NAME="userid-discussionid" UNIQUE="false" FIELDS="userid, discussionid"/>
         <INDEX NAME="postid-userid" UNIQUE="false" FIELDS="postid, userid"/>
-        <!-- Open LMS patch: INT-17017. -->
         <INDEX NAME="forumid" UNIQUE="false" FIELDS="forumid"/>
         <INDEX NAME="discussionid" UNIQUE="false" FIELDS="discussionid"/>
       </INDEXES>
