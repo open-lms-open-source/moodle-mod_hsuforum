@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * Tests behaviour of the hsuforum_portfolio_caller class.
  */
-class mod_hsuforum_portfolio_caller_testcase extends advanced_testcase {
+class portfolio_caller_test extends advanced_testcase {
 
     /**
      * Ensure that a file will be loaded in an instance of the caller when supplied valid and
