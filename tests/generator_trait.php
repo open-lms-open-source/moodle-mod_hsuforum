@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-trait mod_hsuforum_tests_generator_trait {
+trait generator_trait {
 
     /**
      * Helper to create the required number of users in the specified course.
