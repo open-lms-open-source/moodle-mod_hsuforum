@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-class mod_hsuforum_maildigest_testcase extends advanced_testcase {
+class maildigest_test extends advanced_testcase {
 
     /**
      * Keep track of the message and mail sinks that we set up for each
