@@ -51,7 +51,7 @@ class hsuforum_lib_flag {
      * @return bool
      */
     public function is_flagged($value, $flag) {
-        return (strpos($value, $this->validate_flag($flag)) !== false);
+        return $value && strpos($value, $this->validate_flag($flag)) !== false;
     }
 
     /**
