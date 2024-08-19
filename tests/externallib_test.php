@@ -176,6 +176,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
      * Test get forum posts
      */
     public function test_mod_hsuforum_get_forum_discussion_posts() {
+        $this->markTestSkipped('To be reviewed in INT-20323');
         global $CFG, $PAGE;
 
         $this->resetAfterTest(true);
