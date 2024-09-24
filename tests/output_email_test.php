@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_output_email_testcase extends advanced_testcase {
+class output_email_test extends advanced_testcase {
     /**
      * Data provider for the postdate function tests.
      */

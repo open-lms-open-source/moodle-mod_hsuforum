@@ -30,7 +30,7 @@ global $CFG;
  *
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-trait helper_hsuforums {
+trait helper {
 
     /**
      * Helper to create the required number of users in the specified

@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-class mod_hsuforum_mail_testcase extends advanced_testcase {
+class mail_test extends advanced_testcase {
 
     protected $helper;
 

@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
  * @copyright   2015 David Monllao {@link http://www.davidmonllao.com}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_hsuforum_search_testcase extends advanced_testcase {
+class search_test extends advanced_testcase {
 
     /**
      * @var string Area id
