@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 /**
  * @runTestsInSeparateProcesses
  */
-class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
+class mod_hsuforum_external_test extends externallib_advanced_testcase {
 
     /**
      * Tests set up
@@ -176,7 +176,6 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
      * Test get forum posts
      */
     public function test_mod_hsuforum_get_forum_discussion_posts() {
-        $this->markTestSkipped('To be reviewed in INT-20323');
         global $CFG, $PAGE;
 
         $this->resetAfterTest(true);
@@ -298,6 +297,7 @@ class mod_hsuforum_external_testcase extends externallib_advanced_testcase {
                     'timemodified' => $timepost,
                     'mimetype' => 'image/jpeg',
                     'isexternalfile' => false,
+                    'icon' => 'f/image'
                 )
             ),
             'totalscore' => $discussion1reply1->totalscore,
