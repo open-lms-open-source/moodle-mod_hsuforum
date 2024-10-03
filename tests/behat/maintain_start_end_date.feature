@@ -16,8 +16,7 @@ Feature: In Open Forums users can change start and end date and the changes rema
     And I log in as "teacher1"
     And the following config values are set as admin:
       | enabletimedposts | 1 | hsuforum |
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
     And I add a new discussion to "Test forum name" Open Forum with:

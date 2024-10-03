@@ -17,8 +17,7 @@ Feature: Open Forum discussions can be split
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
     And I log in as "teacher1"
-    And I am on "Science 101" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add an "hsuforum" activity to course "Science 101" section "1" and I fill the form with:
       | Forum name | Study discussions |
       | Forum type | Standard forum for general use |
       | Description | Forum to discuss your coursework. |

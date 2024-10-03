@@ -36,8 +36,7 @@ Feature: Open forum posts and new discussions handle tags correctly, in order to
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
     And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Open Forum" to section "1" and I fill the form with:
+    And I add an "hsuforum" activity to course "Course 1" section "1" and I fill the form with:
       | Forum name | Test forum name |
       | Description | Test forum description |
     And I add a new discussion to "Test forum name" Open Forum with:
