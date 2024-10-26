@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum\tests;
+
 defined('MOODLE_INTERNAL') || die();
 
 use mod_hsuforum\service;
@@ -33,7 +35,7 @@ require_once($CFG->dirroot . '/rating/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/mod_form.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 
-class lib_test extends advanced_testcase {
+class lib_test extends \advanced_testcase {
 
     public function test_hsuforum_trigger_content_uploaded_event() {
         $this->resetAfterTest();
@@ -41,7 +43,7 @@ class lib_test extends advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
-        $context = context_module::instance($forum->cmid);
+        $context = \context_module::instance($forum->cmid);
 
         $this->setUser($user->id);
         $fakepost = (object) array('id' => 123, 'message' => 'Yay!', 'discussion' => 100);
@@ -58,7 +60,7 @@ class lib_test extends advanced_testcase {
         );
         $fi = $fs->create_file_from_string($dummy, 'Content of ' . $dummy->filename);
 
-        $data = new stdClass();
+        $data = new \stdClass();
         $sink = $this->redirectEvents();
         hsuforum_trigger_content_uploaded_event($fakepost, $cm, 'some triggered from value');
         $events = $sink->get_events();
@@ -87,52 +89,52 @@ class lib_test extends advanced_testcase {
         $course3 = $this->getDataGenerator()->create_course();
 
         // Create 3 forums, one in each course.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $forum1 = $this->getDataGenerator()->create_module('hsuforum', $record);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course2->id;
         $forum2 = $this->getDataGenerator()->create_module('hsuforum', $record);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course3->id;
         $forum3 = $this->getDataGenerator()->create_module('hsuforum', $record);
 
         // Add a second forum in course 1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $forum4 = $this->getDataGenerator()->create_module('hsuforum', $record);
 
         // Add discussions to course 1 started by user1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
         $record->forum = $forum1->id;
         $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
         $record->forum = $forum4->id;
         $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 
         // Add discussions to course2 started by user1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course2->id;
         $record->userid = $user1->id;
         $record->forum = $forum2->id;
         $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 
         // Add discussions to course 3 started by user2.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course3->id;
         $record->userid = $user2->id;
         $record->forum = $forum3->id;
         $discussion3 = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 
         // Add post to course 3 by user1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course3->id;
         $record->userid = $user1->id;
         $record->forum = $forum3->id;
@@ -184,14 +186,14 @@ class lib_test extends advanced_testcase {
         $forumforce = $this->getDataGenerator()->create_module('hsuforum', $options);
 
         // Add discussions to the tracking forced forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forumforce->id;
         $discussionforce = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 
         // Add post to the tracking forced discussion.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forumforce->id;
@@ -331,7 +333,7 @@ class lib_test extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id),
                                                             array('completion' => 2, 'completionview' => 1));
-        $context = context_module::instance($forum->cmid);
+        $context = \context_module::instance($forum->cmid);
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
 
         // Trigger and capture the event.
@@ -354,7 +356,7 @@ class lib_test extends advanced_testcase {
         $this->assertNotEmpty($event->get_name());
 
         // Check completion status.
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
         $completiondata = $completion->get_data($cm);
         $this->assertEquals(1, $completiondata->completionstate);
 
@@ -373,7 +375,7 @@ class lib_test extends advanced_testcase {
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
         $discussion = $this->create_single_discussion_with_replies($forum, $USER, 2);
 
-        $context = context_module::instance($forum->cmid);
+        $context = \context_module::instance($forum->cmid);
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
 
         // Trigger and capture the event.
@@ -415,9 +417,9 @@ class lib_test extends advanced_testcase {
 
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -490,7 +492,7 @@ class lib_test extends advanced_testcase {
         $past = $now - 600;
         $future = $now + 600;
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -667,9 +669,9 @@ class lib_test extends advanced_testcase {
 
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id, 'type' => 'blog'));
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -737,7 +739,7 @@ class lib_test extends advanced_testcase {
         $past = $now - 600;
         $future = $now + 600;
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -868,11 +870,11 @@ class lib_test extends advanced_testcase {
         $forum2 = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id, 'groupmode' => SEPARATEGROUPS));
         $cm1 = get_coursemodule_from_instance('hsuforum', $forum1->id);
         $cm2 = get_coursemodule_from_instance('hsuforum', $forum2->id);
-        $context1 = context_module::instance($cm1->id);
-        $context2 = context_module::instance($cm2->id);
+        $context1 = \context_module::instance($cm1->id);
+        $context2 = \context_module::instance($cm2->id);
 
         // Creating discussions in both forums.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user1->id;
         $record->forum = $forum1->id;
@@ -1067,11 +1069,11 @@ class lib_test extends advanced_testcase {
                 'groupmode' => SEPARATEGROUPS));
         $cm1 = get_coursemodule_from_instance('hsuforum', $forum1->id);
         $cm2 = get_coursemodule_from_instance('hsuforum', $forum2->id);
-        $context1 = context_module::instance($cm1->id);
-        $context2 = context_module::instance($cm2->id);
+        $context1 = \context_module::instance($cm1->id);
+        $context2 = \context_module::instance($cm2->id);
 
         // Creating blog posts in both forums.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user1->id;
         $record->forum = $forum1->id;
@@ -1333,12 +1335,12 @@ class lib_test extends advanced_testcase {
         $user = $generator->create_user();
         $otheruser = $generator->create_user();
         $course = $generator->create_course();
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = $generator->create_module('hsuforum', $record);
 
         $forumgenerator = $generator->get_plugin_generator('mod_hsuforum');
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $record->forum = $forum->id;
         $record->userid = $user->id;
@@ -1348,7 +1350,7 @@ class lib_test extends advanced_testcase {
         // Retrieve the first post.
         $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
 
-        $post = new stdClass();
+        $post = new \stdClass();
         $post->userid = $user->id;
         $post->discussion = $discussion->id;
         $post->parent = $replyto->id;
@@ -1371,7 +1373,7 @@ class lib_test extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id),
                                                             array('completion' => 2, 'completionview' => 1));
-        $context = context_module::instance($forum->cmid);
+        $context = \context_module::instance($forum->cmid);
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
 
         // Trigger and capture the event.
@@ -1394,7 +1396,7 @@ class lib_test extends advanced_testcase {
         $this->assertNotEmpty($event->get_name());
 
         // Check completion status.
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
         $completiondata = $completion->get_data($cm);
         $this->assertEquals(1, $completiondata->completionstate);
 
@@ -1413,7 +1415,7 @@ class lib_test extends advanced_testcase {
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
         $discussion = $this->create_single_discussion_with_replies($forum, $USER, 2);
 
-        $context = context_module::instance($forum->cmid);
+        $context = \context_module::instance($forum->cmid);
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
 
         // Trigger and capture the event.
@@ -1448,7 +1450,7 @@ class lib_test extends advanced_testcase {
         // Setup the content.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = $this->getDataGenerator()->create_module('hsuforum', $record);
 
@@ -1480,7 +1482,7 @@ class lib_test extends advanced_testcase {
 
         $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $record->forum = $forum->id;
         $record->userid = $user->id;
@@ -1490,7 +1492,7 @@ class lib_test extends advanced_testcase {
         $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
 
         // Create the replies.
-        $post = new stdClass();
+        $post = new \stdClass();
         $post->userid = $user->id;
         $post->discussion = $discussion->id;
         $post->parent = $replyto->id;
@@ -1514,7 +1516,7 @@ class lib_test extends advanced_testcase {
 
         $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $record->forum = $forum->id;
         $record->userid = $user->id;
@@ -1525,7 +1527,7 @@ class lib_test extends advanced_testcase {
         $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
 
         // Create the replies.
-        $post = new stdClass();
+        $post = new \stdClass();
         $post->userid = $user->id;
         $post->discussion = $discussion->id;
         $post->parent = $replyto->id;
@@ -1540,8 +1542,8 @@ class lib_test extends advanced_testcase {
     /**
      * Tests for mod_hsuforum_rating_can_see_item_ratings().
      *
-     * @throws coding_exception
-     * @throws rating_exception
+     * @throws \coding_exception
+     * @throws \rating_exception
      */
     public function test_mod_hsuforum_rating_can_see_item_ratings() {
         global $DB;
@@ -1549,14 +1551,14 @@ class lib_test extends advanced_testcase {
         $this->resetAfterTest();
 
         // Setup test data.
-        $course = new stdClass();
+        $course = new \stdClass();
         $course->groupmode = SEPARATEGROUPS;
         $course->groupmodeforce = true;
         $course = $this->getDataGenerator()->create_course($course);
         $forum = $this->getDataGenerator()->create_module('hsuforum', array('course' => $course->id));
         $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
         // Create users.
         $user1 = $this->getDataGenerator()->create_user();
@@ -1578,7 +1580,7 @@ class lib_test extends advanced_testcase {
         groups_add_member($group2, $user3);
         groups_add_member($group2, $user4);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $record->forum = $forum->id;
         $record->userid = $user1->id;
@@ -1588,14 +1590,14 @@ class lib_test extends advanced_testcase {
         // Retrieve the first post.
         $post = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
 
-        $ratingoptions = new stdClass;
+        $ratingoptions = new \stdClass;
         $ratingoptions->context = $context;
         $ratingoptions->ratingarea = 'post';
         $ratingoptions->component = 'mod_hsuforum';
         $ratingoptions->itemid  = $post->id;
         $ratingoptions->scaleid = 2;
         $ratingoptions->userid  = $user2->id;
-        $rating = new rating($ratingoptions);
+        $rating = new \rating($ratingoptions);
         $rating->update_rating(2);
 
         // Now try to access it as various users.
@@ -1660,7 +1662,7 @@ class lib_test extends advanced_testcase {
         self::getDataGenerator()->enrol_user($user3->id, $course->id, $role->id);
 
         // Forum forcing separate gropus.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = self::getDataGenerator()->create_module('hsuforum', $record, array('groupmode' => SEPARATEGROUPS));
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
@@ -1773,11 +1775,11 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Forum forcing separate gropus.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = self::getDataGenerator()->create_module('hsuforum', $record, array('groupmode' => SEPARATEGROUPS));
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
         self::setUser($user);
 
@@ -1836,7 +1838,7 @@ class lib_test extends advanced_testcase {
         $this->assertTrue($can);
 
         // Post now.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -1881,7 +1883,7 @@ class lib_test extends advanced_testcase {
         $this->assertFalse(hsuforum_user_has_posted_discussion($forum->id, $other->id));
 
         // Post in the forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->forum = $forum->id;
@@ -1913,7 +1915,7 @@ class lib_test extends advanced_testcase {
         $this->assertFalse(hsuforum_user_has_posted_discussion($forum2->id, $author->id));
 
         // Post in the forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->forum = $forum1->id;
@@ -1953,7 +1955,7 @@ class lib_test extends advanced_testcase {
         $this->assertFalse(hsuforum_user_has_posted_discussion($forum->id, $author->id, $group2->id));
 
         // Post in one group.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->forum = $forum->id;
@@ -1966,7 +1968,7 @@ class lib_test extends advanced_testcase {
         $this->assertFalse(hsuforum_user_has_posted_discussion($forum->id, $author->id, $group2->id));
 
         // Post in the other group.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->forum = $forum->id;
@@ -1996,7 +1998,7 @@ class lib_test extends advanced_testcase {
 
         // Check the node tree is correct.
         mod_hsuforum_myprofile_navigation($tree, $user, $iscurrentuser, $course);
-        $reflector = new ReflectionObject($tree);
+        $reflector = new \ReflectionObject($tree);
         $nodes = $reflector->getProperty('nodes');
         $nodes->setAccessible(true);
         $this->assertArrayHasKey('hsuforumposts', $nodes->getValue($tree));
@@ -2021,7 +2023,7 @@ class lib_test extends advanced_testcase {
 
         // Check the node tree is correct.
         mod_hsuforum_myprofile_navigation($tree, $USER, $iscurrentuser, $course);
-        $reflector = new ReflectionObject($tree);
+        $reflector = new \ReflectionObject($tree);
         $nodes = $reflector->getProperty('nodes');
         $nodes->setAccessible(true);
         $this->assertArrayNotHasKey('hsuforumposts', $nodes->getValue($tree));
@@ -2046,7 +2048,7 @@ class lib_test extends advanced_testcase {
 
         // Check the node tree is correct.
         mod_hsuforum_myprofile_navigation($tree, $user, $iscurrentuser, $course);
-        $reflector = new ReflectionObject($tree);
+        $reflector = new \ReflectionObject($tree);
         $nodes = $reflector->getProperty('nodes');
         $nodes->setAccessible(true);
         $this->assertArrayHasKey('hsuforumposts', $nodes->getValue($tree));
@@ -2073,13 +2075,13 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($viewer->id, $course2->id);
 
         // Create two forums - one in each course.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $forum1 = self::getDataGenerator()->create_module('hsuforum', (object) array('course' => $course1->id));
         $forum2 = self::getDataGenerator()->create_module('hsuforum', (object) array('course' => $course2->id));
 
         // A standard post in the forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $record->userid = $author->id;
         $record->forum = $forum1->id;
@@ -2146,7 +2148,7 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->create_group_member(array('userid' => $viewer2->id, 'groupid' => $group2->id));
 
         // Create a forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $forum1 = self::getDataGenerator()->create_module('hsuforum', (object) array(
             'course'        => $course1->id,
@@ -2154,7 +2156,7 @@ class lib_test extends advanced_testcase {
         ));
 
         // A post in the forum for group1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course     = $course1->id;
         $record->userid     = $author->id;
         $record->forum      = $forum1->id;
@@ -2202,12 +2204,12 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($viewer->id, $course1->id);
 
         // Create a forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $forum1 = self::getDataGenerator()->create_module('hsuforum', (object) array('course' => $course1->id));
 
         // A timed post with a timestart in the past (24 hours ago).
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $record->userid = $author->id;
         $record->forum = $forum1->id;
@@ -2264,7 +2266,7 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->create_group_member(array('userid' => $viewer2->id, 'groupid' => $group2->id));
 
         // Create a forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $forum1 = self::getDataGenerator()->create_module('hsuforum', (object) array(
             'course'        => $course1->id,
@@ -2272,7 +2274,7 @@ class lib_test extends advanced_testcase {
         ));
 
         // A post in the forum for group1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course     = $course1->id;
         $record->userid     = $author->id;
         $record->forum      = $forum1->id;
@@ -2378,13 +2380,13 @@ class lib_test extends advanced_testcase {
 
         // Create 4 discussions in all participants group and group1, where the first
         // discussion is pinned in each group.
-        $allrecord = new stdClass();
+        $allrecord = new \stdClass();
         $allrecord->course = $course1->id;
         $allrecord->userid = $author->id;
         $allrecord->forum = $forum1->id;
         $allrecord->pinned = HSUFORUM_DISCUSSION_PINNED;
 
-        $group1record = new stdClass();
+        $group1record = new \stdClass();
         $group1record->course = $course1->id;
         $group1record->userid = $author->id;
         $group1record->forum = $forum1->id;
@@ -2488,7 +2490,7 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Create a forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = $this->getDataGenerator()->create_module('hsuforum', (object) array(
             'course' => $course->id,
@@ -2500,7 +2502,7 @@ class lib_test extends advanced_testcase {
         $discussions = array();
         $discussiongenerator = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -2560,7 +2562,7 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Create a forum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = $this->getDataGenerator()->create_module('hsuforum', (object) array(
             'course' => $course->id,
@@ -2572,7 +2574,7 @@ class lib_test extends advanced_testcase {
         $discussions = array();
         $discussiongenerator = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -2646,7 +2648,7 @@ class lib_test extends advanced_testcase {
         // Keep track of the start time of the test. Do not use time() after this point to prevent random failures.
         $time = time();
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -2675,7 +2677,7 @@ class lib_test extends advanced_testcase {
 
         // Add a reply just outside the maxeditingtime.
         $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
-        $reply = new stdClass();
+        $reply = new \stdClass();
         $reply->userid = $user->id;
         $reply->discussion = $discussion->id;
         $reply->parent = $replyto->id;
@@ -2700,7 +2702,7 @@ class lib_test extends advanced_testcase {
         $user = $generator->create_user();
 
         // Create discussion.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -2712,7 +2714,7 @@ class lib_test extends advanced_testcase {
         $path = $CFG->dirroot . '/mod/hsuforum/tests/fixtures/testgif_small.gif';
         $post = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
         $filerecord = array(
-            'contextid' => context_module::instance($forum->cmid)->id,
+            'contextid' => \context_module::instance($forum->cmid)->id,
             'component' => 'mod_hsuforum',
             'filearea'  => 'attachment',
             'itemid'    => $post->id,
@@ -2732,7 +2734,7 @@ class lib_test extends advanced_testcase {
         ));
 
         // Get Context
-        $modcontext = context_module::instance($forum->cmid);
+        $modcontext = \context_module::instance($forum->cmid);
 
         // Reflexion to convert a protected method into a public
         $class = new \ReflectionClass('mod_hsuforum\upload_file');
@@ -2773,7 +2775,7 @@ class lib_test extends advanced_testcase {
 
         $forumgen = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
@@ -2781,7 +2783,7 @@ class lib_test extends advanced_testcase {
         $discussion = $forumgen->create_discussion($record);
 
         // Get Context.
-        $modcontext = context_module::instance($forum->cmid);
+        $modcontext = \context_module::instance($forum->cmid);
 
         // Create Uploader.
         $uploader = new \mod_hsuforum\upload_file(
@@ -2994,8 +2996,8 @@ class lib_test extends advanced_testcase {
      * Test the hsuforum_discussion_is_locked function.
      *
      * @dataProvider hsuforum_discussion_is_locked_provider
-     * @param   stdClass    $forum
-     * @param   stdClass    $discussion
+     * @param   \stdClass    $forum
+     * @param   \stdClass    $discussion
      * @param   bool        $expect
      */
     public function test_forum_discussion_is_locked($forum, $discussion, $expect) {
@@ -3294,7 +3296,7 @@ class lib_test extends advanced_testcase {
             \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
 
         // Mark the activity as completed.
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
         $completion->set_module_viewed($cm);
 
         // Create an action factory.
@@ -3333,7 +3335,7 @@ class lib_test extends advanced_testcase {
             \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
 
         // Mark the activity as completed for the student.
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
         $completion->set_module_viewed($cm, $student->id);
 
         // Create an action factory.
@@ -3371,7 +3373,7 @@ class lib_test extends advanced_testcase {
         $post23 = $forumgenerator->create_content($forum2, array('tags' => array('mice', 'Cats')));
         $post31 = $forumgenerator->create_content($forum3, array('tags' => array('mice', 'Cats')));
 
-        $tag = core_tag_tag::get_by_name(0, 'Cats');
+        $tag = \core_tag_tag::get_by_name(0, 'Cats');
 
         // Admin can see everything.
         $res = mod_hsuforum_get_tagged_posts($tag, /*$exclusivemode = */false,
@@ -3409,7 +3411,7 @@ class lib_test extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($student->id, $course1->id, $studentrole->id, 'manual');
         $this->getDataGenerator()->enrol_user($student->id, $course2->id, $studentrole->id, 'manual');
         $this->setUser($student);
-        core_tag_index_builder::reset_caches();
+        \core_tag_index_builder::reset_caches();
 
         // User can not see posts in course 3 because he is not enrolled.
         $res = mod_hsuforum_get_tagged_posts($tag, /*$exclusivemode = */false,
@@ -3419,7 +3421,7 @@ class lib_test extends advanced_testcase {
         $this->assertDoesNotMatchRegularExpression('/'.$post31->subject.'/', $res->content);
 
         // User can search forum posts inside a course.
-        $coursecontext = context_course::instance($course1->id);
+        $coursecontext = \context_course::instance($course1->id);
         $res = mod_hsuforum_get_tagged_posts($tag, /*$exclusivemode = */false,
             /*$fromctx = */0, /*$ctx = */$coursecontext->id, /*$rec = */1, /*$post = */0);
         $this->assertMatchesRegularExpression('/'.$post11->subject.'/', $res->content);
@@ -3440,10 +3442,10 @@ class lib_test extends advanced_testcase {
      * @param int $courseid The course id.
      * @param int $instanceid The instance id.
      * @param string $eventtype The event type.
-     * @return bool|calendar_event
+     * @return bool|\calendar_event
      */
     private function create_action_event($courseid, $instanceid, $eventtype) {
-        $event = new stdClass();
+        $event = new \stdClass();
         $event->name = 'Calendar event';
         $event->modulename  = 'hsuforum';
         $event->courseid = $courseid;
@@ -3452,7 +3454,7 @@ class lib_test extends advanced_testcase {
         $event->eventtype = $eventtype;
         $event->timestart = time();
 
-        return calendar_event::create($event);
+        return \calendar_event::create($event);
     }
 
     /**
@@ -3480,13 +3482,13 @@ class lib_test extends advanced_testcase {
             'completionreplies' => 0,
             'completionposts' => 0,
         ]);
-        $cm1 = cm_info::create(get_coursemodule_from_instance('hsuforum', $forum1->id));
-        $cm2 = cm_info::create(get_coursemodule_from_instance('hsuforum', $forum2->id));
+        $cm1 = \cm_info::create(get_coursemodule_from_instance('hsuforum', $forum1->id));
+        $cm2 = \cm_info::create(get_coursemodule_from_instance('hsuforum', $forum2->id));
 
         // Data for the stdClass input type.
         // This type of input would occur when checking the default completion rules for an activity type, where we don't have
         // any access to cm_info, rather the input is a stdClass containing completion and customdata attributes, just like cm_info.
-        $moddefaults = new stdClass();
+        $moddefaults = new \stdClass();
         $moddefaults->customdata = ['customcompletionrules' => [
             'completiondiscussions' => 3,
             'completionreplies' => 3,
@@ -3502,7 +3504,7 @@ class lib_test extends advanced_testcase {
         $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions($cm1), $activeruledescriptions);
         $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions($cm2), []);
         $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions($moddefaults), $activeruledescriptions);
-        $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions(new stdClass()), []);
+        $this->assertEquals(mod_hsuforum_get_completion_active_rule_descriptions(new \stdClass()), []);
     }
 
     public function test_hsuforum_recent_activity_query() {
@@ -3512,14 +3514,14 @@ class lib_test extends advanced_testcase {
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
         $course = $generator->create_course();
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = $generator->create_module('hsuforum', $record);
         $now = time();
         $forumgenerator = $generator->get_plugin_generator('mod_hsuforum');
 
         //Create 3 discussions.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $record->forum = $forum->id;
         $record->userid = $user->id;
@@ -3557,13 +3559,13 @@ class lib_test extends advanced_testcase {
         $generator = $this->getDataGenerator();
         $user = $generator->create_user();
         $course = $generator->create_course();
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $forum = $generator->create_module('hsuforum', $record);
         $forumgenerator = $generator->get_plugin_generator('mod_hsuforum');
 
         //Create a discussion.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $record->forum = $forum->id;
         $record->userid = $user->id;
@@ -3597,12 +3599,12 @@ class lib_test extends advanced_testcase {
         $data->return = 0;
         $data->sr = 0;
         $data->add = 'hsuforum';
-        $mform = new mod_hsuforum_mod_form($data, 0, null, $course);
-        $reflection = new ReflectionClass($mform);
+        $mform = new \mod_hsuforum_mod_form($data, 0, null, $course);
+        $reflection = new \ReflectionClass($mform);
         $property = $reflection->getProperty('_form');
         $property->setAccessible(true);
         $form = $property->getValue($mform);
-        $reflection2 = new ReflectionClass($form);
+        $reflection2 = new \ReflectionClass($form);
         $hideifs = $reflection2->getProperty('_hideifs');
         $hideifs->setAccessible(true);
         $value = $hideifs->getValue($form);

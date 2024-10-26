@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum\tests;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -43,7 +45,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
 
     // Include the mod_hsuforum test helpers.
     // This includes functions to create forums, users, discussions, and posts.
-    use helper_hsuforums;
+    use \mod_hsuforum\helper;
 
     // Include the privacy helper trait for the ratings API.
     use \core_rating\phpunit\privacy_helper;
@@ -167,12 +169,12 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
         list($discussion, $post) = $this->helper_post_to_forum($forum, $otheruser);
         $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
         $context = \context_module::instance($cm->id);
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->userid = $user->id;
         $record->forum = $forum->id;
         $DB->insert_record('hsuforum_subscriptions', $record);
 
-        $comment = new stdClass();
+        $comment = new \stdClass();
         $comment->contextid = $context->id;
         $comment->component = 'mod_hsuforum';
         $comment->commentarea = 'userposts_comments';
@@ -346,8 +348,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
         $context = \context_module::instance($cm->id);
 
         // Rate the other users content.
-        $rm = new rating_manager();
-        $ratingoptions = new stdClass;
+        $rm = new \rating_manager();
+        $ratingoptions = new \stdClass;
         $ratingoptions->context = $context;
         $ratingoptions->component = 'mod_hsuforum';
         $ratingoptions->ratingarea = 'post';
@@ -416,8 +418,8 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
         $context = \context_module::instance($cm->id);
 
         // Other users rate my content
-        $rm = new rating_manager();
-        $ratingoptions = new stdClass;
+        $rm = new \rating_manager();
+        $ratingoptions = new \stdClass;
         $ratingoptions->context = $context;
         $ratingoptions->component = 'mod_hsuforum';
         $ratingoptions->ratingarea = 'post';
@@ -914,7 +916,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
             // Rate the other users content.
             if ($post->userid != $user->id) {
                 $ratedposts[$post->id] = $post;
-                $rm = new rating_manager();
+                $rm = new \rating_manager();
                 $ratingoptions = (object) [
                     'context' => $context,
                     'component' => 'mod_hsuforum',
@@ -961,7 +963,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
             $this->assertEmpty($fs->get_area_files($context->id, 'mod_hsuforum', 'attachment', $post->id));
         }
         // All ratings should have been deleted.
-        $rm = new rating_manager();
+        $rm = new \rating_manager();
         foreach ($postsinforum as $post) {
             $ratings = $rm->get_all_ratings_for_item((object) [
                 'context' => $context,
@@ -997,7 +999,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
             }
         }
         // Ratings should not have been deleted.
-        $rm = new rating_manager();
+        $rm = new \rating_manager();
         foreach ($postsinforum as $post) {
             if (!isset($ratedposts[$post->id])) {
                 continue;
@@ -1105,7 +1107,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
                 // Rate the other users content.
                 if ($post->userid != $user->id) {
                     $ratedposts[$post->id] = $post;
-                    $rm = new rating_manager();
+                    $rm = new \rating_manager();
                     $ratingoptions = (object) [
                         'context' => $context,
                         'component' => 'mod_hsuforum',
@@ -1301,7 +1303,7 @@ class privacy_provider_test extends \core_privacy\tests\provider_testcase {
                 // Rate the other users content.
                 if ($post->userid != $user->id) {
                     $ratedposts[$post->id] = $post;
-                    $rm = new rating_manager();
+                    $rm = new \rating_manager();
                     $ratingoptions = (object) [
                         'context' => $context,
                         'component' => 'mod_hsuforum',

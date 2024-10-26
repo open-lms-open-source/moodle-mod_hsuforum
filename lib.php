@@ -6541,7 +6541,7 @@ function hsuforum_delete_read_records_for_forum($forumid) {
  */
 function hsuforum_delete_read_records_for_discussion($discussionid) {
     global $DB;
-    return $DB->delete_records('hsuforum_read', array('discussionid' => $discussionid, ));
+    return $DB->delete_records('hsuforum_read', array('discussionid' => $discussionid));
 }
 
 /**

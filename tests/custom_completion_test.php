@@ -48,7 +48,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/tests/generator_trait.php');
  */
 class custom_completion_test extends advanced_testcase {
 
-    use \mod_hsuforum_tests_generator_trait;
+    use \mod_hsuforum\generator_trait;
 
     /**
      * Data provider for get_state().

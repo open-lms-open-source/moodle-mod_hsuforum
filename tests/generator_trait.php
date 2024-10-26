@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
 defined('MOODLE_INTERNAL') || die();
 
 trait generator_trait {

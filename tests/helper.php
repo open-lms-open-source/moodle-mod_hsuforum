@@ -21,6 +21,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace mod_hsuforum;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -66,7 +68,7 @@ trait helper {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum');
 
         // Create a discussion in the forum, and then add a post to that discussion.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $record->userid = $author->id;
         $record->forum = $forum->id;
@@ -105,7 +107,7 @@ trait helper {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum');
 
         // Add a post to the discussion.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $forum->course;
         $strre = get_string('re', 'hsuforum');
         $record->subject = $strre . ' ' . $discussion->subject;

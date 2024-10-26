@@ -191,7 +191,7 @@ class mod_hsuforum_external extends external_api {
         // Validate the parameter.
         $params = self::validate_parameters(
             self::get_forum_discussion_posts_parameters(),
-            array('discussionid' => $discussionid, )
+            array('discussionid' => $discussionid)
         );
 
         // Compact/extract functions are not recommended.
@@ -671,7 +671,7 @@ class mod_hsuforum_external extends external_api {
     public static function view_forum_discussion_parameters() {
         return new external_function_parameters(
             array(
-                'discussionid' => new external_value(PARAM_INT, 'discussion id', ),
+                'discussionid' => new external_value(PARAM_INT, 'discussion id'),
             ),
         );
     }
@@ -1094,7 +1094,7 @@ class mod_hsuforum_external extends external_api {
     public static function add_discussion_returns() {
         return new external_single_structure(
             array(
-                'discussionid' => new external_value(PARAM_INT, 'New Discussion ID', ),
+                'discussionid' => new external_value(PARAM_INT, 'New Discussion ID'),
                 'warnings' => new external_warnings(),
             ),
         );

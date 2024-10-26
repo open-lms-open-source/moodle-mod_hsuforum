@@ -403,7 +403,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
 
             $trackingdefault = COMPLETION_TRACKING_NONE;
             // If system and activity default is on, set it.
-            if ($CFG->completiondefault && $this->_features->defaultcompletion) {
+            if (!empty($CFG->completiondefault) && $CFG->completiondefault && $this->_features->defaultcompletion) {
                 $hasrules = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_HAS_RULES, true);
                 $tracksviews = plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, true);
                 if ($hasrules || $tracksviews) {
@@ -422,7 +422,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // Automatic completion once you view it
             $gotcompletionoptions = false;
             if (plugin_supports('mod', $this->_modname, FEATURE_COMPLETION_TRACKS_VIEWS, false)) {
-                $mform->addElement('checkbox', 'completionview', get_string('completionview', 'completion'),
+                $mform->addElement('checkbox', 'completionview', get_string('completionview', 'hsuforum'),
                     get_string('completionview_desc', 'completion'));
                 $mform->hideIf('completionview', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
                 // Check by default if automatic completion tracking is set.
@@ -449,7 +449,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
                         get_string('completionusegrade_desc', 'completion')
                     );
                     $mform->hideIf('completionusegrade', 'completion', 'ne', COMPLETION_TRACKING_AUTOMATIC);
-                    $mform->addHelpButton('completionusegrade', 'completionusegrade', 'completion');
+                    $mform->addHelpButton('completionusegrade', 'completionusegrade', 'hsuforum');
 
                     // The disabledIf logic differs between ratings and other grade items due to different field types.
                     if ($this->_features->rating) {

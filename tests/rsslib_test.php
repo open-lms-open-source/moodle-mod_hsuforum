@@ -40,7 +40,7 @@ require_once("{$CFG->dirroot}/mod/hsuforum/rsslib.php");
 class rsslib_test extends advanced_testcase {
     // Include the mod_hsuforum test helpers.
     // This includes functions to create forums, users, discussions, and posts.
-    use helper_hsuforums;
+    use \mod_hsuforum\helper;
 
     /**
      * Ensure that deleted posts are not included.

@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 /**
  * @runTestsInSeparateProcesses
  */
-class externallib_test extends externallib_advanced_testcase {
+class mod_hsuforum_external_test extends externallib_advanced_testcase {
 
     /**
      * Tests set up
