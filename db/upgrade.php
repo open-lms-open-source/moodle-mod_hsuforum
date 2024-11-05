@@ -343,6 +343,92 @@ function xmldb_hsuforum_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2018120301, 'hsuforum');
     }
 
+    if ($oldversion < 2024091701) {
+        $table = new xmldb_table('hsuforum');
+        $field1 = new xmldb_field('duedate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'introformat');
+        $field2 = new xmldb_field('cutoffdate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'duedate');
+        $field3 = new xmldb_field('grade_forum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'scale');
+        $field4 = new xmldb_field('grade_forum_notify', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0', 'grade_forum');
+        $field5 = new xmldb_field('trackingtype', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'forcesubscribe');
+
+        // Add whichever is missing.
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+        if (!$dbman->field_exists($table, $field2)) {
+            $dbman->add_field($table, $field2);
+        }
+        if (!$dbman->field_exists($table, $field3)) {
+            $dbman->add_field($table, $field3);
+        }
+        if (!$dbman->field_exists($table, $field4)) {
+            $dbman->add_field($table, $field4);
+        }
+        if (!$dbman->field_exists($table, $field5)) {
+            $dbman->add_field($table, $field5);
+        }
+
+        $table = new xmldb_table('hsuforum_discussions');
+        $field = new xmldb_field('timelocked', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'pinned');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        $table = new xmldb_table('hsuforum_posts');
+        $field1 = new xmldb_field('privatereplyto', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'deleted');
+        $field2 = new xmldb_field('wordcount', XMLDB_TYPE_INTEGER, '20', null, null, null, null, 'privatereplyto');
+        $field3 = new xmldb_field('charcount', XMLDB_TYPE_INTEGER, '20', null, null, null, null, 'wordcount');
+
+        if (!$dbman->field_exists($table, $field1)) {
+            $dbman->add_field($table, $field1);
+        }
+        if (!$dbman->field_exists($table, $field2)) {
+            $dbman->add_field($table, $field2);
+        }
+        if (!$dbman->field_exists($table, $field3)) {
+            $dbman->add_field($table, $field3);
+        }
+
+        $table = new xmldb_table('hsuforum_discussion_subs');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('forum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
+            $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'forum');
+            $table->add_field('discussion', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'userid');
+            $table->add_field('preference', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '1', 'discussion');
+
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('forum', XMLDB_KEY_FOREIGN, ['forum'], 'hsuforum', ['id']);
+            $table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+            $table->add_key('discussion', XMLDB_KEY_FOREIGN, ['discussion'], 'hsuforum_discussions', ['id']);
+            $table->add_key('user_discussions', XMLDB_KEY_UNIQUE, ['userid', 'discussion']);
+
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('hsuforum_grades');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('forum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
+            $table->add_field('itemnumber', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'forum');
+            $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'itemnumber');
+            $table->add_field('grade', XMLDB_TYPE_NUMBER, '10,5', null, null, null, null, 'itemnumber');
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'grade');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'timecreated');
+
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('forum', XMLDB_KEY_FOREIGN, ['forum'], 'hsuforum', ['id']);
+
+            $table->add_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']);
+            $table->add_index('forumusergrade', XMLDB_INDEX_UNIQUE, ['forum', 'itemnumber', 'userid']);
+
+            $dbman->create_table($table);
+        }
+
+        upgrade_mod_savepoint(true, 2024091701, 'hsuforum');
+    }
+
     return true;
 }
 

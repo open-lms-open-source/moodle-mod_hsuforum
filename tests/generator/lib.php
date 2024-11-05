@@ -207,6 +207,10 @@ class mod_hsuforum_generator extends testing_module_generator {
             $mailed = $record['mailed'];
         }
 
+        if (!isset($record['timelocked'])) {
+            $record['timelocked'] = 0;
+        }
+
         $record = (object) $record;
 
         // Add the discussion.
@@ -320,6 +324,18 @@ class mod_hsuforum_generator extends testing_module_generator {
 
         if (!isset($record['privatereply'])) {
             $record['privatereply'] = 0;
+        }
+
+        if (!isset($record['privatereplyto'])) {
+            $record['privatereplyto'] = 0;
+        }
+
+        if (!isset($record['wordcount'])) {
+            $record['wordcount'] = null;
+        }
+
+        if (!isset($record['charcount'])) {
+            $record['charcount'] = null;
         }
 
         $record = (object) $record;

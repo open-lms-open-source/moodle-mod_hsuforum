@@ -122,6 +122,20 @@ class provider implements
             'forumid' => 'privacy:metadata:hsuforum_track_prefs:forumid',
         ], 'privacy:metadata:hsuforum_track_prefs');
 
+        // The 'hsuforum_discussion_subs' table stores information about which discussions a user is subscribed to.
+        $items->add_database_table('hsuforum_discussion_subs', [
+            'discussionid' => 'privacy:metadata:hsuforum_discussion_subs:discussionid',
+            'preference' => 'privacy:metadata:hsuforum_discussion_subs:preference',
+            'userid' => 'privacy:metadata:hsuforum_discussion_subs:userid',
+        ], 'privacy:metadata:hsuforum_discussion_subs');
+
+        // The 'hsuforum_grades' table stores grade data.
+        $items->add_database_table('hsuforum_grades', [
+            'userid' => 'privacy:metadata:hsuforum_grades:userid',
+            'forum' => 'privacy:metadata:hsuforum_grades:forum',
+            'grade' => 'privacy:metadata:hsuforum_grades:grade',
+        ], 'privacy:metadata:hsuforum_grades');
+
         // Forum posts can be tagged and rated.
         $items->link_subsystem('core_tag', 'privacy:metadata:core_tag');
         $items->link_subsystem('core_rating', 'privacy:metadata:core_rating');

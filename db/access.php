@@ -167,6 +167,26 @@ $capabilities = array(
         ),
     ),
 
+    'mod/hsuforum:postprivatereply' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'mod/hsuforum:readprivatereplies' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
     'mod/hsuforum:createattachment' => array(
 
         'riskbitmask' => RISK_SPAM,
@@ -429,5 +449,31 @@ $capabilities = array(
             'manager' => CAP_ALLOW,
         ),
     ),
+    'mod/hsuforum:canoverridecutoff' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+        'clonepermissionsfrom' => 'mod/hsuforum:canoverridediscussionlock'
+    ),
+    'mod/hsuforum:cantogglefavourite' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'user' => CAP_ALLOW
+        )
+    ),
+    'mod/hsuforum:grade' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 );
 

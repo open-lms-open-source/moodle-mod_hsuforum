@@ -473,6 +473,16 @@ $string['privacy:metadata:hsuforum_track_prefs:userid'] = 'The ID of the user th
 $string['privacy:metadata:hsuforum_track_prefs:forumid'] = 'The Open Forum that has read tracking enabled.';
 $string['privacy:metadata:hsuforum_track_prefs'] = 'Information about which forums the user has chosen to track post reads for.';
 
+$string['privacy:metadata:hsuforum_discussion_subs:discussionid'] = 'The ID of the discussion that was subscribed to.';
+$string['privacy:metadata:hsuforum_discussion_subs:preference'] = 'The start time of the subscription.';
+$string['privacy:metadata:hsuforum_discussion_subs:userid'] = 'The ID of the user with the discussion subscription.';
+$string['privacy:metadata:hsuforum_discussion_subs'] = 'Information about the subscriptions to individual forum discussions';
+
+$string['privacy:metadata:hsuforum_grades:forum'] = 'The forum that was graded';
+$string['privacy:metadata:hsuforum_grades:grade'] = 'The grade awarded';
+$string['privacy:metadata:hsuforum_grades:userid'] = 'The user who was graded';
+$string['privacy:metadata:hsuforum_grades'] = 'Grade data for the forum';
+
 $string['privacy:metadata:core_tag'] = 'The Open Forum makes use of the tag subsystem to support tagging of posts.';
 $string['privacy:metadata:core_rating'] = 'The Open Forum makes use of the rating subsystem to support the rating of posts.';
 
@@ -624,6 +634,11 @@ $string['reveal'] = 'Reveal yourself in this post';
 $string['reveal_help'] = 'If checked, then your name will be shown in the post and you will no longer be anonymous.';
 $string['hsuforum:revealpost'] = 'Reveal yourself in an anonymous forum';
 $string['hsuforum:viewflags'] = 'View post flags';
+$string['hsuforum:canoverridecutoff'] = 'Post to forums after their cut-off date';
+$string['hsuforum:cantogglefavourite'] = 'Star discussions';
+$string['hsuforum:grade'] = 'Grade forum';
+$string['hsuforum:postprivatereply'] = 'Reply privately to posts';
+$string['hsuforum:readprivatereplies'] = 'View private replies';
 $string['viewposters'] = 'View posters';
 $string['substantive'] = 'Substantive';
 $string['toggle:bookmark'] = 'Bookmark';

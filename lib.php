@@ -30,6 +30,11 @@ require_once($CFG->dirroot.'/user/selector/lib.php');
 use mod_hsuforum\renderables\advanced_editor;
 /// CONSTANTS ///////////////////////////////////////////////////////////
 
+define('HSUFORUM_MODE_FLATOLDEST', 1);
+define('HSUFORUM_MODE_FLATNEWEST', -1);
+define('HSUFORUM_MODE_THREADED', 2);
+define('HSUFORUM_MODE_NESTED', 3);
+define('HSUFORUM_MODE_NESTED_V2', 4);
 
 define('HSUFORUM_CHOOSESUBSCRIBE', 0);
 define('HSUFORUM_FORCESUBSCRIBE', 1);
@@ -6435,6 +6440,141 @@ function hsuforum_tp_get_course_unread_posts($userid, $courseid) {
     }
 
     return array();
+}
+
+/**
+ * Fetch the data used to display the discussions on the current page.
+ *
+ * @param   \mod_hsuforum\local\entities\forum  $forum The forum entity
+ * @param   stdClass                         $user The user to render for
+ * @param   int[]|null                       $groupid The group to render
+ * @param   int|null                         $sortorder The sort order to use when selecting the discussions in the list
+ * @param   int|null                         $pageno The zero-indexed page number to use
+ * @param   int|null                         $pagesize The number of discussions to show on the page
+ * @return  array                            The data to use for display
+ */
+function mod_hsuforum_get_discussion_summaries(\mod_hsuforum\local\entities\forum $forum, stdClass $user, ?int $groupid, ?int $sortorder,
+                                            ?int $pageno = 0, ?int $pagesize = 0) {
+
+    $vaultfactory = mod_hsuforum\local\container::get_vault_factory();
+    $discussionvault = $vaultfactory->get_discussions_in_forum_vault();
+    $managerfactory = mod_hsuforum\local\container::get_manager_factory();
+    $capabilitymanager = $managerfactory->get_capability_manager($forum);
+
+    $groupids = mod_hsuforum_get_groups_from_groupid($forum, $user, $groupid);
+
+    if (null === $groupids) {
+        return $discussions = $discussionvault->get_from_forum_id(
+            $forum->get_id(),
+            $capabilitymanager->can_view_hidden_posts($user),
+            $user->id,
+            $sortorder,
+            $pagesize,
+            $pageno * $pagesize);
+    } else {
+        return $discussions = $discussionvault->get_from_forum_id_and_group_id(
+            $forum->get_id(),
+            $groupids,
+            $capabilitymanager->can_view_hidden_posts($user),
+            $user->id,
+            $sortorder,
+            $pagesize,
+            $pageno * $pagesize);
+    }
+}
+
+/**
+ * Get the list of groups to show based on the current user and requested groupid.
+ *
+ * @param   \mod_hsuforum\local\entities\forum  $forum The forum entity
+ * @param   stdClass                         $user The user viewing
+ * @param   int                              $groupid The groupid requested
+ * @return  array                            The list of groups to show
+ */
+function mod_hsuforum_get_groups_from_groupid(\mod_hsuforum\local\entities\forum $forum, stdClass $user, ?int $groupid): ?array {
+
+    $effectivegroupmode = $forum->get_effective_group_mode();
+    if (empty($effectivegroupmode)) {
+        // This forum is not in a group mode. Show all posts always.
+        return null;
+    }
+
+    if (null == $groupid) {
+        $managerfactory = mod_hsuforum\local\container::get_manager_factory();
+        $capabilitymanager = $managerfactory->get_capability_manager($forum);
+        // No group was specified.
+        $showallgroups = (VISIBLEGROUPS == $effectivegroupmode);
+        $showallgroups = $showallgroups || $capabilitymanager->can_access_all_groups($user);
+        if ($showallgroups) {
+            // Return null to show all groups.
+            return null;
+        } else {
+            // No group was specified. Only show the users current groups.
+            return array_keys(
+                groups_get_all_groups(
+                    $forum->get_course_id(),
+                    $user->id,
+                    $forum->get_course_module_record()->groupingid
+                )
+            );
+        }
+    } else {
+        // A group was specified. Just show that group.
+        return [$groupid];
+    }
+}
+
+/**
+ * Returns array of hsuforum layout modes
+ *
+ * @param bool $useexperimentalui use experimental layout modes or not
+ * @return array
+ */
+function hsuforum_get_layout_modes(bool $useexperimentalui = false) {
+    $modes = [
+        HSUFORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'hsuforum'),
+        HSUFORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'hsuforum'),
+        HSUFORUM_MODE_THREADED   => get_string('modethreaded', 'hsuforum')
+    ];
+
+    if ($useexperimentalui) {
+        $modes[HSUFORUM_MODE_NESTED_V2] = get_string('modenestedv2', 'hsuforum');
+    } else {
+        $modes[HSUFORUM_MODE_NESTED] = get_string('modenested', 'hsuforum');
+    }
+
+    return $modes;
+}
+
+/**
+ * Get a count of all discussions in a forum.
+ *
+ * @param   \mod_hsuforum\local\entities\forum  $forum The forum entity
+ * @param   stdClass                         $user The user to render for
+ * @param   int                              $groupid The group to render
+ * @return  int                              The number of discussions in a forum
+ */
+function mod_hsuforum_count_all_discussions(\mod_hsuforum\local\entities\forum $forum, stdClass $user, ?int $groupid) {
+
+    $managerfactory = mod_hsuforum\local\container::get_manager_factory();
+    $capabilitymanager = $managerfactory->get_capability_manager($forum);
+    $vaultfactory = mod_hsuforum\local\container::get_vault_factory();
+    $discussionvault = $vaultfactory->get_discussions_in_forum_vault();
+
+    $groupids = mod_hsuforum_get_groups_from_groupid($forum, $user, $groupid);
+
+    if (null === $groupids) {
+        return $discussionvault->get_total_discussion_count_from_forum_id(
+            $forum->get_id(),
+            $capabilitymanager->can_view_hidden_posts($user),
+            $user->id);
+    } else {
+        return $discussionvault->get_total_discussion_count_from_forum_id_and_group_id(
+            $forum->get_id(),
+            $groupids,
+            $capabilitymanager->can_view_hidden_posts($user),
+            $user->id);
+    }
 }
 
 /**
