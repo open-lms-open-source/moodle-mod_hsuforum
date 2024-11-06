@@ -1063,10 +1063,5 @@ div.hsuforum-reply-wrapper form fieldset div.hsuforum-post-figure span.useriniti
 /** Icon color for the activities. **/
 li.activity.modtype_hsuforum .activityiconcontainer,
 .modchoosercontainer div[data-internal="hsuforum"] .modicon_hsuforum {
-    background-color: #8bc34a;
-}
-
-li.activity.modtype_hsuforum .activityiconcontainer img.activityicon,
-.modchoosercontainer div[data-internal="hsuforum"] .modicon_hsuforum img.activityicon {
-    filter: brightness(0) invert(1);
+    filter: invert(64%) sepia(56%) saturate(361%) hue-rotate(41deg) brightness(98%) contrast(93%);
 }
