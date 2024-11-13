@@ -850,6 +850,7 @@ if ($fromform = $mformpost->get_data()) {
         }
         $discussion->timestart = $fromform->timestart;
         $discussion->timeend = $fromform->timeend;
+        $discussion->timelocked = $fromform->timelocked ?? 0;
 
         if (has_capability('mod/hsuforum:pindiscussions', $modcontext) && !empty($fromform->pinned)) {
             $discussion->pinned = HSUFORUM_DISCUSSION_PINNED;
