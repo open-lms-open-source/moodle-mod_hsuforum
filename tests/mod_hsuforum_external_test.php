@@ -26,13 +26,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-
+use core_external\external_api;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 
-/**
- * @runTestsInSeparateProcesses
- */
 class mod_hsuforum_external_test extends externallib_advanced_testcase {
 
     /**

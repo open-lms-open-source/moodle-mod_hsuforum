@@ -24,7 +24,16 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once("$CFG->libdir/externallib.php");
+use core_external\external_api;
+use core_external\external_value;
+use core_external\external_function_parameters;
+use core_external\external_single_structure;
+use core_external\external_multiple_structure;
+use core_external\util as external_util;
+use core_external\external_files;
+use core_external\external_format_value;
+use core_external\external_warnings;
+
 
 class mod_hsuforum_external extends external_api {
 
@@ -87,10 +96,10 @@ class mod_hsuforum_external extends external_api {
                     continue;
                 }
 
-                $forum->name = external_format_string($forum->name, $context->id);
+                $forum->name = \core_external\util::format_string($forum->name, $context->id);
                 // Format the intro before being returning using the format setting.
-                list($forum->intro, $forum->introformat) = external_format_text($forum->intro, $forum->introformat,
-                                                                                $context->id, 'mod_hsuforum', 'intro', 0);
+                list($forum->intro, $forum->introformat) = \core_external\util::format_text($forum->intro, $forum->introformat,
+                                                                                $context, 'mod_hsuforum', 'intro', 0);
                 $forum->introfiles = external_util::get_area_files($context->id, 'mod_hsuforum', 'intro', false, false);
                 // Discussions count. This function does static request cache.
                 $forum->numdiscussions = hsuforum_count_discussions($forum, $cm, $course);
@@ -291,7 +300,7 @@ class mod_hsuforum_external extends external_api {
 
             // Rewrite embedded images URLs.
             list($post->message, $post->messageformat) =
-                external_format_text($post->message, $post->messageformat, $modcontext->id, 'mod_hsuforum', 'post', $post->id);
+                \core_external\util::format_text($post->message, $post->messageformat, $modcontext, 'mod_hsuforum', 'post', $post->id);
 
             // List attachments.
             if (!empty($post->attachment)) {
@@ -489,8 +498,8 @@ class mod_hsuforum_external extends external_api {
 
                 // Rewrite embedded images URLs.
                 list($discussion->message, $discussion->messageformat) =
-                    external_format_text($discussion->message, $discussion->messageformat,
-                                            $modcontext->id, 'mod_hsuforum', 'post', $discussion->id);
+                    \core_external\util::format_text($discussion->message, $discussion->messageformat,
+                                            $modcontext, 'mod_hsuforum', 'post', $discussion->id);
 
                 // List attachments.
                 if (!empty($discussion->attachment)) {
