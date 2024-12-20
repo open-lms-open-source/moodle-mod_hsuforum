@@ -4252,6 +4252,7 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     $post->mailed     = HSUFORUM_MAILED_PENDING;
     $post->userid     = $USER->id;
     $post->attachment = 0;
+    $post->privatereplyto = 0;
     if (!isset($post->totalscore)) {
         $post->totalscore = 0;
     }
@@ -4267,6 +4268,8 @@ function hsuforum_add_new_post($post, $mform, $unused=null, \mod_hsuforum\upload
     $post->id = $DB->insert_record("hsuforum_posts", $post);
     $post->message = file_save_draft_area_files($draftid, $context->id, 'mod_hsuforum', 'post', $post->id,
             mod_hsuforum_post_form::editor_options($context, $post->id), $post->message);
+    $post->wordcount = count_words($post->message, $post->messageformat);
+    $post->charcount = count_letters($post->message, $post->messageformat);
     $DB->update_record('hsuforum_posts', $post);
     hsuforum_add_attachment($post, $forum, $cm, $mform, null, $uploader);
 
@@ -4436,6 +4439,7 @@ function hsuforum_add_discussion($discussion, $mform=null, $unused=null, $userid
     $discussion->usermodified = $post->userid;
     $discussion->userid       = $userid;
     $discussion->assessed     = 0;
+    $discussion->timelocked   = 0;
 
     $post->discussion = $DB->insert_record("hsuforum_discussions", $discussion);
 
