@@ -1065,3 +1065,10 @@ li.activity.modtype_hsuforum .activityiconcontainer,
 .modchoosercontainer div[data-internal="hsuforum"] .modicon_hsuforum {
     filter: invert(64%) sepia(56%) saturate(361%) hue-rotate(41deg) brightness(98%) contrast(93%);
 }
+
+.hsuforum-post-body .danger-label,
+.hsuforum-thread-author .danger-label {
+    color: white;
+    padding: 0 0.5em;
+    border-radius: 0.5rem;
+}

@@ -615,7 +615,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
         $revealed = "";
         if ($d->revealed) {
             $nonanonymous = get_string('nonanonymous', 'mod_hsuforum');
-            $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
+            $revealed = '<span class="label bg-danger danger-label">'.$nonanonymous.'</span>';
         }
 
         $arialabeldiscussion = get_string('discussionforum', 'hsuforum', $d->subject);
@@ -799,7 +799,7 @@ HTML;
         $revealed = "";
         if ($p->revealed) {
             $nonanonymous = get_string('nonanonymous', 'mod_hsuforum');
-            $revealed = '<span class="label label-danger">'.$nonanonymous.'</span>';
+            $revealed = '<span class="label bg-danger danger-label">'.$nonanonymous.'</span>';
         }
 
  return <<<HTML

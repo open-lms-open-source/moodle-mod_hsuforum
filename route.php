@@ -72,6 +72,9 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_activity_record($instance);
 $PAGE->set_context($context);
 
+// Overriding the bfcache behavior to prevent the page from being cached and disabling the submit buttons.
+$PAGE->requires->js_init_code('window.addEventListener("unload", function(event) {});');
+
 $router = new router();
 $router->add_controller(new posters_controller());
 $router->add_controller(new flag_controller());
