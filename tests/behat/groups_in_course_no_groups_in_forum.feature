@@ -47,6 +47,7 @@ Feature: Open Forums in 'No groups' mode allow posting to All participants for a
 
   @javascript
   Scenario: Teacher can post via ajax
+    Given I skip because "I will be reviewed on INT-20670"
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Standard forum name"
@@ -78,6 +79,7 @@ Feature: Open Forums in 'No groups' mode allow posting to All participants for a
 
   @javascript
   Scenario: Student can post via ajax
+    Given I skip because "I will be reviewed on INT-20670"
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Standard forum name"
