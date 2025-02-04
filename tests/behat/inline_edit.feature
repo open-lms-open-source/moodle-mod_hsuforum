@@ -2,7 +2,6 @@
 Feature: Teachers and students can add discussions inline
 
   Background:
-    Given I skip because "I will be reviewed on INT-20670"
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | student1 | Student | 1 | student1@example.com |

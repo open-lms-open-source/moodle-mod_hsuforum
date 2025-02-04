@@ -110,7 +110,6 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
 
   @javascript
   Scenario: Teacher with accessallgroups can post in groups they are a member of via ajax
-    Given I skip because "I will be reviewed on INT-20670"
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Standard forum name"
@@ -173,7 +172,6 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
 
   @javascript
   Scenario: Teacher with accessallgroups can post in groups they are not a member of via ajax
-    Given I skip because "I will be reviewed on INT-20670"
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Standard forum name"
@@ -205,7 +203,6 @@ Feature: In Open Forums, posting to all groups in a separate group discussion is
 
   @javascript
   Scenario: Teacher with accessallgroups can post to all groups via ajax
-    Given I skip because "I will be reviewed on INT-20670"
     Given I log in as "teacher1"
     And I am on "Course 1" course homepage
     And I follow "Standard forum name"

@@ -2,7 +2,6 @@
 Feature: Posting to Open Forums in a course with no groups behaves correctly
 
   Background:
-    Given I skip because "I will be reviewed on INT-20670"
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |

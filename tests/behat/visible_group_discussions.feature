@@ -5,7 +5,6 @@ Feature: Posting to all groups in Open Forums in a visible group discussion is r
   I need to have the accessallgroups capability
 
   Background:
-    Given I skip because "I will be reviewed on INT-20670"
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
