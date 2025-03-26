@@ -199,7 +199,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
             // We need to verify that these outputs only appears for Snap, Boost will only display the manage forum subscriptions link.
             if (get_config('core', 'theme') == 'snap') {
                 // Outputs for the Url's inside divs to have a correct position inside the page.
-                $output .= '<ul class="text-right"><hr>';
+                $output .= '<ul class="text-end"><hr>';
                 $output .= '<li class="managesubscriptions-url">';
                 $output .= \html_writer::link($manageforumsubscriptionsurl, $manageforumsubscriptions, ['class' => 'btn btn-link']);
                 $output .= '</li>';
@@ -214,7 +214,7 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 $output .= '</li>';
                 $output .= '</ul>';
             } else {
-                $output .= '<ul class="text-right"><hr>';
+                $output .= '<ul class="text-end"><hr>';
                 $output .= '<li class="managesubscriptions-url">';
                 $output .= \html_writer::link($manageforumsubscriptionsurl, $manageforumsubscriptions, ['class' => 'btn btn-link']);
                 $output .= '</li>';
@@ -230,9 +230,9 @@ class mod_hsuforum_renderer extends plugin_renderer_base {
                 if ($controller->is_form_defined()) {
                     $gradingcontrollerpreview = $controller->render_preview($PAGE);
                     if ($gradingcontrollerpreview) {
-                        $output .= '<div class="text-right">';
+                        $output .= '<div class="text-end">';
                         $output .= \html_writer::link('#hsuforum_gradingcriteria', get_string('gradingmethodpreview', 'hsuforum'),
-                            ['class' => 'btn btn-link text-right', 'data-toggle' => 'collapse', 'role' => 'button', 'aria-expanded' => 'false',
+                            ['class' => 'btn btn-link text-end', 'data-toggle' => 'collapse', 'role' => 'button', 'aria-expanded' => 'false',
                                 'aria-controls' => 'hsuforum_gradingcriteria']);
                         $output .= '</div>';
                         $output .= '<div class="row">

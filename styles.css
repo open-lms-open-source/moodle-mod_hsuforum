@@ -933,7 +933,7 @@ the use of id^="" */
     font-size: 1em;
 }
 
-#discussionsview .text-right li {
+#discussionsview .text-end li {
     list-style-type: none;
 }
 
