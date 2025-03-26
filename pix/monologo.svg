@@ -1,8 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="33.908" height="32.208" viewBox="0 0 33.908 32.208">
-  <g id="monologo" transform="translate(0 -3.8)">
-    <path id="Path_39" data-name="Path 39" d="M28.294,3.8H5.659A5.658,5.658,0,0,0,0,9.459H0V24.793a5.619,5.619,0,0,0,5.659,5.613H9.766L16.018,35.7a1.506,1.506,0,0,0,1.825,0l6.3-5.294h4.107a5.658,5.658,0,0,0,5.659-5.659V9.459A5.59,5.59,0,0,0,28.294,3.8Zm3.24,5.339v15.79A2.863,2.863,0,0,1,28.659,27.8h-4.2a2.871,2.871,0,0,0-1.871.685l-5.568,4.655-5.613-4.655A2.785,2.785,0,0,0,9.538,27.8H5.385A2.863,2.863,0,0,1,2.51,24.929h0V9.139A2.863,2.863,0,0,1,5.385,6.264H28.568a2.942,2.942,0,0,1,2.966,2.875Z" transform="translate(0 0)"/>
-    <path id="Path_40" data-name="Path 40" d="M13.541,32.57H28.327a1.187,1.187,0,0,0,0-2.373H13.678a1.212,1.212,0,0,0-1.278,1.1A1.253,1.253,0,0,0,13.541,32.57Z" transform="translate(-6.741 -14.349)"/>
-    <path id="Path_41" data-name="Path 41" d="M13.792,22.073h7.347a1.184,1.184,0,0,0,1.1-1.278,1.142,1.142,0,0,0-1.1-1.1h-7.3A1.153,1.153,0,0,0,12.7,20.932,1.222,1.222,0,0,0,13.792,22.073Z" transform="translate(-6.901 -8.644)"/>
-    <path id="Path_42" data-name="Path 42" d="M28.224,40.6H13.574a1.19,1.19,0,0,0-.183,2.373H28.178a1.151,1.151,0,0,0,1.187-1.187A1.115,1.115,0,0,0,28.224,40.6Z" transform="translate(-6.683 -20.003)"/>
-  </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="23.998819"
+   viewBox="0 0 23.999999 23.998819"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="monologo_hsuforum_vb.svg"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="17.190282"
+     inkscape:cx="12.768842"
+     inkscape:cy="13.408739"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="4391"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <path
+     id="Path_39"
+     data-name="Path 39"
+     d="M 17.742083,2.9170142 H 6.279981 C 4.6972089,2.9167024 3.4140488,4.3463464 3.4143286,6.1098055 v 0 8.6513985 c 0.00164,1.758393 1.2874662,3.179357 2.8656524,3.166838 h 2.0797376 l 3.1659414,2.986859 c 0.272972,0.231643 0.651185,0.231643 0.924157,0 l 3.190248,-2.986859 h 2.079737 c 1.582772,3.12e-4 2.865932,-1.429332 2.865652,-3.192791 V 6.1098055 C 20.605006,4.3472553 19.324145,2.9089966 17.742083,2.9170142 Z"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     sodipodi:nodetypes="ccsccccccccccc" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+     d="M 6.0845506,7.0188082 H 12.313786"
+     id="path1" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+     d="m 6.0101554,9.8437351 11.4462186,0.041"
+     id="path2" />
+  <path
+     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
+     d="m 5.8356619,12.709662 11.2126231,0.041"
+     id="path3" />
 </svg>
