@@ -189,6 +189,41 @@ class maildigest_test extends advanced_testcase {
         $this->assertEquals($individualcount, $counts->individual);
     }
 
+    public function test_skip_private_replies_on_maildigest() {
+        $this->resetAfterTest();
+
+        // Setting up the dynamic learning environment.
+        $course = $this->getDataGenerator()->create_course();
+        $recorduser = new stdClass();
+        $recorduser->maildigest = '1';
+        $user1 = $this->getDataGenerator()->create_user($recorduser);
+        $user2 = $this->getDataGenerator()->create_user($recorduser);
+        $this->getDataGenerator()->enrol_user($user1->id, $course->id);
+        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
+        $recordforum = new stdClass();
+        $recordforum->course = $course->id;
+        $recordforum->forcesubscribe = 1;
+        $forum = $this->getDataGenerator()->create_module('hsuforum', $recordforum);
+        $recorddiscussion = new stdClass();
+        $recorddiscussion->course = $course->id;
+        $recorddiscussion->userid = $user1->id;
+        $recorddiscussion->forum = $forum->id;
+        $discussion = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($recorddiscussion);
+        $recordpost = new stdClass();
+        $recordpost->course = $course->id;
+        $recordpost->userid = $user1->id;
+        $recordpost->forum = $forum->id;
+        $recordpost->discussion = $discussion->id;
+        $recordpost->privatereply = '0';
+        $post1 = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($recordpost);
+        $recordpost->privatereply = $user1->id;
+        $post2 = $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_post($recordpost);
+
+        $this->helper_force_digest_mail_times();
+
+        $this->helper_run_cron_check_count(2, 0, 2);
+    }
+
     public function test_set_maildigest() {
         global $DB;
 

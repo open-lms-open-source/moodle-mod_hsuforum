@@ -1091,6 +1091,11 @@ function hsuforum_cron() {
                             continue;
                         }
 
+                        // Avoid sending confidentiary data to unsuspecting eyes.
+                        if ($post->privatereply != '0' && ($post->privatereply != $userto->id && $post->userid != $userto->id)) {
+                            continue;
+                        }
+
                         if (!isset($userfrom->groups[$forum->id])) {
                             if (!isset($userfrom->groups)) {
                                 $userfrom->groups = array();
