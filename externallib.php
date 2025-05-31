@@ -293,7 +293,7 @@ class mod_hsuforum_external extends external_api {
                 $user = username_load_fields_from_object($user, $post, null, array('picture', 'imagealt', 'email'));
                 $post->userfullname = fullname($user, $canviewfullname);
 
-                $userpicture = new user_picture($user);
+                $userpicture = new \core\output\user_picture($user);
                 $userpicture->size = 1; // Size f1.
                 $post->userpictureurl = $userpicture->get_url($PAGE)->out(false);
             }
@@ -533,7 +533,7 @@ class mod_hsuforum_external extends external_api {
                     $user->id = $discussion->userid;
                     $discussion->userfullname = fullname($user, $canviewfullname);
 
-                    $userpicture = new user_picture($user);
+                    $userpicture = new \core\output\user_picture($user);
                     $userpicture->size = 1; // Size f1.
                     $discussion->userpictureurl = $userpicture->get_url($PAGE)->out(false);
 
@@ -544,7 +544,7 @@ class mod_hsuforum_external extends external_api {
                     $usermodified->id = $discussion->usermodified;
                     $discussion->usermodifiedfullname = fullname($usermodified, $canviewfullname);
 
-                    $userpicture = new user_picture($usermodified);
+                    $userpicture = new \core\output\user_picture($usermodified);
                     $userpicture->size = 1; // Size f1.
                     $discussion->usermodifiedpictureurl = $userpicture->get_url($PAGE)->out(false);
                 }

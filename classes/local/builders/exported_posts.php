@@ -34,7 +34,7 @@ use mod_hsuforum\local\factories\vault as vault_factory;
 use mod_hsuforum\local\factories\manager as manager_factory;
 use core_tag_tag;
 use moodle_exception;
-use renderer_base;
+use \core\output\renderer_base;
 use stdClass;
 
 /**
@@ -54,7 +54,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class exported_posts {
-    /** @var renderer_base $renderer Core renderer */
+    /** @var \core\output\renderer_base $renderer Core renderer */
     private $renderer;
 
     /** @var legacy_data_mapper_factory $legacydatamapperfactory Data mapper factory */
@@ -75,14 +75,14 @@ class exported_posts {
     /**
      * Constructor.
      *
-     * @param renderer_base $renderer Core renderer
+     * @param \core\output\renderer_base $renderer Core renderer
      * @param legacy_data_mapper_factory $legacydatamapperfactory Legacy data mapper factory
      * @param exporter_factory $exporterfactory Exporter factory
      * @param vault_factory $vaultfactory Vault factory
      * @param manager_factory $managerfactory Manager factory
      */
     public function __construct(
-        renderer_base $renderer,
+        \core\output\renderer_base $renderer,
         legacy_data_mapper_factory $legacydatamapperfactory,
         exporter_factory $exporterfactory,
         vault_factory $vaultfactory,

@@ -33,7 +33,7 @@ use core\external\exporter;
 use core_files\external\stored_file_exporter;
 use context;
 use core_tag_tag;
-use renderer_base;
+use \core\output\renderer_base;
 use stdClass;
 
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
@@ -354,10 +354,10 @@ class post extends exporter {
     /**
      * Get the additional values to inject while exporting.
      *
-     * @param renderer_base $output The renderer.
+     * @param \core\output\renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_other_values(renderer_base $output) {
+    protected function get_other_values(\core\output\renderer_base $output) {
         $post = $this->post;
         $authorgroups = $this->related['authorgroups'];
         $forum = $this->related['forum'];
@@ -568,11 +568,11 @@ class post extends exporter {
      *
      * @param stored_file[] $attachments The list of attachments for the post
      * @param post_entity $post The post being exported
-     * @param renderer_base $output Renderer base
+     * @param \core\output\renderer_base $output Renderer base
      * @param bool $canexport If the user can export the post (relates to portfolios not exporters like this class)
      * @return array
      */
-    private function export_attachments(array $attachments, post_entity $post, renderer_base $output, bool $canexport): array {
+    private function export_attachments(array $attachments, post_entity $post, \core\output\renderer_base $output, bool $canexport): array {
         global $CFG;
 
         $urlfactory = $this->related['urlfactory'];
@@ -625,10 +625,10 @@ class post extends exporter {
      *
      * @param array $inlineattachments The list of inline attachments for the post
      * @param post_entity $post The post being exported
-     * @param renderer_base $output Renderer base
+     * @param \core\output\renderer_base $output Renderer base
      * @return array
      */
-    private function export_inline_attachments(array $inlineattachments, post_entity $post, renderer_base $output): array {
+    private function export_inline_attachments(array $inlineattachments, post_entity $post, \core\output\renderer_base $output): array {
 
         return array_map(function($attachment) use (
             $output,

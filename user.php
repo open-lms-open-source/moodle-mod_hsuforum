@@ -304,25 +304,25 @@ foreach ($result->posts as $post) {
 
     $fullsubjects = array();
     if (!$isspecificcourse && !$hasparentaccess) {
-        $fullsubjects[] = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $courseshortname);
-        $fullsubjects[] = html_writer::link($forumurl, $forumname);
+        $fullsubjects[] = \core\output\html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $courseshortname);
+        $fullsubjects[] = \core\output\html_writer::link($forumurl, $forumname);
     } else {
-        $fullsubjects[] = html_writer::tag('span', $courseshortname);
-        $fullsubjects[] = html_writer::tag('span', $forumname);
+        $fullsubjects[] = \core\output\html_writer::tag('span', $courseshortname);
+        $fullsubjects[] = \core\output\html_writer::tag('span', $forumname);
     }
     if ($forum->type != 'single') {
         $discussionname = format_string($discussion->name, true, array('context' => $cm->context));
         if (!$isspecificcourse && !$hasparentaccess) {
-            $fullsubjects[] .= html_writer::link($discussionurl, $discussionname);
+            $fullsubjects[] .= \core\output\html_writer::link($discussionurl, $discussionname);
         } else {
-            $fullsubjects[] .= html_writer::tag('span', $discussionname);
+            $fullsubjects[] .= \core\output\html_writer::tag('span', $discussionname);
         }
         if ($post->parent != 0) {
             $postname = format_string($post->subject, true, array('context' => $cm->context));
             if (!$isspecificcourse && !$hasparentaccess) {
-                $fullsubjects[] .= html_writer::link(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion, 'parent' => $post->id)), $postname);
+                $fullsubjects[] .= \core\output\html_writer::link(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion, 'parent' => $post->id)), $postname);
             } else {
-                $fullsubjects[] .= html_writer::tag('span', $postname);
+                $fullsubjects[] .= \core\output\html_writer::tag('span', $postname);
             }
         }
     }
@@ -331,7 +331,7 @@ foreach ($result->posts as $post) {
     // we've added will be lost.
     $post->subjectnoformat = true;
     $discussionurl->set_anchor('p'.$post->id);
-    $fulllink = html_writer::link($discussionurl, get_string("postincontext", "hsuforum"));
+    $fulllink = \core\output\html_writer::link($discussionurl, get_string("postincontext", "hsuforum"));
 
     $commands = array('seeincontext' => $fulllink);
     $postoutput[] = $renderer->post($cm, $discussion, $post, false, null, $commands);
@@ -380,7 +380,7 @@ if (isset($courseid) && $courseid != SITEID) {
 }
 
 echo $OUTPUT->header();
-echo html_writer::start_tag('div', array('class' => 'user-content'));
+echo \core\output\html_writer::start_tag('div', array('class' => 'user-content'));
 
 if ($isspecificcourse) {
     $userheading = array(
@@ -404,5 +404,5 @@ if (!empty($postoutput)) {
     echo $OUTPUT->heading(get_string('noposts', 'hsuforum'));
 }
 
-echo html_writer::end_tag('div');
+echo \core\output\html_writer::end_tag('div');
 echo $OUTPUT->footer();

@@ -26,7 +26,7 @@
 
 require_once($CFG->libdir.'/tablelib.php');
 
-class hsuforum_lib_table_posters extends table_sql {
+class hsuforum_lib_table_posters extends \core_table\sql_table {
     public function __construct($uniqueid) {
         global $PAGE, $USER;
 

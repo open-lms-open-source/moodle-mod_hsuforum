@@ -31,7 +31,7 @@ use mod_hsuforum\local\factories\legacy_data_mapper as legacy_data_mapper_factor
 use mod_hsuforum\local\factories\exporter as exporter_factory;
 use mod_hsuforum\local\factories\vault as vault_factory;
 use rating_manager;
-use renderer_base;
+use \core\output\renderer_base;
 use stdClass;
 
 /**
@@ -51,7 +51,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class exported_discussion {
-    /** @var renderer_base $renderer Core renderer */
+    /** @var \core\output\renderer_base $renderer Core renderer */
     private $renderer;
 
     /** @var legacy_data_mapper_factory $legacydatamapperfactory Data mapper factory */
@@ -69,14 +69,14 @@ class exported_discussion {
     /**
      * Constructor.
      *
-     * @param renderer_base $renderer Core renderer
+     * @param \core\output\renderer_base $renderer Core renderer
      * @param legacy_data_mapper_factory $legacydatamapperfactory Legacy data mapper factory
      * @param exporter_factory $exporterfactory Exporter factory
      * @param vault_factory $vaultfactory Vault factory
      * @param rating_manager $ratingmanager Rating manager
      */
     public function __construct(
-        renderer_base $renderer,
+        \core\output\renderer_base $renderer,
         legacy_data_mapper_factory $legacydatamapperfactory,
         exporter_factory $exporterfactory,
         vault_factory $vaultfactory,

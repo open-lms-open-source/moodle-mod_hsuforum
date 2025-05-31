@@ -29,7 +29,7 @@ use mod_hsuforum\local\entities\author as author_entity;
 use mod_hsuforum\local\exporters\group as group_exporter;
 use core\external\exporter;
 use mod_hsuforum\local\exporters\stdClass;
-use renderer_base;
+use \core\output\renderer_base;
 
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 
@@ -138,10 +138,10 @@ class author extends exporter {
     /**
      * Get the additional values to inject while exporting.
      *
-     * @param renderer_base $output The renderer.
+     * @param \core\output\renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_other_values(renderer_base $output) {
+    protected function get_other_values(\core\output\renderer_base $output) {
         $author = $this->author;
         $authorcontextid = $this->authorcontextid;
         $urlfactory = $this->related['urlfactory'];

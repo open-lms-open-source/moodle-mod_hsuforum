@@ -56,10 +56,10 @@ class json_response implements response_interface {
     /**
      * Convert data attribute to a string
      *
-     * @param \core_renderer $output
+     * @param \core\output\core_renderer $output
      * @return string
      */
-    protected function data_to_string(\core_renderer $output) {
+    protected function data_to_string(\core\output\core_renderer $output) {
         if ($this->data instanceof \Exception) {
             $info = get_exception_info($this->data);
             return $output->fatal_error($info->message, $info->moreinfourl, $info->link, $info->backtrace, $info->debuginfo);
@@ -76,7 +76,7 @@ class json_response implements response_interface {
     public function send() {
         global $PAGE;
 
-        /** @var \core_renderer $output */
+        /** @var \core\output\core_renderer $output */
         $output = $PAGE->get_renderer('core', null, RENDERER_TARGET_AJAX);
 
         echo $output->header();

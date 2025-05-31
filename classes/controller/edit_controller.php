@@ -319,7 +319,7 @@ class edit_controller extends controller_abstract {
         } else {
             $message = get_string('deleteddiscussion', 'hsuforum');
         }
-        /** @var \core_renderer $renderer */
+        /** @var \core\output\core_renderer $renderer */
         $renderer = $PAGE->get_renderer('core', null, RENDERER_TARGET_GENERAL);
 
         return new json_response(array(

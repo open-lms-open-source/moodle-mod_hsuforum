@@ -25,12 +25,12 @@
 namespace mod_hsuforum\output;
 defined('MOODLE_INTERNAL') || die();
 
-use html_writer;
+use \core\output\html_writer;
 use moodle_url;
-use renderable;
-use renderer_base;
+use \core\output\renderable;
+use \core\output\renderer_base;
 use stdClass;
-use templatable;
+use \core\output\templatable;
 
 /**
  * Big search form class.
@@ -39,7 +39,7 @@ use templatable;
  * @copyright  2016 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class big_search_form implements renderable, templatable {
+class big_search_form implements \core\output\renderable, \core\output\templatable {
 
     public $course;
     public $datefrom;
@@ -169,7 +169,7 @@ class big_search_form implements renderable, templatable {
         $this->forumid = $forumid;
     }
 
-    public function export_for_template(renderer_base $output) {
+    public function export_for_template(\core\output\renderer_base $output) {
         global $DB, $CFG, $PAGE;
         $data = new stdClass();
 
@@ -215,17 +215,17 @@ class big_search_form implements renderable, templatable {
             $dateto = time() + HOURSECS;
         }
 
-        $data->datefromfields = html_writer::select_time('days', 'fromday', $datefrom)
-                              . html_writer::select_time('months', 'frommonth', $datefrom)
-                              . html_writer::select_time('years', 'fromyear', $datefrom)
-                              . html_writer::select_time('hours', 'fromhour', $datefrom)
-                              . html_writer::select_time('minutes', 'fromminute', $datefrom);
+        $data->datefromfields = \core\output\html_writer::select_time('days', 'fromday', $datefrom)
+                              . \core\output\html_writer::select_time('months', 'frommonth', $datefrom)
+                              . \core\output\html_writer::select_time('years', 'fromyear', $datefrom)
+                              . \core\output\html_writer::select_time('hours', 'fromhour', $datefrom)
+                              . \core\output\html_writer::select_time('minutes', 'fromminute', $datefrom);
 
-        $data->datetofields = html_writer::select_time('days', 'today', $dateto)
-                            . html_writer::select_time('months', 'tomonth', $dateto)
-                            . html_writer::select_time('years', 'toyear', $dateto)
-                            . html_writer::select_time('hours', 'tohour', $dateto)
-                            . html_writer::select_time('minutes', 'tominute', $dateto);
+        $data->datetofields = \core\output\html_writer::select_time('days', 'today', $dateto)
+                            . \core\output\html_writer::select_time('months', 'tomonth', $dateto)
+                            . \core\output\html_writer::select_time('years', 'toyear', $dateto)
+                            . \core\output\html_writer::select_time('hours', 'tohour', $dateto)
+                            . \core\output\html_writer::select_time('minutes', 'tominute', $dateto);
 
         if ($this->forumid && !empty($this->forumoptions)) {
             foreach ($this->forumoptions as $index => $option) {

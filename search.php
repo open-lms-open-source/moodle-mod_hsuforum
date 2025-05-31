@@ -216,7 +216,7 @@ $url    = new moodle_url("/mod/hsuforum/search.php", $params);
 foreach ($tags as $tag) {
     $url .= "&tags[]=$tag";
 }
-echo html_writer::link($url, get_string('advancedsearch', 'hsuforum').'...');
+echo \core\output\html_writer::link($url, get_string('advancedsearch', 'hsuforum').'...');
 
 echo '</div>';
 
@@ -240,7 +240,7 @@ foreach ($searchterms as $key => $searchterm) {
 $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
 
 echo $OUTPUT->box_start("mod-hsuforum-posts-container article");
-echo html_writer::start_tag('ol', array('class' => 'hsuforum-thread-replies-list'));
+echo \core\output\html_writer::start_tag('ol', array('class' => 'hsuforum-thread-replies-list'));
 $resultnumber = ($page * $perpage) + 1;
 $modinfo = get_fast_modinfo($course);
 foreach ($posts as $post) {
@@ -341,9 +341,9 @@ foreach ($posts as $post) {
     $commands = array('seeincontext' => $fulllink);
     $postcm = $modinfo->instances['hsuforum'][$discussion->forum];
     $rendereredpost = $renderer->post($postcm, $discussion, $post, false, null, $commands, 0, $strippedsearch);
-    echo html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
+    echo \core\output\html_writer::tag('li', $rendereredpost, array('class' => 'hsuforum-post', 'data-count' => $resultnumber++));
 }
-echo html_writer::end_tag('ol');
+echo \core\output\html_writer::end_tag('ol');
 echo $OUTPUT->box_end(); // End mod-hsuforum-posts-container
 $pagingurl = $url;
 if ($search && $forumid) {

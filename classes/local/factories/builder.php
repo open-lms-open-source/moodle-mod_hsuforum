@@ -32,7 +32,7 @@ use mod_hsuforum\local\factories\vault as vault_factory;
 use mod_hsuforum\local\factories\legacy_data_mapper as legacy_data_mapper_factory;
 use mod_hsuforum\local\factories\exporter as exporter_factory;
 use mod_hsuforum\local\factories\manager as manager_factory;
-use renderer_base;
+use \core\output\renderer_base;
 
 /**
  * Builder factory to construct any builders for hsuforum.
@@ -51,7 +51,7 @@ class builder {
     private $vaultfactory;
     /** @var manager_factory $managerfactory Manager factory */
     private $managerfactory;
-    /** @var renderer_base $rendererbase Renderer base */
+    /** @var \core\output\renderer_base $rendererbase Renderer base */
     private $rendererbase;
 
     /**
@@ -61,14 +61,14 @@ class builder {
      * @param exporter_factory $exporterfactory Exporter factory
      * @param vault_factory $vaultfactory Vault factory
      * @param manager_factory $managerfactory Manager factory
-     * @param renderer_base $rendererbase Renderer base
+     * @param \core\output\renderer_base $rendererbase Renderer base
      */
     public function __construct(
         legacy_data_mapper_factory $legacydatamapperfactory,
         exporter_factory $exporterfactory,
         vault_factory $vaultfactory,
         manager_factory $managerfactory,
-        renderer_base $rendererbase
+        \core\output\renderer_base $rendererbase
     ) {
         $this->legacydatamapperfactory = $legacydatamapperfactory;
         $this->exporterfactory = $exporterfactory;

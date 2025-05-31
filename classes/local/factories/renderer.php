@@ -66,7 +66,7 @@ class renderer {
     private $builderfactory;
     /** @var url_factory $urlfactory URL factory */
     private $urlfactory;
-    /** @var renderer_base $rendererbase Renderer base */
+    /** @var \core\output\renderer_base $rendererbase Renderer base */
     private $rendererbase;
     /** @var moodle_page $page Moodle page */
     private $page;

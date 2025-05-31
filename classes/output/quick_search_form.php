@@ -25,11 +25,11 @@
 namespace mod_hsuforum\output;
 defined('MOODLE_INTERNAL') || die();
 
-use help_icon;
+use \core\output\help_icon;
 use moodle_url;
-use renderable;
-use renderer_base;
-use templatable;
+use \core\output\renderable;
+use \core\output\renderer_base;
+use \core\output\templatable;
 
 /**
  * Quick search form renderable class.
@@ -38,7 +38,7 @@ use templatable;
  * @copyright  2016 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class quick_search_form implements renderable, templatable {
+class quick_search_form implements \core\output\renderable, \core\output\templatable {
 
     /** @var int The course ID. */
     protected $courseid;
@@ -62,7 +62,7 @@ class quick_search_form implements renderable, templatable {
         $this->helpicon = new help_icon('search', 'core');
     }
 
-    public function export_for_template(renderer_base $output) {
+    public function export_for_template(\core\output\renderer_base $output) {
         $data = [
             'actionurl' => $this->actionurl->out(false),
             'courseid' => $this->courseid,

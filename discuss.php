@@ -294,7 +294,7 @@
             $button = '&nbsp;';
             $buttonextraclass = ' noavailable';
         }
-        echo html_writer::tag('div', $button, array('class' => 'discussioncontrol exporttoportfolio'.$buttonextraclass));
+        echo \core\output\html_writer::tag('div', $button, array('class' => 'discussioncontrol exporttoportfolio'.$buttonextraclass));
     }
 
     if ($course->format !='singleactivity' && $forum->type != 'single'
@@ -329,7 +329,7 @@
     }
     if (!empty($forummenu)) {
         echo '<div class="movediscussionoption">';
-        $select = new url_select($forummenu, '',
+        $select = new \core\output\url_select($forummenu, '',
             array('/mod/hsuforum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "hsuforum")),
             'forummenu');
         echo $OUTPUT->render($select);
@@ -344,7 +344,7 @@
         if (isloggedin() && !isguestuser()) {
             if (get_config('core', 'theme') == 'snap') {
 
-                echo \html_writer::div(html_writer::link(
+                echo \core\output\html_writer::div(html_writer::link(
                     new \moodle_url(
                         '/mod/hsuforum/index.php',
                         ['id' => $course->id]
@@ -362,7 +362,7 @@
                     ['class' => 'exportdiscussionslink']
                 ));
 
-                echo \html_writer::div(html_writer::link(
+                echo \core\output\html_writer::div(\core\output\html_writer::link(
                     new \moodle_url(
                         '/mod/hsuforum/route.php',
                         ['contextid' => $context->id, 'action' => 'viewposters']
@@ -377,7 +377,7 @@
                     $subscribe = get_string('unsubscribe', 'hsuforum');
                 }
 
-                echo \html_writer::div(html_writer::link(
+                echo \core\output\html_writer::div(\core\output\html_writer::link(
                     new \moodle_url(
                         '/mod/hsuforum/subscribe.php',
                         ['id' => $forum->id, 'sesskey' => sesskey()]
@@ -396,7 +396,7 @@
                         $gradingcontrollerpreview = $controller->render_preview($PAGE);
                         if ($gradingcontrollerpreview) {
 
-                            echo \html_writer::div(html_writer::link(
+                            echo \core\output\html_writer::div(\core\output\html_writer::link(
                                 '#hsuforum_gradingcriteria',
                                 get_string('gradingmethodpreview', 'hsuforum'),
                                 ['class' => 'hsuforum_gradingcriteria',
@@ -406,10 +406,10 @@
                                 'aria-controls' => 'hsuforum_gradingcriteria']
                             ));
 
-                            echo \html_writer::div(
-                                html_writer::div(
-                                    html_writer::div(
-                                        html_writer::div(
+                            echo \core\output\html_writer::div(
+                                \core\output\html_writer::div(
+                                    \core\output\html_writer::div(
+                                        \core\output\html_writer::div(
                                             $gradingcontrollerpreview, 'card card-body'
                                         ), 'collapse multi-collapse', ['id' => 'hsuforum_gradingcriteria']
                                     ), 'col'

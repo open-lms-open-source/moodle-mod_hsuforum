@@ -688,12 +688,12 @@ function mod_hsuforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx = 
             $cm = $modinfo->get_cm($item->cmid);
             $pageurl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $item->discussion), 'p' . $item->id);
             $pagename = format_string($item->subject, true, array('context' => context_module::instance($item->cmid)));
-            $pagename = html_writer::link($pageurl, $pagename);
+            $pagename = \core\output\html_writer::link($pageurl, $pagename);
             $courseurl = course_get_url($item->courseid, $cm->sectionnum);
-            $cmname = html_writer::link($cm->url, $cm->get_formatted_name());
+            $cmname = \core\output\html_writer::link($cm->url, $cm->get_formatted_name());
             $coursename = format_string($item->fullname, true, array('context' => context_course::instance($item->courseid)));
-            $coursename = html_writer::link($courseurl, $coursename);
-            $icon = html_writer::link($pageurl, html_writer::empty_tag('img', array('src' => $cm->get_icon_url())));
+            $coursename = \core\output\html_writer::link($courseurl, $coursename);
+            $icon = \core\output\html_writer::link($pageurl, \core\output\html_writer::empty_tag('img', array('src' => $cm->get_icon_url())));
             $tagfeed->add($icon, $pagename, $cmname.'<br>'.$coursename);
         }
 

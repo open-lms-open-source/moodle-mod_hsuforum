@@ -160,7 +160,7 @@ class mod_hsuforum_generator extends testing_module_generator {
         }
 
         if (!isset($record['message'])) {
-            $record['message'] = html_writer::tag('p', 'Message for discussion ' . $this->forumdiscussioncount);
+            $record['message'] = \core\output\html_writer::tag('p', 'Message for discussion ' . $this->forumdiscussioncount);
         }
 
         if (!isset($record['messageformat'])) {
@@ -279,7 +279,7 @@ class mod_hsuforum_generator extends testing_module_generator {
         }
 
         if (!isset($record['message'])) {
-            $record['message'] = html_writer::tag('p', 'Forum message post ' . $this->forumpostcount);
+            $record['message'] = \core\output\html_writer::tag('p', 'Forum message post ' . $this->forumpostcount);
         }
 
         if (!isset($record['created'])) {

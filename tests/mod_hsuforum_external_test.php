@@ -336,11 +336,11 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
         $this->assertEquals(3, count($posts['posts']));
 
         // Generate here the pictures because we need to wait to the external function to init the theme.
-        $userpicture = new user_picture($user3);
+        $userpicture = new \core\output\user_picture($user3);
         $userpicture->size = 1; // Size f1.
         $expectedposts['posts'][0]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
 
-        $userpicture = new user_picture($user2);
+        $userpicture = new \core\output\user_picture($user2);
         $userpicture->size = 1; // Size f1.
         $expectedposts['posts'][1]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
         // Unset the initial discussion post.
@@ -580,11 +580,11 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
         );
 
         // Wait the theme to be loaded (the external_api call does that) to generate the user profiles.
-        $userpicture = new user_picture($user1);
+        $userpicture = new \core\output\user_picture($user1);
         $userpicture->size = 1; // Size f1.
         $expectedreturn['discussions'][0]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
 
-        $userpicture = new user_picture($user4);
+        $userpicture = new \core\output\user_picture($user4);
         $userpicture->size = 1; // Size f1.
         $expectedreturn['discussions'][0]['usermodifiedpictureurl'] = $userpicture->get_url($PAGE)->out(false);
 
@@ -779,11 +779,11 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
         );
 
         // Wait the theme to be loaded (the external_api call does that) to generate the user profiles.
-        $userpicture = new \user_picture($user1);
+        $userpicture = new \core\output\user_picture($user1);
         $userpicture->size = 2; // Size f2.
         $expectedreturn['discussions'][0]['userpictureurl'] = $userpicture->get_url($PAGE)->out(false);
 
-        $userpicture = new \user_picture($user4);
+        $userpicture = new \core\output\user_picture($user4);
         $userpicture->size = 2; // Size f2.
         $expectedreturn['discussions'][0]['usermodifiedpictureurl'] = $userpicture->get_url($PAGE)->out(false);
 

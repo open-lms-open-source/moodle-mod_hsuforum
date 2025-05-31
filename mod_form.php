@@ -357,7 +357,7 @@ class mod_hsuforum_mod_form extends moodleform_mod {
             // are enabled.
             if ($this->_features->groups || $this->_features->groupings) {
                 $mform->addElement('static', 'restrictgroupbutton', '',
-                    html_writer::tag('button', get_string('restrictbygroup', 'availability'),
+                    \core\output\html_writer::tag('button', get_string('restrictbygroup', 'availability'),
                         array('id' => 'restrictbygroup', 'disabled' => 'disabled', 'class' => 'btn btn-secondary')));
             }
 

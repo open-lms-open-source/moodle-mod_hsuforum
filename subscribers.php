@@ -113,7 +113,7 @@ if (has_capability('mod/hsuforum:managesubscriptions', $context) && hsuforum_is_
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('forum', 'hsuforum').' '.$strsubscribers);
 if (!empty($updatesubscriptionsbutton)) {
-    echo \html_writer::div($updatesubscriptionsbutton, 'pull-right');
+    echo \core\output\html_writer::div($updatesubscriptionsbutton, 'pull-right');
 }
 if (empty($USER->subscriptionsediting)) {
     $subscribers = hsuforum_subscribed_users($course, $forum, $currentgroup, $context);

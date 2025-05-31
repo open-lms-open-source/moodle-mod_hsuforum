@@ -26,7 +26,7 @@ namespace mod_hsuforum\local\exporters;
 defined('MOODLE_INTERNAL') || die();
 
 use core\external\exporter;
-use renderer_base;
+use \core\output\renderer_base;
 use stdClass;
 
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
@@ -81,10 +81,10 @@ class group extends exporter {
     /**
      * Get the additional values to inject while exporting.
      *
-     * @param renderer_base $output The renderer.
+     * @param \core\output\renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_other_values(renderer_base $output) {
+    protected function get_other_values(\core\output\renderer_base $output) {
         return [
             'id' => $group->id,
             'urls' => [

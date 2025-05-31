@@ -30,7 +30,7 @@ use mod_hsuforum\local\exporters\post as post_exporter;
 use mod_hsuforum\local\exporters\stdClass;
 use mod_hsuforum\local\factories\exporter as exporter_factory;
 use core\external\exporter;
-use renderer_base;
+use \core\output\renderer_base;
 
 /**
  * Discussion exporter class.
@@ -150,10 +150,10 @@ class discussion extends exporter {
     /**
      * Get the additional values to inject while exporting.
      *
-     * @param renderer_base $output The renderer.
+     * @param \core\output\renderer_base $output The renderer.
      * @return array Keys are the property names, values are their values.
      */
-    protected function get_other_values(renderer_base $output) {
+    protected function get_other_values(\core\output\renderer_base $output) {
 
         $capabilitymanager = $this->related['capabilitymanager'];
         $urlfactory = $this->related['urlfactory'];

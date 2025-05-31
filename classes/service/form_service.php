@@ -40,7 +40,7 @@ class form_service {
     /**
      * Lazy load renderer
      *
-     * @return \mod_hsuforum_renderer|\renderer_base
+     * @return \mod_hsuforum_renderer|\core\output\renderer_base
      */
     protected function get_renderer() {
         global $PAGE;

@@ -26,7 +26,7 @@ namespace mod_hsuforum\local\vaults\preprocessors;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_hsuforum\local\vaults\preprocessors\stdClass;
-use user_picture;
+use \core\output\user_picture;
 
 /**
  * Extract user vault preprocessor.
@@ -64,7 +64,7 @@ class extract_user {
         $alias = $this->alias;
 
         return array_map(function($record) use ($idalias, $alias) {
-            return user_picture::unalias($record, ['deleted'], $idalias, $alias);
+            return \core\output\user_picture::unalias($record, ['deleted'], $idalias, $alias);
         }, $records);
     }
 }

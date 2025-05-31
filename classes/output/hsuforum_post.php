@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @property boolean $viewfullnames Whether to override fullname()
  */
-class hsuforum_post implements \renderable, \templatable {
+class hsuforum_post implements \core\output\renderable, \core\output\templatable {
 
     /**
      * The course that the forum post is in.
@@ -137,7 +137,7 @@ class hsuforum_post implements \renderable, \templatable {
      * @param bool $plaintext Whethe the target is a plaintext target
      * @return array Data ready for use in a mustache template
      */
-    public function export_for_template(\renderer_base $renderer, $plaintext = false) {
+    public function export_for_template(\core\output\renderer_base $renderer, $plaintext = false) {
         if ($plaintext) {
             return $this->export_for_template_text($renderer);
         } else {
@@ -544,10 +544,10 @@ class hsuforum_post implements \renderable, \templatable {
     /**
      * The HTML for the author's user picture.
      *
-     * @param   \renderer_base $renderer
+     * @param   \core\output\renderer_base $renderer
      * @return string
      */
-    public function get_author_picture(\renderer_base $renderer) {
+    public function get_author_picture(\core\output\renderer_base $renderer) {
 
         $link = !(guest_user()->id == $this->author->id);
         return $renderer->user_picture($this->author, array('courseid' => $this->course->id, 'link' => $link));
@@ -556,10 +556,10 @@ class hsuforum_post implements \renderable, \templatable {
     /**
      * The HTML for a group picture.
      *
-     * @param   \renderer_base $renderer
+     * @param   \core\output\renderer_base $renderer
      * @return string
      */
-    public function get_group_picture(\renderer_base $renderer) {
+    public function get_group_picture(\core\output\renderer_base $renderer) {
         if (isset($this->userfrom->groups)) {
             $groups = $this->userfrom->groups[$this->forum->id];
         } else {

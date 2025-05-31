@@ -40,16 +40,16 @@ use forum_portfolio_caller;
 use core\output\notification;
 use context;
 use context_module;
-use html_writer;
+use \core\output\html_writer;
 use moodle_exception;
 use moodle_page;
 use moodle_url;
 use rating_manager;
-use renderer_base;
-use single_button;
-use single_select;
+use \core\output\renderer_base;
+use \core\output\single_button;
+use \core\output\single_select;
 use stdClass;
-use url_select;
+use \core\output\url_select;
 
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/locallib.php');
@@ -70,7 +70,7 @@ class discussion {
     private $forumrecord;
     /** @var int $displaymode The display mode to render the discussion in */
     private $displaymode;
-    /** @var renderer_base $renderer Renderer base */
+    /** @var \core\output\renderer_base $renderer Renderer base */
     private $renderer;
     /** @var posts_renderer $postsrenderer A posts renderer */
     private $postsrenderer;
@@ -105,7 +105,7 @@ class discussion {
      * @param forum_entity $forum The forum that the discussion belongs to
      * @param discussion_entity $discussion The discussion entity
      * @param int $displaymode The display mode to render the discussion in
-     * @param renderer_base $renderer Renderer base
+     * @param \core\output\renderer_base $renderer Renderer base
      * @param posts_renderer $postsrenderer A posts renderer
      * @param moodle_page $page The page this discussion is being rendered for
      * @param legacy_data_mapper_factory $legacydatamapperfactory Legacy data mapper factory
@@ -124,7 +124,7 @@ class discussion {
         forum_entity $forum,
         discussion_entity $discussion,
         int $displaymode,
-        renderer_base $renderer,
+        \core\output\renderer_base $renderer,
         posts_renderer $postsrenderer,
         moodle_page $page,
         legacy_data_mapper_factory $legacydatamapperfactory,
@@ -289,7 +289,7 @@ class discussion {
      */
     private function get_display_mode_selector_html(int $displaymode, stdClass $user): string {
         $baseurl = $this->baseurl;
-        $select = new single_select(
+        $select = new \core\output\single_select(
             $baseurl,
             'mode',
             hsuforum_get_layout_modes(get_user_preferences('forum_useexperimentalui', false, $user)),
@@ -347,7 +347,7 @@ class discussion {
                     // Move discussion selector will be rendered on the settings drawer. We won't output the button in this mode.
                     $movebutton = null;
                 }
-                $select = new url_select($forummenu, '',
+                $select = new \core\output\url_select($forummenu, '',
                         ['/mod/hsuforum/discuss.php?d=' . $discussion->get_id() => get_string("movethisdiscussionto", "hsuforum")],
                         'forummenu', $movebutton);
                 $select->set_label(get_string('movethisdiscussionlabel', 'mod_hsuforum'), [

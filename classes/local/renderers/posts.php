@@ -26,7 +26,7 @@ namespace mod_hsuforum\local\renderers;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_hsuforum\local\builders\exported_posts as exported_posts_builder;
-use renderer_base;
+use \core\output\renderer_base;
 use stdClass;
 
 /**
@@ -35,7 +35,7 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class posts {
-    /** @var renderer_base $renderer Renderer base */
+    /** @var \core\output\renderer_base $renderer Renderer base */
     private $renderer;
     /** @var exported_posts_builder $exportedpostsbuilder Builder for building exported posts */
     private $exportedpostsbuilder;
@@ -47,13 +47,13 @@ class posts {
     /**
      * Constructor.
      *
-     * @param renderer_base $renderer Renderer base
+     * @param \core\output\renderer_base $renderer Renderer base
      * @param exported_posts_builder $exportedpostsbuilder Builder for building exported posts
      * @param string $template The template to render
      * @param callable $postprocessfortemplate Function to process exported posts before template rendering
      */
     public function __construct(
-        renderer_base $renderer,
+        \core\output\renderer_base $renderer,
         exported_posts_builder $exportedpostsbuilder,
         string $template,
         callable $postprocessfortemplate = null

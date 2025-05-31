@@ -35,7 +35,7 @@ use mod_hsuforum\local\entities\sorter as sorter_entity;
 use stdClass;
 use context;
 use cm_info;
-use user_picture;
+use \core\output\user_picture;
 use moodle_url;
 
 /**

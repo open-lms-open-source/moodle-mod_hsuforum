@@ -27,7 +27,7 @@ namespace mod_hsuforum\renderables;
 
 defined('MOODLE_INTERNAL') || die();
 
-class advanced_editor implements \renderable {
+class advanced_editor implements \core\output\renderable {
 
     /**
      * @var \context_module

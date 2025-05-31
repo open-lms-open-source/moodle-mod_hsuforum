@@ -836,7 +836,7 @@ function hsuforum_cron() {
                 if (!empty($replyaddress)) {
                     // Add extra text to email messages if they can reply back.
                     $textfooter = "\n\n" . get_string('replytopostbyemail', 'mod_hsuforum');
-                    $htmlfooter = html_writer::tag('p', get_string('replytopostbyemail', 'mod_hsuforum'));
+                    $htmlfooter = \core\output\html_writer::tag('p', get_string('replytopostbyemail', 'mod_hsuforum'));
                     $additionalcontent = array('fullmessage' => array('footer' => $textfooter),
                                      'fullmessagehtml' => array('footer' => $htmlfooter));
                     $eventdata->set_additional_content('email', $additionalcontent);
@@ -1671,7 +1671,7 @@ function hsuforum_recent_activity($course, $viewfullnames, $timestart, $forumid 
             if (hsuforum_is_user_group_discussion($cm, $post->groupid)) {
                 $postuser = hsuforum_extract_postuser($post, hsuforum_get_cm_forum($cm), context_module::instance($cm->id));
 
-                $userpicture = new user_picture($postuser);
+                $userpicture = new \core\output\user_picture($postuser);
                 $userpicture->link = false;
                 $userpicture->alttext = false;
                 $userpicture->size = 100;
@@ -1840,7 +1840,7 @@ function hsuforum_upgrade_grades() {
              WHERE m.name='hsuforum' AND m.id=cm.module AND cm.instance=f.id";
     $rs = $DB->get_recordset_sql($sql);
     if ($rs->valid()) {
-        $pbar = new progress_bar('forumupgradegrades', 500, true);
+        $pbar = new \core\output\progress_bar('forumupgradegrades', 500, true);
         $i=0;
         foreach ($rs as $forum) {
             $i++;
@@ -3579,7 +3579,7 @@ function hsuforum_print_post_start($post, $return = false) {
             'tabindex' => -1,
             'class' => 'relativelink',
         ];
-        $output .= html_writer::start_tag('article', $attributes);
+        $output .= \core\output\html_writer::start_tag('article', $attributes);
     }
     if ($return) {
         return $output;
@@ -3599,7 +3599,7 @@ function hsuforum_print_post_end($post, $return = false) {
     $output = '';
 
     if (hsuforum_should_end_post_nesting($post->id)) {
-        $output .= html_writer::end_tag('article');
+        $output .= \core\output\html_writer::end_tag('article');
     }
     if ($return) {
         return $output;
@@ -3719,9 +3719,9 @@ function hsuforum_rating_validate($params) {
             $replystring .= ' <span class="sep">/</span> <span class="unread">';
             $unreadlink = new moodle_url($discussionlink, null, 'unread');
             if ($discussion->unread == 1) {
-                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsone', 'hsuforum'));
+                $replystring .= \core\output\html_writer::link($unreadlink, get_string('unreadpostsone', 'hsuforum'));
             } else {
-                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsnumber', 'hsuforum', $discussion->unread));
+                $replystring .= \core\output\html_writer::link($unreadlink, get_string('unreadpostsnumber', 'hsuforum', $discussion->unread));
             }
             $replystring .= '</span>';
         }
@@ -6055,8 +6055,8 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
         'cellspacing' => '0',
         'class' => 'forum-recent',
     ];
-    $output = html_writer::start_tag('table', $tableoptions);
-    $output .= html_writer::start_tag('tr');
+    $output = \core\output\html_writer::start_tag('table', $tableoptions);
+    $output .= \core\output\html_writer::start_tag('tr');
 
     $post = (object) ['parent' => $content->parent];
     $forum = (object) ['type' => $content->forumtype];
@@ -6070,13 +6070,13 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
             'alttext' => $authorhidden,
         ];
         $picture = $OUTPUT->user_picture($activity->user, $pictureoptions);
-        $output .= html_writer::tag('td', $picture, ['class' => 'userpicture', 'valign' => 'top']);
+        $output .= \core\output\html_writer::tag('td', $picture, ['class' => 'userpicture', 'valign' => 'top']);
     }
 
     // Discussion title and author.
-    $output .= html_writer::start_tag('td', ['class' => $class]);
+    $output .= \core\output\html_writer::start_tag('td', ['class' => $class]);
 
-    $output .= html_writer::start_div($class);
+    $output .= \core\output\html_writer::start_div($class);
     echo '<div class="title">';
     if ($detail) {
         $aname = s($activity->name);
@@ -6084,8 +6084,8 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
     }
     $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', ['d' => $content->discussion]);
     $discussionurl->set_anchor('p' . $activity->content->id);
-    $output .= html_writer::link($discussionurl, $content->subject);
-    $output .= html_writer::end_div();
+    $output .= \core\output\html_writer::link($discussionurl, $content->subject);
+    $output .= \core\output\html_writer::end_div();
 
     $timestamp = userdate_htmltime($activity->timestamp);
     if ($authorhidden) {
@@ -6095,14 +6095,14 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
         $userurl = new moodle_url('/user/view.php');
         $userurl->params(['id' => $activity->user->id, 'course' => $courseid]);
         $by = new stdClass();
-        $by->name = html_writer::link($userurl, $fullname);
+        $by->name = \core\output\html_writer::link($userurl, $fullname);
         $by->date = $timestamp;
         $authornamedate = get_string('bynameondate', 'hsuforum', $by);
     }
-    $output .= html_writer::div($authornamedate, 'user');
-    $output .= html_writer::end_tag('td');
-    $output .= html_writer::end_tag('tr');
-    $output .= html_writer::end_tag('table');
+    $output .= \core\output\html_writer::div($authornamedate, 'user');
+    $output .= \core\output\html_writer::end_tag('td');
+    $output .= \core\output\html_writer::end_tag('tr');
+    $output .= \core\output\html_writer::end_tag('table');
 
     echo $output;
 }
@@ -6147,13 +6147,13 @@ function hsuforum_update_subscriptions_button($courseid, $forumid) {
         $edit = "on";
     }
 
-    $subscribers = html_writer::start_tag('form', array('action' => $CFG->wwwroot . '/mod/hsuforum/subscribers.php',
+    $subscribers = \core\output\html_writer::start_tag('form', array('action' => $CFG->wwwroot . '/mod/hsuforum/subscribers.php',
         'method' => 'get', 'class' => 'form-inline'));
-    $subscribers .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => $string,
+    $subscribers .= \core\output\html_writer::empty_tag('input', array('type' => 'submit', 'value' => $string,
         'class' => 'btn btn-secondary'));
-    $subscribers .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $forumid));
-    $subscribers .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'edit', 'value' => $edit));
-    $subscribers .= html_writer::end_tag('form');
+    $subscribers .= \core\output\html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $forumid));
+    $subscribers .= \core\output\html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'edit', 'value' => $edit));
+    $subscribers .= \core\output\html_writer::end_tag('form');
 
     return $subscribers;
 }
@@ -7256,7 +7256,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
             navigation_node::TYPE_SETTING,
             null,
             null,
-            new pix_icon('i/export', get_string('export', 'hsuforum')));
+            new \core\output\pix_icon('i/export', get_string('export', 'hsuforum')));
     }
     $forumnode->add(
         get_string('viewposters', 'hsuforum'),
@@ -7264,7 +7264,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         navigation_node::TYPE_SETTING,
         null,
         null,
-        new pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
+        new \core\output\pix_icon('t/preview', get_string('viewposters', 'hsuforum')));
 
     if ($canmanage) {
         $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
@@ -7279,22 +7279,22 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
             case HSUFORUM_CHOOSESUBSCRIBE : // 0
                 $allowchoice->action = null;
                 $allowchoice->add_class('activesetting');
-                $allowchoice->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
+                $allowchoice->icon = new \core\output\pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
             case HSUFORUM_FORCESUBSCRIBE : // 1
                 $forceforever->action = null;
                 $forceforever->add_class('activesetting');
-                $forceforever->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
+                $forceforever->icon = new \core\output\pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
             case HSUFORUM_INITIALSUBSCRIBE : // 2
                 $forceinitially->action = null;
                 $forceinitially->add_class('activesetting');
-                $forceinitially->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
+                $forceinitially->icon = new \core\output\pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
             case HSUFORUM_DISALLOWSUBSCRIBE : // 3
                 $disallowchoice->action = null;
                 $disallowchoice->add_class('activesetting');
-                $disallowchoice->icon = new pix_icon('t/selected', '', 'mod_hsuforum');
+                $disallowchoice->icon = new \core\output\pix_icon('t/selected', '', 'mod_hsuforum');
                 break;
         }
 
@@ -7388,7 +7388,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         }
 
         $url = new moodle_url(rss_get_url($settingsnav->get_page()->cm->context->id, $userid, "mod_hsuforum", $forumobject->id));
-        $forumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('i/rss', ''));
+        $forumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new \core\output\pix_icon('i/rss', ''));
     }
 }
 
@@ -8110,7 +8110,7 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
     $postuser = hsuforum_anonymize_user($user, $forum, $post);
 
     if (property_exists($user, 'picture')) {
-        $postuser->user_picture           = new user_picture($postuser);
+        $postuser->user_picture           = new \core\output\user_picture($postuser);
         $postuser->user_picture->courseid = $forum->course;
         $postuser->user_picture->link     = (!hsuforum_is_anonymous_user($postuser));
     }
@@ -8623,7 +8623,7 @@ function hsuforum_relative_time($timeinpast, $attributes = null) {
         }
     }
 
-    return html_writer::tag('time', $displaytime, $defaultatts);
+    return \core\output\html_writer::tag('time', $displaytime, $defaultatts);
 }
 
 /**
