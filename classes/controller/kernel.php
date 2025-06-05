@@ -117,7 +117,7 @@ class kernel {
      *
      * @param callable $callback
      * @return string
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      */
     public function generate_response($callback) {
         ob_start();
@@ -126,7 +126,7 @@ class kernel {
         ob_end_clean();
 
         if (!empty($response) && !empty($buffer)) {
-            throw new \coding_exception('Mixed return output and buffer output', "Buffer: $buffer");
+            throw new \core\exception\coding_exception('Mixed return output and buffer output', "Buffer: $buffer");
         } else if (!empty($buffer)) {
             $response = $buffer;
         }

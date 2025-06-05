@@ -29,7 +29,7 @@ use mod_hsuforum\event\discussion_created;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
 use mod_hsuforum\local;
-use moodle_exception;
+use \core\exception\moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -160,7 +160,7 @@ class discussion_service {
     public function validate_discussion($cm, $forum, $context, $discussion, upload_file $uploader, $posttomygroups = false) {
         $errors = array();
         if (!hsuforum_user_can_post_discussion($forum, $discussion->groupid, -1, $cm, $context)) {
-            $errors[] = new \moodle_exception('nopostforum', 'hsuforum');
+            $errors[] = new moodle_exception('nopostforum', 'hsuforum');
         }
 
         if (!empty($posttomygroups)) {
@@ -173,22 +173,22 @@ class discussion_service {
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
         if ($thresholdwarning !== false && $thresholdwarning->canpost === false) {
-            $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
+            $errors[] = new moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
         }
 
         $subject = trim($discussion->subject);
         if (empty($subject)) {
-            $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
+            $errors[] = new moodle_exception('subjectisrequired', 'hsuforum');
         }
         if (hsuforum_str_empty($discussion->message)) {
-            $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
+            $errors[] = new moodle_exception('messageisrequired', 'hsuforum');
         }
 
         // Check restriction times.
         list ($start, $end) = local::get_form_discussion_times();
 
         if ($start && $end && $start > $end) {
-            $errors[] = new \moodle_exception('errortimestartgreater', 'hsuforum');
+            $errors[] = new moodle_exception('errortimestartgreater', 'hsuforum');
         }
 
         if ($uploader->was_file_uploaded()) {
@@ -269,14 +269,14 @@ class discussion_service {
                         || $discussion->timestart <= time())
                     && ($discussion->timeend == 0 || $discussion->timeend > time())))
             ) {
-                throw new \moodle_exception('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+                throw new moodle_exception('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
             }
         }
         if (!$post = hsuforum_get_post_full($discussion->firstpost)) {
-            throw new \moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
-            throw new \moodle_exception('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new moodle_exception('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
 
         $posts        = hsuforum_get_all_discussion_posts($discussion->id);
@@ -293,7 +293,7 @@ class discussion_service {
      *
      * @param int $discussionid
      * @return string
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      */
     public function render_discussion($discussionid, $fullthread = false) {
         global $PAGE;
@@ -303,7 +303,7 @@ class discussion_service {
         list($cm, $discussion, $posts, $canreply) = $this->get_posts($discussionid);
 
         if (!array_key_exists($discussion->firstpost, $posts)) {
-            throw new \coding_exception('Failed to find discussion post');
+            throw new \core\exception\coding_exception('Failed to find discussion post');
         }
         return $renderer->discussion($cm, $discussion, $posts[$discussion->firstpost], $fullthread, $posts, $canreply);
     }
@@ -313,7 +313,7 @@ class discussion_service {
      *
      * @param int $discussionid
      * @return string
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      */
     public function render_full_thread($discussionid) {
         return $this->render_discussion($discussionid, true);

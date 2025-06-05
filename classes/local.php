@@ -70,7 +70,7 @@ class local {
      * Get discussion times from params.
      *
      * @return array
-     * @throws coding_exception
+     * @throws \core\exception\coding_exception
      */
     public static function get_form_discussion_times() {
         global $USER, $CFG;

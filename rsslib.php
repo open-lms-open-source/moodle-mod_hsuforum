@@ -319,7 +319,7 @@ function hsuforum_rss_feed_contents($forum, $sql, $params, $context) {
     }
 
     if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
-        throw new \moodle_exception('invalidcoursemodule');
+        throw new \core\exception\moodle_exception('invalidcoursemodule');
     }
 
     $formatoptions = new stdClass();

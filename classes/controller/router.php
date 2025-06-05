@@ -24,7 +24,7 @@
 
 namespace mod_hsuforum\controller;
 
-use coding_exception;
+use \core\exception\coding_exception;
 use SplObjectStorage;
 
 defined('MOODLE_INTERNAL') || die();
@@ -79,7 +79,7 @@ class router {
      *
      * @param $action
      * @return array The controller and method to execute
-     * @throws coding_exception
+     * @throws \core\exception\coding_exception
      */
     public function route_action($action) {
         $method = "{$action}_action";
@@ -88,10 +88,10 @@ class router {
             if (!$reflection->hasMethod($method)) {
                 continue;
             } else if ($reflection->getMethod($method)->isPublic() !== true) {
-                throw new coding_exception("The controller callback is not public: $method");
+                throw new \core\exception\coding_exception("The controller callback is not public: $method");
             }
             return array($controller, $method);
         }
-        throw new coding_exception("Unable to handle request for $method");
+        throw new \core\exception\coding_exception("Unable to handle request for $method");
     }
 }

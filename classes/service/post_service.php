@@ -29,7 +29,7 @@ use mod_hsuforum\event\post_created;
 use mod_hsuforum\event\post_updated;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\upload_file;
-use moodle_exception;
+use \core\exception\moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -196,11 +196,11 @@ class post_service {
             if (((time() - $post->created) > $CFG->maxeditingtime) &&
                 !has_capability('mod/hsuforum:editanypost', $context)
             ) {
-                throw new \moodle_exception('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
+                throw new moodle_exception('maxtimehaspassed', 'hsuforum', '', format_time($CFG->maxeditingtime));
             }
         }
         if (($post->userid <> $USER->id) && !has_capability('mod/hsuforum:editanypost', $context)) {
-            throw new \moodle_exception('cannoteditposts', 'hsuforum');
+            throw new moodle_exception('cannoteditposts', 'hsuforum');
         }
     }
 
@@ -265,38 +265,38 @@ class post_service {
 
         $errors = array();
         if (!hsuforum_user_can_post($forum, $discussion, null, $cm, $course, $context)) {
-            $errors[] = new \moodle_exception('nopostforum', 'hsuforum');
+            $errors[] = new moodle_exception('nopostforum', 'hsuforum');
         }
         if (!empty($post->id)) {
             if (!(($post->userid == $USER->id && (has_capability('mod/hsuforum:replypost', $context)
                         || has_capability('mod/hsuforum:startdiscussion', $context))) ||
                 has_capability('mod/hsuforum:editanypost', $context))
             ) {
-                $errors[] = new \moodle_exception('cannotupdatepost', 'hsuforum');
+                $errors[] = new moodle_exception('cannotupdatepost', 'hsuforum');
             }
         }
         if (empty($post->id)) {
             $thresholdwarning = hsuforum_check_throttling($forum, $cm);
             if ($thresholdwarning !== false && $thresholdwarning->canpost === false) {
-                $errors[] = new \moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
+                $errors[] = new moodle_exception($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
             }
         }
         if (hsuforum_str_empty($post->subject)) {
-            $errors[] = new \moodle_exception('subjectisrequired', 'hsuforum');
+            $errors[] = new moodle_exception('subjectisrequired', 'hsuforum');
         }
         if (hsuforum_str_empty($post->message)) {
-            $errors[] = new \moodle_exception('messageisrequired', 'hsuforum');
+            $errors[] = new moodle_exception('messageisrequired', 'hsuforum');
         }
 
         if ($discussion->timestart && $discussion->timeend && $discussion->timestart > $discussion->timeend) {
-            $errors[] = new \moodle_exception('errortimestartgreater', 'hsuforum');
+            $errors[] = new moodle_exception('errortimestartgreater', 'hsuforum');
         }
 
         if ($post->privatereply) {
             if (!has_capability('mod/hsuforum:allowprivate', $context)
                 || !$forum->allowprivatereplies
             ) {
-                $errors[] = new \moodle_exception('cannotmakeprivatereplies', 'hsuforum');
+                $errors[] = new moodle_exception('cannotmakeprivatereplies', 'hsuforum');
             }
         }
 

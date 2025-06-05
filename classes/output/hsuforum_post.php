@@ -252,7 +252,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
         }
 
         // Throw an error rather than fail silently.
-        throw new \coding_exception('Tried to set unknown property "' . $key . '"');
+        throw new \core\exception\coding_exception('Tried to set unknown property "' . $key . '"');
     }
 
     /**

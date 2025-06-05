@@ -234,11 +234,11 @@ function hsuforum_update_instance($forum, $mform) {
             hsuforum_add_discussion($discussion, null, $message);
 
             if (! $discussion = $DB->get_record('hsuforum_discussions', array('forum'=>$forum->id))) {
-                throw new \moodle_exception('cannotadd', 'hsuforum');
+                throw new \core\exception\moodle_exception('cannotadd', 'hsuforum');
             }
         }
         if (! $post = $DB->get_record('hsuforum_posts', array('id'=>$discussion->firstpost))) {
-            throw new \moodle_exception('cannotfindfirstpost', 'hsuforum');
+            throw new \core\exception\moodle_exception('cannotfindfirstpost', 'hsuforum');
         }
 
         $cm         = get_coursemodule_from_instance('hsuforum', $forum->id);
@@ -1315,7 +1315,7 @@ function hsuforum_user_complete($course, $user, $mod, $forum) {
     if ($posts = hsuforum_get_user_posts($forum->id, $user->id)) {
 
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $course->id)) {
-            throw new \moodle_exception('invalidcoursemodule');
+            throw new \core\exception\moodle_exception('invalidcoursemodule');
         }
         $discussions = hsuforum_get_user_involved_discussions($forum->id, $user->id);
 
@@ -2066,7 +2066,7 @@ function hsuforum_get_readable_forums($userid, $courseid=0, $excludeanonymous = 
     require_once($CFG->dirroot.'/course/lib.php');
 
     if (!$forummod = $DB->get_record('modules', array('name' => 'hsuforum'))) {
-        throw new \moodle_exception('notinstalled', 'hsuforum');
+        throw new \core\exception\moodle_exception('notinstalled', 'hsuforum');
     }
 
     $config = get_config('hsuforum');
@@ -3032,7 +3032,7 @@ function hsuforum_get_discussion_neighbours($cm, $discussion, $forum) {
     $config = get_config('hsuforum');
 
     if ($cm->instance != $discussion->forum or $discussion->forum != $forum->id or $forum->id != $cm->instance) {
-        throw new coding_exception('Discussion is not part of the same forum.');
+        throw new \core\exception\coding_exception('Discussion is not part of the same forum.');
     }
 
     $neighbours = array('prev' => false, 'next' => false);
@@ -3786,7 +3786,7 @@ function hsuforum_set_return() {
  *            itemid => int the ID of the object being rated [required]
  *            scaleid => int scale id [optional]
  * @return bool
- * @throws coding_exception
+ * @throws \core\exception\coding_exception
  * @throws rating_exception
  */
 function mod_hsuforum_rating_can_see_item_ratings($params) {
@@ -4494,20 +4494,20 @@ function hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $dis
     // Check user capability to delete post.
     $timepassed = time() - $post->created;
     if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
-        throw new \moodle_exception("cannotdeletepost", "hsuforum",
+        throw new \core\exception\moodle_exception("cannotdeletepost", "hsuforum",
             hsuforum_go_back_to("discuss.php?d=$post->discussion"));
     }
     if ($post->totalscore) {
-        throw new \moodle_exception('couldnotdeleteratings', 'rating',
+        throw new \core\exception\moodle_exception('couldnotdeleteratings', 'rating',
             hsuforum_go_back_to("discuss.php?d=$post->discussion"));
     }
     if (hsuforum_count_replies($post) && !has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
-        throw new \moodle_exception("couldnotdeletereplies", "hsuforum",
+        throw new \core\exception\moodle_exception("couldnotdeletereplies", "hsuforum",
             hsuforum_go_back_to("discuss.php?d=$post->discussion"));
     }
     if (!$post->parent) { // post is a discussion topic as well, so delete discussion
         if ($forum->type == 'single') {
-            throw new \moodle_exception('cannnotdeletesinglediscussion', 'hsuforum',
+            throw new \core\exception\moodle_exception('cannnotdeletesinglediscussion', 'hsuforum',
                 hsuforum_go_back_to("discuss.php?d=$post->discussion"));
         }
         hsuforum_delete_discussion($discussion, false, $course, $cm, $forum);
@@ -4528,7 +4528,7 @@ function hsuforum_verify_and_delete_post($course, $cm, $forum, $modcontext, $dis
 
     }
     if (!hsuforum_delete_post($post, has_capability('mod/hsuforum:deleteanypost', $modcontext), $course, $cm, $forum)) {
-        throw new \moodle_exception('errorwhiledelete', 'hsuforum');
+        throw new \core\exception\moodle_exception('errorwhiledelete', 'hsuforum');
     }
     if ($forum->type == 'single') {
         // Single discussion forums are an exception. We show
@@ -5192,7 +5192,7 @@ function hsuforum_user_can_post_discussion($forum, $currentgroup=null, $unused=-
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
-            throw new \moodle_exception('invalidcoursemodule');
+            throw new \core\exception\moodle_exception('invalidcoursemodule');
         }
     }
 
@@ -5278,14 +5278,14 @@ function hsuforum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $cour
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
-            throw new \moodle_exception('invalidcoursemodule');
+            throw new \core\exception\moodle_exception('invalidcoursemodule');
         }
     }
 
     if (!$course) {
         debugging('missing course', DEBUG_DEVELOPER);
         if (!$course = $DB->get_record('course', array('id' => $forum->course))) {
-            throw new \moodle_exception('invalidcourseid');
+            throw new \core\exception\moodle_exception('invalidcourseid');
         }
     }
 
@@ -5417,7 +5417,7 @@ function hsuforum_user_can_see_discussion($forum, $discussion, $context, $user=N
         }
     }
     if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
-        throw new \moodle_exception('invalidcoursemodule');
+        throw new \core\exception\moodle_exception('invalidcoursemodule');
     }
 
     if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
@@ -5481,7 +5481,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
-            throw new \moodle_exception('invalidcoursemodule');
+            throw new \core\exception\moodle_exception('invalidcoursemodule');
         }
     }
 
@@ -5516,7 +5516,7 @@ function hsuforum_user_can_see_post($forum, $discussion, $post, $user=NULL, $cm=
     }
 
     if (!property_exists($post, 'privatereply')) {
-        throw new coding_exception('Must set post\'s privatereply property!');
+        throw new \core\exception\coding_exception('Must set post\'s privatereply property!');
     }
     if (!empty($post->privatereply)) {
         if ($post->userid != $user->id && $post->privatereply != $user->id) {
@@ -5563,7 +5563,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
 
     if (!$cm) {
         if (!$cm = get_coursemodule_from_instance('hsuforum', $forum->id, $forum->course)) {
-            throw new \moodle_exception('invalidcoursemodule');
+            throw new \core\exception\moodle_exception('invalidcoursemodule');
         }
     }
     $context = context_module::instance($cm->id);
@@ -6907,7 +6907,7 @@ function hsuforum_check_throttling($forum, $cm = null) {
  */
 function hsuforum_check_blocking_threshold($thresholdwarning) {
     if (!empty($thresholdwarning) && !$thresholdwarning->canpost) {
-        throw new \moodle_exception($thresholdwarning->errorcode,
+        throw new \core\exception\moodle_exception($thresholdwarning->errorcode,
                     $thresholdwarning->module,
                     $thresholdwarning->link,
                     $thresholdwarning->additional);
@@ -7843,7 +7843,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             if (!is_viewing($coursecontext, $user) && !is_enrolled($coursecontext, $user)) {
                 // Need to have full access to a course to see the rest of own info
                 if ($musthaveaccess) {
-                    throw new \moodle_exception('errorenrolmentrequired', 'hsuforum');
+                    throw new \core\exception\moodle_exception('errorenrolmentrequired', 'hsuforum');
                 }
                 continue;
             }
@@ -7852,7 +7852,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
             // if they don't we immediately have a problem.
             if (!can_access_course($course)) {
                 if ($musthaveaccess) {
-                    throw new \moodle_exception('errorenrolmentrequired', 'hsuforum');
+                    throw new \core\exception\moodle_exception('errorenrolmentrequired', 'hsuforum');
                 }
                 continue;
             }
@@ -7882,7 +7882,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
                     // But they're not... if it was a specific course throw an error otherwise
                     // just skip this course so that it is not searched.
                     if ($musthaveaccess) {
-                        throw new \moodle_exception("groupnotamember", '', $CFG->wwwroot."/course/view.php?id=$course->id");
+                        throw new \core\exception\moodle_exception("groupnotamember", '', $CFG->wwwroot."/course/view.php?id=$course->id");
                     }
                     continue;
                 }
@@ -7902,7 +7902,7 @@ function hsuforum_get_posts_by_user($user, array $courses, $musthaveaccess = fal
         // user doesn't have access to any courses is which the requested user has posted.
         // Although we do know at this point that the requested user has posts.
         if ($musthaveaccess) {
-            throw new \moodle_exception('permissiondenied');
+            throw new \core\exception\moodle_exception('permissiondenied');
         } else {
             return $return;
         }
@@ -8128,7 +8128,7 @@ function hsuforum_get_postuser($user, $post, $forum, context_module $context) {
  * @param object $user
  * @param object $forum
  * @param object $post
- * @throws coding_exception
+ * @throws \core\exception\coding_exception
  * @return stdClass
  * @author Mark Nielsen
  */
@@ -8137,10 +8137,10 @@ function hsuforum_anonymize_user($user, $forum, $post) {
     static $anonymous = null;
 
     if (!isset($forum->anonymous) or !isset($forum->course)) {
-        throw new coding_exception('Must pass the forum\'s anonymous and course fields');
+        throw new \core\exception\coding_exception('Must pass the forum\'s anonymous and course fields');
     }
     if (!isset($post->reveal)) {
-        throw new coding_exception('Must pass the post\'s reveal field');
+        throw new \core\exception\coding_exception('Must pass the post\'s reveal field');
     }
     if (empty($forum->anonymous)
         or !empty($post->reveal)
@@ -8480,7 +8480,7 @@ function hsuforum_set_user_maildigest($forum, $maildigest, $user = null) {
     $digestoptions = hsuforum_get_user_digest_options($user);
 
     if (!isset($digestoptions[$maildigest])) {
-        throw new moodle_exception('invaliddigestsetting', 'mod_hsuforum');
+        throw new \core\exception\moodle_exception('invaliddigestsetting', 'mod_hsuforum');
     }
 
     // Attempt to retrieve any existing forum digest record.
@@ -8588,11 +8588,11 @@ function hsuforum_simpler_time($seconds) {
  * @param int $timeinpast
  * @param null|array $attributes Tag attributes
  * @return string
- * @throws coding_exception
+ * @throws \core\exception\coding_exception
  */
 function hsuforum_relative_time($timeinpast, $attributes = null) {
     if (!is_numeric($timeinpast)) {
-        throw new coding_exception('Relative times must be calculated from the raw timestamp');
+        throw new \core\exception\coding_exception('Relative times must be calculated from the raw timestamp');
     }
 
     $precisedatetime = userdate($timeinpast);
@@ -8856,14 +8856,14 @@ function mod_hsuforum_output_fragment_editor($args) {
  * @param object $post The forum post.
  * @param object $forum The forum object.
  * @return bool
- * @throws coding_exception
+ * @throws \core\exception\coding_exception
  */
 function hsuforum_is_author_hidden($post, $forum) {
     if (!isset($post->parent)) {
-        throw new coding_exception('$post->parent must be set.');
+        throw new \core\exception\coding_exception('$post->parent must be set.');
     }
     if (!isset($forum->type)) {
-        throw new coding_exception('$forum->type must be set.');
+        throw new \core\exception\coding_exception('$forum->type must be set.');
     }
     if ($forum->type === 'single' && empty($post->parent)) {
         return true;

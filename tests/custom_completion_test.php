@@ -28,9 +28,9 @@ namespace mod_hsuforum;
 
 use advanced_testcase;
 use cm_info;
-use coding_exception;
+use \core\exception\coding_exception;
 use mod_hsuforum\completion\custom_completion;
-use moodle_exception;
+use \core\exception\moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 

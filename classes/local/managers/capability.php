@@ -35,7 +35,7 @@ use mod_hsuforum\subscriptions;
 use context;
 use context_system;
 use stdClass;
-use moodle_exception;
+use \core\exception\moodle_exception;
 
 require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
 

@@ -26,7 +26,7 @@
 
 namespace mod_hsuforum\controller;
 
-use coding_exception;
+use \core\exception\coding_exception;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\service\discussion_service;
 use moodle_url;
@@ -62,7 +62,7 @@ class posts_controller extends controller_abstract {
         switch ($action) {
             case 'discsubscribers':
                 if (!has_capability('mod/hsuforum:viewsubscribers', $PAGE->context)) {
-                    throw new \moodle_exception('nopermissiontosubscribe', 'hsuforum');
+                    throw new \core\exception\moodle_exception('nopermissiontosubscribe', 'hsuforum');
                 }
                 break;
             default:
@@ -73,13 +73,13 @@ class posts_controller extends controller_abstract {
     /**
      * Marks a post as read
      *
-     * @throws coding_exception
+     * @throws \core\exception\coding_exception
      */
     public function markread_action() {
         global $PAGE, $DB, $CFG, $USER;
 
         if (!AJAX_SCRIPT) {
-            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+            throw new \core\exception\coding_exception('This is an AJAX action and you cannot access it directly');
         }
         require_once($CFG->dirroot.'/rating/lib.php');
 
@@ -88,7 +88,7 @@ class posts_controller extends controller_abstract {
         $cm      = $PAGE->cm;
 
         if (!$post = hsuforum_get_post_full($postid)) {
-            throw new \moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new \core\exception\moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
 
@@ -96,11 +96,11 @@ class posts_controller extends controller_abstract {
             if (!($USER->id == $discussion->userid || (($discussion->timestart == 0
                 || $discussion->timestart <= time())
                 && ($discussion->timeend == 0 || $discussion->timeend > time())))) {
-                throw new \moodle_exception('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+                throw new \core\exception\moodle_exception('invaliddiscussionid', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
             }
         }
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
-            throw new \moodle_exception('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+            throw new \core\exception\moodle_exception('nopermissiontoview', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
         }
         hsuforum_tp_add_read_record($USER->id, $post->id);
         return new json_response(array('postid' => $postid, 'discussionid' => $discussion->id));
@@ -156,7 +156,7 @@ class posts_controller extends controller_abstract {
         $repo       = new \hsuforum_repository_discussion();
 
         if (hsuforum_is_forcesubscribed($forum)) {
-            throw new coding_exception('Cannot manage discussion subscriptions when subscription is forced');
+            throw new \core\exception\coding_exception('Cannot manage discussion subscriptions when subscription is forced');
         }
 
         $currentgroup = groups_get_activity_group($cm);
@@ -170,7 +170,7 @@ class posts_controller extends controller_abstract {
             $unsubscribe = (bool)optional_param('unsubscribe', false, PARAM_RAW);
             /** It has to be one or the other, not both or neither */
             if (!($subscribe xor $unsubscribe)) {
-                throw new \moodle_exception('invalidaction');
+                throw new \core\exception\moodle_exception('invalidaction');
             }
             if ($subscribe) {
                 $users = $subscriberselector->get_selected_users();

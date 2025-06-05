@@ -93,26 +93,26 @@ class post_deleted extends \core\event\base {
     /**
      * Custom validation.
      *
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @return void
      */
     protected function validate_data() {
         parent::validate_data();
 
         if (!isset($this->other['discussionid'])) {
-            throw new \coding_exception('The \'discussionid\' value must be set in other.');
+            throw new \core\exception\coding_exception('The \'discussionid\' value must be set in other.');
         }
 
         if (!isset($this->other['forumid'])) {
-            throw new \coding_exception('The \'forumid\' value must be set in other.');
+            throw new \core\exception\coding_exception('The \'forumid\' value must be set in other.');
         }
 
         if (!isset($this->other['forumtype'])) {
-            throw new \coding_exception('The \'forumtype\' value must be set in other.');
+            throw new \core\exception\coding_exception('The \'forumtype\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_MODULE) {
-            throw new \coding_exception('Context level must be CONTEXT_MODULE.');
+            throw new \core\exception\coding_exception('Context level must be CONTEXT_MODULE.');
         }
     }
 

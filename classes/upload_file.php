@@ -26,7 +26,7 @@ namespace mod_hsuforum;
 
 require_once(__DIR__.'/attachments.php');
 
-use moodle_exception;
+use \core\exception\moodle_exception;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -94,11 +94,11 @@ class upload_file {
      * Returns an array of files
      *
      * @return array
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      */
     public function get_files() {
         if (empty($_FILES) || !isset($_FILES[$this->element])) {
-            throw new \coding_exception('Cannot use this method when no files were uploaded');
+            throw new \core\exception\coding_exception('Cannot use this method when no files were uploaded');
         }
         $files = array();
         foreach ($_FILES[$this->element] as $name => $values) {
@@ -151,7 +151,7 @@ class upload_file {
     /**
      * Validate all of the uploaded files
      *
-     * @throws \moodle_exception
+     * @throws moodle_exception
      */
     public function validate_files($postid = 0) {
         if (!isset($_FILES[$this->element])) {
@@ -177,7 +177,7 @@ class upload_file {
      * Validate the uploaded file
      *
      * @param array $file
-     * @throws \moodle_exception
+     * @throws moodle_exception
      * @throws \file_exception
      */
     protected function validate_file(array $file) {

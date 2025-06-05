@@ -142,7 +142,7 @@ class file_adapter implements adapter_interface {
     /**
      * Exporting is done, wrap things up.
      *
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @return void
      */
     public function finish() {
@@ -158,7 +158,7 @@ class file_adapter implements adapter_interface {
 
             $zip = new \zip_packer();
             if (!$zip->archive_to_pathname($this->archivefiles, $zippath)) {
-                throw new \coding_exception('Failed to create zip archive');
+                throw new \core\exception\coding_exception('Failed to create zip archive');
             }
             send_file($zippath, $zipname, 0, 0, false, true, '', true);
         } else {

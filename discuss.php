@@ -40,7 +40,7 @@
         $d = optional_param('id', null, PARAM_INT);
 
         if ($d === null) {
-            throw new \moodle_exception('missingparameter');
+            throw new \core\exception\moodle_exception('missingparameter');
         }
     }
 
@@ -104,26 +104,26 @@
         require_capability('mod/hsuforum:movediscussions', $modcontext);
 
         if ($forum->type == 'single') {
-            throw new \moodle_exception('cannotmovefromsingleforum', 'hsuforum', $return);
+            throw new \core\exception\moodle_exception('cannotmovefromsingleforum', 'hsuforum', $return);
         }
 
         if (!$forumto = $DB->get_record('hsuforum', array('id' => $move))) {
-            throw new \moodle_exception('cannotmovetonotexist', 'hsuforum', $return);
+            throw new \core\exception\moodle_exception('cannotmovetonotexist', 'hsuforum', $return);
         }
 
         if ($forumto->type == 'single') {
-            throw new \moodle_exception('cannotmovetosingleforum', 'hsuforum', $return);
+            throw new \core\exception\moodle_exception('cannotmovetosingleforum', 'hsuforum', $return);
         }
 
         // Get target forum cm and check it is visible to current user.
         $modinfo = get_fast_modinfo($course);
         $forums = $modinfo->get_instances_of('hsuforum');
         if (!array_key_exists($forumto->id, $forums)) {
-            throw new \moodle_exception('cannotmovetonotfound', 'hsuforum', $return);
+            throw new \core\exception\moodle_exception('cannotmovetonotfound', 'hsuforum', $return);
         }
         $cmto = $forums[$forumto->id];
         if (!$cmto->uservisible) {
-            throw new \moodle_exception('cannotmovenotvisible', 'hsuforum', $return);
+            throw new \core\exception\moodle_exception('cannotmovenotvisible', 'hsuforum', $return);
         }
 
         $destinationctx = context_module::instance($cmto->id);
@@ -192,11 +192,11 @@
     }
 
     if (! $post = hsuforum_get_post_full($root)) {
-        throw new \moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
+        throw new \core\exception\moodle_exception("notexists", 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?f=$forum->id");
     }
 
     if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm, false)) {
-        throw new \moodle_exception('noviewdiscussionspermission', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
+        throw new \core\exception\moodle_exception('noviewdiscussionspermission', 'hsuforum', "$CFG->wwwroot/mod/hsuforum/view.php?id=$forum->id");
     }
 
     if ($mark == 'read') {

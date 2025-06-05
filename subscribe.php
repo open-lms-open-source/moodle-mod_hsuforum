@@ -60,7 +60,7 @@ $context = context_module::instance($cm->id);
 if ($user) {
     require_sesskey();
     if (!has_capability('mod/hsuforum:managesubscriptions', $context)) {
-        throw new \moodle_exception('nopermissiontosubscribe', 'hsuforum');
+        throw new \core\exception\moodle_exception('nopermissiontosubscribe', 'hsuforum');
     }
     $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
 } else {
@@ -74,7 +74,7 @@ if (isset($cm->groupmode) && empty($course->groupmodeforce)) {
 }
 if ($groupmode && !hsuforum_is_subscribed($user->id, $forum) && !has_capability('moodle/site:accessallgroups', $context)) {
     if (!groups_get_all_groups($course->id, $USER->id)) {
-        throw new \moodle_exception('cannotsubscribe', 'hsuforum');
+        throw new \core\exception\moodle_exception('cannotsubscribe', 'hsuforum');
     }
 }
 
@@ -150,7 +150,7 @@ if (!is_null($mode) && has_capability('mod/hsuforum:managesubscriptions', $conte
                 );
             break;
         default:
-            throw new \moodle_exception(get_string('invalidforcesubscribe', 'hsuforum'));
+            throw new \core\exception\moodle_exception(get_string('invalidforcesubscribe', 'hsuforum'));
     }
 }
 
@@ -186,16 +186,16 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
             \core\output\notification::NOTIFY_SUCCESS
         );
     } else {
-        throw new \moodle_exception('cannotunsubscribe', 'hsuforum', get_local_referer(false));
+        throw new \core\exception\moodle_exception('cannotunsubscribe', 'hsuforum', get_local_referer(false));
     }
 
 } else {  // subscribe
     if ($forum->forcesubscribe == HSUFORUM_DISALLOWSUBSCRIBE &&
                 !has_capability('mod/hsuforum:managesubscriptions', $context)) {
-        throw new \moodle_exception('disallowsubscribe', 'hsuforum', get_local_referer(false));
+        throw new \core\exception\moodle_exception('disallowsubscribe', 'hsuforum', get_local_referer(false));
     }
     if (!has_capability('mod/hsuforum:viewdiscussion', $context)) {
-        throw new \moodle_exception('noviewdiscussionspermission', 'hsuforum', get_local_referer(false));
+        throw new \core\exception\moodle_exception('noviewdiscussionspermission', 'hsuforum', get_local_referer(false));
     }
     if (is_null($sesskey)) {    // we came here via link in email
         $PAGE->set_title($course->shortname);

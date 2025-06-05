@@ -41,7 +41,7 @@ use core\output\notification;
 use context;
 use context_module;
 use \core\output\html_writer;
-use moodle_exception;
+use \core\exception\moodle_exception;
 use moodle_page;
 use moodle_url;
 use rating_manager;

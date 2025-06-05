@@ -25,13 +25,13 @@ declare(strict_types = 1);
 
 namespace mod_hsuforum\grades;
 
-use coding_exception;
+use \core\exception\coding_exception;
 use context;
 use core_grades\component_gradeitem;
 use core_grades\local\gradeitem as gradeitem;
 use mod_hsuforum\local\container as forum_container;
 use mod_hsuforum\local\entities\forum as forum_entity;
-use required_capability_exception;
+use \core\exception\required_capability_exception;
 use stdClass;
 
 /**
@@ -257,8 +257,8 @@ class forum_gradeitem extends component_gradeitem {
      * @param stdClass $grade
      * @return bool Success
      * @throws \dml_exception
-     * @throws \moodle_exception
-     * @throws coding_exception
+     * @throws \core\exception\moodle_exception
+     * @throws \core\exception\coding_exception
      */
     protected function store_grade(stdClass $grade): bool {
         global $CFG, $DB;

@@ -26,7 +26,7 @@
 
 namespace mod_hsuforum\controller;
 
-use coding_exception;
+use \core\exception\coding_exception;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\service\discussion_service;
 use mod_hsuforum\service\form_service;
@@ -256,7 +256,7 @@ class edit_controller extends controller_abstract {
         $postid = required_param('postid', PARAM_INT);
 
         if (!$post = hsuforum_get_post_full($postid)) {
-            throw new \moodle_exception('invalidpostid', 'hsuforum');
+            throw new \core\exception\moodle_exception('invalidpostid', 'hsuforum');
         }
         $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
 
@@ -288,13 +288,13 @@ class edit_controller extends controller_abstract {
 
     /**
      * @return json_response
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      */
     public function delete_post_action() {
         global $USER, $DB, $PAGE;
 
         if (!AJAX_SCRIPT) {
-            throw new coding_exception('This is an AJAX action and you cannot access it directly');
+            throw new \core\exception\coding_exception('This is an AJAX action and you cannot access it directly');
         }
         require_sesskey();
 
@@ -306,7 +306,7 @@ class edit_controller extends controller_abstract {
         $candeleteown = ($post->userid == $USER->id && has_capability('mod/hsuforum:deleteownpost', $PAGE->context));
 
         if (!($candeleteown || has_capability('mod/hsuforum:deleteanypost', $PAGE->context))) {
-            throw new \moodle_exception('cannotdeletepost', 'hsuforum');
+            throw new \core\exception\moodle_exception('cannotdeletepost', 'hsuforum');
         }
 
         $redirect = hsuforum_verify_and_delete_post($PAGE->course, $PAGE->cm,

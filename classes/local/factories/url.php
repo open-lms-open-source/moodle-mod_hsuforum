@@ -493,7 +493,7 @@ class url {
      *
      * @param discussion_entity $discussion
      * @return moodle_url
-     * @throws \moodle_exception
+     * @throws \core\exception\moodle_exception
      */
     public function get_pin_discussion_url_from_discussion(discussion_entity $discussion): moodle_url {
         return new moodle_url('discuss.php', [

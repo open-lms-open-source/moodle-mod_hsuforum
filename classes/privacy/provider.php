@@ -957,7 +957,7 @@ class provider implements
      * Delete all data for all users in the specified context.
      *
      * @param \context|context $context $context  The specific context to delete data for.
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      */
     public static function delete_data_for_all_users_in_context(\context $context) {
         global $DB;

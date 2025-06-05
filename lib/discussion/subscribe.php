@@ -147,11 +147,11 @@ class hsuforum_lib_discussion_subscribe {
     }
 
     /**
-     * @throws moodle_exception
+     * @throws \core\exception\moodle_exception
      */
     public function require_can_subscribe() {
         if (!$this->can_subscribe()) {
-            throw new moodle_exception('cansubscribediscerror', 'hsuforum');
+            throw new \core\exception\moodle_exception('cansubscribediscerror', 'hsuforum');
         }
     }
 

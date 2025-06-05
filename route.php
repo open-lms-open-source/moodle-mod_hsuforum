@@ -57,7 +57,7 @@ $action    = optional_param('action', 'view', PARAM_ALPHAEXT);
 list($context, $course, $cm) = get_context_info_array($contextid);
 
 if (empty($cm)) {
-    throw new coding_exception("Failed to find course module record with contextid of $contextid");
+    throw new \core\exception\coding_exception("Failed to find course module record with contextid of $contextid");
 }
 $instance = $DB->get_record('hsuforum', array('id' => $cm->instance), '*', MUST_EXIST);
 

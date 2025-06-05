@@ -227,12 +227,12 @@ class mod_hsuforum_external extends external_api {
         require_capability('mod/hsuforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'hsuforum');
 
         if (! $post = hsuforum_get_post_full($discussion->firstpost)) {
-            throw new moodle_exception('notexists', 'hsuforum');
+            throw new \core\exception\moodle_exception('notexists', 'hsuforum');
         }
 
         // This function check groups, qanda, timed discussions, etc.
         if (!hsuforum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
-            throw new moodle_exception('noviewdiscussionspermission', 'hsuforum');
+            throw new \core\exception\moodle_exception('noviewdiscussionspermission', 'hsuforum');
         }
 
         $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
@@ -423,14 +423,14 @@ class mod_hsuforum_external extends external_api {
 
         $sortallowedvalues = array('id', 'timemodified', 'timestart', 'timeend');
         if (!in_array($sortby, $sortallowedvalues)) {
-            throw new invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $sortby . '),' .
+            throw new \core\exception\invalid_parameter_exception('Invalid value for sortby parameter (value: ' . $sortby . '),' .
                 'allowed values are: ' . implode(',', $sortallowedvalues));
         }
 
         $sortdirection = strtoupper($sortdirection);
         $directionallowedvalues = array('ASC', 'DESC');
         if (!in_array($sortdirection, $directionallowedvalues)) {
-            throw new invalid_parameter_exception('Invalid value for sortdirection parameter (value: ' . $sortdirection . '),' .
+            throw new \core\exception\invalid_parameter_exception('Invalid value for sortdirection parameter (value: ' . $sortdirection . '),' .
                 'allowed values are: ' . implode(',', $directionallowedvalues));
         }
 
@@ -688,7 +688,7 @@ class mod_hsuforum_external extends external_api {
         }
 
         if (!in_array($sortorder, $sortallowedvalues)) {
-            throw new invalid_parameter_exception('Invalid value for sortorder parameter (value: ' . $sortorder . '),' .
+            throw new \core\exception\invalid_parameter_exception('Invalid value for sortorder parameter (value: ' . $sortorder . '),' .
                 ' allowed values are: ' . implode(',', $sortallowedvalues));
         }
 
@@ -699,7 +699,7 @@ class mod_hsuforum_external extends external_api {
         $forumvault = $vaultfactory->get_forum_vault();
         $forum = $forumvault->get_from_id($forumid);
         if (!$forum) {
-            throw new \moodle_exception("Unable to find hsuforum with id {$forumid}");
+            throw new \core\exception\moodle_exception("Unable to find hsuforum with id {$forumid}");
         }
         $forumdatamapper = $legacydatamapperfactory->get_forum_data_mapper();
         $forumrecord = $forumdatamapper->to_legacy_object($forum);
@@ -717,7 +717,7 @@ class mod_hsuforum_external extends external_api {
 
         // Check they have the view hsuforum capability.
         if (!$capabilitymanager->can_view_discussions($USER)) {
-            throw new moodle_exception('noviewdiscussionspermission', 'hsuforum');
+            throw new \core\exception\moodle_exception('noviewdiscussionspermission', 'hsuforum');
         }
 
         $alldiscussions = mod_hsuforum_get_discussion_summaries($forum, $USER, $groupid, $sortorder, $page, $perpage);
@@ -929,7 +929,7 @@ class mod_hsuforum_external extends external_api {
 
         // Does the user have the ability to favourite the discussion?
         if (!$capabilitymanager->can_favourite_discussion($USER)) {
-            throw new moodle_exception('cannotfavourite', 'hsuforum');
+            throw new \core\exception\moodle_exception('cannotfavourite', 'hsuforum');
         }
         $usercontext = context_user::instance($USER->id);
         $ufservice = \core_favourites\service_factory::get_service_for_user_context($usercontext);
@@ -991,7 +991,7 @@ class mod_hsuforum_external extends external_api {
      * @param int $forumid the forum instance id
      * @return array of warnings and status result
      * @since Moodle 2.9
-     * @throws moodle_exception
+     * @throws \core\exception\moodle_exception
      */
     public static function view_forum($forumid) {
         global $DB, $CFG;
@@ -1057,7 +1057,7 @@ class mod_hsuforum_external extends external_api {
      * @param int $discussionid the discussion id
      * @return array of warnings and status result
      * @since Moodle 2.9
-     * @throws moodle_exception
+     * @throws \core\exception\moodle_exception
      */
     public static function view_forum_discussion($discussionid) {
         global $DB, $CFG, $USER;
@@ -1145,7 +1145,7 @@ class mod_hsuforum_external extends external_api {
      * @param array $options optional settings
      * @return array of warnings and the new post id
      * @since Moodle 3.0
-     * @throws moodle_exception
+     * @throws \core\exception\moodle_exception
      */
     public static function add_discussion_post($postid, $subject, $message, $options = array()) {
         global $DB, $CFG, $USER;
@@ -1162,11 +1162,11 @@ class mod_hsuforum_external extends external_api {
         $warnings = array();
 
         if (!$parent = hsuforum_get_post_full($params['postid'])) {
-            throw new moodle_exception('invalidparentpostid', 'hsuforum');
+            throw new \core\exception\moodle_exception('invalidparentpostid', 'hsuforum');
         }
 
         if (!$discussion = $DB->get_record("hsuforum_discussions", array("id" => $parent->discussion))) {
-            throw new moodle_exception('notpartofdiscussion', 'hsuforum');
+            throw new \core\exception\moodle_exception('notpartofdiscussion', 'hsuforum');
         }
 
         // Request and permission validation.
@@ -1205,13 +1205,13 @@ class mod_hsuforum_external extends external_api {
                     }
                     break;
                 default:
-                    throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
+                    throw new \core\exception\moodle_exception('errorinvalidparam', 'webservice', '', $name);
             }
             $options[$name] = $value;
         }
 
         if (!hsuforum_user_can_post($forum, $discussion, $USER, $cm, $course, $context)) {
-            throw new moodle_exception('nopostforum', 'hsuforum');
+            throw new \core\exception\moodle_exception('nopostforum', 'hsuforum');
         }
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
@@ -1265,7 +1265,7 @@ class mod_hsuforum_external extends external_api {
             $settings->discussionsubscribe = $options['discussionsubscribe'];
             hsuforum_post_subscription($settings, $forum, $discussion);
         } else {
-            throw new moodle_exception('couldnotadd', 'hsuforum');
+            throw new \core\exception\moodle_exception('couldnotadd', 'hsuforum');
         }
 
         $result = array();
@@ -1331,7 +1331,7 @@ class mod_hsuforum_external extends external_api {
      * @param array $options optional settings
      * @return array of warnings and the new discussion id
      * @since Moodle 3.0
-     * @throws moodle_exception
+     * @throws \core\exception\moodle_exception
      */
     public static function add_discussion($forumid, $subject, $message, $groupid = 0, $options = array()) {
         global $DB, $CFG;
@@ -1384,7 +1384,7 @@ class mod_hsuforum_external extends external_api {
                     }
                     break;
                 default:
-                    throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
+                    throw new \core\exception\moodle_exception('errorinvalidparam', 'webservice', '', $name);
             }
             $options[$name] = $value;
         }
@@ -1405,7 +1405,7 @@ class mod_hsuforum_external extends external_api {
         }
 
         if (!hsuforum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
-            throw new moodle_exception('cannotcreatediscussion', 'hsuforum');
+            throw new \core\exception\moodle_exception('cannotcreatediscussion', 'hsuforum');
         }
 
         $thresholdwarning = hsuforum_check_throttling($forum, $cm);
@@ -1462,7 +1462,7 @@ class mod_hsuforum_external extends external_api {
             $settings->discussionsubscribe = $options['discussionsubscribe'];
             hsuforum_post_subscription($settings, $forum, $discussion);
         } else {
-            throw new moodle_exception('couldnotadd', 'hsuforum');
+            throw new \core\exception\moodle_exception('couldnotadd', 'hsuforum');
         }
 
         $result = array();
@@ -1509,7 +1509,7 @@ class mod_hsuforum_external extends external_api {
      * @param int $groupid the group to check, default to active group. Use -1 to check if the user can post in all the groups.
      * @return array of warnings and the status (true if the user can add discussions)
      * @since Moodle 3.1
-     * @throws moodle_exception
+     * @throws \core\exception\moodle_exception
      */
     public static function can_add_discussion($forumid, $groupid = null) {
         global $DB, $CFG;

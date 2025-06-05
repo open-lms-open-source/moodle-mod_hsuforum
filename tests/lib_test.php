@@ -1039,7 +1039,7 @@ class lib_test extends \advanced_testcase {
         $this->assertEmpty($neighbours['next']);
 
         // Querying the neighbours of a discussion passing the wrong CM.
-        $this->expectException('coding_exception');
+        $this->expectException('\\core\\exception\\coding_exception');
         hsuforum_get_discussion_neighbours($cm2, $disc11, $forum2);
     }
 
@@ -1239,7 +1239,7 @@ class lib_test extends \advanced_testcase {
         $this->assertEmpty($neighbours['next']);
 
         // Querying the neighbours of a discussion passing the wrong CM.
-        $this->expectException('coding_exception');
+        $this->expectException('\\core\\exception\\coding_exception');
         hsuforum_get_discussion_neighbours($cm2, $disc11, $forum2);
     }
 
@@ -1542,7 +1542,7 @@ class lib_test extends \advanced_testcase {
     /**
      * Tests for mod_hsuforum_rating_can_see_item_ratings().
      *
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @throws \rating_exception
      */
     public function test_mod_hsuforum_rating_can_see_item_ratings() {
@@ -2823,13 +2823,13 @@ class lib_test extends \advanced_testcase {
         $this->assertFalse(hsuforum_is_author_hidden($post, $forum));
 
         // Incorrect parameters: $post.
-        $this->expectException('coding_exception');
+        $this->expectException('\\core\\exception\\coding_exception');
         $this->expectExceptionMessage('$post->parent must be set.');
         unset($post->parent);
         hsuforum_is_author_hidden($post, $forum);
 
         // Incorrect parameters: $forum.
-        $this->expectException('coding_exception');
+        $this->expectException('\\core\\exception\\coding_exception');
         $this->expectExceptionMessage('$forum->type must be set.');
         unset($forum->type);
         hsuforum_is_author_hidden($post, $forum);

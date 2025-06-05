@@ -106,15 +106,15 @@ class mod_hsuforum_generator extends testing_module_generator {
         $record = (array)$record;
 
         if (!isset($record['course'])) {
-            throw new coding_exception('course must be present in phpunit_util::create_subscription() $record');
+            throw new \core\exception\coding_exception('course must be present in phpunit_util::create_subscription() $record');
         }
 
         if (!isset($record['forum'])) {
-            throw new coding_exception('forum must be present in phpunit_util::create_subscription() $record');
+            throw new \core\exception\coding_exception('forum must be present in phpunit_util::create_subscription() $record');
         }
 
         if (!isset($record['userid'])) {
-            throw new coding_exception('userid must be present in phpunit_util::create_subscription() $record');
+            throw new \core\exception\coding_exception('userid must be present in phpunit_util::create_subscription() $record');
         }
 
         $record = (object)$record;
@@ -140,15 +140,15 @@ class mod_hsuforum_generator extends testing_module_generator {
         $record = (array) $record;
 
         if (!isset($record['course'])) {
-            throw new coding_exception('course must be present in phpunit_util::create_discussion() $record');
+            throw new \core\exception\coding_exception('course must be present in phpunit_util::create_discussion() $record');
         }
 
         if (!isset($record['forum'])) {
-            throw new coding_exception('forum must be present in phpunit_util::create_discussion() $record');
+            throw new \core\exception\coding_exception('forum must be present in phpunit_util::create_discussion() $record');
         }
 
         if (!isset($record['userid'])) {
-            throw new coding_exception('userid must be present in phpunit_util::create_discussion() $record');
+            throw new \core\exception\coding_exception('userid must be present in phpunit_util::create_discussion() $record');
         }
 
         if (!isset($record['name'])) {
@@ -263,11 +263,11 @@ class mod_hsuforum_generator extends testing_module_generator {
         $record = (array) $record;
 
         if (!isset($record['discussion'])) {
-            throw new coding_exception('discussion must be present in phpunit_util::create_post() $record');
+            throw new \core\exception\coding_exception('discussion must be present in phpunit_util::create_post() $record');
         }
 
         if (!isset($record['userid'])) {
-            throw new coding_exception('userid must be present in phpunit_util::create_post() $record');
+            throw new \core\exception\coding_exception('userid must be present in phpunit_util::create_post() $record');
         }
 
         if (!isset($record['parent'])) {

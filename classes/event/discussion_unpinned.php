@@ -73,19 +73,19 @@ class discussion_unpinned extends \core\event\base {
     /**
      * Custom validation.
      *
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @return void
      */
     protected function validate_data() {
         parent::validate_data();
         if (!isset($this->other['forumid'])) {
-            throw new \coding_exception('forumid must be set in $other.');
+            throw new \core\exception\coding_exception('forumid must be set in $other.');
         }
         if ($this->contextlevel != CONTEXT_MODULE) {
-            throw new \coding_exception('Context passed must be module context.');
+            throw new \core\exception\coding_exception('Context passed must be module context.');
         }
         if (!isset($this->objectid)) {
-            throw new \coding_exception('objectid must be set to the discussionid.');
+            throw new \core\exception\coding_exception('objectid must be set to the discussionid.');
         }
     }
 

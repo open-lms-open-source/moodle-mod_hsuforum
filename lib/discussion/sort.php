@@ -104,7 +104,7 @@ class hsuforum_lib_discussion_sort implements Serializable {
      */
     public function set_disabled(array $disabled) {
         if (in_array('lastreply', $disabled)) {
-            throw new coding_exception('The "lastreply" key is the only key that cannot be disabled');
+            throw new \core\exception\coding_exception('The "lastreply" key is the only key that cannot be disabled');
         }
         $this->disabled = $disabled;
         return $this;
@@ -137,7 +137,7 @@ class hsuforum_lib_discussion_sort implements Serializable {
      */
     public function set_direction($direction) {
         if (!in_array($direction, $this->get_directionopts())) {
-            throw new coding_exception('Invalid sort direction: '.$direction);
+            throw new \core\exception\coding_exception('Invalid sort direction: '.$direction);
         }
         $this->direction = $direction;
         return $this;
@@ -156,10 +156,10 @@ class hsuforum_lib_discussion_sort implements Serializable {
      */
     public function set_key($key) {
         if (!array_key_exists($key, $this->get_keyopts())) {
-            throw new coding_exception('Invalid sort key: '.$key);
+            throw new \core\exception\coding_exception('Invalid sort key: '.$key);
         }
         if (in_array($key, $this->get_disabled())) {
-            throw new coding_exception('Invalid sort key (it has been disabled): '.$key);
+            throw new \core\exception\coding_exception('Invalid sort key (it has been disabled): '.$key);
         }
         $this->key = $key;
         return $this;

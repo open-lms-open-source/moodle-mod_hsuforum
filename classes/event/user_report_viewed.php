@@ -91,16 +91,16 @@ class user_report_viewed extends \core\event\base {
     /**
      * Custom validation.
      *
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @return void
      */
     protected function validate_data() {
         parent::validate_data();
         if (!isset($this->relateduserid)) {
-            throw new \coding_exception('The \'relateduserid\' must be set.');
+            throw new \core\exception\coding_exception('The \'relateduserid\' must be set.');
         }
         if (!isset($this->other['reportmode'])) {
-            throw new \coding_exception('The \'reportmode\' value must be set in other.');
+            throw new \core\exception\coding_exception('The \'reportmode\' value must be set in other.');
         }
 
         switch ($this->contextlevel)
@@ -112,7 +112,7 @@ class user_report_viewed extends \core\event\base {
                 break;
             default:
                 // Unexpected contextlevel.
-                throw new \coding_exception('Context level must be either CONTEXT_SYSTEM, CONTEXT_COURSE or CONTEXT_USER.');
+                throw new \core\exception\coding_exception('Context level must be either CONTEXT_SYSTEM, CONTEXT_COURSE or CONTEXT_USER.');
         }
     }
 

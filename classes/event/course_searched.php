@@ -85,17 +85,17 @@ class course_searched extends \core\event\base {
     /**
      * Custom validation.
      *
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @return void
      */
     protected function validate_data() {
         parent::validate_data();
         if (!isset($this->other['searchterm'])) {
-            throw new \coding_exception('The \'searchterm\' value must be set in other.');
+            throw new \core\exception\coding_exception('The \'searchterm\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_COURSE) {
-            throw new \coding_exception('Context level must be CONTEXT_COURSE.');
+            throw new \core\exception\coding_exception('Context level must be CONTEXT_COURSE.');
         }
     }
 

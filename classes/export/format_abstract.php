@@ -43,14 +43,14 @@ abstract class format_abstract {
      * Init routine
      *
      * @param string $file Absolute path to the file to export to
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @return void
      */
     public function init($file) {
         $this->fp = fopen($file, 'w');
 
         if ($this->fp === false) {
-            throw new \coding_exception('Failed to open file for writing');
+            throw new \core\exception\coding_exception('Failed to open file for writing');
         }
     }
 

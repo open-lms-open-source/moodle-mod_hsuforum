@@ -116,7 +116,7 @@ class mod_hsuforum_renderer extends \core\output\plugin_renderer_base {
         $modinfo = get_fast_modinfo($forum->course);
         $forums = $modinfo->get_instances_of('hsuforum');
         if (!isset($forums[$forum->id])) {
-            throw new \moodle_exception('invalidcoursemodule');
+            throw new \core\exception\moodle_exception('invalidcoursemodule');
         }
         $cm = $forums[$forum->id];
 
@@ -127,18 +127,18 @@ class mod_hsuforum_renderer extends \core\output\plugin_renderer_base {
 
         if ($id) {
             if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-                throw new \moodle_exception('coursemisconf');
+                throw new \core\exception\moodle_exception('coursemisconf');
             }
         } else if ($f) {
             if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
-                throw new \moodle_exception('coursemisconf');
+                throw new \core\exception\moodle_exception('coursemisconf');
             }
 
             // move require_course_login here to use forced language for course
             // fix for MDL-6926
             require_course_login($course, true, $cm);
         } else {
-            throw new \moodle_exception('missingparameter');
+            throw new \core\exception\moodle_exception('missingparameter');
         }
 
         $context = \context_module::instance($cm->id);
@@ -478,7 +478,7 @@ class mod_hsuforum_renderer extends \core\output\plugin_renderer_base {
         } else if (empty($commands)) {
             $commands = $this->post_get_commands($post, $discussion, $cm, $canreply, false);
         } else if (!is_array($commands)){
-            throw new coding_exception('$commands must be false, empty or populated array');
+            throw new \core\exception\coding_exception('$commands must be false, empty or populated array');
         }
         $postuser = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
         $postuser->user_picture->size = 100;
@@ -668,7 +668,7 @@ HTML;
      * @param \stdClass $discussion The discussion for the posts
      * @param \stdClass[] $posts The posts to render
      * @param bool $canreply
-     * @throws coding_exception
+     * @throws \core\exception\coding_exception
      * @return string
      */
     public function posts($cm, $discussion, $posts, $canreply = false) {
@@ -678,7 +678,7 @@ HTML;
         $count = 0;
         if (!empty($posts)) {
             if (!array_key_exists($discussion->firstpost, $posts)) {
-                throw new coding_exception('Missing discussion post');
+                throw new \core\exception\coding_exception('Missing discussion post');
             }
             $parent = $posts[$discussion->firstpost];
             $items .= $this->post_walker($cm, $discussion, $posts, $parent, $canreply, $count);
@@ -1018,7 +1018,7 @@ HTML;
      * @param $cm
      * @param int $discussion id of parent discussion
      * @param bool $reply is this the first post in a thread or a reply
-     * @throws coding_exception
+     * @throws \core\exception\coding_exception
      * @return array
      * @author Mark Nielsen
      */
@@ -1031,7 +1031,7 @@ HTML;
             return array();
         }
         if (!property_exists($post, 'flags')) {
-            throw new coding_exception('The post\'s flags property must be set');
+            throw new \core\exception\coding_exception('The post\'s flags property must be set');
         }
         require_once(__DIR__.'/lib/flag.php');
 
@@ -1807,7 +1807,7 @@ HTML;
      * @param stdClass $cm
      * @param bool $canreply
      * @return array
-     * @throws coding_exception
+     * @throws \core\exception\coding_exception
      * @author Mark Nielsen
      */
     public function post_get_commands($post, $discussion, $cm, $canreply) {
@@ -1818,7 +1818,7 @@ HTML;
         $commands       = array();
 
         if (!property_exists($post, 'privatereply')) {
-            throw new coding_exception('Must set post\'s privatereply property!');
+            throw new \core\exception\coding_exception('Must set post\'s privatereply property!');
         }
 
         $forum = hsuforum_get_cm_forum($cm);

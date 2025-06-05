@@ -420,7 +420,7 @@ class post extends db_table_vault {
      * @param array $discussionids
      * @param bool $canseeprivatereplies
      * @return array
-     * @throws \coding_exception
+     * @throws \core\exception\coding_exception
      * @throws \dml_exception
      */
     public function get_latest_posts_for_discussion_ids(

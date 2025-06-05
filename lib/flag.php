@@ -95,11 +95,11 @@ class hsuforum_lib_flag {
      *
      * @param string $name The flag name
      * @return string
-     * @throws coding_exception
+     * @throws \core\exception\coding_exception
      */
     protected function validate_flag($name) {
         if (!in_array($name, $this->get_flags())) {
-            throw new coding_exception("Flag does not exist: $name");
+            throw new \core\exception\coding_exception("Flag does not exist: $name");
         }
         return $name;
     }

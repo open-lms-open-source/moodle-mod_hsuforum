@@ -47,7 +47,7 @@ class custom_completion extends activity_custom_completion {
         $hsuforumid = $this->cm->instance;
 
         if (!$hsuforum = $DB->get_record('hsuforum', ['id' => $hsuforumid])) {
-            throw new \moodle_exception('Unable to find hsuforum with id ' . $hsuforumid);
+            throw new \core\exception\moodle_exception('Unable to find hsuforum with id ' . $hsuforumid);
         }
 
         $postcountparams = ['userid' => $userid, 'hsuforumid' => $hsuforumid];
