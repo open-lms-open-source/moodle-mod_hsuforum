@@ -46,7 +46,7 @@ $discussionsonly = ($mode !== 'posts');
 $isspecificcourse = !is_null($courseid);
 $iscurrentuser = ($USER->id == $userid);
 
-$url = new moodle_url('/mod/hsuforum/user.php', array('id' => $userid));
+$url = new \core\url('/mod/hsuforum/user.php', array('id' => $userid));
 if ($isspecificcourse) {
     $url->param('course', $courseid);
 }
@@ -169,10 +169,10 @@ if (empty($result->posts)) {
             $newusernode->make_active();
             // Check to see if this is a discussion or a post.
             if ($mode == 'posts') {
-                $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new \core\url('/mod/hsuforum/user.php',
                         array('id' => $user->id, 'course' => $courseid)));
             } else {
-                $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new \core\url('/mod/hsuforum/user.php',
                         array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
             }
         }
@@ -187,10 +187,10 @@ if (empty($result->posts)) {
             $usernode->make_active();
             // Check to see if this is a discussion or a post.
             if ($mode == 'posts') {
-                $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new \core\url('/mod/hsuforum/user.php',
                         array('id' => $user->id, 'course' => $courseid)));
             } else {
-                $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+                $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new \core\url('/mod/hsuforum/user.php',
                         array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
             }
         }
@@ -206,9 +206,9 @@ if (empty($result->posts)) {
         // the current uesr doesn't have access to.
         $notification = get_string('cannotviewusersposts', 'hsuforum');
         if ($isspecificcourse) {
-            $url = new moodle_url('/course/view.php', array('id' => $courseid));
+            $url = new \core\url('/course/view.php', array('id' => $courseid));
         } else {
-            $url = new moodle_url('/');
+            $url = new \core\url('/');
         }
         navigation_node::override_active_url($url);
     }
@@ -272,8 +272,8 @@ foreach ($result->posts as $post) {
     $discussion = $discussions[$post->discussion];
     $course = $result->courses[$discussion->course];
 
-    $forumurl = new moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id));
-    $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
+    $forumurl = new \core\url('/mod/hsuforum/view.php', array('id' => $cm->id));
+    $discussionurl = new \core\url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
 
     // TODO actually display if the search result has been read, for now just
     // hide the unread status marker for all results.
@@ -304,7 +304,7 @@ foreach ($result->posts as $post) {
 
     $fullsubjects = array();
     if (!$isspecificcourse && !$hasparentaccess) {
-        $fullsubjects[] = \core\output\html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $courseshortname);
+        $fullsubjects[] = \core\output\html_writer::link(new \core\url('/course/view.php', array('id' => $course->id)), $courseshortname);
         $fullsubjects[] = \core\output\html_writer::link($forumurl, $forumname);
     } else {
         $fullsubjects[] = \core\output\html_writer::tag('span', $courseshortname);
@@ -320,7 +320,7 @@ foreach ($result->posts as $post) {
         if ($post->parent != 0) {
             $postname = format_string($post->subject, true, array('context' => $cm->context));
             if (!$isspecificcourse && !$hasparentaccess) {
-                $fullsubjects[] .= \core\output\html_writer::link(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion, 'parent' => $post->id)), $postname);
+                $fullsubjects[] .= \core\output\html_writer::link(new \core\url('/mod/hsuforum/discuss.php', array('d' => $post->discussion, 'parent' => $post->id)), $postname);
             } else {
                 $fullsubjects[] .= \core\output\html_writer::tag('span', $postname);
             }
@@ -371,10 +371,10 @@ if (isset($courseid) && $courseid != SITEID) {
     $usernode->make_active();
     // Check to see if this is a discussion or a post.
     if ($mode == 'posts') {
-        $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+        $navbar = $PAGE->navbar->add(get_string('posts', 'hsuforum'), new \core\url('/mod/hsuforum/user.php',
                 array('id' => $user->id, 'course' => $courseid)));
     } else {
-        $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new moodle_url('/mod/hsuforum/user.php',
+        $navbar = $PAGE->navbar->add(get_string('discussions', 'hsuforum'), new \core\url('/mod/hsuforum/user.php',
                 array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
     }
 }

@@ -71,7 +71,7 @@
             throw new \core\exception\moodle_exception('cannotfindfirstpost', 'hsuforum');
         }
 
-        redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
+        redirect(new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
     }
 
 // move require_course_login here to use forced language for course
@@ -94,7 +94,7 @@
     echo ('<div id="discussionsview">');
 
     // Some capability checks.
-    $courselink = new moodle_url('/course/view.php', ['id' => $cm->course]);
+    $courselink = new \core\url('/course/view.php', ['id' => $cm->course]);
 
     if (empty($cm->visible) && !has_capability('moodle/course:viewhiddenactivities', $context)) {
         notice(get_string("activityiscurrentlyhidden"), $courselink);

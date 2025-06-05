@@ -43,7 +43,7 @@ use context_module;
 use \core\output\html_writer;
 use \core\exception\moodle_exception;
 use moodle_page;
-use moodle_url;
+use \core\url as moodle_url;
 use rating_manager;
 use \core\output\renderer_base;
 use \core\output\single_button;

@@ -850,7 +850,7 @@ function hsuforum_cron() {
                 // Make sure strings are in message recipients language.
                 $eventdata->smallmessage = get_string_manager()->get_string('smallmessage', 'hsuforum', $smallmessagestrings, $userto->lang);
 
-                $contexturl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id), 'p' . $post->id);
+                $contexturl = new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id), 'p' . $post->id);
                 $eventdata->contexturl = $contexturl->out();
                 $eventdata->contexturlname = $discussion->name;
 
@@ -3717,7 +3717,7 @@ function hsuforum_rating_validate($params) {
         }
         if (!empty($discussion->unread) && $discussion->unread !== '-') {
             $replystring .= ' <span class="sep">/</span> <span class="unread">';
-            $unreadlink = new moodle_url($discussionlink, null, 'unread');
+            $unreadlink = new \core\url($discussionlink, null, 'unread');
             if ($discussion->unread == 1) {
                 $replystring .= \core\output\html_writer::link($unreadlink, get_string('unreadpostsone', 'hsuforum'));
             } else {
@@ -3821,7 +3821,7 @@ function mod_hsuforum_rating_can_see_item_ratings($params) {
 
 /**
  * @global object
- * @param string|\moodle_url $default
+ * @param string|\core\url $default
  * @return string
  */
 function hsuforum_go_back_to($default) {
@@ -3831,7 +3831,7 @@ function hsuforum_go_back_to($default) {
         && (!defined(AJAX_SCRIPT) || !AJAX_SCRIPT)) {
         // If we have an ajax fromdiscussion session variable then we need to get rid of it because this is not an
         // ajax page and we will end up redirecting incorrectly to route.php.
-        $murl = new moodle_url($SESSION->fromdiscussion);
+        $murl = new \core\url($SESSION->fromdiscussion);
         $path = $murl->get_path();
         if (strpos($path, '/mod/hsuforum/route.php') === 0) {
             // OK - this is bad, we are not using AJAX but the redirect url is an AJAX url, so kill it.
@@ -5080,7 +5080,7 @@ function hsuforum_get_subscribe_link($forum, $context, $messages = array(), $can
 
         $options['id'] = $forum->id;
         $options['sesskey'] = sesskey();
-        $url = new moodle_url('/mod/hsuforum/subscribe.php', $options);
+        $url = new \core\url('/mod/hsuforum/subscribe.php', $options);
         return $OUTPUT->single_button($url, $linktext, 'get', array('title' => $linktitle));
     }
 }
@@ -5682,7 +5682,7 @@ function hsuforum_print_latest_discussions($course, $forum, $maxdiscussions=-1, 
     }
 
     // Sort/Filter options
-    $urlmenu = new moodle_url('/mod/hsuforum/view.php', array('id'=>$cm->id));
+    $urlmenu = new \core\url('/mod/hsuforum/view.php', array('id'=>$cm->id));
     $groupselect = groups_print_activity_menu($cm, $urlmenu, true);
 
     $sortselect = '';
@@ -6082,7 +6082,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
         $aname = s($activity->name);
         $output .= $OUTPUT->image_icon('icon', $aname, $activity->type);
     }
-    $discussionurl = new moodle_url('/mod/hsuforum/discuss.php', ['d' => $content->discussion]);
+    $discussionurl = new \core\url('/mod/hsuforum/discuss.php', ['d' => $content->discussion]);
     $discussionurl->set_anchor('p' . $activity->content->id);
     $output .= \core\output\html_writer::link($discussionurl, $content->subject);
     $output .= \core\output\html_writer::end_div();
@@ -6092,7 +6092,7 @@ function hsuforum_print_recent_mod_activity($activity, $courseid, $detail, $modn
         $authornamedate = $timestamp;
     } else {
         $fullname = fullname($activity->user, $viewfullnames);
-        $userurl = new moodle_url('/user/view.php');
+        $userurl = new \core\url('/user/view.php');
         $userurl->params(['id' => $activity->user->id, 'course' => $courseid]);
         $by = new stdClass();
         $by->name = \core\output\html_writer::link($userurl, $fullname);
@@ -7247,12 +7247,12 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     $cansubscribe = ($activeenrolled && $subscriptionmode != HSUFORUM_FORCESUBSCRIBE && ($subscriptionmode != HSUFORUM_DISALLOWSUBSCRIBE || $canmanage));
 
     $discussionid = optional_param('d', 0, PARAM_INT);
-    $viewingdiscussion = ($settingsnav->get_page()->url->compare(new moodle_url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) && $discussionid);
+    $viewingdiscussion = ($settingsnav->get_page()->url->compare(new \core\url('/mod/hsuforum/discuss.php'), URL_MATCH_BASE) && $discussionid);
 
     if (!is_guest($settingsnav->get_page()->cm->context)) {
         $forumnode->add(
             get_string('export', 'hsuforum'),
-            new moodle_url('/mod/hsuforum/route.php', array('contextid' => $settingsnav->get_page()->cm->context->id, 'action' => 'export')),
+            new \core\url('/mod/hsuforum/route.php', array('contextid' => $settingsnav->get_page()->cm->context->id, 'action' => 'export')),
             navigation_node::TYPE_SETTING,
             null,
             null,
@@ -7260,7 +7260,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
     }
     $forumnode->add(
         get_string('viewposters', 'hsuforum'),
-        new moodle_url('/mod/hsuforum/route.php', array('contextid' => $settingsnav->get_page()->cm->context->id, 'action' => 'viewposters')),
+        new \core\url('/mod/hsuforum/route.php', array('contextid' => $settingsnav->get_page()->cm->context->id, 'action' => 'viewposters')),
         navigation_node::TYPE_SETTING,
         null,
         null,
@@ -7270,10 +7270,10 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $mode = $forumnode->add(get_string('subscriptionmode', 'hsuforum'), null, navigation_node::TYPE_CONTAINER);
         $mode->add_class('subscriptionmode');
 
-        $allowchoice = $mode->add(get_string('subscriptionoptional', 'hsuforum'), new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceforever = $mode->add(get_string("subscriptionforced", "hsuforum"), new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceinitially = $mode->add(get_string("subscriptionauto", "hsuforum"), new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'hsuforum'), new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $allowchoice = $mode->add(get_string('subscriptionoptional', 'hsuforum'), new \core\url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceforever = $mode->add(get_string("subscriptionforced", "hsuforum"), new \core\url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceinitially = $mode->add(get_string("subscriptionauto", "hsuforum"), new \core\url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'hsuforum'), new \core\url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>HSUFORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
 
         switch ($subscriptionmode) {
             case HSUFORUM_CHOOSESUBSCRIBE : // 0
@@ -7322,7 +7322,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         } else {
             $linktext = get_string('subscribe', 'hsuforum');
         }
-        $url = new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'sesskey'=>sesskey()));
+        $url = new \core\url('/mod/hsuforum/subscribe.php', array('id'=>$forumobject->id, 'sesskey'=>sesskey()));
         $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
     }
 
@@ -7331,7 +7331,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
         $subscribe = new hsuforum_lib_discussion_subscribe($forumobject, $settingsnav->get_page()->cm->context);
 
         if ($subscribe->can_subscribe()) {
-            $subscribeurl = new moodle_url('/mod/hsuforum/route.php', array(
+            $subscribeurl = new \core\url('/mod/hsuforum/route.php', array(
                 'contextid'    => $settingsnav->get_page()->cm->context->id,
                 'action'       => 'subscribedisc',
                 'discussionid' => $discussionid,
@@ -7350,14 +7350,14 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
 
 
     if (has_capability('mod/hsuforum:viewsubscribers', $settingsnav->get_page()->cm->context)){
-        $url = new moodle_url('/mod/hsuforum/subscribers.php', array('id'=>$forumobject->id));
+        $url = new \core\url('/mod/hsuforum/subscribers.php', array('id'=>$forumobject->id));
         $forumnode->add(get_string('showsubscribers', 'hsuforum'), $url, navigation_node::TYPE_SETTING);
 
         $discsubscribers = ($viewingdiscussion or (optional_param('action', '', PARAM_ALPHA) == 'discsubscribers'));
         if ($discsubscribers
                 && !hsuforum_is_forcesubscribed($forumobject)
                 && $discussionid) {
-            $url = new moodle_url('/mod/hsuforum/route.php', array(
+            $url = new \core\url('/mod/hsuforum/route.php', array(
                 'contextid'    => $settingsnav->get_page()->cm->context->id,
                 'action'       => 'discsubscribers',
                 'discussionid' => $discussionid,
@@ -7387,7 +7387,7 @@ function hsuforum_extend_settings_navigation(settings_navigation $settingsnav, n
             $string = get_string('rsssubscriberssposts','hsuforum');
         }
 
-        $url = new moodle_url(rss_get_url($settingsnav->get_page()->cm->context->id, $userid, "mod_hsuforum", $forumobject->id));
+        $url = new \core\url(rss_get_url($settingsnav->get_page()->cm->context->id, $userid, "mod_hsuforum", $forumobject->id));
         $forumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new \core\output\pix_icon('i/rss', ''));
     }
 }
@@ -8163,7 +8163,7 @@ function hsuforum_anonymize_user($user, $forum, $post) {
             'picture' => 0,
             'email' => $CFG->noreplyaddress,
             'imagealt' => '',
-            'profilelink' => new moodle_url('/user/view.php', array('id'=>$guest->id, 'course'=>$forum->course)),
+            'profilelink' => new \core\url('/user/view.php', array('id'=>$guest->id, 'course'=>$forum->course)),
             'anonymous' => true,
         );
         $anonymous->fullname = fullname($anonymous, true);
@@ -8439,7 +8439,7 @@ function mod_hsuforum_comment_message(stdClass $comment, stdClass $options) {
     if (\core_component::get_plugin_directory('local', 'joulegrader') !== null) {
         // Joule Grader is installed and control panel enabled.
         $gareaid = component_callback('local_joulegrader', 'area_from_context', array($context, 'hsuforum'));
-        $contexturl = new moodle_url('/local/joulegrader/view.php', array('courseid' => $cm->course,
+        $contexturl = new \core\url('/local/joulegrader/view.php', array('courseid' => $cm->course,
                 'garea' => $gareaid, 'guser' => $user->id));
     } else {
         $contexturl = $context->get_url();
@@ -8816,7 +8816,7 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
         // May as well just bail aggressively here.
         return false;
     }
-    $postsurl = new moodle_url('/mod/hsuforum/user.php', array('id' => $user->id));
+    $postsurl = new \core\url('/mod/hsuforum/user.php', array('id' => $user->id));
     if (!empty($course)) {
         $postsurl->param('course', $course->id);
     }
@@ -8824,7 +8824,7 @@ function mod_hsuforum_myprofile_navigation(core_user\output\myprofile\tree $tree
     $node = new core_user\output\myprofile\node('miscellaneous', 'hsuforumposts', $string, null, $postsurl);
     $tree->add_node($node);
 
-    $discussionssurl = new moodle_url('/mod/hsuforum/user.php', array('id' => $user->id, 'mode' => 'discussions'));
+    $discussionssurl = new \core\url('/mod/hsuforum/user.php', array('id' => $user->id, 'mode' => 'discussions'));
     if (!empty($course)) {
         $discussionssurl->param('course', $course->id);
     }
@@ -9088,7 +9088,7 @@ function mod_hsuforum_core_calendar_provide_event_action(calendar_event $event,
 
     return $factory->create_instance(
         get_string('view'),
-        new \moodle_url('/mod/hsuforum/view.php', ['id' => $cm->id]),
+        new \core\url('/mod/hsuforum/view.php', ['id' => $cm->id]),
         $itemcount,
         true
     );

@@ -237,7 +237,7 @@ class reply_handler extends \core\message\inbound\handler {
                 $this->process_attachment('*', $usercontext, $addpost->itemid, $attachment);
 
                 // Convert the contentid link in the message.
-                $draftfile = \moodle_url::make_draftfile_url($addpost->itemid, '/', $attachment->filename);
+                $draftfile = \core\url::make_draftfile_url($addpost->itemid, '/', $attachment->filename);
                 $addpost->message = preg_replace('/cid:' . $attachment->contentid . '/', $draftfile, $addpost->message);
             }
         }
@@ -320,7 +320,7 @@ class reply_handler extends \core\message\inbound\handler {
     public function get_success_message(\stdClass $messagedata, $handlerresult) {
         $a = new \stdClass();
         $a->subject = $handlerresult->subject;
-        $discussionurl = new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $handlerresult->discussion));
+        $discussionurl = new \core\url('/mod/hsuforum/discuss.php', array('d' => $handlerresult->discussion));
         $discussionurl->set_anchor('p' . $handlerresult->id);
         $a->discussionurl = $discussionurl->out();
 

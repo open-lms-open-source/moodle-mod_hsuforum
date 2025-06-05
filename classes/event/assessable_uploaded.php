@@ -66,10 +66,10 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
     /**
      * Get URL related to the action.
      *
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_url() {
-        return new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $this->other['discussionid'], 'parent' => $this->objectid));
+        return new \core\url('/mod/hsuforum/discuss.php', array('d' => $this->other['discussionid'], 'parent' => $this->objectid));
     }
 
     /**

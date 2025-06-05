@@ -219,7 +219,7 @@ class output_email_test extends advanced_testcase {
         $postemail = new \mod_hsuforum\output\hsuforum_post_email($course, $cm, $forum, $discussion, $post, $anonuser,
                 get_admin(), true);
 
-        $anonprofileurl = new moodle_url('/user/view.php', ['id' => $anonuser->id, 'course' => $course->id]);
+        $anonprofileurl = new \core\url('/user/view.php', ['id' => $anonuser->id, 'course' => $course->id]);
         $anonprofilepic = $OUTPUT->user_picture($anonuser, ['courseid' => $course->id, 'link' => false]);
 
         $renderer = $PAGE->get_renderer('mod_hsuforum');

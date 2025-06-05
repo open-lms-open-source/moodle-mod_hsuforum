@@ -180,10 +180,10 @@ class mod_hsuforum_renderer extends \core\output\plugin_renderer_base {
             $forumobject = $DB->get_record("hsuforum", ["id" => $PAGE->cm->instance]);
 
             // Url's for different options in the discussion.
-            $manageforumsubscriptionsurl = new \moodle_url('/mod/hsuforum/index.php', ['id' => $course->id]);
-            $exporturl = new \moodle_url('/mod/hsuforum/route.php', ['contextid' => $context->id, 'action' => 'export']);
-            $viewpostersurl = new \moodle_url('/mod/hsuforum/route.php', ['contextid' => $context->id, 'action' => 'viewposters']);
-            $subscribeforumurl = new \moodle_url('/mod/hsuforum/subscribe.php', ['id' => $forum->id, 'sesskey' => sesskey()]);
+            $manageforumsubscriptionsurl = new \core\url('/mod/hsuforum/index.php', ['id' => $course->id]);
+            $exporturl = new \core\url('/mod/hsuforum/route.php', ['contextid' => $context->id, 'action' => 'export']);
+            $viewpostersurl = new \core\url('/mod/hsuforum/route.php', ['contextid' => $context->id, 'action' => 'viewposters']);
+            $subscribeforumurl = new \core\url('/mod/hsuforum/subscribe.php', ['id' => $forum->id, 'sesskey' => sesskey()]);
 
             // Strings for the Url's.
             $manageforumsubscriptions = get_string('manageforumsubscriptions', 'mod_hsuforum');
@@ -388,7 +388,7 @@ class mod_hsuforum_renderer extends \core\output\plugin_renderer_base {
         $data->group      = $group;
         $data->imagesrc   = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl    = $this->get_post_user_url($cm, $postuser);
-        $data->viewurl    = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
+        $data->viewurl    = new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id));
         $data->tools      = implode(' ', $this->post_get_commands($post, $discussion, $cm, $canreply));
         $data->postflags  = implode(' ',$this->post_get_flags($post, $cm, $discussion->id));
         $data->subscribe  = '';
@@ -496,7 +496,7 @@ class mod_hsuforum_renderer extends \core\output\plugin_renderer_base {
         $data->imagesrc       = $postuser->user_picture->get_url($this->page)->out();
         $data->userurl        = $this->get_post_user_url($cm, $postuser);
         $data->unread         = empty($post->postread) ? true : false;
-        $data->permalink      = new moodle_url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id));
+        $data->permalink      = new \core\url('/mod/hsuforum/discuss.php#p'.$post->id, array('d' => $discussion->id));
         $data->isreply        = false;
         $data->parentfullname = '';
         $data->parentuserurl  = '';
@@ -1060,7 +1060,7 @@ HTML;
 
             $isflagged = $flaglib->is_flagged($post->flags, $flag);
 
-            $url = new moodle_url('/mod/hsuforum/route.php', array(
+            $url = new \core\url('/mod/hsuforum/route.php', array(
                 'contextid' => $context->id,
                 'action'    => 'flag',
                 'returnurl' => $returnurl,
@@ -1115,7 +1115,7 @@ HTML;
      * @param string $type - toggle type
      * @param string $label - label for toggle element
      * @param string $describedby - aria described by
-     * @param moodle_url $url
+     * @param \core\url $url
      * @param bool $pressed
      * @param bool $link
      * @param null $attributes
@@ -1172,7 +1172,7 @@ HTML;
 
         $returnurl = $this->return_url($cm->id, $discussion->id);
 
-        $url = new moodle_url('/mod/hsuforum/route.php', array(
+        $url = new \core\url('/mod/hsuforum/route.php', array(
             'contextid'    => context_module::instance($cm->id)->id,
             'action'       => 'subscribedisc',
             'discussionid' => $discussion->id,
@@ -1198,7 +1198,7 @@ HTML;
      */
     public function discussion_sorting($cm, hsuforum_lib_discussion_sort $sort) {
 
-        $url = new moodle_url('/mod/hsuforum/view.php');
+        $url = new \core\url('/mod/hsuforum/view.php');
         $sortbysronlytextstring = get_string('sortdiscussionsbysronlytext', 'hsuforum');
         $sortbysronlytext = '<span class="sr-only">'.$sortbysronlytextstring.'</span>';
 
@@ -1352,7 +1352,7 @@ HTML;
                                 $flagcount++;
                             }
                             $command = \core\output\html_writer::link(
-                                new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id), 'p'.$post->id),
+                                new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id), 'p'.$post->id),
                                 get_string('postincontext', 'hsuforum'),
                                 array('target' => '_blank')
                             );
@@ -1377,7 +1377,7 @@ HTML;
                     }
                     if (!$forum->anonymous) {
                         $command = \core\output\html_writer::link(
-                            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id),
+                            new \core\url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id),
                             get_string('postincontext', 'hsuforum'),
                             array('target' => '_blank')
                         );
@@ -1482,7 +1482,7 @@ HTML;
             'groupid'       => 0,
             'messageformat' => FORMAT_HTML,
         );
-        $actionurl = new moodle_url('/mod/hsuforum/route.php', array(
+        $actionurl = new \core\url('/mod/hsuforum/route.php', array(
             'action'        => (empty($postid)) ? 'add_discussion' : 'update_post',
             'sesskey'       => sesskey(),
             'edit'          => $postid,
@@ -1557,7 +1557,7 @@ HTML;
             'class'       => 'hsuforum-discussion',
             'legend'      => $legend,
             'extrahtml'   => $extrahtml,
-            'advancedurl' => new moodle_url('/mod/hsuforum/post.php', $params),
+            'advancedurl' => new \core\url('/mod/hsuforum/post.php', $params),
         );
         return $this->simple_edit_template($data);
     }
@@ -1612,7 +1612,7 @@ HTML;
             'reveal'        => 0,
             'messageformat' => FORMAT_HTML,
         );
-        $actionurl = new moodle_url('/mod/hsuforum/route.php', array(
+        $actionurl = new \core\url('/mod/hsuforum/route.php', array(
             'action'        => ($isedit) ? 'update_post' : 'reply',
             $param          => $postid,
             'sesskey'       => sesskey(),
@@ -1641,7 +1641,7 @@ HTML;
             'legend'          => $legend,
             'extrahtml'       => $extrahtml,
             'subjectrequired' => $isedit,
-            'advancedurl'     => new moodle_url('/mod/hsuforum/post.php', array($param => $postid)),
+            'advancedurl'     => new \core\url('/mod/hsuforum/post.php', array($param => $postid)),
         );
         return $this->simple_edit_template($data);
     }
@@ -1794,7 +1794,7 @@ HTML;
         if (!$postuser->user_picture->link) {
             return null;
         }
-        return new moodle_url('/user/view.php', ['id' => $postuser->id, 'course' => $cm->course]);
+        return new \core\url('/user/view.php', ['id' => $postuser->id, 'course' => $cm->course]);
     }
 
     protected function notification_area() {
@@ -1813,7 +1813,7 @@ HTML;
     public function post_get_commands($post, $discussion, $cm, $canreply) {
         global $CFG, $USER, $OUTPUT;
 
-        $discussionlink = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
+        $discussionlink = new \core\url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
         $ownpost        = (isloggedin() && $post->userid == $USER->id);
         $commands       = array();
 
@@ -1827,7 +1827,7 @@ HTML;
             $postuser   = hsuforum_extract_postuser($post, $forum, context_module::instance($cm->id));
             $replytitle = get_string('replybuttontitle', 'hsuforum', strip_tags($postuser->fullname));
             $commands['reply'] = \core\output\html_writer::link(
-                new moodle_url('/mod/hsuforum/post.php', array('reply' => $post->id)),
+                new \core\url('/mod/hsuforum/post.php', array('reply' => $post->id)),
                 get_string('reply', 'hsuforum'),
                 array(
                     'title' => $replytitle,
@@ -1843,14 +1843,14 @@ HTML;
         }
         if (($ownpost && $age < $CFG->maxeditingtime) || local::cached_has_capability('mod/hsuforum:editanypost', context_module::instance($cm->id))) {
             $commands['edit'] = \core\output\html_writer::link(
-                new moodle_url('/mod/hsuforum/post.php', array('edit' => $post->id)),
+                new \core\url('/mod/hsuforum/post.php', array('edit' => $post->id)),
                 get_string('edit', 'hsuforum')
             );
         }
 
         if (($ownpost && $age < $CFG->maxeditingtime && local::cached_has_capability('mod/hsuforum:deleteownpost', context_module::instance($cm->id))) || local::cached_has_capability('mod/hsuforum:deleteanypost', context_module::instance($cm->id))) {
             $commands['delete'] = \core\output\html_writer::link(
-                new moodle_url('/mod/hsuforum/post.php', array('delete' => $post->id)),
+                new \core\url('/mod/hsuforum/post.php', array('delete' => $post->id)),
                 get_string('delete', 'hsuforum')
             );
         }
@@ -1860,7 +1860,7 @@ HTML;
                 && !$post->privatereply
                 && $forum->type != 'single') {
             $commands['split'] = \core\output\html_writer::link(
-                new moodle_url('/mod/hsuforum/post.php', array('prune' => $post->id)),
+                new \core\url('/mod/hsuforum/post.php', array('prune' => $post->id)),
                 get_string('prune', 'hsuforum'),
                 array('title' => get_string('pruneheading', 'hsuforum'))
             );
@@ -1896,7 +1896,7 @@ HTML;
                 $pinlink = HSUFORUM_DISCUSSION_PINNED;
                 $pintext = get_string('discussionpin', 'hsuforum');
             }
-            $pinurl = new moodle_url('/mod/hsuforum/discuss.php', [
+            $pinurl = new \core\url('/mod/hsuforum/discuss.php', [
                 'pin' => $pinlink,
                 'd' => $discussion->id,
                 'sesskey' => sesskey(),
@@ -1909,14 +1909,14 @@ HTML;
 
     /**
      * Render ax button for pin/unpin.
-     * @param moodle_url $url
+     * @param \core\url $url
      * @param string $content
      * @param string $method
      * @param int $pinlink
      * @param int $discussion
      * @return string
      */
-    public function render_ax_button(moodle_url $url, $content, $method, $pinlink, $discussion) {
+    public function render_ax_button(\core\url $url, $content, $method, $pinlink, $discussion) {
         global $PAGE;
 
         $PAGE->requires->js_call_amd('mod_hsuforum/accessibility', 'init', array());
@@ -1980,7 +1980,7 @@ HTML;
         $nextlink = '';
 
         if ($prevdiscussion) {
-            $prevurl = new moodle_url($PAGE->URL);
+            $prevurl = new \core\url($PAGE->URL);
             $prevurl->param('d', $prevdiscussion->id);
             $prevlink = '<div class="navigateprevious">'.
                 '<div>'.get_string('previousdiscussion', 'hsuforum').'</div>'.
@@ -1988,7 +1988,7 @@ HTML;
                 '</div>';
         }
         if ($nextdiscussion) {
-            $nexturl = new moodle_url($PAGE->URL);
+            $nexturl = new \core\url($PAGE->URL);
             $nexturl->param('d', $nextdiscussion->id);
             $nextlink = '<div class="navigatenext">'.
                 '<div>'.get_string('nextdiscussion', 'hsuforum').'</div>'.

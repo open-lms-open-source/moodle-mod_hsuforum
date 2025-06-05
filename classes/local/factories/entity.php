@@ -36,7 +36,7 @@ use stdClass;
 use context;
 use cm_info;
 use \core\output\user_picture;
-use moodle_url;
+use \core\url;
 
 /**
  * Entity factory to create the hsuforum entities.

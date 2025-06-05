@@ -186,7 +186,7 @@ class discussion extends exporter {
                 }
 
                 if ($capabilitymanager->can_view_participants($user, $discussion)) {
-                    $groupdata['urls']['userlist'] = (new \moodle_url('/user/index.php', [
+                    $groupdata['urls']['userlist'] = (new \core\url('/user/index.php', [
                         'id' => $forum->get_course_id(),
                         'group' => $group->id,
                     ]));

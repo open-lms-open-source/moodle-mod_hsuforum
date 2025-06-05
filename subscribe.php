@@ -40,7 +40,7 @@ $mode    = optional_param('mode', null, PARAM_INT);     // the forum's subscript
 $user    = optional_param('user', 0, PARAM_INT);        // userid of the user to subscribe, defaults to $USER
 $sesskey = optional_param('sesskey', null, PARAM_RAW);  // sesskey
 
-$url = new moodle_url('/mod/hsuforum/subscribe.php', array('id'=>$id));
+$url = new \core\url('/mod/hsuforum/subscribe.php', array('id'=>$id));
 if (!is_null($mode)) {
     $url->param('mode', $mode);
 }
@@ -86,13 +86,13 @@ if (is_null($mode) && !is_enrolled($context, $USER, '', true)) {   // Guests and
     if (isguestuser()) {
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(get_string('subscribeenrolledonly', 'hsuforum').'<br /><br />'.get_string('liketologin'),
-                     get_login_url(), new moodle_url('/mod/hsuforum/view.php', array('f'=>$id)));
+                     get_login_url(), new \core\url('/mod/hsuforum/view.php', array('f'=>$id)));
         echo $OUTPUT->footer();
         exit;
     } else {
         // There should not be any links leading to this place, just redirect.
         redirect(
-                new moodle_url('/mod/hsuforum/view.php', array('f'=>$id)),
+                new \core\url('/mod/hsuforum/view.php', array('f'=>$id)),
                 get_string('subscribeenrolledonly', 'hsuforum'),
                 null,
                 \core\output\notification::NOTIFY_ERROR
@@ -173,7 +173,7 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(get_string('confirmunsubscribe', 'hsuforum', format_string($forum->name)),
-                new moodle_url($PAGE->url, array('sesskey' => sesskey())), new moodle_url('/mod/hsuforum/view.php', array('f' => $id)));
+                new \core\url($PAGE->url, array('sesskey' => sesskey())), new \core\url('/mod/hsuforum/view.php', array('f' => $id)));
         echo $OUTPUT->footer();
         exit;
     }
@@ -202,7 +202,7 @@ if (hsuforum_is_subscribed($user->id, $forum->id)) {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
         echo $OUTPUT->confirm(get_string('confirmsubscribe', 'hsuforum', format_string($forum->name)),
-                new moodle_url($PAGE->url, array('sesskey' => sesskey())), new moodle_url('/mod/hsuforum/view.php', array('f' => $id)));
+                new \core\url($PAGE->url, array('sesskey' => sesskey())), new \core\url('/mod/hsuforum/view.php', array('f' => $id)));
         echo $OUTPUT->footer();
         exit;
     }

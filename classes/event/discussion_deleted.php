@@ -75,10 +75,10 @@ class discussion_deleted extends \core\event\base {
     /**
      * Get URL related to the action
      *
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_url() {
-        return new \moodle_url('/mod/hsuforum/view.php', array('id' => $this->contextinstanceid));
+        return new \core\url('/mod/hsuforum/view.php', array('id' => $this->contextinstanceid));
     }
 
     /**

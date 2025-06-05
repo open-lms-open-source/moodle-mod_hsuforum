@@ -73,7 +73,7 @@ class export_controller extends controller_abstract {
         ), 'post', '', array('onreset' => ''));
 
         if ($mform->is_cancelled()) {
-            redirect(new \moodle_url('/mod/hsuforum/view.php', array('id' => $cm->id)));
+            redirect(new \core\url('/mod/hsuforum/view.php', array('id' => $cm->id)));
         } else if ($data = $mform->get_data()) {
             if ($data->format == 'print') {
                 $adapter = new print_adapter($cm);

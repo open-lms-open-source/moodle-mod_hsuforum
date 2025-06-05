@@ -93,7 +93,7 @@ class form_service_test extends advanced_testcase {
             $dummy['filename'] = $filename;
             $fs->create_file_from_pathname($dummy, $CFG->dirroot.'/mod/hsuforum/tests/fixtures/'.$filename);
             $this->assertTrue(repository::draftfile_exists($draftid, '/', $filename));
-            $draftfileurl = new moodle_url('/draftfile.php/'.$usercontext->id.'/user/draft/'.$draftid.'/'.$filename);
+            $draftfileurl = new \core\url('/draftfile.php/'.$usercontext->id.'/user/draft/'.$draftid.'/'.$filename);
             $message .= '<img src="'.$draftfileurl.'" />';
         }
 
@@ -110,7 +110,7 @@ class form_service_test extends advanced_testcase {
         $dummy['filename'] = $filename;
         $fs->create_file_from_pathname($dummy, $CFG->dirroot.'/mod/hsuforum/tests/fixtures/'.$filename);
         $this->assertTrue(repository::draftfile_exists($draftid, '/', $filename));
-        $draftfileurl = new moodle_url('/draftfile.php/'.$usercontext->id.'/user/draft/'.$draftid.'/'.$filename);
+        $draftfileurl = new \core\url('/draftfile.php/'.$usercontext->id.'/user/draft/'.$draftid.'/'.$filename);
         $message .= '<img src="'.$draftfileurl.'" />';
 
         // Now save the items in the draft area

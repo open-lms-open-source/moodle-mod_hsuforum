@@ -29,7 +29,7 @@ namespace mod_hsuforum\controller;
 use \core\exception\coding_exception;
 use mod_hsuforum\response\json_response;
 use mod_hsuforum\service\discussion_service;
-use moodle_url;
+use \core\url;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -127,7 +127,7 @@ class posts_controller extends controller_abstract {
             $subscribe->subscribe($discussionid);
         }
         if (!AJAX_SCRIPT) {
-            redirect(new moodle_url($returnurl));
+            redirect(new url($returnurl));
         }
     }
 
@@ -194,7 +194,7 @@ class posts_controller extends controller_abstract {
         // This works but it doesn't make a good navbar, would have to change the settings menu.
         // $PAGE->settingsnav->find('discsubscribers', navigation_node::TYPE_SETTING)->make_active();
 
-        $PAGE->navbar->add(shorten_text(format_string($discussion->name)), new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
+        $PAGE->navbar->add(shorten_text(format_string($discussion->name)), new url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
         $PAGE->navbar->add($strsubscribers);
         $PAGE->set_title($strsubscribers);
         $PAGE->set_heading($COURSE->fullname);

@@ -125,7 +125,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
                 if (enrol_selfenrol_available($course->id)) {
                     $SESSION->wantsurl = qualified_me();
                     $SESSION->enrolcancel = get_local_referer(false);
-                    redirect(new moodle_url('/enrol/index.php', array('id' => $course->id,
+                    redirect(new \core\url('/enrol/index.php', array('id' => $course->id,
                         'returnurl' => '/mod/hsuforum/view.php?f=' . $forum->id)),
                         get_string('youneedtoenrol'));
                 }
@@ -196,7 +196,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
             if (!is_enrolled($coursecontext)) {  // User is a guest here!
                 $SESSION->wantsurl = qualified_me();
                 $SESSION->enrolcancel = get_local_referer(false);
-                redirect(new moodle_url('/enrol/index.php', array('id' => $course->id,
+                redirect(new \core\url('/enrol/index.php', array('id' => $course->id,
                     'returnurl' => '/mod/hsuforum/view.php?f=' . $forum->id)),
                     get_string('youneedtoenrol'));
             }
@@ -346,7 +346,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
         if ($replycount) {
             if (!has_capability('mod/hsuforum:deleteanypost', $modcontext)) {
                 throw new \core\exception\moodle_exception("couldnotdeletereplies", "hsuforum",
-                    hsuforum_go_back_to(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id)));
+                    hsuforum_go_back_to(new \core\url('/mod/hsuforum/discuss.php', array('d' => $post->discussion), 'p'.$post->id)));
             }
             echo $OUTPUT->header();
             echo $OUTPUT->heading(format_string($forum->name), 2);
@@ -403,7 +403,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
 
 
     if ($prunemform->is_cancelled()) {
-        redirect(hsuforum_go_back_to(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $post->discussion))));
+        redirect(hsuforum_go_back_to(new \core\url("/mod/hsuforum/discuss.php", array('d' => $post->discussion))));
     } else if ($fromform = $prunemform->get_data()) {
         // User submits the data.
 
@@ -474,7 +474,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
 
         $message = get_string('discussionsplit', 'hsuforum');
         redirect(
-            hsuforum_go_back_to(new moodle_url("/mod/hsuforum/discuss.php", array('d' => $newid))),
+            hsuforum_go_back_to(new \core\url("/mod/hsuforum/discuss.php", array('d' => $newid))),
             $message,
             null,
             \core\output\notification::NOTIFY_SUCCESS
@@ -487,7 +487,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum.
         $renderer = $PAGE->get_renderer('mod_hsuforum');
         $PAGE->requires->js_init_call('M.mod_hsuforum.init', null, false, $renderer->get_js_module());
         $subjectstr = format_string($post->subject, true);
-        $PAGE->navbar->add($subjectstr, new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
+        $PAGE->navbar->add($subjectstr, new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
         $PAGE->navbar->add(get_string("prune", "hsuforum"));
         $PAGE->set_title("$discussion->name: $post->subject");
         $PAGE->set_heading($course->fullname);
@@ -738,9 +738,9 @@ if ($fromform = $mformpost->get_data()) {
             // Single discussion forums are an exception. We show
             // the forum itself since it only has one discussion
             // thread.
-            $discussionurl = new moodle_url("/mod/hsuforum/view.php", array('f' => $forum->id));
+            $discussionurl = new \core\url("/mod/hsuforum/view.php", array('f' => $forum->id));
         } else {
-            $discussionurl = new moodle_url("/mod/hsuforum/discuss.php", array('d' => $discussion->id), 'p' . $fromform->id);
+            $discussionurl = new \core\url("/mod/hsuforum/discuss.php", array('d' => $discussion->id), 'p' . $fromform->id);
         }
 
         $params = array(
@@ -791,9 +791,9 @@ if ($fromform = $mformpost->get_data()) {
                 // Single discussion forums are an exception. We show
                 // the forum itself since it only has one discussion
                 // thread.
-                $discussionurl = new moodle_url("/mod/hsuforum/view.php", array('f' => $forum->id), 'p'.$fromform->id);
+                $discussionurl = new \core\url("/mod/hsuforum/view.php", array('f' => $forum->id), 'p'.$fromform->id);
             } else {
-                $discussionurl = new moodle_url("/mod/hsuforum/discuss.php", array('d' => $discussion->id), 'p'.$fromform->id);
+                $discussionurl = new \core\url("/mod/hsuforum/discuss.php", array('d' => $discussion->id), 'p'.$fromform->id);
             }
             $post   = $DB->get_record('hsuforum_posts', array('id' => $fromform->id), '*', MUST_EXIST);
             $params = array(
@@ -831,7 +831,7 @@ if ($fromform = $mformpost->get_data()) {
 
     } else { // Adding a new discussion.
         // The location to redirect to after successfully posting.
-        $redirectto = new moodle_url('/mod/hsuforum/view.php', array('f' => $fromform->forum));
+        $redirectto = new \core\url('/mod/hsuforum/view.php', array('f' => $fromform->forum));
 
         $fromform->mailnow = empty($fromform->mailnow) ? 0 : 1;
 

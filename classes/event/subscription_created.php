@@ -74,10 +74,10 @@ class subscription_created extends \core\event\base {
     /**
      * Get URL related to the action
      *
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_url() {
-        return new \moodle_url('/mod/hsuforum/subscribers.php', array('id' => $this->other['forumid']));
+        return new \core\url('/mod/hsuforum/subscribers.php', array('id' => $this->other['forumid']));
     }
 
     /**

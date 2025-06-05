@@ -74,11 +74,11 @@ class user_report_viewed extends \core\event\base {
     /**
      * Get URL related to the action
      *
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_url() {
 
-        $url = new \moodle_url('/mod/hsuforum/user.php', array('id' => $this->relateduserid,
+        $url = new \core\url('/mod/hsuforum/user.php', array('id' => $this->relateduserid,
             'mode' => $this->other['reportmode']));
 
         if ($this->courseid != SITEID) {

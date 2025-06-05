@@ -289,7 +289,7 @@ class mod_hsuforum_external_test extends externallib_advanced_testcase {
                     'filename' => $filename,
                     'filepath' => '/',
                     'filesize' => 27,
-                    'fileurl' => moodle_url::make_webservice_pluginfile_url($forum1context->id, 'mod_hsuforum', 'post',
+                    'fileurl' => \core\url::make_webservice_pluginfile_url($forum1context->id, 'mod_hsuforum', 'post',
                                     $discussion1reply1->id, '/', $filename)->out(false),
                     'timemodified' => $timepost,
                     'mimetype' => 'image/jpeg',

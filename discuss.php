@@ -53,7 +53,7 @@
 
     $config = get_config('hsuforum');
 
-    $url = new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$d));
+    $url = new \core\url('/mod/hsuforum/discuss.php', array('d'=>$d));
     if ($root !== 0) {
         $url->param('root', $root);
     }
@@ -179,7 +179,7 @@
                 break;
         }
 
-        redirect(new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
+        redirect(new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id)));
     }
 
     // Trigger discussion viewed event.
@@ -210,7 +210,7 @@
     } else {
         $forumnode->make_active();
     }
-    $node = $forumnode->add(format_string($discussion->name), new moodle_url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
+    $node = $forumnode->add(format_string($discussion->name), new \core\url('/mod/hsuforum/discuss.php', array('d'=>$discussion->id)));
     $node->display = false;
     if ($node && $post->id != $discussion->firstpost) {
         $node->add(format_string($post->subject), $PAGE->url);
@@ -252,8 +252,8 @@
     if ($move > 0 && confirm_sesskey()) {
         echo $OUTPUT->confirm(
             get_string('anonymouswarning', 'hsuforum'),
-            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id, 'move' => $move, 'warned' => 1)),
-            new moodle_url('/mod/hsuforum/discuss.php', array('d' => $discussion->id))
+            new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id, 'move' => $move, 'warned' => 1)),
+            new \core\url('/mod/hsuforum/discuss.php', array('d' => $discussion->id))
         );
     }
 
@@ -345,7 +345,7 @@
             if (get_config('core', 'theme') == 'snap') {
 
                 echo \core\output\html_writer::div(html_writer::link(
-                    new \moodle_url(
+                    new \core\url(
                         '/mod/hsuforum/index.php',
                         ['id' => $course->id]
                     ),
@@ -354,7 +354,7 @@
                 ));
 
                 echo \html_writer::div(html_writer::link(
-                    new \moodle_url(
+                    new \core\url(
                         '/mod/hsuforum/route.php',
                         ['contextid' => $context->id, 'action' => 'export']
                     ),
@@ -363,7 +363,7 @@
                 ));
 
                 echo \core\output\html_writer::div(\core\output\html_writer::link(
-                    new \moodle_url(
+                    new \core\url(
                         '/mod/hsuforum/route.php',
                         ['contextid' => $context->id, 'action' => 'viewposters']
                     ),
@@ -378,7 +378,7 @@
                 }
 
                 echo \core\output\html_writer::div(\core\output\html_writer::link(
-                    new \moodle_url(
+                    new \core\url(
                         '/mod/hsuforum/subscribe.php',
                         ['id' => $forum->id, 'sesskey' => sesskey()]
                     ),

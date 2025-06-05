@@ -75,10 +75,10 @@ class discussion_subscription_created extends \core\event\base {
     /**
      * Get URL related to the action.
      *
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_url() {
-        return new \moodle_url('/mod/hsuforum/subscribe.php', array(
+        return new \core\url('/mod/hsuforum/subscribe.php', array(
             'id' => $this->other['forumid'],
             'd' => $this->other['discussion'],
         ));

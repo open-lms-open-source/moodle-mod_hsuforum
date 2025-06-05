@@ -26,7 +26,7 @@ namespace mod_hsuforum\output;
 defined('MOODLE_INTERNAL') || die();
 
 use \core\output\help_icon;
-use moodle_url;
+use \core\url as moodle_url;
 use \core\output\renderable;
 use \core\output\renderer_base;
 use \core\output\templatable;

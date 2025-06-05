@@ -230,7 +230,7 @@ class discussion_list {
             $exportedposts = ($this->postprocessfortemplate) ($discussions, $user, $forum);
         }
 
-        $baseurl = new \moodle_url($PAGE->url, ['o' => $sortorder, 's' => $pagesize]);
+        $baseurl = new \core\url($PAGE->url, ['o' => $sortorder, 's' => $pagesize]);
 
         $forumview = array_merge(
             $forumview,
@@ -308,7 +308,7 @@ class discussion_list {
             'inpagereply' => true,
             'edit' => 0
         );
-        $posturl = new \moodle_url('/mod/hsuforum/post.php');
+        $posturl = new \core\url('/mod/hsuforum/post.php');
         $mformpost = new \mod_hsuforum_post_form($posturl, $formparams, 'post', '', array('id' => 'mformforum'));
         $discussionsubscribe = \mod_hsuforum\subscriptions::get_user_default_subscription($forumrecord, $coursecontext, $cm, null);
 

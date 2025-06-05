@@ -235,23 +235,23 @@ class post extends \core_search\base_mod {
      * Link to the forum post discussion
      *
      * @param \core_search\document $doc
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_doc_url(\core_search\document $doc) {
         // The post is already in static cache, we fetch it in self::search_access.
         $post = $this->get_post($doc->get('itemid'));
-        return new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
+        return new \core\url('/mod/hsuforum/discuss.php', array('d' => $post->discussion));
     }
 
     /**
      * Link to the forum.
      *
      * @param \core_search\document $doc
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_context_url(\core_search\document $doc) {
         $contextmodule = \context::instance_by_id($doc->get('contextid'));
-        return new \moodle_url('/mod/hsuforum/view.php', array('id' => $contextmodule->instanceid));
+        return new \core\url('/mod/hsuforum/view.php', array('id' => $contextmodule->instanceid));
     }
 
     /**

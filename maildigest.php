@@ -39,7 +39,7 @@ $context = context_module::instance($cm->id);
 
 require_login($course, false, $cm);
 
-$url = new moodle_url('/mod/hsuforum/maildigest.php', array(
+$url = new \core\url('/mod/hsuforum/maildigest.php', array(
     'id' => $id,
     'maildigest' => $maildigest,
 ));

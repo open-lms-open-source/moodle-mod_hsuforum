@@ -270,7 +270,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     public function get_courselink() {
-        $link = new \moodle_url(
+        $link = new \core\url(
             // Posts are viewed on the topic.
             '/course/view.php', array(
                 'id'    => $this->course->id,
@@ -286,7 +286,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     public function get_forumindexlink() {
-        $link = new \moodle_url(
+        $link = new \core\url(
             // Posts are viewed on the topic.
             '/mod/hsuforum/index.php', array(
                 'id'    => $this->course->id,
@@ -302,7 +302,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     public function get_forumviewlink() {
-        $link = new \moodle_url(
+        $link = new \core\url(
             // Posts are viewed on the topic.
             '/mod/hsuforum/view.php', array(
                 'f' => $this->forum->id,
@@ -318,7 +318,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     protected function _get_discussionlink() {
-        return new \moodle_url(
+        return new \core\url(
             // Posts are viewed on the topic.
             '/mod/hsuforum/discuss.php', array(
                 // Within a discussion.
@@ -368,7 +368,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     public function get_authorlink() {
-        $link = new \moodle_url(
+        $link = new \core\url(
             '/user/view.php', array(
                 'id' => $this->author->id,
                 'course' => $this->course->id,
@@ -384,7 +384,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     public function get_unsubscribeforumlink() {
-        $link = new \moodle_url(
+        $link = new \core\url(
             '/mod/hsuforum/subscribe.php', array(
                 'id' => $this->forum->id,
             )
@@ -399,7 +399,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     public function get_unsubscribediscussionlink() {
-        $link = new \moodle_url(
+        $link = new \core\url(
             '/mod/hsuforum/subscribe.php', array(
                 'id'  => $this->forum->id,
                 'd'   => $this->discussion->id,
@@ -415,7 +415,7 @@ class hsuforum_post implements \core\output\renderable, \core\output\templatable
      * @return string
      */
     public function get_replylink() {
-        return new \moodle_url(
+        return new \core\url(
             '/mod/hsuforum/post.php', array(
                 'reply' => $this->post->id,
             )

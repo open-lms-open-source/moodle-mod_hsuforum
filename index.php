@@ -32,7 +32,7 @@ $subscribe = optional_param('subscribe', null, PARAM_INT);  // Subscribe/Unsubsc
 
 $config = get_config('hsuforum');
 
-$url = new moodle_url('/mod/hsuforum/index.php', array('id' => $id));
+$url = new \core\url('/mod/hsuforum/index.php', array('id' => $id));
 if ($subscribe !== null) {
     require_sesskey();
     $url->param('subscribe', $subscribe);
@@ -78,7 +78,7 @@ $searchform = hsuforum_search_form($course);
 
 // Retrieve the list of forum digest options for later.
 $digestoptions = hsuforum_get_user_digest_options();
-$digestoptions_selector = new \core\output\single_select(new moodle_url('/mod/hsuforum/maildigest.php',
+$digestoptions_selector = new \core\output\single_select(new \core\url('/mod/hsuforum/maildigest.php',
     array(
         'backtoindex' => 1,
     )),
@@ -195,7 +195,7 @@ if (!is_null($subscribe) && !isguestuser()) {
             }
         }
     }
-    $returnto = hsuforum_go_back_to(new moodle_url('/mod/hsuforum/index.php', array('id' => $course->id)));
+    $returnto = hsuforum_go_back_to(new \core\url('/mod/hsuforum/index.php', array('id' => $course->id)));
     $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
     if ($subscribe) {
         redirect(
@@ -389,11 +389,11 @@ echo $OUTPUT->header();
 if (!isguestuser() && isloggedin()) {
     echo $OUTPUT->box_start('subscription');
     echo \core\output\html_writer::tag('div',
-        \core\output\html_writer::link(new moodle_url('/mod/hsuforum/index.php', array('id'=>$course->id, 'subscribe'=>1, 'sesskey'=>sesskey())),
+        \core\output\html_writer::link(new \core\url('/mod/hsuforum/index.php', array('id'=>$course->id, 'subscribe'=>1, 'sesskey'=>sesskey())),
             get_string('allsubscribe', 'hsuforum')),
         array('class'=>'helplink'));
     echo \core\output\html_writer::tag('div',
-        \core\output\html_writer::link(new moodle_url('/mod/hsuforum/index.php', array('id'=>$course->id, 'subscribe'=>0, 'sesskey'=>sesskey())),
+        \core\output\html_writer::link(new \core\url('/mod/hsuforum/index.php', array('id'=>$course->id, 'subscribe'=>0, 'sesskey'=>sesskey())),
             get_string('allunsubscribe', 'hsuforum')),
         array('class'=>'helplink'));
     echo $OUTPUT->box_end();

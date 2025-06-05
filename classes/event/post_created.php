@@ -76,16 +76,16 @@ class post_created extends \core\event\base {
     /**
      * Get URL related to the action
      *
-     * @return \moodle_url
+     * @return \core\url
      */
     public function get_url() {
         if ($this->other['forumtype'] == 'single') {
             // Single discussion forums are an exception. We show
             // the forum itself since it only has one discussion
             // thread.
-            $url = new \moodle_url('/mod/hsuforum/view.php', array('f' => $this->other['forumid']));
+            $url = new \core\url('/mod/hsuforum/view.php', array('f' => $this->other['forumid']));
         } else {
-            $url = new \moodle_url('/mod/hsuforum/discuss.php', array('d' => $this->other['discussionid']));
+            $url = new \core\url('/mod/hsuforum/discuss.php', array('d' => $this->other['discussionid']));
         }
         $url->set_anchor('p'.$this->objectid);
         return $url;

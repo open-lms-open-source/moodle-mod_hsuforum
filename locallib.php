@@ -686,7 +686,7 @@ function mod_hsuforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx = 
             context_helper::preload_from_record($item);
             $modinfo = get_fast_modinfo($item->courseid);
             $cm = $modinfo->get_cm($item->cmid);
-            $pageurl = new moodle_url('/mod/hsuforum/discuss.php', array('d' => $item->discussion), 'p' . $item->id);
+            $pageurl = new \core\url('/mod/hsuforum/discuss.php', array('d' => $item->discussion), 'p' . $item->id);
             $pagename = format_string($item->subject, true, array('context' => context_module::instance($item->cmid)));
             $pagename = \core\output\html_writer::link($pageurl, $pagename);
             $courseurl = course_get_url($item->courseid, $cm->sectionnum);

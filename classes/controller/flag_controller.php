@@ -66,7 +66,7 @@ class flag_controller extends controller_abstract {
             }
         }
         if (!AJAX_SCRIPT) {
-            redirect(new \moodle_url($returnurl));
+            redirect(new \core\url($returnurl));
         }
     }
 }

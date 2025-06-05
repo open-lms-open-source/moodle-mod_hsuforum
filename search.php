@@ -136,7 +136,7 @@ $strpage = get_string("page");
 
 if (!$search || $showform) {
 
-    $PAGE->navbar->add($strforums, new moodle_url('/mod/hsuforum/index.php', array('id'=>$course->id)));
+    $PAGE->navbar->add($strforums, new \core\url('/mod/hsuforum/index.php', array('id'=>$course->id)));
     $PAGE->navbar->add(get_string('advancedsearch', 'hsuforum'));
 
     $PAGE->set_title($strsearch);
@@ -158,7 +158,7 @@ $searchterms = explode(' ', $searchterms);
 
 $searchform = hsuforum_search_form($course, $forumid, $search);
 
-$PAGE->navbar->add($strsearch, new moodle_url('/mod/hsuforum/search.php', array('id'=>$course->id)));
+$PAGE->navbar->add($strsearch, new \core\url('/mod/hsuforum/search.php', array('id'=>$course->id)));
 $PAGE->navbar->add($strsearchresults);
 if (!$posts = hsuforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
     $PAGE->set_title($strsearchresults);
@@ -212,7 +212,7 @@ $params = [
     'datefrom'  => $datefrom,
     'showform'  => 1,
 ];
-$url    = new moodle_url("/mod/hsuforum/search.php", $params);
+$url    = new \core\url("/mod/hsuforum/search.php", $params);
 foreach ($tags as $tag) {
     $url .= "&tags[]=$tag";
 }
@@ -222,7 +222,7 @@ echo '</div>';
 
 echo $OUTPUT->heading("$strsearchresults: $totalcount", 3);
 
-$url = new moodle_url('search.php', array('search' => $search, 'id' => $course->id, 'perpage' => $perpage));
+$url = new \core\url('search.php', array('search' => $search, 'id' => $course->id, 'perpage' => $perpage));
 
 //added to implement highlighting of search terms found only in HTML markup
 //fiedorow - 9/2/2005
