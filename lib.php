@@ -7640,7 +7640,7 @@ function hsuforum_cm_info_view(cm_info $cm) {
     }
 
     if ($unread = hsuforum_count_forum_unread_posts($cm, $cm->get_course())) {
-        $out .= '<a class="unread" href="' . $cm->url . '">';
+        $out .= '<a class="unread tag tag-success" href="' . $cm->url . '">';
         if ($unread == 1) {
             $out .= get_string('unreadpostsone', 'hsuforum');
         } else {
