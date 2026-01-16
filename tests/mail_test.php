@@ -963,7 +963,7 @@ class mail_test extends advanced_testcase {
     /**
      * dataProvider for test_forum_post_email_templates().
      */
-    public function forum_post_email_templates_provider() {
+    public static function forum_post_email_templates_provider() {
         global $CFG;
         // Base information, we'll build variations based on it.
         $base = array(

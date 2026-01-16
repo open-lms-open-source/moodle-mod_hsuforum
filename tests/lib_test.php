@@ -2191,7 +2191,7 @@ class lib_test extends \advanced_testcase {
     /**
      * @dataProvider print_overview_timed_provider
      */
-    public function test_print_overview_timed($config, $hasresult) {
+    public static function test_print_overview_timed($config, $hasresult) {
         $this->resetAfterTest();
         $course1 = self::getDataGenerator()->create_course();
 
@@ -2317,7 +2317,7 @@ class lib_test extends \advanced_testcase {
         $this->assertCount(0, $results);
     }
 
-    public function print_overview_timed_provider() {
+    public static function print_overview_timed_provider() {
         return array(
             'timestart_past' => array(
                 'discussionconfig' => array(
@@ -2835,7 +2835,7 @@ class lib_test extends \advanced_testcase {
         hsuforum_is_author_hidden($post, $forum);
     }
 
-    public function hsuforum_get_unmailed_posts_provider() {
+    public static function hsuforum_get_unmailed_posts_provider() {
         return [
             'Untimed discussion; Single post; maxeditingtime not expired' => [
                 'discussion'        => [
@@ -3009,7 +3009,7 @@ class lib_test extends \advanced_testcase {
      *
      * @return  array
      */
-    public function hsuforum_discussion_is_locked_provider() {
+    public static function hsuforum_discussion_is_locked_provider() {
         return [
             'Unlocked: lockdiscussionafter is unset' => [
                 (object) [],

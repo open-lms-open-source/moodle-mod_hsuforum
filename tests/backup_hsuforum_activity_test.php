@@ -54,7 +54,7 @@ class backup_hsuforum_activity_test extends advanced_testcase {
         $this->assertEquals($expectation, backup_hsuforum_activity_task::encode_content_links($content));
     }
 
-    public function encode_content_links_provider() {
+    public static function encode_content_links_provider() {
         global $CFG;
         $altwwwroot = 'http://invalid.example.com/';
         return [

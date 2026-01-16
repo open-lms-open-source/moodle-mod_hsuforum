@@ -88,7 +88,7 @@ class grades_gradeitems_test extends advanced_testcase
      *
      * @return array
      */
-    public function is_advancedgrading_itemname_provider(): array
+    public static function is_advancedgrading_itemname_provider(): array
     {
         return [
             'Whole forum grading is advanced' => [
