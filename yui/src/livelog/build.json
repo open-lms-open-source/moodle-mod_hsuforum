@@ -1,0 +1,10 @@
+{
+    "name": "moodle-mod_hsuforum-livelog",
+    "builds": {
+        "moodle-mod_hsuforum-livelog": {
+            "jsfiles": [
+                "livelog.js"
+            ]
+        }
+    }
+}

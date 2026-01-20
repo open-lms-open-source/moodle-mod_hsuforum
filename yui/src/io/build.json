@@ -1,0 +1,10 @@
+{
+    "name": "moodle-mod_hsuforum-io",
+    "builds": {
+        "moodle-mod_hsuforum-io": {
+            "jsfiles": [
+                "io.js"
+            ]
+        }
+    }
+}
