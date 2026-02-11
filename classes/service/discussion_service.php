@@ -138,6 +138,7 @@ class discussion_service {
             'mailnow'       => 0,
             'reveal'        => 0,
             'pinned'        => 0,
+            'timelocked'    => 0,
         );
         foreach ($options as $name => $value) {
             if (property_exists($discussion, $name)) {
