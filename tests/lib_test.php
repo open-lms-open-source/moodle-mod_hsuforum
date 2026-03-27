@@ -2191,7 +2191,7 @@ class lib_test extends \advanced_testcase {
     /**
      * @dataProvider print_overview_timed_provider
      */
-    public static function test_print_overview_timed($config, $hasresult) {
+    public function test_print_overview_timed($discussionconfig, $hasresult) {
         $this->resetAfterTest();
         $course1 = self::getDataGenerator()->create_course();
 
@@ -2213,11 +2213,11 @@ class lib_test extends \advanced_testcase {
         $record->course = $course1->id;
         $record->userid = $author->id;
         $record->forum = $forum1->id;
-        if (isset($config['timestartmodifier'])) {
-            $record->timestart = time() + $config['timestartmodifier'];
+        if (isset($discussionconfig['timestartmodifier'])) {
+            $record->timestart = time() + $discussionconfig['timestartmodifier'];
         }
-        if (isset($config['timeendmodifier'])) {
-            $record->timeend = time() + $config['timeendmodifier'];
+        if (isset($discussionconfig['timeendmodifier'])) {
+            $record->timeend = time() + $discussionconfig['timeendmodifier'];
         }
         $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 
@@ -2246,7 +2246,7 @@ class lib_test extends \advanced_testcase {
     /**
      * @dataProvider print_overview_timed_provider
      */
-    public function test_print_overview_timed_groups($config, $hasresult) {
+    public function test_print_overview_timed_groups($discussionconfig, $hasresult) {
         $this->resetAfterTest();
         $course1 = self::getDataGenerator()->create_course();
         $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course1->id));
@@ -2279,11 +2279,11 @@ class lib_test extends \advanced_testcase {
         $record->userid     = $author->id;
         $record->forum      = $forum1->id;
         $record->groupid    = $group1->id;
-        if (isset($config['timestartmodifier'])) {
-            $record->timestart = time() + $config['timestartmodifier'];
+        if (isset($discussionconfig['timestartmodifier'])) {
+            $record->timestart = time() + $discussionconfig['timestartmodifier'];
         }
-        if (isset($config['timeendmodifier'])) {
-            $record->timeend = time() + $config['timeendmodifier'];
+        if (isset($discussionconfig['timeendmodifier'])) {
+            $record->timeend = time() + $discussionconfig['timeendmodifier'];
         }
         $this->getDataGenerator()->get_plugin_generator('mod_hsuforum')->create_discussion($record);
 
@@ -2632,13 +2632,13 @@ class lib_test extends \advanced_testcase {
     /**
      * @dataProvider hsuforum_get_unmailed_posts_provider
      */
-    public function test_forum_get_unmailed_posts($discussiondata, $enabletimedposts, $expectedcount, $expectedreplycount) {
+    public function test_forum_get_unmailed_posts($discussion, $timedposts, $postcount, $replycount) {
         global $CFG, $DB;
 
         $this->resetAfterTest();
 
         // Configure timed posts.
-        set_config('enabletimedposts', $enabletimedposts, 'hsuforum');
+        set_config('enabletimedposts', $timedposts, 'hsuforum');
 
         $course = $this->getDataGenerator()->create_course();
         $forum = $this->getDataGenerator()->create_module('hsuforum', ['course' => $course->id]);
@@ -2652,20 +2652,20 @@ class lib_test extends \advanced_testcase {
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->forum = $forum->id;
-        if (isset($discussiondata['timecreated'])) {
-            $record->timemodified = $time + $discussiondata['timecreated'];
+        if (isset($discussion['timecreated'])) {
+            $record->timemodified = $time + $discussion['timecreated'];
         }
-        if (isset($discussiondata['timestart'])) {
-            $record->timestart = $time + $discussiondata['timestart'];
+        if (isset($discussion['timestart'])) {
+            $record->timestart = $time + $discussion['timestart'];
         }
-        if (isset($discussiondata['timeend'])) {
-            $record->timeend = $time + $discussiondata['timeend'];
+        if (isset($discussion['timeend'])) {
+            $record->timeend = $time + $discussion['timeend'];
         }
-        if (isset($discussiondata['mailed'])) {
-            $record->mailed = $discussiondata['mailed'];
+        if (isset($discussion['mailed'])) {
+            $record->mailed = $discussion['mailed'];
         }
 
-        $discussion = $forumgen->create_discussion($record);
+        $createddiscussion = $forumgen->create_discussion($record);
 
         // Fetch the unmailed posts.
         $timenow   = $time;
@@ -2673,19 +2673,19 @@ class lib_test extends \advanced_testcase {
         $starttime = $endtime - 2 * DAYSECS;
 
         $unmailed = hsuforum_get_unmailed_posts($starttime, $endtime, $timenow);
-        $this->assertCount($expectedcount, $unmailed);
+        $this->assertCount($postcount, $unmailed);
 
         // Add a reply just outside the maxeditingtime.
-        $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $discussion->id));
+        $replyto = $DB->get_record('hsuforum_posts', array('discussion' => $createddiscussion->id));
         $reply = new \stdClass();
         $reply->userid = $user->id;
-        $reply->discussion = $discussion->id;
+        $reply->discussion = $createddiscussion->id;
         $reply->parent = $replyto->id;
         $reply->created = max($replyto->created, $endtime - 1);
         $forumgen->create_post($reply);
 
         $unmailed = hsuforum_get_unmailed_posts($starttime, $endtime, $timenow);
-        $this->assertCount($expectedreplycount, $unmailed);
+        $this->assertCount($replycount, $unmailed);
     }
 
     public function test_function_validate_files(){
