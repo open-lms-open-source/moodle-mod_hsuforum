@@ -1746,7 +1746,7 @@ HTML;
                 </label>
                 <div id="editor-info"></div>
                 <textarea name="message" class="hidden"></textarea>
-                <div id="editor-target-container-$timestamp" data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea">$t->message</div>
+                <div id="editor-target-container-$timestamp" data-placeholder="$t->messageplaceholder" aria-label="$messagelabel" contenteditable="true" required="required" spellcheck="true" role="textbox" aria-multiline="true" class="hsuforum-textarea mb-1">$t->message</div>
 
 
                 $files
