@@ -1029,8 +1029,8 @@ body:not(.theme_snap) li.modtype_hsuforum .activity-item .activity-basis .activi
     padding-left: 0;
 }
 
-div.hsuforum-thread-header > div.hsuforum-thread-meta > div.hsuforum-thread-participants > span,
-div.hsuforum-post-body > .hsuforum-post-byline > span {
+div.hsuforum-thread-header > div.hsuforum-thread-meta > div.hsuforum-thread-participants > span:not(.badge),
+div.hsuforum-post-body > .hsuforum-post-byline > span:not(.badge) {
     width: 2rem;
     height: 2rem;
     font-size: inherit;
