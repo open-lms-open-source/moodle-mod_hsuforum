@@ -372,7 +372,7 @@ function hsuforum_supports($feature) {
         case FEATURE_SHOW_DESCRIPTION:        return true;
         case FEATURE_ADVANCED_GRADING:        return (!empty($CFG->mod_hsuforum_grading_interface));
         case FEATURE_PLAGIARISM:              return true;
-
+        case FEATURE_MOD_PURPOSE:             return MOD_PURPOSE_COLLABORATION;
         default: return null;
     }
 }
