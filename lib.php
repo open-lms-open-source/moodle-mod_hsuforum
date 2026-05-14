@@ -3942,7 +3942,7 @@ function hsuforum_print_attachments($post, $cm, $type) {
             $filename = $file->get_filename();
             $mimetype = $file->get_mimetype();
             $iconimage = $OUTPUT->pix_icon(file_file_icon($file), get_mimetype_description($file), 'moodle', array('class' => 'icon'));
-            $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$context->id.'/mod_hsuforum/attachment/'.$post->id.'/'.$filename);
+            $path = \core\url::make_pluginfile_url($context->id, 'mod_hsuforum', 'attachment', $post->id, '/', $filename);
 
             if ($type == 'html') {
                 $output .= "<a href=\"$path\">$iconimage</a> ";
