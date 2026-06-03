@@ -34,6 +34,7 @@ require_once($CFG->dirroot . '/mod/hsuforum/locallib.php');
 require_once($CFG->dirroot . '/rating/lib.php');
 require_once($CFG->dirroot . '/mod/hsuforum/mod_form.php');
 require_once($CFG->dirroot . '/course/modlib.php');
+require_once($CFG->dirroot . '/mod/hsuforum/lib/discussion/sort.php');
 
 class lib_test extends \advanced_testcase {
 
@@ -322,6 +323,89 @@ class lib_test extends \advanced_testcase {
         // First discussion should be pinned.
         $first = $discussions->current();
         $this->assertEquals(1, $first->pinned, "First discussion should be pinned discussion");
+    }
+
+    public function test_discussion_subscribe_sort() {
+        global $DB;
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $forum = $this->getDataGenerator()->create_module('hsuforum', [
+            'course' => $course->id,
+            'forcesubscribe' => HSUFORUM_CHOOSESUBSCRIBE,
+        ]);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+
+        $this->setUser($user);
+        $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
+
+        $discussions = [];
+        for ($i = 0; $i < 3; $i++) {
+            $record = new \stdClass();
+            $record->course = $course->id;
+            $record->forum = $forum->id;
+            $record->userid = $user->id;
+            $record->timemodified = time() + $i;
+            $discussions[] = $generator->create_discussion($record);
+        }
+
+        // Subscribe user to the second discussion only.
+        $DB->insert_record('hsuforum_subscriptions_disc', (object) [
+            'userid' => $user->id,
+            'discussion' => $discussions[1]->id,
+            'forum' => $forum->id,
+        ]);
+
+        $dsort = new \hsuforum_lib_discussion_sort();
+        $dsort->set_key('subscribe')->set_direction('DESC');
+        $sortsql = $dsort->get_sort_sql();
+        $result = hsuforum_get_discussions($cm, $sortsql, true, -1, -1, false, -1, 0, -1, 0, false);
+        $first = reset($result);
+        $this->assertEquals($discussions[1]->id, $first->discussion);
+    }
+
+    public function test_discussion_replies_sort() {
+        global $DB;
+        $this->resetAfterTest();
+
+        $user = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $forum = $this->getDataGenerator()->create_module('hsuforum', ['course' => $course->id]);
+        $cm = get_coursemodule_from_instance('hsuforum', $forum->id);
+        $this->getDataGenerator()->enrol_user($user->id, $course->id, 'student');
+
+        $this->setUser($user);
+        $generator = self::getDataGenerator()->get_plugin_generator('mod_hsuforum');
+
+        // Create 3 discussions with different timemodified so ordering is deterministic.
+        $discussions = [];
+        for ($i = 0; $i < 3; $i++) {
+            $record = new \stdClass();
+            $record->course = $course->id;
+            $record->forum = $forum->id;
+            $record->userid = $user->id;
+            $record->timemodified = time() + $i;
+            $discussions[] = $generator->create_discussion($record);
+        }
+
+        // Add replies only to the second discussion.
+        $firstpost = $DB->get_record('hsuforum_posts', ['discussion' => $discussions[0]->id]);
+        for ($i = 0; $i < 3; $i++) {
+            $generator->create_post((object) [
+                'userid' => $user->id,
+                'discussion' => $discussions[1]->id,
+                'parent' => $firstpost->id,
+            ]);
+        }
+
+        $dsort = new \hsuforum_lib_discussion_sort();
+        $dsort->set_key('replies')->set_direction('DESC');
+        $sortsql = $dsort->get_sort_sql();
+        $result = hsuforum_get_discussions($cm, $sortsql, true, -1, -1, false, -1, 0, -1, 0, false);
+        $first = reset($result);
+        $this->assertEquals($discussions[1]->id, $first->discussion);
     }
 
     public function test_forum_view() {

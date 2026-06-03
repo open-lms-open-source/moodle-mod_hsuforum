@@ -200,8 +200,24 @@ class hsuforum_lib_discussion_sort implements Serializable {
      * @return string
      */
     public function get_sort_sql() {
+        global $DB;
         $sortopts = $this->get_keyopts();
-        return str_replace('%dir%', $this->get_direction(), $sortopts[$this->get_key()]);
+        $sql = str_replace('%dir%', $this->get_direction(), $sortopts[$this->get_key()]);
+        // PostgreSQL sorts NULLs last in ASC and first in DESC, opposite to MySQL.
+        // For sorts relying on LEFT JOIN columns, we need explicit NULL ordering.
+        if ($DB->get_dbfamily() === 'postgres') {
+            $nulls = $this->get_direction() === 'DESC' ? 'NULLS LAST' : 'NULLS FIRST';
+            $dir = $this->get_direction();
+            $nullcols = [
+                'subscribe' => 'sd.id',
+                'replies' => 'extra.replies',
+            ];
+            if (isset($nullcols[$this->get_key()])) {
+                $col = $nullcols[$this->get_key()];
+                $sql = str_replace("$col $dir", "$col $dir $nulls", $sql);
+            }
+        }
+        return $sql;
     }
 
     /**
