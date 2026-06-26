@@ -478,6 +478,11 @@ FUN WITH FORMS
 #editor-target-container_tbl {
     margin-bottom: 0.5em;
 }
+
+#hsuforum-filter-options #menudsortkey {
+    display: inline-block;
+}
+
 /* -------------------------  MEDIA Qs  -------------------------*/
 
 @media all and (min-width: 35em) {
