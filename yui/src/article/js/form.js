@@ -101,9 +101,6 @@ Y.extend(FORM, Y.Base,
          */
         _copyMessage: function(node) {
             var message = node.one(SELECTORS.EDITABLE_MESSAGE).get('innerHTML');
-            if (node.one('.editor_atto') !== null) {
-                message = node.one(SELECTORS.EDITABLE_MESSAGE_ATTO).get('innerHTML');
-            }
 
             message = message.replace(/&amp;/g, '&');
             message = message.replace(/&gt;/g, '>');

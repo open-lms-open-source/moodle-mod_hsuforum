@@ -20,7 +20,6 @@ var CSS = {
         DISCUSSION_TEMPLATE: '#hsuforum-discussion-template',
         DISCUSSION_VIEW: '.hsuforum-thread-view',
         EDITABLE_MESSAGE: '[contenteditable]',
-        EDITABLE_MESSAGE_ATTO: '[id^="editor-target-container"][contenteditable]:not([style*="display: none"])',
         FORM: '.hsuforum-form',
         FORM_ADVANCED: '.hsuforum-use-advanced',
         FORM_REPLY_WRAPPER: '.hsuforum-reply-wrapper',
@@ -602,9 +601,6 @@ Y.extend(FORM, Y.Base,
          */
         _copyMessage: function(node) {
             var message = node.one(SELECTORS.EDITABLE_MESSAGE).get('innerHTML');
-            if (node.one('.editor_atto') !== null) {
-                message = node.one(SELECTORS.EDITABLE_MESSAGE_ATTO).get('innerHTML');
-            }
 
             message = message.replace(/&amp;/g, '&');
             message = message.replace(/&gt;/g, '>');
