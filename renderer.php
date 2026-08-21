@@ -232,7 +232,7 @@ class mod_hsuforum_renderer extends \core\output\plugin_renderer_base {
                     if ($gradingcontrollerpreview) {
                         $output .= '<div class="text-end">';
                         $output .= \core\output\html_writer::link('#hsuforum_gradingcriteria', get_string('gradingmethodpreview', 'hsuforum'),
-                            ['class' => 'btn btn-link text-end', 'data-toggle' => 'collapse', 'role' => 'button', 'aria-expanded' => 'false',
+                            ['class' => 'btn btn-link text-end', 'data-bs-toggle' => 'collapse', 'role' => 'button', 'aria-expanded' => 'false',
                                 'aria-controls' => 'hsuforum_gradingcriteria']);
                         $output .= '</div>';
                         $output .= '<div class="row">

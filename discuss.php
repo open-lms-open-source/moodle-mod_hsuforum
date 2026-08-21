@@ -400,7 +400,7 @@
                                 '#hsuforum_gradingcriteria',
                                 get_string('gradingmethodpreview', 'hsuforum'),
                                 ['class' => 'hsuforum_gradingcriteria',
-                                'data-toggle' => 'collapse',
+                                'data-bs-toggle' => 'collapse',
                                 'role' => 'button',
                                 'aria-expanded' => 'false',
                                 'aria-controls' => 'hsuforum_gradingcriteria']
