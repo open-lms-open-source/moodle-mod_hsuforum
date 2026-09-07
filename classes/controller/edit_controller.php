@@ -301,7 +301,13 @@ class edit_controller extends controller_abstract {
         $postid = required_param('postid', PARAM_INT);
 
         $post       = $DB->get_record('hsuforum_posts', array('id' => $postid), '*', MUST_EXIST);
-        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
+        // Ensure the discussion belongs to the current forum to prevent cross-forum capability abuse.
+        $discussion = $DB->get_record(
+            'hsuforum_discussions',
+            ['id' => $post->discussion, 'forum' => $PAGE->cm->instance],
+            '*',
+            MUST_EXIST
+        );
 
         $candeleteown = ($post->userid == $USER->id && has_capability('mod/hsuforum:deleteownpost', $PAGE->context));
 
