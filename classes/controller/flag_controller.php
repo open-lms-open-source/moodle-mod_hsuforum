@@ -47,7 +47,7 @@ class flag_controller extends controller_abstract {
      * Toggle Post Flags
      */
     public function flag_action() {
-        global $DB;
+        global $DB, $PAGE;
 
         require_sesskey();
 
@@ -55,7 +55,16 @@ class flag_controller extends controller_abstract {
         $flag      = required_param('flag', PARAM_ALPHA);
         $returnurl = required_param('returnurl', PARAM_LOCALURL);
 
-        $flags    = $DB->get_field('hsuforum_posts', 'flags', array('id' => $postid), MUST_EXIST);
+        $post = $DB->get_record('hsuforum_posts', ['id' => $postid], 'discussion, flags', MUST_EXIST);
+        // Ensure the post actually belongs to the forum authorised for this page.
+        $DB->get_record(
+            'hsuforum_discussions',
+            ['id' => $post->discussion, 'forum' => $PAGE->cm->instance],
+            'id',
+            MUST_EXIST
+        );
+
+        $flags    = $post->flags;
         $flaglib  = new \hsuforum_lib_flag();
         $newflags = $flaglib->toggle_flag($flags, $flag);
 
