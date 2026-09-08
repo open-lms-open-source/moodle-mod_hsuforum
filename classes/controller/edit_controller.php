@@ -258,7 +258,13 @@ class edit_controller extends controller_abstract {
         if (!$post = hsuforum_get_post_full($postid)) {
             throw new \core\exception\moodle_exception('invalidpostid', 'hsuforum');
         }
-        $discussion = $DB->get_record('hsuforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
+        // Ensure the discussion belongs to the current forum to prevent cross-forum capability abuse.
+        $discussion = $DB->get_record(
+            'hsuforum_discussions',
+            ['id' => $post->discussion, 'forum' => $PAGE->cm->instance],
+            '*',
+            MUST_EXIST
+        );
 
         $this->postservice->require_can_edit_post(
             $PAGE->activityrecord, $PAGE->context, $discussion, $post
