@@ -71,6 +71,7 @@ $subscriberselector->set_existing_subscribers($existingselector->find_users(''))
 
 if (data_submitted()) {
     require_sesskey();
+    require_capability('mod/hsuforum:managesubscriptions', $context);
     $subscribe = (bool)optional_param('subscribe', false, PARAM_RAW);
     $unsubscribe = (bool)optional_param('unsubscribe', false, PARAM_RAW);
     /** It has to be one or the other, not both or neither */
